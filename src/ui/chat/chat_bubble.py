@@ -69,7 +69,7 @@ class ChatBubble(QWidget):
                     background-color: transparent;
                     border: 1px solid {qss(PRIMARY_COLOR, 255)};
                     border-radius: 8px;
-                    padding: 5px 4px -3px 5px;  /* top, right, bottom, left */
+                    padding: 5px 4px -3px 5px;  /* top, right, bottom, left - negative bottom padding to account for line spacing */
                 }}
             """)  # padding adjusted to visually center text within the bubble
 
