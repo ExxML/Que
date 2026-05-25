@@ -5,10 +5,15 @@ WIP.md
 # Python
 __pycache__/
 .env
+.venv/
+
+# Linting
+.mypy_cache/
+.ruff_cache/
 
 # Cache files
 src/data/cache/
 
 # Nuitka build files
-whispr.build/
-whispr.dist/
+que.build/
+que.dist/

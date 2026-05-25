@@ -1,13 +1,13 @@
-# Copilot Instructions — whispr
+# Copilot Instructions — Que
 
 ## Project Overview
 
-whispr is a Windows-only desktop overlay for real-time AI programming assistance. It captures screenshots, sends them with chat context to the Gemini API, and streams formatted responses into a PyQt6 app window.
+Que is a Windows-only desktop overlay for real-time AI programming assistance. It captures screenshots, sends them with chat context to the Gemini API, and streams formatted responses into a PyQt6 app window.
 
 ## Architecture
 
 ```
-src/whispr.py — Entry point; wires together all components
+src/Que.py — Entry point; wires together all components
 src/core/ — Backend: AI, input hooks, screenshots
 src/ui/ — PyQt6 overlay UI (frameless, translucent)
 src/data/ — Runtime data (chat_history.json, config.json, cache/)

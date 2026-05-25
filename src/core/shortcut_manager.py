@@ -43,13 +43,13 @@ class ShortcutManager(QObject):
     they are pressed down, before any other application sees them. Their state
     is tracked internally. When the user then presses a non-modifier key, the
     hook checks whether the complete combination (held modifiers + that key)
-    matches a registered whispr hotkey:
+    matches a registered Que hotkey:
 
     - Match: the hotkey fires and the entire combination (modifiers + key) is
       fully suppressed — no other application ever sees any part of it.
     - No match: the suppressed modifier key-downs are replayed via keybd_event
       so the target application receives the complete, intact key combination
-      as if whispr had never intercepted it.
+      as if Que had never intercepted it.
 
     Conditional hotkeys (everything except the visibility toggle) are only
     active while the main window is visible.
@@ -226,7 +226,7 @@ class ShortcutManager(QObject):
                     entry = self.main_window_hotkeys.get(hotkey_key)
 
                 if entry is not None:
-                    # Step 4: Whispr hotkey matched — fire the callback and suppress the
+                    # Step 4: Que hotkey matched — fire the callback and suppress the
                     # entire combination; the suppressed modifier key-downs are never replayed.
                     callback, repeat_callbacks = entry
                     if is_key_down:
@@ -280,11 +280,11 @@ class ShortcutManager(QObject):
     def _replay_modifiers_and_key(
         self, vk_code: int, scan_code: int, flags: int
     ) -> None:
-        """Replay a non-whispr key combination to other applications.
+        """Replay a non-Que key combination to other applications.
 
         Injects the previously suppressed modifier key-downs followed by the
         non-modifier key into the input stream via keybd_event, reconstructing
-        the full key combination as if whispr had never intercepted it. The
+        the full key combination as if Que had never intercepted it. The
         suppressed modifier records are cleared after injection so that their
         real key-up events (which continue to arrive from the hook) are no
         longer suppressed and pass through normally.

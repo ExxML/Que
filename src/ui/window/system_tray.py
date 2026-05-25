@@ -19,7 +19,7 @@ class SystemTray(QSystemTrayIcon):
         icon = QIcon(icon_path)
 
         super().__init__(icon)
-        self.setToolTip("whispr")
+        self.setToolTip("Que")
         self.main_window = main_window
         self.shortcut_manager = shortcut_manager
 
