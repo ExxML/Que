@@ -1,4 +1,6 @@
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+import time
+
+from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QFont, QKeyEvent
 from PyQt6.QtWidgets import QHBoxLayout, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
 
@@ -154,6 +156,15 @@ class _AutoResizeTextEdit(QTextEdit):
             event.accept()
             return
         super().keyPressEvent(event)
+
+    def insertFromMimeData(self, source: QMimeData | None) -> None:
+        """Override method to insert plain text only, stripping any rich text formatting from pasted content.
+
+        Args:
+            source (QMimeData): The mime data being pasted.
+        """
+        if source is not None and source.hasText():
+            self.insertPlainText(source.text())
 
     def _adjust_height(self) -> None:
         """Adjust height based on document content, capped at MAX_LINES."""
