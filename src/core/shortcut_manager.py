@@ -133,11 +133,11 @@ class ShortcutManager(QObject):
             Ctrl + Shift + S - Take a screenshot
             Ctrl + N - Clear chat history
             Ctrl + Q - Minimize main window
-            Ctrl + Shift + Q - Quit the application
+            Ctrl + Alt + Shift + Q - Quit the application
         """
         self.always_active_hotkeys = {
             (MOD_CTRL, ord("E")): (self._toggle_window_visibility, False),
-            (MOD_CTRL | MOD_SHIFT, ord("Q")): (self._close_app, False),
+            (MOD_CTRL | MOD_ALT | MOD_SHIFT, ord("Q")): (self._close_app, False),
         }
 
         self.main_window_hotkeys = {
