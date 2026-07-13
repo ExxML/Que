@@ -2,10 +2,11 @@ import os
 from typing import Callable
 
 from PyQt6.QtCore import QEvent, QSize
-from PyQt6.QtGui import QEnterEvent, QIcon
+from PyQt6.QtGui import QColor, QEnterEvent, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import QPushButton, QWidget
 
 from ui.chat.chat_area import ChatArea
+from ui.theme import PRIMARY_COLOR, qcolor
 
 
 class ClearChatButton(QPushButton):
@@ -19,13 +20,12 @@ class ClearChatButton(QPushButton):
         self.setFixedSize(36, 32)
         self.clicked.connect(on_click)
 
-        self.light_icon_path = os.path.join(
-            os.getcwd(), "src", "assets", "clear_chat_button_light.png"
+        icon_path = os.path.join(
+            os.getcwd(), "src", "assets", "clear_chat_button_icon.png"
         )
-        self.dark_icon_path = os.path.join(
-            os.getcwd(), "src", "assets", "clear_chat_button_dark.png"
-        )
-        self.setIcon(QIcon(self.light_icon_path))
+        self.light_icon = self._tint_icon(icon_path, qcolor(PRIMARY_COLOR, 77))
+        self.dark_icon = self._tint_icon(icon_path, QColor(0, 0, 0, 153))
+        self.setIcon(self.light_icon)
         self.setIconSize(QSize(14, 14))
         self.setStyleSheet("""
             QPushButton {
@@ -47,7 +47,7 @@ class ClearChatButton(QPushButton):
         Args:
             event (QEnterEvent): The mouse enter event.
         """
-        self.setIcon(QIcon(self.dark_icon_path))
+        self.setIcon(self.dark_icon)
         super().enterEvent(event)
 
     # Override to change icon when not on hover
@@ -57,5 +57,22 @@ class ClearChatButton(QPushButton):
         Args:
             event (QEvent): The mouse leave event.
         """
-        self.setIcon(QIcon(self.light_icon_path))
+        self.setIcon(self.light_icon)
         super().leaveEvent(event)
+
+    def _tint_icon(self, icon_path: str, color: QColor) -> QIcon:
+        """Recolor the icon at the given path to a solid shade.
+
+        Args:
+            icon_path (str): The path to the source icon image.
+            color (QColor): The shade to apply to the icon's opaque pixels.
+
+        Returns:
+            QIcon: The recolored icon.
+        """
+        pixmap = QPixmap(icon_path)
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), color)
+        painter.end()
+        return QIcon(pixmap)
