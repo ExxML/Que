@@ -1,11 +1,10 @@
 import math
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
 from ui.chat.ai_formatter import format_message
-from ui.theme import PRIMARY_COLOR, qss
+from ui.theme import PRIMARY_COLOR, qss, ui_font
 
 
 class ChatBubble(QWidget):
@@ -56,9 +55,8 @@ class ChatBubble(QWidget):
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
 
-        # Set font
-        font = QFont("Helvetica", 11)
-        self.message_label.setFont(font)
+        # Set font (15px matches the original 11pt at Windows 96 dpi scaling)
+        self.message_label.setFont(ui_font(15))
 
         # Style the bubble based on sender
         if self.is_user:

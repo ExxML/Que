@@ -1,12 +1,17 @@
-import ctypes
-from ctypes import wintypes
-
-from PyQt6.QtCore import QPoint, Qt, QTimer
-from PyQt6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPen, QResizeEvent
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import (
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPen,
+    QResizeEvent,
+    QShowEvent,
+)
 from PyQt6.QtWidgets import QApplication, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
+from core.platform import window_effects
 from core.screenshot_manager import ScreenshotManager
 from ui.chat.chat_area import ChatArea
 from ui.input.input_field import InputField
@@ -70,6 +75,18 @@ class MainWindow(QWidget):
         if app is not None:
             app.quit()
 
+    def showEvent(self, event: QShowEvent | None) -> None:
+        """Reapply native always-on-top state each time the window is shown.
+
+        Qt recomputes the native window level when a window is shown, which on
+        macOS discards the raised NSWindow level, so it must be reapplied here.
+
+        Args:
+            event (QShowEvent): The show event passed to the base widget.
+        """
+        super().showEvent(event)
+        window_effects.set_always_on_top(self)
+
     def resizeEvent(self, event: QResizeEvent | None) -> None:
         """Reposition the floating screenshot tray when the window is resized.
 
@@ -124,6 +141,10 @@ class MainWindow(QWidget):
             | Qt.WindowType.Tool
             # Qt.WindowType.WindowTransparentForInput # Click-through
         )
+
+        # Keep the Tool window visible while the app is inactive (macOS hides
+        # tool windows when another application activates; no-op on Windows)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow)
 
         # Translucent bg for rounded corners
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -225,18 +246,15 @@ class MainWindow(QWidget):
 
         self.show()
 
-        # Set display affinity to exclude main window from screen capture (Windows 10+)
-        hwnd = int(self.winId())
-        WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        result = ctypes.windll.user32.SetWindowDisplayAffinity(
-            hwnd, WDA_EXCLUDEFROMCAPTURE
-        )
-        if result == 0:
+        # Exclude the main window from screen capture and reinforce always-on-top
+        if not window_effects.exclude_from_capture(self):
             print(
-                "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
+                "Warning: excluding the window from screen capture failed. "
+                "It may appear in screenshots."
             )
+        window_effects.set_always_on_top(self)
 
-        # Setup timer to raise main window so it is always visible (certain Windows operations override the stay on top hint)
+        # Setup timer to raise main window so it is always visible (certain OS operations override the stay on top hint)
         self.visibility_timer = QTimer(self)
         self.visibility_timer.setInterval(1000)
         self.visibility_timer.timeout.connect(self._ensure_window_visible)
@@ -283,8 +301,13 @@ class MainWindow(QWidget):
         self.resize(self.width(), self.height() + delta_height)
 
     def _ensure_window_visible(self) -> None:
-        """Raise the main window if it is no longer the topmost window."""
+        """Re-assert always-on-top state and raise the window if it is covered.
+
+        Certain OS operations silently reset the native window level (macOS) or
+        the z-order (Windows), so both are reinforced periodically.
+        """
         try:
+            window_effects.set_always_on_top(self)
             if not self._is_topmost_window():
                 self.raise_()
         except Exception:
@@ -296,31 +319,6 @@ class MainWindow(QWidget):
         Returns:
             bool: True if the main window is topmost at all sampled points.
         """
-        try:
-            rect = self.frameGeometry()
-            assert self.primary_screen is not None
-            scale = self.primary_screen.devicePixelRatio()
-            ga_root = 2
-            self_hwnd = int(self.winId())
-            self_root = ctypes.windll.user32.GetAncestor(
-                wintypes.HWND(self_hwnd), ga_root
-            )
-            padding = 15
-            corners = [
-                rect.topLeft() + QPoint(padding, padding),
-                rect.topRight() + QPoint(-padding, padding),
-                rect.bottomLeft() + QPoint(padding, -padding),
-                rect.bottomRight() + QPoint(-padding, -padding),
-            ]
-            for corner in corners:
-                pt = wintypes.POINT(int(corner.x() * scale), int(corner.y() * scale))
-                hwnd_at_pt = ctypes.windll.user32.WindowFromPoint(pt)
-                if hwnd_at_pt:
-                    target_root = ctypes.windll.user32.GetAncestor(
-                        wintypes.HWND(hwnd_at_pt), ga_root
-                    )
-                    if int(self_root) != int(target_root):
-                        return False
-            return True
-        except Exception:
-            return True
+        assert self.primary_screen is not None
+        scale = self.primary_screen.devicePixelRatio()
+        return window_effects.is_topmost_at_corners(self, scale)

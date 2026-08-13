@@ -1,11 +1,9 @@
-import time
-
 from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QFont, QKeyEvent
+from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import QHBoxLayout, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
 
 from ui.input.input_settings import InputSettings
-from ui.theme import PRIMARY_COLOR, qss
+from ui.theme import PRIMARY_COLOR, qss, ui_font
 
 
 class InputField(QWidget):
@@ -56,8 +54,8 @@ class InputField(QWidget):
         )
         self.input_field.send_requested.connect(self._send_message)
 
-        font = QFont("Microsoft JhengHei", 10)
-        self.input_field.setFont(font)
+        # 13px matches the original 10pt at Windows 96 dpi scaling
+        self.input_field.setFont(ui_font(13))
 
         # Text edit is transparent; the container provides the visual frame
         self.input_field.setStyleSheet(f"""

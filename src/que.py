@@ -3,6 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from core.ai_sender import AISender
+from core.platform import app_setup, permissions
 from core.screenshot_manager import ScreenshotManager
 from core.shortcut_manager import ShortcutManager
 from ui.window.main_window import MainWindow
@@ -12,6 +13,26 @@ from ui.window.system_tray import SystemTray
 if __name__ == "__main__":
     # Launch the application and its components
     app = QApplication(sys.argv)
+
+    # Apply platform application setup (no-op on Windows; hides the Dock icon on macOS)
+    app_setup.configure_app(app)
+
+    # Request the OS permissions the hotkey hook and screenshots require
+    # (no-ops on Windows; prompts for Accessibility and Screen Recording on macOS)
+    if not permissions.ensure_accessibility():
+        print(
+            "Warning: Accessibility permission is not granted, so global hotkeys "
+            "will not work. Grant it to the launching application (e.g. your "
+            "terminal or IDE) in System Settings > Privacy & Security > Accessibility."
+        )
+    if not permissions.ensure_screen_recording():
+        print(
+            "Warning: Screen Recording permission is not granted, so screenshots "
+            "will only capture the wallpaper. Grant it to the launching application "
+            "(e.g. your terminal or IDE) in System Settings > Privacy & Security > "
+            "Screen Recording, then restart Que."
+        )
+
     screenshot_manager = ScreenshotManager()
     ai_sender = AISender()
     main_window = MainWindow(ai_sender, screenshot_manager)

@@ -2,13 +2,16 @@
 
 ## Project Overview
 
-Que is a Windows-only desktop overlay for real-time AI programming assistance. It captures screenshots, sends them with chat context to the Gemini API, and streams formatted responses into a PyQt6 app window.
+Que is a macOS and Windows desktop overlay for real-time AI programming
+assistance. It captures screenshots, sends them with chat context to the Gemini
+API, and streams formatted responses into a PyQt6 app window.
 
 ## Architecture
 
 ```
-src/Que.py — Entry point; wires together all components
-src/core/ — Backend: AI, input hooks, screenshots
+src/que.py — Entry point; wires together all components
+src/core/ — Backend: AI, input hooks, screenshots, platform services
+src/core/platform/ — Shared interfaces plus macOS and Windows implementations
 src/ui/ — PyQt6 overlay UI (frameless, translucent)
 src/data/ — Runtime data (chat_history.json, config.json, cache/)
 src/assets/ — Icons and images
@@ -17,7 +20,8 @@ src/assets/ — Icons and images
 **Data flow:** User hotkey → `ShortcutManager` emits Qt signal → `AIReceiver.handle_message()` → spawns `threading.Thread` calling `AISender.generate_content_with_screenshot()` → Gemini streaming API → chunks emitted via `pyqtSignal` → `ChatArea` renders via `ChatBubble` + `ai_formatter.py`.
 
 **Key component roles:**
-- `ShortcutManager` (`core/shortcut_manager.py`) — Win32 low-level keyboard hook (`WH_KEYBOARD_LL`) on a dedicated thread. All hotkey callbacks emit **Qt signals** to marshal work onto the main thread; never call UI methods directly from the hook thread.
+- `ShortcutManager` (`core/shortcut_manager.py`) — Native platform keyboard hook on a dedicated thread. All hotkey callbacks emit **Qt signals** to marshal work onto the main thread; never call UI methods directly from the hook thread.
+- `core/platform/` — Platform-neutral service facades with `macos/` and `windows/` native backends.
 - `AISender` (`core/ai_sender.py`) — Gemini API client. Uses `google-genai` with streaming (`generate_content_stream`). Model: `gemini-2.5-flash` with thinking disabled.
 - `AIReceiver` (`core/ai_receiver.py`) — Bridges AI generation (background `threading.Thread`) and the UI via `pyqtSignal`. Uses `threading` instead of `QThread` due to Nuitka compilation issues.
 - `MainWindow` (`ui/main_window.py`) — Frameless, translucent `QWidget` with `WindowStaysOnTopHint | Tool` flags. Custom `paintEvent` draws rounded corners/border. Visibility timer re-raises window every 1s.
@@ -30,8 +34,8 @@ src/assets/ — Icons and images
 - Use `threading.Thread(daemon=True)` for background work, not `QThread` (Nuitka compat).
 
 ### Hotkey System
-- Hotkeys are registered in `ShortcutManager._define_hotkeys()` as `(modifier_bitmask, vk_code) → (callback, repeat_allowed)` tuples in two dicts: `_always_active_hotkeys` (work even when overlay is hidden) and `_main_window_hotkeys` (only when visible).
-- Modifier constants (`MOD_CTRL`, `MOD_ALT`, `MOD_SHIFT`) and Win32 types are defined in `core/win32_hook.py`.
+- Hotkeys are registered in `ShortcutManager._set_hotkeys()` as `(modifier_bitmask, Key) → (callback, repeat_allowed)` tuples in two dictionaries: `always_active_hotkeys` (work even when overlay is hidden) and `main_window_hotkeys` (only when visible).
+- Modifier constants (`MOD_CTRL`, `MOD_ALT`, `MOD_SHIFT`) and the `Key` enum are defined in `core/platform/keyboard_hook_base.py`; Windows types are defined in `core/platform/windows/win32_hook.py`.
 - All matched key events are **suppressed** (return 1 from hook proc). The hook also tracks held keys to prevent repeat-firing for non-repeatable hotkeys.
 
 ## Static Analysis
@@ -60,7 +64,7 @@ from PyQt6.QtCore import QObject, QPoint, QTimer, pyqtSignal
 ```
 When the list is long, use a parenthesized multi-line form with one name per line, alphabetized:
 ```python
-from core.win32_hook import (
+from core.platform.windows.win32_hook import (
     HOOKPROC,
     KBDLLHOOKSTRUCT,
     MOD_ALT,

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Que is a Windows-only stealth AI programming assistant — a frameless, translucent PyQt6 overlay that captures screenshots and streams Gemini API responses. It uses Win32 low-level keyboard hooks to register global hotkeys invisibly.
+Que is a macOS and Windows stealth AI programming assistant — a frameless,
+translucent PyQt6 overlay that captures screenshots and streams Gemini API
+responses. It uses native global keyboard hooks to register hotkeys invisibly.
 
 ## Commands
 
@@ -21,8 +23,9 @@ mypy --strict src
 ## Architecture
 
 ```
-src/Que.py — Entry point; wires together all components
-src/core/ — Backend: AI, input hooks, screenshots
+src/que.py — Entry point; wires together all components
+src/core/ — Backend: AI, input hooks, screenshots, platform services
+src/core/platform/ — Shared interfaces plus macOS and Windows implementations
 src/ui/ — PyQt6 overlay UI (frameless, translucent)
 src/data/ — Runtime data (chat_history.json, config.json, cache/)
 src/assets/ — Icons and images
@@ -32,8 +35,9 @@ src/assets/ — Icons and images
 
 **Key components:**
 - `src/que.py` — Entry point; wires all components together
-- `core/shortcut_manager.py` — Win32 `WH_KEYBOARD_LL` hook on a dedicated thread; emits Qt signals for all actions
-- `core/win32_hook.py` — ctypes bindings for Win32 keyboard hook constants and types
+- `core/shortcut_manager.py` — Platform keyboard hook on a dedicated thread; emits Qt signals for all actions
+- `core/platform/` — Platform-neutral service facades with `macos/` and `windows/` native backends
+- `core/platform/windows/win32_hook.py` — ctypes bindings for the Windows keyboard hook constants and types
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
 - `ui/window/main_window.py` — Frameless translucent `QWidget` with `WindowStaysOnTopHint | Tool`; re-raises itself every 1s via visibility timer
@@ -49,9 +53,10 @@ Use `threading.Thread(daemon=True)` for background work — not `QThread` (Nuitk
 
 ## Hotkey System
 
-Hotkeys registered in `ShortcutManager._define_hotkeys()` as `(modifier_bitmask, vk_code) → (callback, repeat_allowed)` in two dicts:
-- `_always_active_hotkeys` — active even when overlay is hidden
-- `_main_window_hotkeys` — only active when overlay is visible
+Hotkeys are registered in `ShortcutManager._set_hotkeys()` as
+`(modifier_bitmask, Key) → (callback, repeat_allowed)` in two dictionaries:
+- `always_active_hotkeys` — active even when overlay is hidden
+- `main_window_hotkeys` — only active when overlay is visible
 
 All matched key events are suppressed (return 1 from hook proc).
 
@@ -69,7 +74,7 @@ from PyQt6.QtCore import QObject, QPoint, QTimer, pyqtSignal
 ```
 When the list is long, use a parenthesized multi-line form with one name per line, alphabetized:
 ```python
-from core.win32_hook import (
+from core.platform.windows.win32_hook import (
     HOOKPROC,
     KBDLLHOOKSTRUCT,
     MOD_ALT,

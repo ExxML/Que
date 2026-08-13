@@ -9,9 +9,11 @@ on:
 jobs:
   analyze:
     name: Lint, Type Check, and Architecture Check
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [windows-latest, macos-latest]
         python-version: ["3.13"]
 
     steps:
