@@ -11,7 +11,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Cache files
+# Data files
 src/data/
 
 # Nuitka build files
