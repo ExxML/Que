@@ -64,6 +64,7 @@ class ShortcutManager(QObject):
     clear_all_chat_signal = pyqtSignal()
     minimize_signal = pyqtSignal()
     toggle_signal = pyqtSignal()
+    toggle_history_signal = pyqtSignal()
     send_message_signal = pyqtSignal(str)
 
     def __init__(
@@ -83,6 +84,7 @@ class ShortcutManager(QObject):
         self.clear_all_chat_signal.connect(self.main_window._clear_all_chat)
         self.minimize_signal.connect(self.main_window.hide)
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
+        self.toggle_history_signal.connect(self.main_window.toggle_history)
         self.send_message_signal.connect(self.main_window.send_message)
 
         # Initialize animation
@@ -131,7 +133,8 @@ class ShortcutManager(QObject):
             Ctrl + Alt + <ArrowKeys> - Move main window
             Ctrl + Shift + Up / Down - Scroll chat area
             Ctrl + Shift + S - Take a screenshot
-            Ctrl + N - Clear chat history
+            Ctrl + N - Start a new chat (previous chat stays in history)
+            Ctrl + H - Show / hide conversation history
             Ctrl + Q - Minimize main window
             Ctrl + Alt + Shift + Q - Quit the application
         """
@@ -150,6 +153,7 @@ class ShortcutManager(QObject):
             (MOD_CTRL | MOD_SHIFT, ord("S")): (self._screenshot, False),
             (MOD_CTRL, ord("Q")): (self._minimize, False),
             (MOD_CTRL, ord("N")): (self._clear_all_chat, False),
+            (MOD_CTRL, ord("H")): (self._toggle_history, False),
             (MOD_CTRL, ord("D")): (self._generate_with_screenshot, False),
             (MOD_CTRL, ord("G")): (self._generate_with_screenshot_fix, False),
         }
@@ -465,6 +469,10 @@ class ShortcutManager(QObject):
     def _clear_all_chat(self) -> None:
         """Clear the chat history."""
         self.clear_all_chat_signal.emit()
+
+    def _toggle_history(self) -> None:
+        """Show or hide the conversation history sidebar."""
+        self.toggle_history_signal.emit()
 
     def _generate_with_screenshot(self) -> None:
         """Take a screenshot then automatically generate content."""

@@ -216,7 +216,7 @@ class ClaudeBridge:
             if stop_flag.is_set():
                 return None
             raise RuntimeError(
-                "Claude ended before completing the response. Retry, or clear the chat to start again."
+                "Claude ended before completing the response. Retry, or start a new chat."
             )
         finally:
             self.lock.release()

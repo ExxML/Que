@@ -12,10 +12,7 @@ __pycache__/
 .ruff_cache/
 
 # Cache files
-src/data/cache/
-src/data/config.json
-src/data/config.tmp
-src/data/claude/
+src/data/
 
 # Nuitka build files
 que.build/

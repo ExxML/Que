@@ -122,6 +122,18 @@ class AISender:
         self.contexts = {"gemini": None, "claude": None}
         self.claude_session_id = ""
 
+    def restore_chat(self, interaction_id: str | None, session_id: str) -> None:
+        """Resume a saved conversation of the active provider.
+
+        Args:
+            interaction_id (str | None): The last accepted server interaction ID.
+            session_id (str): The saved Claude session UUID, or an empty string for Gemini.
+        """
+        self.reset_chat()
+        self.previous_interaction_id = interaction_id
+        self.contexts[self.provider] = interaction_id
+        self.claude_session_id = session_id
+
     def prepare_request(
         self, message: str, attachments: list[str] | None = None
     ) -> InteractionRequest:
@@ -279,7 +291,7 @@ class AISender:
                 raise RuntimeError(
                     "Could not continue the saved Gemini conversation. Its server-side "
                     "state may be expired or unavailable. Context has not been reset. "
-                    "Retry, or use Clear to explicitly start a new conversation. "
+                    "Retry, or use New chat (+) to explicitly start a new conversation. "
                     f"Details: {exc}"
                 ) from exc
             raise

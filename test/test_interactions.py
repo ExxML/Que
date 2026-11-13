@@ -195,10 +195,17 @@ class InteractionsTests(unittest.TestCase):
                 self.sender.reset_chat()
                 chat = MagicMock()
                 chat.streaming_bubble = None
+                chat.streaming_text = "Hello"
                 chat.add_message.side_effect = self._assert_main_thread
                 chat.append_to_stream.side_effect = self._assert_main_thread
                 chat.finalize_assistant_stream.side_effect = self._assert_main_thread
                 receiver = AIReceiver(self.sender, chat)
+                turns: list[tuple[str, str, str]] = []
+                receiver.turn_committed.connect(
+                    lambda request, interaction_id, text: turns.append(
+                        (request.message, interaction_id, text)
+                    )
+                )
                 receiver.handle_message("hello")
                 chat.add_message.assert_called_once_with("hello", is_user=True)
                 assert receiver.ai_thread is not None
@@ -212,6 +219,7 @@ class InteractionsTests(unittest.TestCase):
                 self.assertEqual(
                     self.sender.previous_interaction_id, None if cancel else "new"
                 )
+                self.assertEqual(turns, [] if cancel else [("hello", "new", "Hello")])
                 if cancel:
                     chat.append_to_stream.assert_not_called()
                 else:

@@ -115,6 +115,20 @@ class ChatArea(QScrollArea):
                 if widget is not None:
                     widget.deleteLater()
 
+    def load_messages(self, messages: list[tuple[str, bool]]) -> None:
+        """Replace the chat with a saved transcript and scroll to its end.
+
+        Args:
+            messages (list[tuple[str, bool]]): Message texts paired with whether each is from the user.
+        """
+        self.clear_chat_messages()
+        for message, is_user in messages:
+            bubble = ChatBubble(message, is_user)
+            if not is_user:
+                bubble.set_bot_message(message)
+            self.chat_layout.insertWidget(self.chat_layout.count() - 1, bubble)
+        QTimer.singleShot(0, lambda: self.scrollbar.setValue(self.scrollbar.maximum()))
+
     def shortcut_scroll(self, amount: int) -> None:
         """Scroll the chat area by a specified amount.
 

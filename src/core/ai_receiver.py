@@ -15,6 +15,7 @@ class AIReceiver(QObject):
     finished = pyqtSignal(str, int)
     error = pyqtSignal(str, int)
     progress = pyqtSignal(str, int)
+    turn_committed = pyqtSignal(object, str, str)  # request, interaction_id, response
 
     def __init__(self, ai_sender: AISender, chat_area: ChatArea) -> None:
         super().__init__()
@@ -130,6 +131,9 @@ class AIReceiver(QObject):
             return
         if not self.ai_sender.commit_interaction(self.request, interaction_id):
             return
+        self.turn_committed.emit(
+            self.request, interaction_id, self.chat_area.streaming_text
+        )
         self.chat_area.finalize_assistant_stream()
 
     def _on_response_error(self, error: str, stream_id: int) -> None:

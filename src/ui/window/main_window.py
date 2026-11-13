@@ -1,8 +1,15 @@
 import ctypes
+import time
 from ctypes import wintypes
 
 from PyQt6.QtCore import QPoint, Qt, QTimer
-from PyQt6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPen, QResizeEvent
+from PyQt6.QtGui import (
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPen,
+    QResizeEvent,
+)
 from PyQt6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -14,13 +21,15 @@ from PyQt6.QtWidgets import (
 )
 
 from core.ai_receiver import AIReceiver
-from core.ai_sender import AISender
+from core.ai_sender import AISender, InteractionRequest
+from core.chat_history import ChatHistory, Conversation
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from ui.chat.chat_area import ChatArea
 from ui.input.input_field import InputField
-from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
-from ui.window.clear_chat_button import ClearChatButton
+from ui.theme import BG_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
+from ui.window.header_icon_button import HeaderIconButton
+from ui.window.history_sidebar import HistorySidebar
 from ui.window.screenshot_tray import ScreenshotTray
 from ui.window.settings_page import SettingsPage
 
@@ -28,7 +37,7 @@ from ui.window.settings_page import SettingsPage
 class MainWindow(QWidget):
     """Render the main application window and its chat controls."""
 
-    BG_COLOR = qcolor(BG_COLOR, 153)
+    BG_COLOR = qcolor(BG_COLOR, WINDOW_ALPHA)
 
     def __init__(
         self, ai_sender: AISender, screenshot_manager: ScreenshotManager
@@ -36,8 +45,15 @@ class MainWindow(QWidget):
         super().__init__()
         self.ai_sender = ai_sender
         self.screenshot_manager = screenshot_manager
+        self.chat_history = ChatHistory()
+        # The open chat keeps one saved conversation per provider, mirroring AISender.contexts
+        self.conversations: dict[str, Conversation | None] = {
+            "gemini": None,
+            "claude": None,
+        }
         self._init_UI()
         self.worker = AIReceiver(ai_sender, self.chat_area)
+        self.worker.turn_committed.connect(self._on_turn_committed)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
         self.model_catalog = ProviderCatalog(self.ai_sender.claude_bridge)
@@ -90,8 +106,17 @@ class MainWindow(QWidget):
         self.screenshot_tray.clear()
         self.worker.handle_message(message, attachments or None)
 
+    def toggle_history(self) -> None:
+        """Open or close the conversation history sidebar."""
+        if not self.history_sidebar.opened:
+            self.input_field.input_settings.close_popups()
+            self._refresh_history()
+            self._position_history_sidebar()
+        self.history_sidebar.toggle()
+
     def show_settings(self) -> None:
         """Open provider settings in the same capture-excluded overlay."""
+        self.history_sidebar.close_sidebar()
         if self.pages.currentIndex() == 1:
             self._close_settings()
             return
@@ -123,6 +148,7 @@ class MainWindow(QWidget):
         """
         super().resizeEvent(event)
         self._position_screenshot_tray()
+        self._position_history_sidebar()
 
     # Override mousePressEvent to automatically set focus to input field
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
@@ -139,23 +165,7 @@ class MainWindow(QWidget):
     def paintEvent(self, _event: QPaintEvent | None) -> None:
         """Paint the main window with rounded corners and a border."""
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        rect = self.rect()
-        radius = 8
-
-        # Draw window with rounded corners
-        painter.setBrush(self.BG_COLOR)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawRoundedRect(rect, radius, radius)
-
-        # Draw window border
-        border_width = 1
-        border_rect = rect.adjusted(
-            border_width, border_width, -border_width, -border_width
-        )
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.setPen(QPen(qcolor(PRIMARY_COLOR, 128), border_width))
-        painter.drawRoundedRect(border_rect, radius, radius)
+        self._paint_frame(painter)
 
     def _init_UI(self) -> None:
         """Initialize the main window UI layout and components."""
@@ -218,11 +228,34 @@ class MainWindow(QWidget):
         self.screenshot_tray = ScreenshotTray(self.screenshot_manager, self)
 
         # Create and add title bar buttons
-        self.clear_chat_button = ClearChatButton(
-            self, self._clear_all_chat, self.chat_area
+        header_button_style = f"""
+            QPushButton {{
+                border: none;
+            }}
+            QPushButton:hover {{
+                background-color: {qss(PRIMARY_COLOR, 128)};
+                border-radius: 0px;
+                margin-top: 1px;
+            }}
+        """
+        self.history_button = HeaderIconButton("menu", self)
+        self.history_button.setFixedSize(36, 32)
+        self.history_button.setAccessibleName("Conversation history")
+        self.history_button.setToolTip("History (Ctrl+H)")
+        self.history_button.clicked.connect(self.toggle_history)
+        self.history_button.setStyleSheet(
+            header_button_style
+            + "QPushButton:hover { border-top-left-radius: 7px; margin-left: 1px; }"
         )
+        self.new_chat_button = HeaderIconButton("plus", self)
+        self.new_chat_button.setFixedSize(36, 32)
+        self.new_chat_button.setAccessibleName("New chat")
+        self.new_chat_button.setToolTip("New chat (Ctrl+N)")
+        self.new_chat_button.clicked.connect(self._clear_all_chat)
+        self.new_chat_button.setStyleSheet(header_button_style)
         header_layout = QHBoxLayout()
-        header_layout.addWidget(self.clear_chat_button)
+        header_layout.addWidget(self.history_button)
+        header_layout.addWidget(self.new_chat_button)
         header_layout.addStretch(1)
         self.settings_button = QPushButton("Settings", self)
         self.settings_button.setAccessibleName("AI settings")
@@ -286,6 +319,12 @@ class MainWindow(QWidget):
         # Position the floating screenshot tray above the input field
         self.screenshot_tray.raise_()
         self.screenshot_tray.visibility_changed.connect(self._position_screenshot_tray)
+
+        # Create the history sidebar as a floating overlay over everything below the header
+        self.history_sidebar = HistorySidebar(self, self._paint_frame)
+        self.history_sidebar.conversation_selected.connect(self._open_conversation)
+        self.history_sidebar.conversation_deleted.connect(self._delete_conversation)
+        self.history_sidebar.closed.connect(self._on_history_closed)
 
         # Unset cursor for all child widgets to preserve system cursor
         self._unset_cursor_recursive(self)
@@ -399,6 +438,8 @@ class MainWindow(QWidget):
         self.ai_sender.reset_chat()
         self.screenshot_manager.clear_screenshots()
         self.screenshot_tray.clear()
+        self.conversations = {"gemini": None, "claude": None}
+        self._refresh_history()
         if self.ai_sender.models:
             self._apply_models(
                 ProviderResult(
@@ -419,6 +460,131 @@ class MainWindow(QWidget):
             self.width(),
             tray_h,
         )
+
+    def _paint_frame(self, painter: QPainter) -> None:
+        """Paint the rounded window background and border in window coordinates.
+
+        Args:
+            painter (QPainter): The painter to draw with.
+        """
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect = self.rect()
+        radius = 8
+
+        # Draw window with rounded corners
+        painter.setBrush(self.BG_COLOR)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(rect, radius, radius)
+
+        # Draw window border
+        border_width = 1
+        border_rect = rect.adjusted(
+            border_width, border_width, -border_width, -border_width
+        )
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(qcolor(PRIMARY_COLOR, 128), border_width))
+        painter.drawRoundedRect(border_rect, radius, radius)
+
+    def _position_history_sidebar(self) -> None:
+        """Place the sidebar below the header along the left window edge."""
+        top = self.pages.y()
+        self.history_sidebar.setGeometry(
+            0, top, HistorySidebar.PANEL_WIDTH, self.height() - top
+        )
+
+    def _refresh_history(self) -> None:
+        """Rebuild the sidebar list and highlight the open conversation."""
+        active = self.conversations[self.ai_sender.provider]
+        self.history_sidebar.set_conversations(
+            self.chat_history.conversations(),
+            active.conversation_id if active is not None else "",
+        )
+
+    def _on_history_closed(self) -> None:
+        """Return keyboard focus to the message input after closing the sidebar."""
+        if self.pages.currentIndex() == 0:
+            self.input_field.input_field.setFocus()
+
+    def _on_turn_committed(
+        self,
+        interaction_request: InteractionRequest,
+        interaction_id: str,
+        response: str,
+    ) -> None:
+        """Save a completed turn to the conversation of its provider.
+
+        Args:
+            interaction_request (InteractionRequest): The completed request snapshot.
+            interaction_id (str): The accepted server interaction identifier.
+            response (str): The full assistant response text.
+        """
+        provider = interaction_request.provider
+        conversation = self.conversations[provider]
+        if conversation is None:
+            title = " ".join(interaction_request.message.split())[:80]
+            conversation = Conversation(provider, title or "Untitled chat")
+            self.conversations[provider] = conversation
+        conversation.messages.append(
+            {"role": "user", "text": interaction_request.message}
+        )
+        conversation.messages.append({"role": "assistant", "text": response})
+        conversation.interaction_id = interaction_id
+        conversation.session_id = (
+            interaction_request.session_id if provider == "claude" else ""
+        )
+        conversation.updated = time.time()
+        try:
+            self.chat_history.save(conversation)
+        except OSError as e:
+            print(f"Error saving chat history: {str(e)}")
+        if self.history_sidebar.opened:
+            self._refresh_history()
+
+    def _open_conversation(self, conversation_id: str) -> None:
+        """Show a saved conversation and resume its provider context.
+
+        Args:
+            conversation_id (str): The saved conversation identifier.
+        """
+        self.history_sidebar.close_sidebar()
+        if self.pages.currentIndex() == 1:
+            self._close_settings()
+        conversation = self.chat_history.get(conversation_id)
+        if conversation is None or conversation in self.conversations.values():
+            return
+        self.worker.stop()
+        if conversation.provider != self.ai_sender.provider:
+            # Switch only for this session; the saved default provider stays unchanged
+            self.ai_sender.configure(conversation.provider, self.ai_sender.api_key)
+            self._refresh_models()
+        self.ai_sender.restore_chat(
+            conversation.interaction_id, conversation.session_id
+        )
+        self.conversations = {"gemini": None, "claude": None}
+        self.conversations[conversation.provider] = conversation
+        self.chat_area.load_messages(
+            [
+                (message["text"], message["role"] == "user")
+                for message in conversation.messages
+            ]
+        )
+
+    def _delete_conversation(self, conversation_id: str) -> None:
+        """Delete a saved conversation, starting a new chat if it is open.
+
+        Args:
+            conversation_id (str): The saved conversation identifier.
+        """
+        try:
+            self.chat_history.delete(conversation_id)
+        except OSError as e:
+            print(f"Error saving chat history: {str(e)}")
+        if any(
+            conversation is not None and conversation.conversation_id == conversation_id
+            for conversation in self.conversations.values()
+        ):
+            self._clear_all_chat()
+        self._refresh_history()
 
     # Set cursor as default texture regardless of where it is hovering on the main window
     def _unset_cursor_recursive(self, widget: QWidget) -> None:

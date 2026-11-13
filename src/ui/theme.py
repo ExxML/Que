@@ -2,6 +2,12 @@ from PyQt6.QtGui import QColor
 
 PRIMARY_COLOR: tuple[int, int, int] = (255, 255, 255)
 BG_COLOR: tuple[int, int, int] = (20, 20, 20)
+WINDOW_ALPHA: int = 153
+DANGER_COLOR: tuple[int, int, int] = (255, 77, 69)
+PROVIDER_COLORS: dict[str, tuple[int, int, int]] = {
+    "gemini": (138, 180, 248),
+    "claude": (217, 119, 87),
+}
 
 
 def qcolor(rgb: tuple[int, int, int], alpha: int | None = None) -> QColor:

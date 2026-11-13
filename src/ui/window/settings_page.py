@@ -1,4 +1,6 @@
 import ctypes
+import os
+from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
@@ -69,14 +71,18 @@ class SettingsPage(QWidget):
 
     def _init_UI(self) -> None:
         """Build an accessible form that applies verified settings automatically."""
+        # Styling the drop-down area replaces the native arrow, so supply one
+        arrow_path = Path(os.getcwd(), "src", "assets", "dropdown_arrow.svg").as_posix()
         self.setStyleSheet(f"""
             QLabel {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; }}
             QLineEdit, QComboBox, QPushButton {{
-                color: {qss(PRIMARY_COLOR)}; background: {qss(BG_COLOR, 230)};
+                color: {qss(PRIMARY_COLOR)}; background: transparent;
                 border: 1px solid {qss(PRIMARY_COLOR, 65)}; border-radius: 6px;
                 padding: 7px 10px; min-height: 20px;
             }}
             QPushButton:hover, QPushButton:checked {{ background: {qss(PRIMARY_COLOR, 40)}; }}
+            QComboBox::drop-down {{ background: transparent; border: none; width: 24px; }}
+            QComboBox::down-arrow {{ image: url({arrow_path}); width: 8px; height: 5px; }}
             QPushButton:focus, QLineEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
             QComboBox QAbstractItemView {{ background: {qss(BG_COLOR)}; color: {qss(PRIMARY_COLOR)};
@@ -163,7 +169,7 @@ class SettingsPage(QWidget):
         effort_hint.setWordWrap(True)
         layout.addWidget(effort_hint)
         context_hint = QLabel(
-            "Each provider keeps its own conversation in this chat. Clear chat resets both."
+            "Each provider keeps its own conversation in this chat. New chat resets both."
         )
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
