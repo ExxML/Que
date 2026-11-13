@@ -34,12 +34,10 @@ class EffortSelectorTests(unittest.TestCase):
 
     def test_selection_and_model_fallback(self) -> None:
         """Keep the UI and backend effort synchronized across model switches."""
-        self.assertEqual(
-            self.settings.effort_dropdown.current_display, "Effort: Minimal"
-        )
+        self.assertEqual(self.settings.effort_dropdown.current_display, "Minimal")
         self._select(self.settings.model_dropdown, "gemini-2.5-flash")
         self.assertEqual(self.sender.effort_level, "low")
-        self.assertEqual(self.settings.effort_dropdown.current_display, "Effort: Low")
+        self.assertEqual(self.settings.effort_dropdown.current_display, "Low")
         self.assertNotIn(
             "minimal", [value for _, value in self.settings.effort_dropdown.options]
         )

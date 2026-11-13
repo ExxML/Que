@@ -17,7 +17,6 @@ class InputSettings(QWidget):
         self.effort_dropdown = SelectionDropdown(
             [(level.title(), level) for level in EFFORT_LEVELS[DEFAULT_MODEL]],
             DEFAULT_EFFORT,
-            prefix="Effort: ",
         )
         self.model_dropdown.setAccessibleName("Model")
         self.effort_dropdown.setAccessibleName("Reasoning effort")

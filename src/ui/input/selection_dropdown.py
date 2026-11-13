@@ -28,14 +28,12 @@ class SelectionDropdown(QWidget):
         options: list[tuple[str, str]],
         current_value: str,
         parent: QWidget | None = None,
-        prefix: str = "",
     ) -> None:
         super().__init__(parent)
         self.options = options
-        self.prefix = prefix
         self.current_value = current_value
         self.current_display = next(
-            f"{prefix}{name}" for name, value in options if value == current_value
+            name for name, value in options if value == current_value
         )
         self.popup: _SelectionPopup | None = None
         self.shield: _PopupShield | None = None
@@ -59,8 +57,8 @@ class SelectionDropdown(QWidget):
         display = next(name for name, option in options if option == value)
         changed = value != self.current_value
         self.current_value = value
-        self.current_display = f"{self.prefix}{display}"
-        self._init_UI()
+        self.current_display = display
+        self._update_size()
         self.update()
         if changed:
             self.value_changed.emit(value)
@@ -141,14 +139,12 @@ class SelectionDropdown(QWidget):
         font = self.font()
         font.setPixelSize(12)
         self.setFont(font)
+        self._update_size()
 
-        fm = QFontMetrics(font)
-        max_width = max(
-            fm.horizontalAdvance(f"{self.prefix}{name}") for name, _ in self.options
-        )
-        self.setFixedWidth(
-            max_width + 25
-        )  # Arbitrary extra space to avoid text truncation
+    def _update_size(self) -> None:
+        """Fit the selected label so adjacent controls follow its width."""
+        fm = QFontMetrics(self.font())
+        self.setFixedWidth(fm.horizontalAdvance(self.current_display))
         self.setFixedHeight(fm.height() + 8)  # Arbitrary vertical padding
 
     def _show_popup(self) -> None:
@@ -189,8 +185,9 @@ class SelectionDropdown(QWidget):
             display_name (str): The option label shown in the dropdown.
             value (str): The option identifier.
         """
-        self.current_display = f"{self.prefix}{display_name}"
+        self.current_display = display_name
         self.current_value = value
+        self._update_size()
         self.update()
         self.value_changed.emit(value)
 
