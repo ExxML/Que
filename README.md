@@ -1,6 +1,20 @@
 # Que
 Your live AI programming assistant
 
+Install dependencies with `python -m pip install -r requirements.txt`.
+
+The thinking toggle selects high effort when enabled. When disabled, it uses minimal
+effort for Gemini 3 Flash, low effort for Gemini 2.5 Flash, and the default off setting
+for Gemini 2.5 Flash Lite. Interactions supports
+[thinking levels](https://ai.google.dev/gemini-api/docs/thought-signatures?hl=en),
+not the previous zero-token thinking budget.
+
+Run backend regression tests without API calls from PowerShell:
+```powershell
+$env:PYTHONPATH = "src"
+python -m unittest discover -s test -p test_interactions.py -v
+```
+
 Compile .exe using Nuitka
 ```bash
 pip install nuitka

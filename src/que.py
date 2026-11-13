@@ -15,6 +15,8 @@ if __name__ == "__main__":
     screenshot_manager = ScreenshotManager()
     ai_sender = AISender()
     main_window = MainWindow(ai_sender, screenshot_manager)
+    app.aboutToQuit.connect(main_window.worker.stop)
+    app.aboutToQuit.connect(ai_sender.reset_chat)
     shortcut_manager = ShortcutManager(main_window, screenshot_manager)
     tray_icon = SystemTray(main_window, shortcut_manager)
 

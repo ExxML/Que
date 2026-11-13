@@ -2,7 +2,7 @@ import threading
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.ai_sender import AISender
+from core.ai_sender import AISender, InteractionRequest
 from ui.chat.chat_area import ChatArea
 
 
@@ -12,7 +12,7 @@ class AIReceiver(QObject):
     # Signals for cross-thread communication
     # Using threading instead of QThread due to compilation issues with Nuitka
     # Each signal carries a stream_id so stale signals from superseded streams are ignored
-    finished = pyqtSignal(int)
+    finished = pyqtSignal(str, int)
     error = pyqtSignal(str, int)
     progress = pyqtSignal(str, int)
 
@@ -25,8 +25,7 @@ class AIReceiver(QObject):
         self.stream_id: int = (
             0  # Incremented on each new stream; used to discard stale queued signals
         )
-        self.message: str | None = None
-        self.attachments: list[str] | None = None
+        self.request: InteractionRequest | None = None
 
         # Connect signals to response handlers once
         self.progress.connect(self._on_response_chunk)
@@ -56,43 +55,49 @@ class AIReceiver(QObject):
         self.stop_flag = threading.Event()
         local_flag = self.stop_flag
 
-        self.message = message
-        self.attachments = attachments
+        request = self.ai_sender.prepare_request(message, attachments)
+        self.request = request
 
         # Immediately add user's message to the chat area
         self.chat_area.add_message(message, is_user=True)
 
         # Start new thread
         self.ai_thread = threading.Thread(
-            target=self._run, args=(current_id, local_flag), daemon=True
+            target=self._run, args=(request, current_id, local_flag), daemon=True
         )
         self.ai_thread.start()
 
     def stop(self) -> None:
         """Signal the current stream to stop and invalidate any queued signals."""
         self.stop_flag.set()
+        self.ai_sender.invalidate_requests()
+        self.request = None
         self.stream_id += (
             1  # Discard any progress/finished/error signals already queued
         )
 
-    def _run(self, stream_id: int, stop_flag: threading.Event) -> None:
+    def _run(
+        self,
+        interaction_request: InteractionRequest,
+        stream_id: int,
+        stop_flag: threading.Event,
+    ) -> None:
         """Execute AI content generation and emit progress and completion signals.
 
         Args:
+            interaction_request (InteractionRequest): The immutable request inputs.
             stream_id (int): The generation ID for this stream invocation.
             stop_flag (threading.Event): The cancellation flag for this stream.
         """
-        assert self.message is not None
         try:
-            self.ai_sender.send_message(
-                self.message,
-                self.attachments,
+            interaction_id = self.ai_sender.send_message(
+                interaction_request,
                 lambda text: self._on_chunk(text, stream_id, stop_flag),
                 stop_flag,
             )
             # Only emit finished if we weren't stopped
-            if not stop_flag.is_set():
-                self.finished.emit(stream_id)
+            if interaction_id is not None and not stop_flag.is_set():
+                self.finished.emit(interaction_id, stream_id)
 
         except Exception as e:
             # Only emit error if we weren't stopped
@@ -110,13 +115,20 @@ class AIReceiver(QObject):
         if text and not stop_flag.is_set():
             self.progress.emit(text, stream_id)
 
-    def _on_response_ready(self, stream_id: int) -> None:
+    def _on_response_ready(self, interaction_id: str, stream_id: int) -> None:
         """Handle successful AI response.
 
         Args:
+            interaction_id (str): The successfully completed server interaction ID.
             stream_id (int): The generation ID of the completed stream.
         """
-        if stream_id != self.stream_id:
+        if (
+            stream_id != self.stream_id
+            or self.stop_flag.is_set()
+            or self.request is None
+        ):
+            return
+        if not self.ai_sender.commit_interaction(self.request, interaction_id):
             return
         self.chat_area.finalize_assistant_stream()
 
