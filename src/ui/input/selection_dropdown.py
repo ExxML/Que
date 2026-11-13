@@ -64,6 +64,17 @@ class SelectionDropdown(QWidget):
         if changed:
             self.value_changed.emit(value)
 
+    def set_value(self, value: str) -> None:
+        """Select an available value and notify connected controls.
+
+        Args:
+            value (str): The option identifier to select.
+        """
+        display = next((name for name, option in self.options if option == value), None)
+        if display is not None:
+            self.close_popup()
+            self._on_option_selected(display, value)
+
     def reposition_popup(self, delta: int) -> None:
         """Shift the popup and shield vertically to keep them aligned.
 

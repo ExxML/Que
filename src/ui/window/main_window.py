@@ -3,17 +3,26 @@ from ctypes import wintypes
 
 from PyQt6.QtCore import QPoint, Qt, QTimer
 from PyQt6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPen, QResizeEvent
-from PyQt6.QtWidgets import QApplication, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QPushButton,
+    QScrollArea,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
-from core.model_catalog import ModelCatalog, ModelOption
+from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from ui.chat.chat_area import ChatArea
 from ui.input.input_field import InputField
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
 from ui.window.clear_chat_button import ClearChatButton
 from ui.window.screenshot_tray import ScreenshotTray
+from ui.window.settings_page import SettingsPage
 
 
 class MainWindow(QWidget):
@@ -31,15 +40,18 @@ class MainWindow(QWidget):
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
-        self.model_catalog = ModelCatalog(self.ai_sender.client)
-        self.model_catalog.loaded.connect(self._on_models_loaded)
-        self.model_catalog.failed.connect(
-            self.input_field.input_settings.show_model_error
-        )
-        self.input_field.input_settings.reload_requested.connect(
-            self.model_catalog.refresh
-        )
-        self.model_catalog.refresh()
+        self.model_catalog = ProviderCatalog(self.ai_sender.claude_bridge)
+        self.catalog_revision = 0
+        self.model_catalog.completed.connect(self._on_models_loaded)
+        self.model_catalog.failed.connect(self._on_models_failed)
+        self.input_field.input_settings.reload_requested.connect(self._refresh_models)
+        self.settings_page.saved.connect(self._on_settings_saved)
+        self._refresh_models()
+        if self.ai_sender.provider == "gemini" and not self.ai_sender.api_key:
+            self.settings_page.open_settings()
+            self.pages.setCurrentIndex(1)
+            self.input_field.hide()
+            self.settings_button.setText("Back to chat")
 
     def toggle_window_visibility(self) -> None:
         """Toggle the main window between visible and hidden states."""
@@ -53,6 +65,12 @@ class MainWindow(QWidget):
         """Close settings popups and flush the backing store before hiding."""
         if hasattr(self, "input_field"):
             self.input_field.input_settings.close_popups()
+            self.settings_page.model_combo.hidePopup()
+            self.settings_page.effort_combo.hidePopup()
+            self.settings_page.key_input.setEchoMode(
+                self.settings_page.key_input.EchoMode.Password
+            )
+            self.settings_page.show_key.setChecked(False)
             self.repaint()
             QApplication.processEvents()
         super().hide()
@@ -65,12 +83,24 @@ class MainWindow(QWidget):
         """
         if not self.ai_sender.model:
             self.chat_area.show_stream_error(
-                "Wait for model discovery, or select Retry models if loading failed."
+                "Open Settings to connect your AI provider, or retry loading models."
             )
             return
         attachments = self.screenshot_manager.get_and_clear_pending()
         self.screenshot_tray.clear()
         self.worker.handle_message(message, attachments or None)
+
+    def show_settings(self) -> None:
+        """Open provider settings in the same capture-excluded overlay."""
+        if self.pages.currentIndex() == 1:
+            self._close_settings()
+            return
+        self.input_field.input_settings.close_popups()
+        self.settings_page.open_settings()
+        self.pages.setCurrentIndex(1)
+        self.input_field.hide()
+        self.screenshot_tray.hide()
+        self.settings_button.setText("Back to chat")
 
     def quit_app(self) -> None:
         """Quit the application, stopping any active worker and clearing chat."""
@@ -101,7 +131,8 @@ class MainWindow(QWidget):
         Args:
             event (QMouseEvent): The mouse press event.
         """
-        self.input_field.input_field.setFocus()
+        if self.pages.currentIndex() == 0:
+            self.input_field.input_field.setFocus()
         super().mousePressEvent(event)
 
     # Override paintEvent to draw app window
@@ -169,6 +200,20 @@ class MainWindow(QWidget):
         # Create input field
         self.input_field = InputField(self)
 
+        self.pages = QStackedWidget(self)
+        self.pages.addWidget(self.chat_area)
+        self.settings_page = SettingsPage(
+            self.ai_sender.settings_store, self.ai_sender.claude_bridge, self
+        )
+        settings_scroll = QScrollArea()
+        settings_scroll.setWidgetResizable(True)
+        settings_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        settings_scroll.setStyleSheet(
+            "QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; }"
+        )
+        settings_scroll.setWidget(self.settings_page)
+        self.pages.addWidget(settings_scroll)
+
         # Create screenshot tray as a floating overlay (not in any layout)
         self.screenshot_tray = ScreenshotTray(self.screenshot_manager, self)
 
@@ -179,6 +224,13 @@ class MainWindow(QWidget):
         header_layout = QHBoxLayout()
         header_layout.addWidget(self.clear_chat_button)
         header_layout.addStretch(1)
+        self.settings_button = QPushButton("Settings", self)
+        self.settings_button.setAccessibleName("AI settings")
+        self.settings_button.setStyleSheet(
+            f"QPushButton {{ color: {qss(PRIMARY_COLOR, 180)}; background: transparent; border: none; padding: 6px; }}"
+        )
+        self.settings_button.clicked.connect(self.show_settings)
+        header_layout.addWidget(self.settings_button)
         self.min_btn = QPushButton("–", self)
         self.min_btn.setFixedSize(36, 32)
         self.min_btn.clicked.connect(self.hide)
@@ -224,7 +276,7 @@ class MainWindow(QWidget):
         main_layout.addLayout(header_layout)
 
         # Add chat area
-        main_layout.addWidget(self.chat_area, stretch=1)
+        main_layout.addWidget(self.pages, stretch=1)
 
         # Add input field
         self.input_field.message_sent.connect(self.send_message)
@@ -257,14 +309,88 @@ class MainWindow(QWidget):
         self.visibility_timer.timeout.connect(self._ensure_window_visible)
         self.visibility_timer.start()
 
-    def _on_models_loaded(self, models: tuple[ModelOption, ...]) -> None:
+    def _on_models_loaded(self, revision: int, result: ProviderResult) -> None:
         """Install discovered models on the Qt thread.
 
         Args:
-            models (tuple[ModelOption, ...]): Compatible models returned by discovery.
+            revision (int): The catalog request identifier.
+            result (ProviderResult): The provider's discovered models.
         """
-        self.ai_sender.set_models(models)
-        self.input_field.input_settings.set_models(models)
+        if (
+            revision != self.catalog_revision
+            or result.provider != self.ai_sender.provider
+        ):
+            return
+        self._apply_models(result, use_defaults=not bool(self.ai_sender.model))
+
+    def _on_models_failed(self, revision: int, error: str) -> None:
+        """Display only the latest provider discovery error.
+
+        Args:
+            revision (int): The catalog request identifier.
+            error (str): The discovery error.
+        """
+        if revision == self.catalog_revision:
+            self.input_field.input_settings.show_model_error(error)
+
+    def _refresh_models(self) -> None:
+        """Reload only the active provider's available models."""
+        self.input_field.input_settings.show_loading()
+        self.catalog_revision = self.model_catalog.refresh(
+            self.ai_sender.provider, self.ai_sender.api_key
+        )
+
+    def _apply_models(self, result: ProviderResult, use_defaults: bool = True) -> None:
+        """Synchronize the sender and selectors with valid saved defaults.
+
+        Args:
+            result (ProviderResult): The active provider's model catalog.
+            use_defaults (bool): Whether to restore saved defaults instead of current chat overrides.
+        """
+        self.ai_sender.set_models(result.models)
+        model, effort = self.ai_sender.settings_store.defaults(result.provider)
+        if use_defaults and model in self.ai_sender.models:
+            self.ai_sender.set_model(model)
+        if (
+            use_defaults
+            and effort in self.ai_sender.models[self.ai_sender.model].effort_levels
+        ):
+            self.ai_sender.set_effort_level(effort)
+        self.input_field.input_settings.set_models(
+            result.models, self.ai_sender.model, self.ai_sender.effort_level
+        )
+        self.input_field.input_settings.model_dropdown.setToolTip(
+            f"{result.provider.title()} · Model for this chat"
+        )
+
+    def _on_settings_saved(self, result: ProviderResult) -> None:
+        """Apply automatic updates while keeping settings open and current turns intact.
+
+        Args:
+            result (ProviderResult): The verified provider configuration.
+        """
+        self.catalog_revision = -1
+        api_key = self.ai_sender.settings_store.gemini_key()
+        if (
+            result.provider != self.ai_sender.provider
+            or api_key != self.ai_sender.api_key
+        ):
+            self.worker.stop()
+            self.chat_area.finalize_assistant_stream()
+            self.ai_sender.configure(result.provider, api_key)
+        self._apply_models(result)
+
+    def _close_settings(self) -> None:
+        """Return to the current chat while automatic validation continues."""
+        self.pages.setCurrentIndex(0)
+        self.settings_page.key_input.setEchoMode(
+            self.settings_page.key_input.EchoMode.Password
+        )
+        self.settings_page.show_key.setChecked(False)
+        self.input_field.show()
+        self.settings_button.setText("Settings")
+        self.screenshot_tray.setVisible(bool(self.screenshot_manager.pending_paths))
+        self.input_field.input_field.setFocus()
 
     def _clear_all_chat(self) -> None:
         """Clear all chat data, screenshots, and screenshot tray thumbnails."""
@@ -273,10 +399,19 @@ class MainWindow(QWidget):
         self.ai_sender.reset_chat()
         self.screenshot_manager.clear_screenshots()
         self.screenshot_tray.clear()
+        if self.ai_sender.models:
+            self._apply_models(
+                ProviderResult(
+                    self.ai_sender.provider, tuple(self.ai_sender.models.values()), ""
+                )
+            )
 
     def _position_screenshot_tray(self) -> None:
         """Place the screenshot tray above the input field."""
         tray = self.screenshot_tray
+        if self.pages.currentIndex() == 1:
+            tray.hide()
+            return
         tray_h = tray.height()
         tray.setGeometry(
             0,

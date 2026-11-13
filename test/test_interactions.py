@@ -7,7 +7,7 @@ import threading
 import unittest
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import httpx
 from google import genai
@@ -60,8 +60,10 @@ class InteractionsTests(unittest.TestCase):
                 )
             },
         )
-        with patch("core.ai_sender.genai.Client", return_value=client):
-            self.sender = AISender()
+        settings = MagicMock(
+            **{"gemini_key.return_value": "", "provider.return_value": "gemini"}
+        )
+        self.sender = AISender(settings, client=client)
         self.sender.set_models(TEST_MODELS)
         self.addCleanup(client.close)
 

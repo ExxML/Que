@@ -6,6 +6,8 @@ from google import genai
 from google.genai import types
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from core.gemini_efforts import load_efforts
+
 
 @dataclass(frozen=True)
 class ModelOption:
@@ -16,7 +18,9 @@ class ModelOption:
     effort_levels: tuple[str, ...]
 
 
-def compatible_model(model: types.Model) -> ModelOption | None:
+def compatible_model(
+    model: types.Model, efforts: dict[str, tuple[str, ...]] | None = None
+) -> ModelOption | None:
     """Filter discovered models using the documented multimodal chat families.
 
     The Models API does not expose input/output modalities or Interactions support.
@@ -25,6 +29,7 @@ def compatible_model(model: types.Model) -> ModelOption | None:
 
     Args:
         model (types.Model): Metadata returned by Gemini's Models API.
+        efforts (dict[str, tuple[str, ...]] | None): Published effort capabilities.
 
     Returns:
         ModelOption | None: A compatible model, or None for an unsupported variant.
@@ -42,16 +47,15 @@ def compatible_model(model: types.Model) -> ModelOption | None:
     version = (int(match[1]), int(match[2] or 0))
     if version < (2, 5):
         return None
-    family = match[3]
-    levels: tuple[str, ...] = ("low", "medium", "high")
-    if model.thinking is False:
-        levels = ("default",)
-    elif version[0] == 3 and family.startswith("flash") and version <= (3, 6):
-        levels = ("minimal", *levels)
-    elif version == (3, 0) and family == "pro":
-        levels = ("low", "high")
-    elif version[0] == 4 and family == "hydrogen":
-        levels = (*levels, "xhigh")
+    levels: tuple[str, ...] = ("default",)
+    if model.thinking is not False:
+        published = (efforts or {}).get(model_id, ())
+        if not published:
+            base_id = re.sub(
+                r"-(?:preview|exp)(?:-\d+(?:-\d+)*)?$|-\d{3}$|-latest$", "", model_id
+            )
+            published = (efforts or {}).get(base_id, ())
+        levels = ("default", *published)
     display_name = (model.display_name or "").strip()
     if (
         not display_name
@@ -83,13 +87,14 @@ class ModelCatalog(QObject):
     def _load(self) -> None:
         """Fetch all pages and deliver the complete catalog without touching UI."""
         try:
+            efforts = load_efforts()
             models: dict[str, ModelOption] = {}
             for model in self.client.models.list(
                 config=types.ListModelsConfig(
                     page_size=100, http_options=types.HttpOptions(timeout=15000)
                 )
             ):
-                option = compatible_model(model)
+                option = compatible_model(model, efforts)
                 if option is not None:
                     models[option.model_id] = option
             if not models:

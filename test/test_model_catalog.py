@@ -3,6 +3,7 @@
 import threading
 import unittest
 from typing import Any
+from unittest.mock import patch
 
 import httpx
 from google import genai
@@ -19,6 +20,9 @@ class ModelCatalogTests(unittest.TestCase):
     def setUp(self) -> None:
         """Prepare deterministic model pages and a Qt event loop."""
         self.app = QApplication.instance() or QApplication([])
+        effort_patch = patch("core.model_catalog.load_efforts", return_value={})
+        effort_patch.start()
+        self.addCleanup(effort_patch.stop)
         self.requests: list[httpx.Request] = []
         self.fail = False
         self.client = genai.Client(

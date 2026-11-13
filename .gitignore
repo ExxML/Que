@@ -13,6 +13,9 @@ __pycache__/
 
 # Cache files
 src/data/cache/
+src/data/config.json
+src/data/config.tmp
+src/data/claude/
 
 # Nuitka build files
 que.build/

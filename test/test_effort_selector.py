@@ -1,7 +1,7 @@
 """Check effort selection and shared popup behavior through Qt mouse events."""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtTest import QTest
@@ -34,8 +34,10 @@ class EffortSelectorTests(unittest.TestCase):
         self.field = InputField(self.window)
         self.field.setGeometry(0, 200, 600, 150)
         self.settings = self.field.input_settings
-        with patch("core.ai_sender.genai.Client"):
-            self.sender = AISender()
+        settings = MagicMock(
+            **{"gemini_key.return_value": "", "provider.return_value": "gemini"}
+        )
+        self.sender = AISender(settings, client=MagicMock())
         self.sender.set_models(TEST_MODELS)
         self.field.model_changed.connect(self.sender.set_model)
         self.field.effort_changed.connect(self.sender.set_effort_level)

@@ -1,16 +1,17 @@
 import base64
 import mimetypes
-import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, cast
+from uuid import uuid4
 
-from dotenv import load_dotenv
 from google import genai
 from google.genai import interactions
 
+from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
+from core.settings import SettingsStore
 
 
 @dataclass(frozen=True)
@@ -23,20 +24,54 @@ class InteractionRequest:
     effort_level: str
     previous_interaction_id: str | None
     generation: int
+    provider: str = "gemini"
+    session_id: str = ""
+    client: genai.Client | None = None
 
 
 class AISender:
-    """Stream Gemini interactions with conversation state owned by the Qt thread."""
+    """Route captured turns while keeping provider conversation state on the Qt thread."""
 
-    def __init__(self) -> None:
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        load_dotenv(base_dir / ".env")
-        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    def __init__(
+        self,
+        settings_store: SettingsStore | None = None,
+        client: genai.Client | None = None,
+    ) -> None:
+        self.settings_store = settings_store or SettingsStore()
+        self.api_key = self.settings_store.gemini_key()
+        self.client = client or (
+            genai.Client(api_key=self.api_key) if self.api_key else None
+        )
+        self.provider = self.settings_store.provider()
+        self.claude_bridge = ClaudeBridge()
+        self.contexts: dict[str, str | None] = {"gemini": None, "claude": None}
+        self.claude_session_id = ""
         self.models: dict[str, ModelOption] = {}
         self.model = ""
         self.effort_level = "default"
         self.previous_interaction_id: str | None = None
         self.generation = 0
+
+    def configure(self, provider: str, api_key: str) -> None:
+        """Apply provider credentials without mixing conversation identifiers.
+
+        Args:
+            provider (str): The chosen provider.
+            api_key (str): The saved Gemini credential.
+        """
+        if provider not in ("gemini", "claude"):
+            raise ValueError("Unknown AI provider.")
+        self.invalidate_requests()
+        self.contexts[self.provider] = self.previous_interaction_id
+        if self.api_key != api_key:
+            self.client = genai.Client(api_key=api_key) if api_key else None
+            self.api_key = api_key
+            self.contexts["gemini"] = None
+        self.provider = provider
+        self.previous_interaction_id = self.contexts[provider]
+        self.models = {}
+        self.model = ""
+        self.effort_level = "default"
 
     def set_models(self, models: tuple[ModelOption, ...]) -> None:
         """Install a discovered catalog on the Qt thread and select an available model.
@@ -45,8 +80,13 @@ class AISender:
             models (tuple[ModelOption, ...]): The compatible model catalog.
         """
         self.models = {model.model_id: model for model in models}
-        if self.model not in self.models:
+        if not models:
+            self.model = ""
+            self.effort_level = "default"
+        elif self.model not in self.models:
             self.set_model(models[0].model_id)
+        else:
+            self.set_model(self.model)
 
     def set_model(self, model_id: str) -> None:
         """Set the model for subsequent turns without resetting conversation context.
@@ -79,6 +119,8 @@ class AISender:
         """Forget the conversation chain and invalidate outstanding requests."""
         self.invalidate_requests()
         self.previous_interaction_id = None
+        self.contexts = {"gemini": None, "claude": None}
+        self.claude_session_id = ""
 
     def prepare_request(
         self, message: str, attachments: list[str] | None = None
@@ -94,7 +136,7 @@ class AISender:
         """
         if not self.model:
             raise RuntimeError(
-                "Gemini models are not loaded. Retry model discovery first."
+                "Models are not loaded. Open Settings to connect your AI provider."
             )
         self.invalidate_requests()
         return InteractionRequest(
@@ -104,6 +146,9 @@ class AISender:
             self.effort_level,
             self.previous_interaction_id,
             self.generation,
+            self.provider,
+            self.claude_session_id if self.previous_interaction_id else str(uuid4()),
+            self.client,
         )
 
     def commit_interaction(
@@ -121,6 +166,9 @@ class AISender:
         if not interaction_id or interaction_request.generation != self.generation:
             return False
         self.previous_interaction_id = interaction_id
+        self.contexts[interaction_request.provider] = interaction_id
+        if interaction_request.provider == "claude":
+            self.claude_session_id = interaction_request.session_id
         self.invalidate_requests()
         return True
 
@@ -143,6 +191,20 @@ class AISender:
         request = interaction_request
         if stop_flag.is_set():
             return None
+        if request.provider == "claude":
+            return self.claude_bridge.send_message(
+                request.message,
+                request.attachments,
+                request.model,
+                request.effort_level,
+                request.session_id,
+                request.previous_interaction_id,
+                on_chunk,
+                stop_flag,
+            )
+        client = request.client
+        if client is None:
+            raise RuntimeError("Add your Gemini API key in Settings first.")
         parts: list[dict[str, str]] = []
         for filepath in request.attachments:
             mime_type = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
@@ -162,7 +224,7 @@ class AISender:
         if stop_flag.is_set():
             return None
         try:
-            stream = self.client.interactions.create(
+            stream = client.interactions.create(
                 model=request.model,
                 input=parts,
                 previous_interaction_id=request.previous_interaction_id,

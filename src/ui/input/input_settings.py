@@ -26,11 +26,15 @@ class InputSettings(QWidget):
         )
         self._init_UI()
 
-    def set_models(self, models: tuple[ModelOption, ...]) -> None:
+    def set_models(
+        self, models: tuple[ModelOption, ...], model_id: str = "", effort: str = ""
+    ) -> None:
         """Populate model choices after background discovery completes.
 
         Args:
             models (tuple[ModelOption, ...]): Compatible model choices.
+            model_id (str): The model to select when applying saved defaults.
+            effort (str): The effort to select when applying saved defaults.
         """
         self.models = {model.model_id: model for model in models}
         self.model_dropdown.setToolTip("")
@@ -38,6 +42,22 @@ class InputSettings(QWidget):
         self.model_dropdown.set_options(
             [(model.display_name, model.model_id) for model in models]
         )
+        if model_id:
+            self.model_dropdown.set_value(model_id)
+        else:
+            self._on_model_changed(self.model_dropdown.current_value)
+        if effort:
+            self.effort_dropdown.set_value(effort)
+
+    def show_loading(self) -> None:
+        """Clear stale model and effort choices during provider discovery."""
+        self.close_popups()
+        self.models = {}
+        self.model_dropdown.blockSignals(True)
+        self.model_dropdown.set_options([("Loading models…", "")])
+        self.model_dropdown.blockSignals(False)
+        self.model_dropdown.setEnabled(False)
+        self.effort_dropdown.hide()
 
     def show_model_error(self, error: str) -> None:
         """Offer a retry when discovery fails without inventing fallback models.
@@ -45,7 +65,10 @@ class InputSettings(QWidget):
         Args:
             error (str): The discovery error to show in the tooltip.
         """
+        self.model_dropdown.blockSignals(True)
         self.model_dropdown.set_options([("Retry models", "")])
+        self.model_dropdown.blockSignals(False)
+        self.effort_dropdown.hide()
         self.model_dropdown.setToolTip(error)
         self.model_dropdown.setEnabled(True)
 
