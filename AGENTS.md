@@ -129,11 +129,11 @@ class ShortcutManager(QObject):
 ```
 
 ### Type Hints
-Always add type hints, return types, and function annotations to all functions and methods. Use `-> None` for functions that do not return a value. If the type of a parameter or return value is unclear, use `Any` from the `typing` module. If there are multiple possible types, use `|` to indicate a union (e.g. `str | None`). For callbacks, use `Callable` from `typing` (never the built-in `callable`) with the appropriate signature (e.g. `Callable[[str], None]` for a function that takes a string and returns nothing).
+Always add type hints, return types, and function annotations to all functions and methods. Use `-> None` for functions that do not return a value. If the type of a parameter or return value is unclear, use `Any` from the `typing` module. If there are multiple possible types, use `|` to indicate a union (e.g. `str | None`). For callbacks, use `Callable` from `collections.abc` (never the built-in `callable`) with the appropriate signature (e.g. `Callable[[str], None]` for a function that takes a string and returns nothing).
 
 **Strict mypy requirements (`mypy --strict`):**
 - Generic types must always include type parameters: use `re.Match[str]`, not `re.Match`; use `list[str]`, not `list`; etc.
-- Never use `callable` as a type — always import and use `Callable` from `typing`.
+- Never use `callable` as a type — always import and use `Callable` from `collections.abc`.
 - PyQt6 event override methods must accept `| None` on the event parameter to match the supertype signature, e.g.:
   ```python
   def mousePressEvent(self, event: QMouseEvent | None) -> None:

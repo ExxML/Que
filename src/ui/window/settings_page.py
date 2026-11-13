@@ -371,7 +371,7 @@ class SettingsPage(QWidget):
                 str(effort),
                 api_key,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.save_status.setText(
                 "Changes could not be saved. Check that Que's data folder is writable, then refresh to retry."
             )

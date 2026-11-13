@@ -1,9 +1,10 @@
 import base64
 import mimetypes
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, cast
+from typing import cast
 from uuid import uuid4
 
 from google import genai
@@ -249,7 +250,7 @@ class AISender:
                 stream=True,
             )
             if isinstance(stream, interactions.Interaction):
-                raise RuntimeError("Gemini did not return the requested stream.")
+                raise RuntimeError("Gemini did not return the requested stream.")  # noqa: TRY004
             completed_id: str | None = None
             try:
                 for event in stream:
@@ -267,7 +268,7 @@ class AISender:
                             if event.error
                             else "Unknown streaming error."
                         )
-                        raise RuntimeError(detail)
+                        raise RuntimeError(detail)  # noqa: TRY004
                     elif isinstance(event, interactions.InteractionCompletedEvent):
                         if (
                             event.interaction.status != "completed"

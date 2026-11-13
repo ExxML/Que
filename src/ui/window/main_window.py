@@ -536,7 +536,7 @@ class MainWindow(QWidget):
         try:
             self.chat_history.save(conversation)
         except OSError as e:
-            print(f"Error saving chat history: {str(e)}")
+            print(f"Error saving chat history: {e!s}")
         if self.history_sidebar.opened:
             self._refresh_history()
 
@@ -578,7 +578,7 @@ class MainWindow(QWidget):
         try:
             self.chat_history.delete(conversation_id)
         except OSError as e:
-            print(f"Error saving chat history: {str(e)}")
+            print(f"Error saving chat history: {e!s}")
         if any(
             conversation is not None and conversation.conversation_id == conversation_id
             for conversation in self.conversations.values()
@@ -612,7 +612,7 @@ class MainWindow(QWidget):
         try:
             if not self._is_topmost_window():
                 self.raise_()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
     def _is_topmost_window(self) -> bool:
@@ -647,5 +647,5 @@ class MainWindow(QWidget):
                     if int(self_root) != int(target_root):
                         return False
             return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             return True

@@ -105,7 +105,7 @@ class ProviderCatalog(QObject):
                             " Effort capabilities unavailable; using model defaults."
                         )
             self.completed.emit(revision, ProviderResult(provider, models, status))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             message = str(exc)
             if api_key:
                 message = message.replace(api_key, "[API key]")

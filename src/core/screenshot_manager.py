@@ -40,8 +40,8 @@ class ScreenshotManager(QObject):
             self.screenshot_added.emit(filepath)
             return filepath
 
-        except Exception as e:
-            print(f"Error taking screenshot: {str(e)}")
+        except Exception as e:  # noqa: BLE001
+            print(f"Error taking screenshot: {e!s}")
             return ""
 
     def get_and_clear_pending(self) -> list[str]:
@@ -70,7 +70,7 @@ class ScreenshotManager(QObject):
         try:
             for filepath in self.screenshots_dir.glob("screenshot*.png"):
                 filepath.unlink()
-        except Exception as e:
-            print(f"Error clearing screenshots: {str(e)}")
+        except Exception as e:  # noqa: BLE001
+            print(f"Error clearing screenshots: {e!s}")
 
         self.screenshot_count = 0

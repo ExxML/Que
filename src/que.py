@@ -8,7 +8,6 @@ from core.shortcut_manager import ShortcutManager
 from ui.window.main_window import MainWindow
 from ui.window.system_tray import SystemTray
 
-
 if __name__ == "__main__":
     # Launch the application and its components
     app = QApplication(sys.argv)

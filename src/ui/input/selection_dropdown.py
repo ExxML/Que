@@ -100,10 +100,13 @@ class SelectionDropdown(QWidget):
             bool: Return whether the base class handled the event.
         """
         if event is not None and self.popup is not None:
-            if event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
-                if event.key() == Qt.Key.Key_Escape:
-                    self.close_popup()
-                    return True
+            if (
+                event.type() == QEvent.Type.KeyPress
+                and isinstance(event, QKeyEvent)
+                and event.key() == Qt.Key.Key_Escape
+            ):
+                self.close_popup()
+                return True
             if event.type() == QEvent.Type.MouseButtonPress and isinstance(
                 event, QMouseEvent
             ):

@@ -7,9 +7,10 @@ import shutil
 import subprocess
 import threading
 import time
+from collections.abc import Callable, Generator
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Callable, Generator
+from typing import Any
 from uuid import uuid4
 
 from core.model_catalog import ModelOption
@@ -52,11 +53,12 @@ class ClaudeBridge:
             timeout=30,
             env=self._environment(),
             creationflags=subprocess.CREATE_NO_WINDOW,
+            check=False,
         )
         try:
             status = json.loads(auth.stdout)
             if not isinstance(status, dict):
-                raise ValueError("Invalid authentication response.")
+                raise ValueError("Invalid authentication response.")  # noqa: TRY004
         except ValueError as exc:
             raise RuntimeError(
                 "Could not check Claude Code. Update it and run claude auth login in Terminal."

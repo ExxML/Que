@@ -100,7 +100,7 @@ class AIReceiver(QObject):
             if interaction_id is not None and not stop_flag.is_set():
                 self.finished.emit(interaction_id, stream_id)
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # Only emit error if we weren't stopped
             if not stop_flag.is_set():
                 self.error.emit(str(e), stream_id)

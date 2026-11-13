@@ -62,7 +62,7 @@ class SettingsStore:
                     base64.b64decode(encrypted), None, None, None, 0
                 )[1]
             ).decode("utf-8")
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.error = "The saved Gemini key cannot be opened by this Windows account. Paste it again."
             return ""
 

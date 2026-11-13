@@ -104,5 +104,5 @@ class ModelCatalog(QObject):
             self.loaded.emit(
                 tuple(sorted(models.values(), key=lambda option: option.display_name))
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             self.failed.emit(f"Could not load Gemini models: {exc}")

@@ -4,7 +4,6 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
 from core.screenshot_manager import ScreenshotManager
 
-
 PREVIEW_WIDTH = 80
 PREVIEW_HEIGHT = 45
 BTN_SIZE = 16
