@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
@@ -14,9 +14,8 @@ class SystemTray(QSystemTrayIcon):
         self, main_window: MainWindow, shortcut_manager: ShortcutManager
     ) -> None:
         # Set icon
-        base_dir = os.getcwd()
-        icon_path = os.path.join(base_dir, "src", "assets", "blank.ico")
-        icon = QIcon(icon_path)
+        icon_path = Path(__file__).resolve().parents[2] / "assets" / "blank.ico"
+        icon = QIcon(str(icon_path))
 
         super().__init__(icon)
         self.setToolTip("Que")

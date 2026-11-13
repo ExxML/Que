@@ -1,5 +1,4 @@
-import glob
-import os
+from pathlib import Path
 
 import mss
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -12,11 +11,10 @@ class ScreenshotManager(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        base_dir = os.getcwd()
-        self.screenshots_dir = os.path.join(
-            base_dir, "src", "data", "cache", "screenshots"
+        self.screenshots_dir = (
+            Path(__file__).resolve().parent.parent / "data" / "cache" / "screenshots"
         )
-        os.makedirs(self.screenshots_dir, exist_ok=True)  # Ensure the folder exists
+        self.screenshots_dir.mkdir(parents=True, exist_ok=True)
         self.screenshot_count = 0
         self.pending_paths: list[str] = []
 
@@ -28,7 +26,7 @@ class ScreenshotManager(QObject):
         """
         try:
             filename = f"screenshot{self.screenshot_count}.png"
-            filepath = os.path.join(self.screenshots_dir, filename)
+            filepath = str(self.screenshots_dir / filename)
 
             # Create a new mss instance for each call (thread-safe)
             with mss.mss() as sct:
@@ -70,9 +68,8 @@ class ScreenshotManager(QObject):
         self.pending_paths.clear()
 
         try:
-            pattern = os.path.join(self.screenshots_dir, "screenshot*.png")
-            for filepath in glob.glob(pattern):
-                os.remove(filepath)
+            for filepath in self.screenshots_dir.glob("screenshot*.png"):
+                filepath.unlink()
         except Exception as e:
             print(f"Error clearing screenshots: {str(e)}")
 

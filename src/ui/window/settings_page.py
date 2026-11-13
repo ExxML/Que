@@ -1,5 +1,4 @@
 import ctypes
-import os
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
@@ -72,7 +71,9 @@ class SettingsPage(QWidget):
     def _init_UI(self) -> None:
         """Build an accessible form that applies verified settings automatically."""
         # Styling the drop-down area replaces the native arrow, so supply one
-        arrow_path = Path(os.getcwd(), "src", "assets", "dropdown_arrow.svg").as_posix()
+        arrow_path = (
+            Path(__file__).resolve().parents[2] / "assets" / "dropdown_arrow.svg"
+        ).as_posix()
         self.setStyleSheet(f"""
             QLabel {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; }}
             QLineEdit, QComboBox, QPushButton {{
