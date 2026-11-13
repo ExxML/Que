@@ -1,5 +1,11 @@
 This file provides guidance to Codex when working with code in this repository.
 
+There may be other agents working at the same time as you. Be cognisant of this when making changes and performing git operations. Do not overwrite other agents' changes.
+
+When making changes, ask me any questions you need about my priorities, preferences, purpose, etc. Feel free to discuss trade-offs with different implementation approaches, alternative plans, etc. Ensure your changes DO NOT ALTER ANY OTHER pre-existing functionality - that is, everything that was working before the change should continue working after the change.
+
+Feel free to run any tests you need.
+
 ## Project
 
 Que is a Windows-only stealth AI programming assistant — a frameless, translucent PyQt6 overlay that captures screenshots and streams Gemini API responses. It uses Win32 low-level keyboard hooks to register global hotkeys invisibly.
@@ -195,3 +201,6 @@ self.setWindowFlags(
 
 ### Inline Comments
 - Separated by at least 2 spaces from code. Use sparingly for non-obvious logic.
+
+### Commit Conventions
+Never add yourself (Codex) to the commit or attributions to any coding agents.
