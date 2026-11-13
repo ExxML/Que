@@ -10,12 +10,13 @@ from PyQt6.QtGui import (
     QPaintEvent,
     QPen,
 )
-from PyQt6.QtWidgets import QApplication, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QScrollArea, QVBoxLayout, QWidget
 
-from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor
+from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
 
 ITEM_HORIZONTAL_PADDING = 8
 ITEM_VERTICAL_PADDING = 6
+SCROLLBAR_WIDTH = 5
 
 
 class SelectionDropdown(QWidget):
@@ -158,7 +159,9 @@ class SelectionDropdown(QWidget):
         self.popup = _SelectionPopup(main_window, self.options, self.current_value)
         self.popup.option_selected.connect(self._on_option_selected)
         self.popup.closed.connect(self._on_popup_closed)
-        popup_size = self.popup.sizeHint()
+        popup_size = self.popup.size()
+        popup_size.setHeight(min(popup_size.height(), max(60, local_pos.y())))
+        self.popup.setFixedHeight(popup_size.height())
         self.popup.setGeometry(
             local_pos.x() - popup_size.width(),
             local_pos.y() - popup_size.height(),
@@ -255,9 +258,50 @@ class _SelectionPopup(QWidget):
         Args:
             current_value (str): The identifier of the currently selected option.
         """
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(1, 1, 1, 1)
+        outer_layout = QVBoxLayout(self)
+        outer_layout.setContentsMargins(1, 1, 1, 1)
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.scroll_area.setStyleSheet(f"""
+            QScrollArea, QScrollArea > QWidget > QWidget {{
+                background: transparent;
+            }}
+            QScrollBar:vertical {{
+                background: transparent;
+                width: {SCROLLBAR_WIDTH}px;
+                border: none;
+                margin: 2px 0;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: {qss(PRIMARY_COLOR, 77)};
+                border-radius: 2px;
+                min-height: 20px;
+            }}
+            QScrollBar::handle:vertical:hover {{
+                background-color: {qss(PRIMARY_COLOR, 128)};
+            }}
+            QScrollBar::handle:vertical:disabled {{
+                background: transparent;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                height: 0px;
+                background: none;
+                border: none;
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                background: none;
+            }}
+        """)
+        items = QWidget()
+        layout = QVBoxLayout(items)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
+        self.scroll_area.setWidget(items)
+        outer_layout.addWidget(self.scroll_area)
 
         font = self.font()
         font.setPixelSize(12)
@@ -272,6 +316,8 @@ class _SelectionPopup(QWidget):
             item.setFixedWidth(item_width)
             item.clicked.connect(self._on_item_clicked)
             layout.addWidget(item)
+        self.setFixedWidth(item_width + SCROLLBAR_WIDTH + 2)
+        self.setFixedHeight(min(items.sizeHint().height() + 2, 280))
 
     def _on_item_clicked(self, display_name: str, value: str) -> None:
         """Forward the selection and close the popup.

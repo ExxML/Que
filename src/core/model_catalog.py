@@ -1,0 +1,103 @@
+import re
+import threading
+from dataclasses import dataclass
+
+from google import genai
+from google.genai import types
+from PyQt6.QtCore import QObject, pyqtSignal
+
+
+@dataclass(frozen=True)
+class ModelOption:
+    """Describe a discovered model compatible with Que's interaction pipeline."""
+
+    model_id: str
+    display_name: str
+    effort_levels: tuple[str, ...]
+
+
+def compatible_model(model: types.Model) -> ModelOption | None:
+    """Filter discovered models using the documented multimodal chat families.
+
+    The Models API does not expose input/output modalities or Interactions support.
+    Accept only standard Gemini 2.5+ chat variants; exclude specialized and unknown
+    variants rather than inferring capabilities from generateContent alone.
+
+    Args:
+        model (types.Model): Metadata returned by Gemini's Models API.
+
+    Returns:
+        ModelOption | None: A compatible model, or None for an unsupported variant.
+    """
+    model_id = (model.name or "").removeprefix("models/")
+    match = re.fullmatch(
+        r"gemini-(\d+)(?:\.(\d+))?-(flash(?:-lite)?|pro|carbon|argon|hydrogen)"
+        r"(?:-(?:preview|exp)(?:-\d+(?:-\d+)*)?|-\d{3}|-latest)?",
+        model_id,
+    )
+    if match is None or not {"generateContent", "createInteraction"}.intersection(
+        model.supported_actions or []
+    ):
+        return None
+    version = (int(match[1]), int(match[2] or 0))
+    if version < (2, 5):
+        return None
+    family = match[3]
+    levels: tuple[str, ...] = ("low", "medium", "high")
+    if model.thinking is False:
+        levels = ("default",)
+    elif version[0] == 3 and family.startswith("flash") and version <= (3, 6):
+        levels = ("minimal", *levels)
+    elif version == (3, 0) and family == "pro":
+        levels = ("low", "high")
+    elif version[0] == 4 and family == "hydrogen":
+        levels = (*levels, "xhigh")
+    display_name = (model.display_name or "").strip()
+    if (
+        not display_name
+        or display_name == model_id
+        or display_name.startswith("models/")
+    ):
+        display_name = model_id.replace("-", " ").title()
+    return ModelOption(model_id, display_name, levels)
+
+
+class ModelCatalog(QObject):
+    """Discover compatible Gemini models in a daemon thread and emit Qt signals."""
+
+    loaded = pyqtSignal(object)
+    failed = pyqtSignal(str)
+
+    def __init__(self, client: genai.Client) -> None:
+        super().__init__()
+        self.client = client
+        self.worker_thread: threading.Thread | None = None
+
+    def refresh(self) -> None:
+        """Start discovery unless a catalog request is already running."""
+        if self.worker_thread is not None and self.worker_thread.is_alive():
+            return
+        self.worker_thread = threading.Thread(target=self._load, daemon=True)
+        self.worker_thread.start()
+
+    def _load(self) -> None:
+        """Fetch all pages and deliver the complete catalog without touching UI."""
+        try:
+            models: dict[str, ModelOption] = {}
+            for model in self.client.models.list(
+                config=types.ListModelsConfig(
+                    page_size=100, http_options=types.HttpOptions(timeout=15000)
+                )
+            ):
+                option = compatible_model(model)
+                if option is not None:
+                    models[option.model_id] = option
+            if not models:
+                raise RuntimeError(
+                    "No compatible image-input, text-output Gemini chat models are available."
+                )
+            self.loaded.emit(
+                tuple(sorted(models.values(), key=lambda option: option.display_name))
+            )
+        except Exception as exc:
+            self.failed.emit(f"Could not load Gemini models: {exc}")

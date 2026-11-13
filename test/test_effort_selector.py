@@ -8,8 +8,19 @@ from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from core.ai_sender import AISender
+from core.model_catalog import ModelOption
 from ui.input.input_field import InputField
 from ui.input.selection_dropdown import SelectionDropdown
+
+
+TEST_MODELS = (
+    ModelOption(
+        "gemini-3-flash-preview",
+        "Gemini 3 Flash Preview",
+        ("minimal", "low", "medium", "high"),
+    ),
+    ModelOption("gemini-2.5-flash", "Gemini 2.5 Flash", ("low", "medium", "high")),
+)
 
 
 class EffortSelectorTests(unittest.TestCase):
@@ -25,8 +36,10 @@ class EffortSelectorTests(unittest.TestCase):
         self.settings = self.field.input_settings
         with patch("core.ai_sender.genai.Client"):
             self.sender = AISender()
+        self.sender.set_models(TEST_MODELS)
         self.field.model_changed.connect(self.sender.set_model)
         self.field.effort_changed.connect(self.sender.set_effort_level)
+        self.settings.set_models(TEST_MODELS)
         self.window.show()
         self.app.processEvents()
         self.addCleanup(self.window.close)
@@ -81,13 +94,16 @@ class EffortSelectorTests(unittest.TestCase):
         QTest.mouseClick(selection_dropdown, Qt.MouseButton.LeftButton)
         popup = selection_dropdown.popup
         assert popup is not None
-        layout = popup.layout()
+        items = popup.scroll_area.widget()
+        assert items is not None
+        layout = items.layout()
         assert layout is not None
         index = [option for _, option in selection_dropdown.options].index(value)
         item = layout.itemAt(index)
         assert item is not None
         widget = item.widget()
         assert widget is not None
+        popup.scroll_area.ensureWidgetVisible(widget)
         QTest.mouseClick(widget, Qt.MouseButton.LeftButton)
         self.assertIsNone(selection_dropdown.popup)
 

@@ -106,7 +106,7 @@ class InputField(QWidget):
     def _send_message(self) -> None:
         """Send the current message and clear the input field."""
         message = self.input_field.toPlainText().strip()
-        if message:
+        if message and self.input_settings.models:
             self.input_settings.close_popups()
             self.message_sent.emit(message)
             self.input_field.clear()

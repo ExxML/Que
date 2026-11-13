@@ -14,7 +14,18 @@ from google import genai
 from PyQt6.QtWidgets import QApplication
 
 from core.ai_receiver import AIReceiver
-from core.ai_sender import AISender, EFFORT_LEVELS
+from core.ai_sender import AISender
+from core.model_catalog import ModelOption
+
+
+TEST_MODELS = (
+    ModelOption(
+        "gemini-3-flash-preview",
+        "Gemini 3 Flash Preview",
+        ("minimal", "low", "medium", "high"),
+    ),
+    ModelOption("gemini-2.5-flash", "Gemini 2.5 Flash", ("low", "medium", "high")),
+)
 
 
 class InteractionsTests(unittest.TestCase):
@@ -51,6 +62,7 @@ class InteractionsTests(unittest.TestCase):
         )
         with patch("core.ai_sender.genai.Client", return_value=client):
             self.sender = AISender()
+        self.sender.set_models(TEST_MODELS)
         self.addCleanup(client.close)
 
     def test_wire_format_and_chaining(self) -> None:
@@ -155,7 +167,8 @@ class InteractionsTests(unittest.TestCase):
     def test_each_supported_effort_reaches_api(self) -> None:
         """Send every supported model and effort combination unchanged."""
         self.sender.previous_interaction_id = "saved"
-        for model, levels in EFFORT_LEVELS.items():
+        for option in TEST_MODELS:
+            model, levels = option.model_id, option.effort_levels
             for level in levels:
                 with self.subTest(model=model, level=level):
                     self.sender.set_model(model)

@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication, QHBoxLayout, QPushButton, QVBoxLayout,
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
+from core.model_catalog import ModelCatalog, ModelOption
 from core.screenshot_manager import ScreenshotManager
 from ui.chat.chat_area import ChatArea
 from ui.input.input_field import InputField
@@ -30,6 +31,15 @@ class MainWindow(QWidget):
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
+        self.model_catalog = ModelCatalog(self.ai_sender.client)
+        self.model_catalog.loaded.connect(self._on_models_loaded)
+        self.model_catalog.failed.connect(
+            self.input_field.input_settings.show_model_error
+        )
+        self.input_field.input_settings.reload_requested.connect(
+            self.model_catalog.refresh
+        )
+        self.model_catalog.refresh()
 
     def toggle_window_visibility(self) -> None:
         """Toggle the main window between visible and hidden states."""
@@ -53,6 +63,11 @@ class MainWindow(QWidget):
         Args:
             message (str): The user's message text.
         """
+        if not self.ai_sender.model:
+            self.chat_area.show_stream_error(
+                "Wait for model discovery, or select Retry models if loading failed."
+            )
+            return
         attachments = self.screenshot_manager.get_and_clear_pending()
         self.screenshot_tray.clear()
         self.worker.handle_message(message, attachments or None)
@@ -241,6 +256,15 @@ class MainWindow(QWidget):
         self.visibility_timer.setInterval(1000)
         self.visibility_timer.timeout.connect(self._ensure_window_visible)
         self.visibility_timer.start()
+
+    def _on_models_loaded(self, models: tuple[ModelOption, ...]) -> None:
+        """Install discovered models on the Qt thread.
+
+        Args:
+            models (tuple[ModelOption, ...]): Compatible models returned by discovery.
+        """
+        self.ai_sender.set_models(models)
+        self.input_field.input_settings.set_models(models)
 
     def _clear_all_chat(self) -> None:
         """Clear all chat data, screenshots, and screenshot tray thumbnails."""

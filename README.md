@@ -3,11 +3,6 @@ Your live AI programming assistant
 
 Install dependencies with `python -m pip install -r requirements.txt`.
 
-The effort selector offers Low, Medium, and High, plus Minimal for Gemini 3 Flash,
-using the documented [thinking levels](https://ai.google.dev/gemini-api/docs/thinking).
-Model changes retain the selected effort when supported, otherwise selecting Low.
-Each request captures its effort when sent; changes apply to subsequent turns.
-
 Run backend and UI regression tests without API calls from PowerShell:
 ```powershell
 $env:PYTHONPATH = "src"

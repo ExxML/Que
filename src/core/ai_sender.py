@@ -10,19 +10,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import interactions
 
-
-MODELS: list[tuple[str, str]] = [
-    ("Gemini 2.5 Flash Lite", "gemini-2.5-flash-lite"),
-    ("Gemini 2.5 Flash", "gemini-2.5-flash"),
-    ("Gemini 3 Flash Preview", "gemini-3-flash-preview"),
-]
-DEFAULT_MODEL = MODELS[2][1]
-DEFAULT_EFFORT = "minimal"
-EFFORT_LEVELS: dict[str, tuple[str, ...]] = {
-    "gemini-2.5-flash-lite": ("low", "medium", "high"),
-    "gemini-2.5-flash": ("low", "medium", "high"),
-    "gemini-3-flash-preview": ("minimal", "low", "medium", "high"),
-}
+from core.model_catalog import ModelOption
 
 
 @dataclass(frozen=True)
@@ -44,10 +32,21 @@ class AISender:
         base_dir = Path(__file__).resolve().parent.parent.parent
         load_dotenv(base_dir / ".env")
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = DEFAULT_MODEL
-        self.effort_level = DEFAULT_EFFORT
+        self.models: dict[str, ModelOption] = {}
+        self.model = ""
+        self.effort_level = "default"
         self.previous_interaction_id: str | None = None
         self.generation = 0
+
+    def set_models(self, models: tuple[ModelOption, ...]) -> None:
+        """Install a discovered catalog on the Qt thread and select an available model.
+
+        Args:
+            models (tuple[ModelOption, ...]): The compatible model catalog.
+        """
+        self.models = {model.model_id: model for model in models}
+        if self.model not in self.models:
+            self.set_model(models[0].model_id)
 
     def set_model(self, model_id: str) -> None:
         """Set the model for subsequent turns without resetting conversation context.
@@ -55,7 +54,7 @@ class AISender:
         Args:
             model_id (str): The Gemini model identifier.
         """
-        levels = EFFORT_LEVELS[model_id]
+        levels = self.models[model_id].effort_levels
         self.model = model_id
         if self.effort_level not in levels:
             self.effort_level = levels[0]
@@ -66,7 +65,7 @@ class AISender:
         Args:
             effort_level (str): The reasoning level supported by the active model.
         """
-        if effort_level not in EFFORT_LEVELS[self.model]:
+        if effort_level not in self.models[self.model].effort_levels:
             raise ValueError(
                 f"Unsupported effort level for {self.model}: {effort_level}"
             )
@@ -93,6 +92,10 @@ class AISender:
         Returns:
             InteractionRequest: The immutable worker inputs.
         """
+        if not self.model:
+            raise RuntimeError(
+                "Gemini models are not loaded. Retry model discovery first."
+            )
         self.invalidate_requests()
         return InteractionRequest(
             message,
@@ -163,7 +166,11 @@ class AISender:
                 model=request.model,
                 input=parts,
                 previous_interaction_id=request.previous_interaction_id,
-                generation_config={"thinking_level": request.effort_level},
+                generation_config=(
+                    {}
+                    if request.effort_level == "default"
+                    else {"thinking_level": request.effort_level}
+                ),
                 store=True,
                 stream=True,
             )
