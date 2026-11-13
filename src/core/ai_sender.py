@@ -17,6 +17,12 @@ MODELS: list[tuple[str, str]] = [
     ("Gemini 3 Flash Preview", "gemini-3-flash-preview"),
 ]
 DEFAULT_MODEL = MODELS[2][1]
+DEFAULT_EFFORT = "minimal"
+EFFORT_LEVELS: dict[str, tuple[str, ...]] = {
+    "gemini-2.5-flash-lite": ("low", "medium", "high"),
+    "gemini-2.5-flash": ("low", "medium", "high"),
+    "gemini-3-flash-preview": ("minimal", "low", "medium", "high"),
+}
 
 
 @dataclass(frozen=True)
@@ -26,7 +32,7 @@ class InteractionRequest:
     message: str
     attachments: tuple[str, ...]
     model: str
-    thinking_enabled: bool
+    effort_level: str
     previous_interaction_id: str | None
     generation: int
 
@@ -39,7 +45,7 @@ class AISender:
         load_dotenv(base_dir / ".env")
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         self.model = DEFAULT_MODEL
-        self.thinking_enabled = False
+        self.effort_level = DEFAULT_EFFORT
         self.previous_interaction_id: str | None = None
         self.generation = 0
 
@@ -49,15 +55,22 @@ class AISender:
         Args:
             model_id (str): The Gemini model identifier.
         """
+        levels = EFFORT_LEVELS[model_id]
         self.model = model_id
+        if self.effort_level not in levels:
+            self.effort_level = levels[0]
 
-    def set_thinking_mode(self, enabled: bool) -> None:
-        """Select higher or minimum supported reasoning for subsequent turns.
+    def set_effort_level(self, effort_level: str) -> None:
+        """Select a supported reasoning effort for subsequent turns.
 
         Args:
-            enabled (bool): Whether to use high reasoning effort.
+            effort_level (str): The reasoning level supported by the active model.
         """
-        self.thinking_enabled = enabled
+        if effort_level not in EFFORT_LEVELS[self.model]:
+            raise ValueError(
+                f"Unsupported effort level for {self.model}: {effort_level}"
+            )
+        self.effort_level = effort_level
 
     def invalidate_requests(self) -> None:
         """Invalidate outstanding requests on the Qt thread without losing context."""
@@ -85,7 +98,7 @@ class AISender:
             message,
             tuple(attachments or []),
             self.model,
-            self.thinking_enabled,
+            self.effort_level,
             self.previous_interaction_id,
             self.generation,
         )
@@ -143,14 +156,6 @@ class AISender:
                 }
             )
         parts.append({"type": "text", "text": request.message})
-        config: dict[str, str] = {}
-        if request.thinking_enabled:
-            config["thinking_level"] = "high"
-        elif request.model == "gemini-3-flash-preview":
-            config["thinking_level"] = "minimal"
-        elif request.model != "gemini-2.5-flash-lite":
-            # Interactions exposes levels rather than a zero-token budget.
-            config["thinking_level"] = "low"
         if stop_flag.is_set():
             return None
         try:
@@ -158,7 +163,7 @@ class AISender:
                 model=request.model,
                 input=parts,
                 previous_interaction_id=request.previous_interaction_id,
-                generation_config=config,
+                generation_config={"thinking_level": request.effort_level},
                 store=True,
                 stream=True,
             )

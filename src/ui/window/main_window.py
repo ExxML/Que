@@ -29,7 +29,7 @@ class MainWindow(QWidget):
         self._init_UI()
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
-        self.input_field.thinking_mode_changed.connect(self.ai_sender.set_thinking_mode)
+        self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
 
     def toggle_window_visibility(self) -> None:
         """Toggle the main window between visible and hidden states."""
@@ -40,9 +40,9 @@ class MainWindow(QWidget):
             self.raise_()  # Bring to front
 
     def hide(self) -> None:
-        """Close the model popup and flush the backing store before hiding."""
+        """Close settings popups and flush the backing store before hiding."""
         if hasattr(self, "input_field"):
-            self.input_field.input_settings.model_dropdown.close_popup()
+            self.input_field.input_settings.close_popups()
             self.repaint()
             QApplication.processEvents()
         super().hide()

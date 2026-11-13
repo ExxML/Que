@@ -11,7 +11,7 @@ class InputField(QWidget):
 
     message_sent = pyqtSignal(str)
     model_changed = pyqtSignal(str)
-    thinking_mode_changed = pyqtSignal(bool)
+    effort_changed = pyqtSignal(str)
     height_changed = pyqtSignal(int)
 
     def __init__(self, main_window: QWidget) -> None:
@@ -95,8 +95,8 @@ class InputField(QWidget):
 
         self.input_settings = InputSettings(self.input_container)
         self.input_settings.model_changed.connect(self.model_changed)
-        self.input_settings.thinking_mode_changed.connect(self.thinking_mode_changed)
-        self.height_changed.connect(self.input_settings.model_dropdown.reposition_popup)
+        self.input_settings.effort_changed.connect(self.effort_changed)
+        self.height_changed.connect(self.input_settings.reposition_popups)
 
         input_container_layout.addWidget(self.input_field)
         input_container_layout.addWidget(self.input_settings)
@@ -107,7 +107,7 @@ class InputField(QWidget):
         """Send the current message and clear the input field."""
         message = self.input_field.toPlainText().strip()
         if message:
-            self.input_settings.model_dropdown.close_popup()
+            self.input_settings.close_popups()
             self.message_sent.emit(message)
             self.input_field.clear()
             self.input_field.setFocus()

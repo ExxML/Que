@@ -11,10 +11,10 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 from google import genai
-from PyQt6.QtCore import QCoreApplication
+from PyQt6.QtWidgets import QApplication
 
 from core.ai_receiver import AIReceiver
-from core.ai_sender import AISender
+from core.ai_sender import AISender, EFFORT_LEVELS
 
 
 class InteractionsTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class InteractionsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a sender with an isolated mocked transport."""
-        self.app = QCoreApplication.instance() or QCoreApplication([])
+        self.app = QApplication.instance() or QApplication([])
         self.bodies: list[dict[str, Any]] = []
         self.events: list[dict[str, Any]] = [
             {
@@ -137,20 +137,41 @@ class InteractionsTests(unittest.TestCase):
         self.sender.reset_chat()
         self.assertIsNone(self.sender.previous_interaction_id)
 
-    def test_model_thinking_and_attachment_snapshot(self) -> None:
+    def test_model_effort_and_attachment_snapshot(self) -> None:
         """Keep request inputs stable while subsequent settings change."""
         attachments = ["one.png"]
         request = self.sender.prepare_request("old", attachments)
         attachments.clear()
         self.sender.set_model("gemini-2.5-flash")
-        self.sender.set_thinking_mode(True)
+        self.sender.set_effort_level("high")
         self.assertEqual(request.attachments, ("one.png",))
-        self.assertFalse(request.thinking_enabled)
+        self.assertEqual(request.effort_level, "minimal")
         self.sender.send_message(
             self.sender.prepare_request("new"), lambda _: None, threading.Event()
         )
         self.assertEqual(self.bodies[-1]["model"], "gemini-2.5-flash")
         self.assertEqual(self.bodies[-1]["generation_config"]["thinking_level"], "high")
+
+    def test_each_supported_effort_reaches_api(self) -> None:
+        """Send every supported model and effort combination unchanged."""
+        self.sender.previous_interaction_id = "saved"
+        for model, levels in EFFORT_LEVELS.items():
+            for level in levels:
+                with self.subTest(model=model, level=level):
+                    self.sender.set_model(model)
+                    self.sender.set_effort_level(level)
+                    self.sender.send_message(
+                        self.sender.prepare_request("turn"),
+                        lambda _: None,
+                        threading.Event(),
+                    )
+                    self.assertEqual(
+                        self.bodies[-1]["generation_config"], {"thinking_level": level}
+                    )
+                    self.assertEqual(self.sender.previous_interaction_id, "saved")
+        self.sender.set_model("gemini-2.5-flash")
+        with self.assertRaises(ValueError):
+            self.sender.set_effort_level("minimal")
 
     def test_qt_delivery_and_cancel_before_queued_completion(self) -> None:
         """Keep UI and commits on the main thread and reject queued canceled results."""

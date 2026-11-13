@@ -12,32 +12,58 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import QApplication, QVBoxLayout, QWidget
 
-from core.ai_sender import DEFAULT_MODEL, MODELS
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor
 
 ITEM_HORIZONTAL_PADDING = 8
 ITEM_VERTICAL_PADDING = 6
 
 
-class ModelDropdown(QWidget):
-    """Select the active Gemini model with a custom dropdown button."""
+class SelectionDropdown(QWidget):
+    """Select a value with a custom dropdown button."""
 
-    model_changed = pyqtSignal(str)
+    value_changed = pyqtSignal(str)
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        options: list[tuple[str, str]],
+        current_value: str,
+        parent: QWidget | None = None,
+        prefix: str = "",
+    ) -> None:
         super().__init__(parent)
-        self.current_model_id = DEFAULT_MODEL
+        self.options = options
+        self.prefix = prefix
+        self.current_value = current_value
         self.current_display = next(
-            name for name, model_id in MODELS if model_id == DEFAULT_MODEL
+            f"{prefix}{name}" for name, value in options if value == current_value
         )
-        self.popup: _ModelPopup | None = None
+        self.popup: _SelectionPopup | None = None
         self.shield: _PopupShield | None = None
         self._init_UI()
 
     def close_popup(self) -> None:
-        """Close the model selection popup if it is visible."""
+        """Close the selection popup if it is visible."""
         if self.popup is not None:
             self.popup.close()
+
+    def set_options(self, options: list[tuple[str, str]]) -> None:
+        """Update options and retain the selection when it is still supported.
+
+        Args:
+            options (list[tuple[str, str]]): Nonempty display labels and values.
+        """
+        self.close_popup()
+        self.options = options
+        values = [value for _, value in options]
+        value = self.current_value if self.current_value in values else values[0]
+        display = next(name for name, option in options if option == value)
+        changed = value != self.current_value
+        self.current_value = value
+        self.current_display = f"{self.prefix}{display}"
+        self._init_UI()
+        self.update()
+        if changed:
+            self.value_changed.emit(value)
 
     def reposition_popup(self, delta: int) -> None:
         """Shift the popup and shield vertically to keep them aligned.
@@ -64,6 +90,10 @@ class ModelDropdown(QWidget):
             bool: Return whether the base class handled the event.
         """
         if event is not None and self.popup is not None:
+            if event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
+                if event.key() == Qt.Key.Key_Escape:
+                    self.close_popup()
+                    return True
             if event.type() == QEvent.Type.MouseButtonPress and isinstance(
                 event, QMouseEvent
             ):
@@ -77,12 +107,12 @@ class ModelDropdown(QWidget):
         return super().eventFilter(watched, event)
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
-        """Toggle the model selection popup on click.
+        """Toggle the selection popup on click.
 
         Args:
             event (QMouseEvent): The mouse press event that triggered the toggle.
         """
-        if event is None:
+        if event is None or event.button() != Qt.MouseButton.LeftButton:
             return
 
         if self.popup is not None and self.popup.isVisible():
@@ -92,7 +122,7 @@ class ModelDropdown(QWidget):
         self._show_popup()
 
     def paintEvent(self, _event: QPaintEvent | None) -> None:
-        """Draw the current model name right-aligned."""
+        """Draw the current option label right-aligned."""
         painter = QPainter(self)
         painter.setPen(qcolor(PRIMARY_COLOR, 128))
         painter.setFont(self.font())
@@ -113,22 +143,24 @@ class ModelDropdown(QWidget):
         self.setFont(font)
 
         fm = QFontMetrics(font)
-        max_width = max(fm.horizontalAdvance(name) for name, _ in MODELS)
+        max_width = max(
+            fm.horizontalAdvance(f"{self.prefix}{name}") for name, _ in self.options
+        )
         self.setFixedWidth(
             max_width + 25
         )  # Arbitrary extra space to avoid text truncation
         self.setFixedHeight(fm.height() + 8)  # Arbitrary vertical padding
 
     def _show_popup(self) -> None:
-        """Create and display the model selection popup above this widget."""
+        """Create and display the selection popup above this widget."""
         main_window = self.window()
         assert main_window is not None
 
         global_pos = self.mapToGlobal(QPoint(self.width(), 0))
         local_pos = main_window.mapFromGlobal(global_pos)
 
-        self.popup = _ModelPopup(main_window, self.current_model_id)
-        self.popup.model_selected.connect(self._on_model_selected)
+        self.popup = _SelectionPopup(main_window, self.options, self.current_value)
+        self.popup.option_selected.connect(self._on_option_selected)
         self.popup.closed.connect(self._on_popup_closed)
         popup_size = self.popup.sizeHint()
         self.popup.setGeometry(
@@ -139,6 +171,7 @@ class ModelDropdown(QWidget):
         )
 
         self.shield = _PopupShield(main_window)
+        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.shield.setGeometry(self.popup.geometry())
         self.shield.raise_()
         self.shield.show()
@@ -149,17 +182,17 @@ class ModelDropdown(QWidget):
         assert app is not None
         app.installEventFilter(self)
 
-    def _on_model_selected(self, display_name: str, model_id: str) -> None:
-        """Handle a model selection from the popup.
+    def _on_option_selected(self, display_name: str, value: str) -> None:
+        """Handle a selection from the popup.
 
         Args:
-            display_name (str): The model name shown in the dropdown.
-            model_id (str): The Gemini model identifier.
+            display_name (str): The option label shown in the dropdown.
+            value (str): The option identifier.
         """
-        self.current_display = display_name
-        self.current_model_id = model_id
+        self.current_display = f"{self.prefix}{display_name}"
+        self.current_value = value
         self.update()
-        self.model_changed.emit(model_id)
+        self.value_changed.emit(value)
 
     def _on_popup_closed(self) -> None:
         """Clean up the shield, event filter, and popup references."""
@@ -172,16 +205,19 @@ class ModelDropdown(QWidget):
         self.popup = None
 
 
-class _ModelPopup(QWidget):
-    """Display a frameless popup for selecting a Gemini model."""
+class _SelectionPopup(QWidget):
+    """Display a frameless popup for selecting an option."""
 
-    model_selected = pyqtSignal(str, str)
+    option_selected = pyqtSignal(str, str)
     closed = pyqtSignal()
 
-    def __init__(self, parent: QWidget, current_model_id: str) -> None:
+    def __init__(
+        self, parent: QWidget, options: list[tuple[str, str]], current_value: str
+    ) -> None:
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        self._init_UI(current_model_id)
+        self.options = options
+        self._init_UI(current_value)
 
     def closeEvent(self, event: QCloseEvent | None) -> None:
         """Emit the closed signal when the popup is closing.
@@ -216,11 +252,11 @@ class _ModelPopup(QWidget):
         painter.strokePath(path, QPen(qcolor(PRIMARY_COLOR, 128), 1))
         painter.end()
 
-    def _init_UI(self, current_model_id: str) -> None:
-        """Build the list of model items.
+    def _init_UI(self, current_value: str) -> None:
+        """Build the list of options.
 
         Args:
-            current_model_id (str): The identifier of the currently selected model.
+            current_value (str): The identifier of the currently selected option.
         """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(1, 1, 1, 1)
@@ -230,24 +266,24 @@ class _ModelPopup(QWidget):
         font.setPixelSize(12)
         fm = QFontMetrics(font)
         item_width = (
-            max(fm.horizontalAdvance(name) for name, _ in MODELS)
+            max(fm.horizontalAdvance(name) for name, _ in self.options)
             + ITEM_HORIZONTAL_PADDING * 2
         )
 
-        for display_name, model_id in MODELS:
-            item = _ModelItem(display_name, model_id, model_id == current_model_id)
+        for display_name, value in self.options:
+            item = _SelectionItem(display_name, value, value == current_value)
             item.setFixedWidth(item_width)
             item.clicked.connect(self._on_item_clicked)
             layout.addWidget(item)
 
-    def _on_item_clicked(self, display_name: str, model_id: str) -> None:
+    def _on_item_clicked(self, display_name: str, value: str) -> None:
         """Forward the selection and close the popup.
 
         Args:
-            display_name (str): The model name selected by the user.
-            model_id (str): The Gemini model identifier selected by the user.
+            display_name (str): The option label selected by the user.
+            value (str): The option identifier selected by the user.
         """
-        self.model_selected.emit(display_name, model_id)
+        self.option_selected.emit(display_name, value)
         self.close()
 
 
@@ -266,15 +302,15 @@ class _PopupShield(QWidget):
         painter.end()
 
 
-class _ModelItem(QWidget):
-    """Render an individual model option within the selection popup."""
+class _SelectionItem(QWidget):
+    """Render an individual option within the selection popup."""
 
     clicked = pyqtSignal(str, str)
 
-    def __init__(self, display_name: str, model_id: str, is_selected: bool) -> None:
+    def __init__(self, display_name: str, value: str, is_selected: bool) -> None:
         super().__init__()
         self.display_name = display_name
-        self.model_id = model_id
+        self.value = value
         self.is_selected = is_selected
         self.is_hovered = False
         self._init_UI()
@@ -290,12 +326,12 @@ class _ModelItem(QWidget):
         self.update()
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
-        """Emit clicked signal with the model display name and ID."""
-        if event is not None:
-            self.clicked.emit(self.display_name, self.model_id)
+        """Emit clicked signal with the option label and value."""
+        if event is not None and event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self.display_name, self.value)
 
     def paintEvent(self, _event: QPaintEvent | None) -> None:
-        """Draw the model name with color based on selection and hover state."""
+        """Draw the option label with color based on selection and hover state."""
         painter = QPainter(self)
 
         if self.is_hovered:
@@ -314,7 +350,7 @@ class _ModelItem(QWidget):
             painter.setPen(qcolor(PRIMARY_COLOR, 255))
         else:
             # Set text colour to lower opacity
-            painter.setPen(qcolor(PRIMARY_COLOR, 128))
+            painter.setPen(qcolor(PRIMARY_COLOR, 255 if self.is_selected else 128))
 
         painter.setFont(self.font())
         text_rect = QRect(
