@@ -20,8 +20,9 @@ class ClaudeBridge:
     """Stream the installed Claude Code CLI using its signed-in subscription."""
 
     def __init__(self, directory: Path | None = None) -> None:
-        self.directory = (
-            directory or Path(__file__).resolve().parent.parent / "data" / "claude"
+        # Outside any repository so Claude sees no project or git context without a chosen directory
+        self.directory = directory or (
+            Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "Que" / "claude"
         )
         self.lock = threading.Lock()
         self.process_lock = threading.Lock()
@@ -78,7 +79,13 @@ class ClaudeBridge:
             "request": {"subtype": "initialize"},
         }
         with closing(
-            self._events(["--no-session-persistence"], payload, threading.Event(), 45)
+            self._events(
+                ["--no-session-persistence"],
+                payload,
+                threading.Event(),
+                45,
+                None,
+            )
         ) as events:
             for event in events:
                 if event.get("type") != "control_response":
@@ -144,6 +151,7 @@ class ClaudeBridge:
         effort: str,
         session_id: str,
         checkpoint: str | None,
+        directory: Path | None,
         on_chunk: Callable[[str], None],
         stop_flag: threading.Event,
     ) -> str | None:
@@ -156,6 +164,7 @@ class ClaudeBridge:
             effort (str): The advertised effort or default.
             session_id (str): The conversation UUID owned by this Que chat.
             checkpoint (str | None): The last accepted assistant UUID.
+            directory (Path | None): The working directory Claude may read, or None for no file access.
             on_chunk (Callable[[str], None]): Deliver visible text.
             stop_flag (threading.Event): Cancel a running or queued turn.
 
@@ -186,7 +195,10 @@ class ClaudeBridge:
             }
             assistant_id = ""
             streamed = False
-            with closing(self._events(arguments, payload, stop_flag, 600)) as events:
+            separate = False
+            with closing(
+                self._events(arguments, payload, stop_flag, 600, directory)
+            ) as events:
                 for event in events:
                     kind = event.get("type")
                     if event.get("parent_tool_use_id"):
@@ -194,9 +206,14 @@ class ClaudeBridge:
                     if kind == "stream_event":
                         delta = event.get("event", {}).get("delta", {})
                         if delta.get("type") == "text_delta" and delta.get("text"):
+                            if separate:
+                                on_chunk("\n\n")
+                                separate = False
                             streamed = True
                             on_chunk(str(delta["text"]))
                     elif kind == "assistant":
+                        # Tool use splits a reply into several messages; keep their text apart
+                        separate = streamed
                         assistant_id = str(event.get("uuid") or "")
                         if not streamed:
                             for block in event.get("message", {}).get("content", []):
@@ -321,6 +338,7 @@ class ClaudeBridge:
         payload: dict[str, Any],
         stop_flag: threading.Event,
         timeout: float,
+        directory: Path | None,
     ) -> Generator[dict[str, Any], None, None]:
         """Drain CLI pipes while supporting cancellation even before the first token.
 
@@ -329,11 +347,16 @@ class ClaudeBridge:
             payload (dict[str, Any]): The JSON input message.
             stop_flag (threading.Event): The request cancellation flag.
             timeout (float): Maximum request duration in seconds.
+            directory (Path | None): The directory that confines read-only file tools, or None to run without tools.
 
         Yields:
             dict[str, Any]: Parsed protocol messages.
         """
         self.directory.mkdir(parents=True, exist_ok=True)
+        if directory is not None and not directory.is_dir():
+            raise RuntimeError(
+                f"Claude's directory {directory} no longer exists. Click it below the chat input to choose another."
+            )
         command = [
             *self._command(),
             "--print",
@@ -341,7 +364,7 @@ class ClaudeBridge:
             "--input-format=stream-json",
             "--output-format=stream-json",
             "--include-partial-messages",
-            "--tools=",
+            f"--tools={'Read,Grep,Glob' if directory else ''}",
             "--strict-mcp-config",
             "--setting-sources=",
             "--disable-slash-commands",
@@ -361,7 +384,7 @@ class ClaudeBridge:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                cwd=self.directory,
+                cwd=directory or self.directory,
                 env=self._environment(),
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )

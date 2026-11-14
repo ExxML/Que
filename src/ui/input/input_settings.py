@@ -1,8 +1,12 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QHBoxLayout, QWidget
+from pathlib import Path
+
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
 from core.model_catalog import ModelOption
 from ui.input.selection_dropdown import SelectionDropdown
+from ui.theme import PRIMARY_COLOR, qss
 
 
 class InputSettings(QWidget):
@@ -11,6 +15,8 @@ class InputSettings(QWidget):
     model_changed = pyqtSignal(str)
     effort_changed = pyqtSignal(str)
     reload_requested = pyqtSignal()
+    directory_requested = pyqtSignal()
+    directory_cleared = pyqtSignal()
 
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
@@ -23,6 +29,15 @@ class InputSettings(QWidget):
         self.effort_dropdown.setAccessibleName("Reasoning effort")
         self.effort_dropdown.setToolTip(
             "Reasoning effort. Higher levels can take longer."
+        )
+        self.directory_widget = QWidget()
+        self.directory_widget.hide()
+        self.directory_button = QPushButton()
+        self.directory_button.setAccessibleName("Claude directory")
+        self.clear_directory_button = QPushButton("×")
+        self.clear_directory_button.setAccessibleName("Use no directory")
+        self.clear_directory_button.setToolTip(
+            "Use no directory so Claude sees no project files"
         )
         self._init_UI()
 
@@ -48,6 +63,29 @@ class InputSettings(QWidget):
             self._on_model_changed(self.model_dropdown.current_value)
         if effort:
             self.effort_dropdown.set_value(effort)
+
+    def set_directory(self, directory: str) -> None:
+        """Show the three innermost directories Claude works in.
+
+        Args:
+            directory (str): The full directory path, or an empty string for no directory.
+        """
+        parts = Path(directory).parts
+        # Eliding only the drive saves nothing, so keep paths of up to three folders whole
+        label = f"…\\{Path(*parts[-3:])}" if len(parts) > 4 else directory
+        # Long folder names would otherwise push the model controls out of the row
+        self.directory_button.setText(
+            QFontMetrics(self.directory_button.font()).elidedText(
+                label, Qt.TextElideMode.ElideLeft, 280
+            )
+            or "No directory"
+        )
+        self.directory_button.setToolTip(
+            f"Claude can read files in {directory}. Click to change."
+            if directory
+            else "Claude has no project files. Click to choose a directory."
+        )
+        self.clear_directory_button.setVisible(bool(directory))
 
     def show_loading(self) -> None:
         """Clear stale model and effort choices during provider discovery."""
@@ -93,6 +131,24 @@ class InputSettings(QWidget):
         layout.setSpacing(6)
         self.model_dropdown.value_changed.connect(self._on_model_changed)
         self.effort_dropdown.value_changed.connect(self.effort_changed)
+        directory_layout = QHBoxLayout(self.directory_widget)
+        directory_layout.setContentsMargins(
+            6, 0, 0, 0
+        )  # Line up with the text edit's left padding
+        directory_layout.setSpacing(4)
+        self.directory_widget.setStyleSheet(f"""
+            QPushButton {{ color: {qss(PRIMARY_COLOR, 128)}; background: transparent; border: none; padding: 0; }}
+            QPushButton:hover {{ color: {qss(PRIMARY_COLOR)}; }}
+        """)
+        for button in (self.directory_button, self.clear_directory_button):
+            font = button.font()
+            font.setPixelSize(12)
+            button.setFont(font)
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            directory_layout.addWidget(button)
+        self.directory_button.clicked.connect(self.directory_requested)
+        self.clear_directory_button.clicked.connect(self.directory_cleared)
+        layout.addWidget(self.directory_widget)
         layout.addStretch()
         layout.addWidget(self.model_dropdown)
         layout.addWidget(self.effort_dropdown)

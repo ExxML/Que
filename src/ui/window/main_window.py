@@ -1,6 +1,7 @@
 import ctypes
 import time
 from ctypes import wintypes
+from pathlib import Path
 
 from PyQt6.QtCore import QPoint, Qt, QTimer
 from PyQt6.QtGui import (
@@ -26,6 +27,7 @@ from core.chat_history import ChatHistory, Conversation
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from ui.chat.chat_area import ChatArea
+from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
 from ui.theme import BG_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
 from ui.window.header_icon_button import HeaderIconButton
@@ -62,6 +64,14 @@ class MainWindow(QWidget):
         self.model_catalog.failed.connect(self._on_models_failed)
         self.input_field.input_settings.reload_requested.connect(self._refresh_models)
         self.settings_page.saved.connect(self._on_settings_saved)
+        self.settings_page.directory_saved.connect(self._set_claude_directory)
+        self.input_field.input_settings.directory_requested.connect(
+            self._choose_claude_directory
+        )
+        self.input_field.input_settings.directory_cleared.connect(
+            lambda: self._set_claude_directory("")
+        )
+        self._show_claude_directory()
         self._refresh_models()
         if self.ai_sender.provider == "gemini" and not self.ai_sender.api_key:
             self.settings_page.open_settings()
@@ -417,7 +427,33 @@ class MainWindow(QWidget):
             self.worker.stop()
             self.chat_area.finalize_assistant_stream()
             self.ai_sender.configure(result.provider, api_key)
+            self._show_claude_directory()
         self._apply_models(result)
+
+    def _choose_claude_directory(self) -> None:
+        """Move Claude to another directory for subsequent turns of this session."""
+        self.input_field.input_settings.close_popups()
+        directory = choose_directory(
+            self, str(self.ai_sender.claude_directory or Path.home())
+        )
+        if directory:
+            self._set_claude_directory(directory)
+
+    def _set_claude_directory(self, directory: str) -> None:
+        """Use a directory for subsequent Claude turns.
+
+        Args:
+            directory (str): The directory Claude works in, or an empty string for no directory.
+        """
+        self.ai_sender.claude_directory = Path(directory) if directory else None
+        self._show_claude_directory()
+
+    def _show_claude_directory(self) -> None:
+        """Show Claude's directory below the input while Claude is the active provider."""
+        directory = self.ai_sender.claude_directory
+        input_settings = self.input_field.input_settings
+        input_settings.set_directory(str(directory) if directory else "")
+        input_settings.directory_widget.setVisible(self.ai_sender.provider == "claude")
 
     def _close_settings(self) -> None:
         """Return to the current chat while automatic validation continues."""
@@ -556,6 +592,7 @@ class MainWindow(QWidget):
         if conversation.provider != self.ai_sender.provider:
             # Switch only for this session; the saved default provider stays unchanged
             self.ai_sender.configure(conversation.provider, self.ai_sender.api_key)
+            self._show_claude_directory()
             self._refresh_models()
         self.ai_sender.restore_chat(
             conversation.interaction_id, conversation.session_id

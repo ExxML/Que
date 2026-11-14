@@ -61,9 +61,13 @@ class ProviderTests(unittest.TestCase):
             self.sender.commit_interaction(claude_first, "claude-checkpoint")
         )
         self.sender.set_model("haiku")
+        self.assertIsNone(claude_first.claude_directory)
+        self.sender.claude_directory = Path(self.directory.name)
         claude_next = self.sender.prepare_request("Claude second")
         self.assertEqual(claude_next.session_id, claude_first.session_id)
         self.assertEqual(claude_next.previous_interaction_id, "claude-checkpoint")
+        self.assertEqual(claude_next.claude_directory, Path(self.directory.name))
+        self.assertNotEqual(claude_first.claude_directory, claude_next.claude_directory)
         self.sender.configure("gemini", "")
         self.assertEqual(self.sender.previous_interaction_id, "gemini-context")
         self.assertEqual(claude_next.provider, "claude")
@@ -96,6 +100,12 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(restored.defaults("gemini"), ("gemini-model", "high"))
         self.assertEqual(restored.defaults("claude"), ("sonnet", "low"))
         self.assertEqual(restored.provider(), "claude")
+        self.assertEqual(restored.claude_directory(), "")
+        restored.save_claude_directory(self.directory.name)
+        restored.save("claude", "haiku", "default", "test-secret")
+        self.assertEqual(
+            SettingsStore(self.store.path).claude_directory(), self.directory.name
+        )
         with patch("core.settings.os.replace", side_effect=OSError):
             with self.assertRaises(OSError):
                 restored.save("gemini", "other", "default", "changed")
@@ -194,6 +204,7 @@ for e in events: print(json.dumps(e),flush=True)
                 "high",
                 session,
                 "checkpoint-1",
+                Path(self.directory.name),
                 chunks.append,
                 threading.Event(),
             )
@@ -203,10 +214,56 @@ for e in events: print(json.dumps(e),flush=True)
         self.assertIn(f"--resume={session}", command)
         self.assertIn("--resume-session-at=checkpoint-1", command)
         self.assertIn("--effort=high", command)
-        self.assertIn("--tools=", command)
+        self.assertIn("--tools=Read,Grep,Glob", command)
+        self.assertEqual(popen.call_args.kwargs["cwd"], Path(self.directory.name))
         self.assertEqual(
             popen.call_args.kwargs["creationflags"], subprocess.CREATE_NO_WINDOW
         )
+
+    def test_tool_turn_separates_messages_and_checks_directory(self) -> None:
+        """Keep text from separate tool-use messages apart and reject a deleted directory."""
+        script = """import json, sys
+p=json.loads(sys.stdin.readline())
+events=[
+ {'type':'stream_event','event':{'delta':{'type':'text_delta','text':'Looking.'}}},
+ {'type':'assistant','uuid':'a1','message':{'content':[{'type':'text','text':'Looking.'}]}},
+ {'type':'assistant','uuid':'a2','message':{'content':[{'type':'tool_use'}]}},
+ {'type':'stream_event','event':{'delta':{'type':'text_delta','text':'Found it.'}}},
+ {'type':'assistant','uuid':'a3','message':{'content':[{'type':'text','text':'Found it.'}]}},
+ {'type':'result','subtype':'success','is_error':False,'session_id':p['session_id']}]
+for e in events: print(json.dumps(e),flush=True)
+"""
+        chunks: list[str] = []
+        with (
+            patch.object(
+                self.bridge,
+                "_command",
+                return_value=[sys.executable, "-u", "-c", script],
+            ),
+            patch(
+                "core.claude_bridge.subprocess.Popen", wraps=subprocess.Popen
+            ) as popen,
+        ):
+            arguments = ("test", (), "sonnet", "default", str(uuid4()), None)
+            result = self.bridge.send_message(
+                *arguments,
+                None,
+                chunks.append,
+                threading.Event(),
+            )
+            self.assertEqual(result, "a3")
+            self.assertEqual("".join(chunks), "Looking.\n\nFound it.")
+            # No directory runs without file tools in the bridge's neutral folder
+            self.assertIn("--tools=", popen.call_args.args[0])
+            self.assertEqual(popen.call_args.kwargs["cwd"], self.bridge.directory)
+            with self.assertRaisesRegex(RuntimeError, "no longer exists"):
+                self.bridge.send_message(
+                    *arguments,
+                    Path(self.directory.name) / "missing",
+                    chunks.append,
+                    threading.Event(),
+                )
+        self.assertFalse(self.bridge.lock.locked())
 
     def test_cancel_silent_child_and_release_lock(self) -> None:
         """Terminate a stalled CLI promptly even when no response token arrives."""
@@ -226,6 +283,7 @@ for e in events: print(json.dumps(e),flush=True)
                 "default",
                 str(uuid4()),
                 None,
+                Path(self.directory.name),
                 lambda _: None,
                 flag,
             )
@@ -259,6 +317,7 @@ for e in events: print(json.dumps(e),flush=True)
                         "default",
                         str(uuid4()),
                         None,
+                        Path(self.directory.name),
                         lambda _: None,
                         threading.Event(),
                     )
@@ -270,7 +329,9 @@ for e in events: print(json.dumps(e),flush=True)
         with patch.object(
             self.bridge, "_command", return_value=[sys.executable, "-u", "-c", script]
         ):
-            events = self.bridge._events([], {"type": "test"}, threading.Event(), 30)
+            events = self.bridge._events(
+                [], {"type": "test"}, threading.Event(), 30, self.bridge.directory
+            )
             self.assertEqual(next(events), {})
             process = next(iter(self.bridge.processes))
             self.bridge.close()
@@ -279,7 +340,12 @@ for e in events: print(json.dumps(e),flush=True)
             events.close()
             self.assertEqual(self.bridge.processes, set())
             self.assertEqual(
-                list(self.bridge._events([], {}, threading.Event(), 1)), []
+                list(
+                    self.bridge._events(
+                        [], {}, threading.Event(), 1, self.bridge.directory
+                    )
+                ),
+                [],
             )
 
     def test_screenshot_uses_inline_content(self) -> None:
@@ -409,6 +475,9 @@ class SettingsPageTests(unittest.TestCase):
             self.assertEqual(pending.effort_level, "high")
             self.assertEqual(sender.generation, pending.generation)
             self.assertEqual(window.pages.currentIndex(), 1)
+            self.assertTrue(
+                window.input_field.input_settings.directory_widget.isHidden()
+            )
 
     def test_catalog_redacts_key_errors(self) -> None:
         """Keep credential values out of connection error messages."""

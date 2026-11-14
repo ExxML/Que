@@ -18,6 +18,7 @@ from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.settings import SettingsStore
+from ui.directory_picker import choose_directory
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
 
 
@@ -25,6 +26,7 @@ class SettingsPage(QWidget):
     """Configure provider connections and independent model defaults inside the overlay."""
 
     saved = pyqtSignal(object)
+    directory_saved = pyqtSignal(str)
 
     def __init__(
         self,
@@ -62,6 +64,7 @@ class SettingsPage(QWidget):
         self.key_input.blockSignals(False)
         self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.show_key.setChecked(False)
+        self._show_directory(self.settings_store.claude_directory())
         self.gemini_button.setChecked(self.provider == "gemini")
         self.claude_button.setChecked(self.provider == "claude")
         self._update_provider()
@@ -135,6 +138,34 @@ class SettingsPage(QWidget):
             QLabel("Saved encrypted for your Windows account. No .env needed.")
         )
         layout.addWidget(self.key_panel)
+        self.directory_panel = QWidget()
+        directory_layout = QVBoxLayout(self.directory_panel)
+        directory_layout.setContentsMargins(0, 0, 0, 0)
+        directory_label = QLabel("Default directory")
+        self.directory_input = QLineEdit()
+        self.directory_input.setReadOnly(True)
+        self.directory_input.setPlaceholderText("No directory")
+        self.directory_input.setAccessibleName("Default Claude directory")
+        directory_label.setBuddy(self.directory_input)
+        directory_layout.addWidget(directory_label)
+        directory_row = QHBoxLayout()
+        directory_row.addWidget(self.directory_input, 1)
+        self.directory_button = QPushButton("Browse…")
+        self.directory_button.clicked.connect(self._choose_directory)
+        directory_row.addWidget(self.directory_button)
+        self.no_directory_button = QPushButton("Use none")
+        self.no_directory_button.setToolTip(
+            "Start Claude with no directory so it sees no project files"
+        )
+        self.no_directory_button.clicked.connect(lambda: self._save_directory(""))
+        directory_row.addWidget(self.no_directory_button)
+        directory_layout.addLayout(directory_row)
+        directory_hint = QLabel(
+            "Claude starts here with read-only access to its files. With no directory, it sees no project files. Change it for this session below the chat input."
+        )
+        directory_hint.setWordWrap(True)
+        directory_layout.addWidget(directory_hint)
+        layout.addWidget(self.directory_panel)
         check_row = QHBoxLayout()
         self.refresh_button = QPushButton("Refresh models")
         self.refresh_button.clicked.connect(lambda: self._refresh(False))
@@ -202,6 +233,7 @@ class SettingsPage(QWidget):
         """Show only the selected provider's connection fields and capabilities."""
         gemini = self.provider == "gemini"
         self.key_panel.setVisible(gemini)
+        self.directory_panel.setVisible(not gemini)
         self.test_button.setVisible(gemini)
         self.refresh_button.setText("Refresh models" if gemini else "Check connection")
         self.connection_hint.setText(
@@ -210,6 +242,40 @@ class SettingsPage(QWidget):
             else "Requires Claude Pro and Claude Code Terminal. Sign in there with claude auth login, then check the connection."
         )
         self._refresh(False)
+
+    def _choose_directory(self) -> None:
+        """Ask for a new default directory."""
+        directory = choose_directory(
+            self, self.directory_input.text() or str(Path.home())
+        )
+        if directory:
+            self._save_directory(directory)
+
+    def _save_directory(self, directory: str) -> None:
+        """Save the default directory and apply it to the current session.
+
+        Args:
+            directory (str): The directory, or an empty string for no directory.
+        """
+        try:
+            self.settings_store.save_claude_directory(directory)
+        except OSError:
+            self.save_status.setText(
+                "The directory could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self._show_directory(directory)
+        self.save_status.setText("Changes saved automatically.")
+        self.directory_saved.emit(directory)
+
+    def _show_directory(self, directory: str) -> None:
+        """Display the default directory and offer to clear it only when one is set.
+
+        Args:
+            directory (str): The directory, or an empty string for no directory.
+        """
+        self.directory_input.setText(directory)
+        self.no_directory_button.setEnabled(bool(directory))
 
     def _on_key_changed(self, _text: str) -> None:
         """Validate a new key automatically after a short typing pause."""

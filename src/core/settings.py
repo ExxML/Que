@@ -47,6 +47,14 @@ class SettingsStore:
             return "", "default"
         return str(values.get("model", "")), str(values.get("effort", "default"))
 
+    def claude_directory(self) -> str:
+        """Return the saved default Claude working directory.
+
+        Returns:
+            str: The directory path, or an empty string when unset.
+        """
+        return str(self.data.get("claude_directory", ""))
+
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
 
@@ -87,9 +95,25 @@ class SettingsStore:
             if api_key
             else ""
         )
+        self._write(data)
+        self.error = ""
+
+    def save_claude_directory(self, directory: str) -> None:
+        """Atomically save the default Claude working directory.
+
+        Args:
+            directory (str): The directory new sessions start in.
+        """
+        self._write({**self.data, "claude_directory": directory})
+
+    def _write(self, data: dict[str, Any]) -> None:
+        """Atomically replace the settings file and adopt its contents.
+
+        Args:
+            data (dict[str, Any]): The complete settings to save.
+        """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.path.with_suffix(".tmp")
         temporary.write_text(json.dumps(data, indent=2), encoding="utf-8")
         os.replace(temporary, self.path)
         self.data = data
-        self.error = ""

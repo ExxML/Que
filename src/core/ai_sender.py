@@ -28,6 +28,7 @@ class InteractionRequest:
     provider: str = "gemini"
     session_id: str = ""
     client: genai.Client | None = None
+    claude_directory: Path | None = None
 
 
 class AISender:
@@ -45,6 +46,8 @@ class AISender:
         )
         self.provider = self.settings_store.provider()
         self.claude_bridge = ClaudeBridge()
+        saved_directory = self.settings_store.claude_directory()
+        self.claude_directory = Path(saved_directory) if saved_directory else None
         self.contexts: dict[str, str | None] = {"gemini": None, "claude": None}
         self.claude_session_id = ""
         self.models: dict[str, ModelOption] = {}
@@ -162,6 +165,7 @@ class AISender:
             self.provider,
             self.claude_session_id if self.previous_interaction_id else str(uuid4()),
             self.client,
+            self.claude_directory,
         )
 
     def commit_interaction(
@@ -212,6 +216,7 @@ class AISender:
                 request.effort_level,
                 request.session_id,
                 request.previous_interaction_id,
+                request.claude_directory,
                 on_chunk,
                 stop_flag,
             )
