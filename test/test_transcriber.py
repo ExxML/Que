@@ -1,10 +1,10 @@
 """Verify utterance segmentation, transcript delivery tracking, and prompt composition."""
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from core.ai_sender import InteractionRequest
 from core.transcriber import (
@@ -13,6 +13,7 @@ from core.transcriber import (
     Transcriber,
     _Segmenter,
 )
+from ui.window.transcript_panel import TranscriptPanel
 
 
 CHUNK = int(SAMPLE_RATE * CHUNK_SECONDS)
@@ -86,6 +87,42 @@ class TranscriptDeliveryTests(unittest.TestCase):
         self.assertEqual(
             [segment.source for segment in self.transcriber.segments], ["them", "you"]
         )
+
+    def test_start_without_model_asks_for_download(self) -> None:
+        """Show a settings notice instead of recording or downloading on first record."""
+        statuses: list[str] = []
+        self.transcriber.status_changed.connect(statuses.append)
+        with patch.object(self.transcriber, "downloaded_models", return_value=[]):
+            self.transcriber.start()
+            self.assertFalse(self.transcriber.recording)
+            self.assertTrue(self.transcriber.missing_model)
+            self.assertIn("Settings", statuses[-1])
+            self.transcriber.downloading = "tiny.en"
+            self.transcriber.start()
+        self.assertIn("tiny.en model is still downloading", statuses[-1])
+        self.transcriber.download_finished.emit("tiny.en", "")
+        self.assertFalse(self.transcriber.missing_model)
+        self.assertEqual(statuses[-1], "")
+
+    def test_caption_explains_old_model_during_download(self) -> None:
+        """Name the model in use until this recording's first line or the download ends."""
+        window = QWidget()
+        panel = TranscriptPanel(self.transcriber, window)
+        self.transcriber._on_transcribed("you", "From an earlier recording")
+        with (
+            patch.object(self.transcriber, "downloaded_models", return_value=["tiny.en"]),
+            patch.object(self.transcriber, "_transcribe_loop"),
+            patch.object(self.transcriber, "_capture"),
+        ):
+            self.transcriber.downloading = "small.en"
+            self.transcriber.start()
+        note = "Using tiny.en while small.en downloads…"
+        self.assertEqual(panel.caption.toolTip(), note)
+        self.assertIn("Transcribing with tiny.en.", panel.text.text())
+        self.assertTrue(panel.toggle_button.toolTip().endswith(" · tiny.en"))
+        self.transcriber._on_transcribed("them", "First new line")
+        self.assertEqual(panel.caption.toolTip(), "Them: First new line")
+        self.transcriber.stop()
 
     def test_clear_drops_unsent_lines(self) -> None:
         """Start a new chat with an empty transcript."""

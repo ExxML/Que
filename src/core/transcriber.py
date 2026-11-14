@@ -10,9 +10,9 @@ from typing import Any
 import numpy as np
 import pyaudiowpatch  # type: ignore[import-untyped]
 from numpy.typing import NDArray
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
-from core.settings import SettingsStore
+from core.settings import WHISPER_MODELS, SettingsStore
 
 SAMPLE_RATE = 16000
 CHUNK_SECONDS = 0.1
@@ -25,6 +25,13 @@ SOURCE_LABELS: dict[str, str] = {"you": "You", "them": "Them"}
 ECHO_SIMILARITY = 0.75  # shortcut: text match only catches whole-utterance echoes, use AEC if partial echoes slip through
 ECHO_WINDOW = 3  # Recent segments checked for speaker echo
 PORTAUDIO_LOCK = threading.Lock()  # PortAudio setup and teardown are not thread-safe
+MODEL_FILES = ("config.json", "model.bin", "tokenizer.json", "vocabulary.txt")
+MISSING_MODEL_STATUS = "No transcription model yet. Download one in Settings."
+MISSING_MODEL_MS = 8000  # How long the missing-model notice stays up
+
+# Read when huggingface_hub is first imported; silences its cache and token notices
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+os.environ.setdefault("HF_HUB_VERBOSITY", "error")
 
 
 @dataclass(frozen=True)
@@ -49,6 +56,7 @@ class Transcriber(QObject):
     status_changed = pyqtSignal(str)  # Loading or error text, or an empty string
     transcribed = pyqtSignal(str, str)  # source, text (worker thread to Qt thread)
     failed = pyqtSignal(str, bool)  # message, whether recording must stop
+    download_finished = pyqtSignal(str, str)  # model, error or an empty string
 
     def __init__(self, settings_store: SettingsStore) -> None:
         super().__init__()
@@ -60,12 +68,21 @@ class Transcriber(QObject):
         self.sent_seq = 0  # Segments up to this seq reached the AI in a committed turn
         self.next_seq = 1
         self.recording = False
+        self.recording_model = ""  # Model the current or last recording uses
+        self.first_seq = 1  # First seq of the current or last recording
         self.stop_event = threading.Event()
         self.model: Any = None
         self.model_size = ""
         self.model_lock = threading.Lock()
+        self.downloading = ""  # Model being downloaded, or an empty string
+        self.missing_model = False  # Showing the missing-model notice
+        self.notice_timer = QTimer(self)
+        self.notice_timer.setSingleShot(True)
+        self.notice_timer.setInterval(MISSING_MODEL_MS)
+        self.notice_timer.timeout.connect(self._on_notice_timeout)
         self.transcribed.connect(self._on_transcribed)
         self.failed.connect(self._on_failed)
+        self.download_finished.connect(self._on_download_finished)
 
     def toggle(self) -> None:
         """Start recording when stopped, otherwise stop."""
@@ -78,12 +95,26 @@ class Transcriber(QObject):
         """Start capturing both audio sources and transcribing their speech."""
         if self.recording:
             return
+        model = self.active_model()
+        if not model:
+            self.missing_model = True
+            self.status_changed.emit(
+                f"The {self.downloading} model is still downloading. Start recording once it finishes."
+                if self.downloading
+                else MISSING_MODEL_STATUS
+            )
+            self.notice_timer.start()
+            return
+        self.notice_timer.stop()
+        self.missing_model = False
         self.recording = True
+        self.recording_model = model
+        self.first_seq = self.next_seq
         self.stop_event = threading.Event()
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
         threading.Thread(
             target=self._transcribe_loop,
-            args=(utterances, self.settings_store.whisper_model()),
+            args=(utterances, model),
             daemon=True,
         ).start()
         for source in SOURCE_LABELS:
@@ -104,6 +135,50 @@ class Transcriber(QObject):
         for source in SOURCE_LABELS:
             self.speaking_changed.emit(source, False)
         self.recording_changed.emit(False)
+
+    def downloaded_models(self) -> list[str]:
+        """List the transcription models whose files are fully downloaded.
+
+        Returns:
+            list[str]: The downloaded faster-whisper model names, smallest first.
+        """
+        downloaded = []
+        for model in WHISPER_MODELS:
+            snapshots = (
+                self.cache_dir
+                / f"models--Systran--faster-whisper-{model}"
+                / "snapshots"
+            )
+            # Hugging Face places a file in a snapshot only once it finishes downloading
+            if snapshots.is_dir() and any(
+                all((snapshot / name).is_file() for name in MODEL_FILES)
+                for snapshot in snapshots.iterdir()
+            ):
+                downloaded.append(model)
+        return downloaded
+
+    def active_model(self) -> str:
+        """Return the model recording will use.
+
+        Returns:
+            str: The saved model when downloaded, else the first downloaded model, else an empty string.
+        """
+        downloaded = self.downloaded_models()
+        saved = self.settings_store.whisper_model()
+        if saved in downloaded:
+            return saved
+        return downloaded[0] if downloaded else ""
+
+    def download(self, model: str) -> None:
+        """Download a transcription model in the background, one at a time.
+
+        Args:
+            model (str): The faster-whisper model name.
+        """
+        if self.downloading:
+            return
+        self.downloading = model
+        threading.Thread(target=self._download, args=(model,), daemon=True).start()
 
     def pending(self) -> tuple[str, int]:
         """Return the transcript not yet sent in a committed turn.
@@ -159,6 +234,22 @@ class Transcriber(QObject):
         self.segments.append(TranscriptSegment(self.next_seq, source, text))
         self.next_seq += 1
         self.changed.emit()
+
+    def _on_notice_timeout(self) -> None:
+        """Hide the missing-model notice."""
+        self.missing_model = False
+        self.status_changed.emit("")
+
+    def _on_download_finished(self, _model: str, error: str) -> None:
+        """Allow the next download and drop the missing-model notice once a model exists.
+
+        Args:
+            error (str): The download error, or an empty string on success.
+        """
+        self.downloading = ""
+        if not error and self.missing_model:
+            self.notice_timer.stop()
+            self._on_notice_timeout()
 
     def _on_failed(self, message: str, fatal: bool) -> None:
         """Show a capture or model error and stop when transcription cannot continue.
@@ -303,8 +394,25 @@ class Transcriber(QObject):
             if text:
                 self.transcribed.emit(source, text)
 
+    def _download(self, model: str) -> None:
+        """Download a model's files into the cache and report the outcome.
+
+        Args:
+            model (str): The faster-whisper model name.
+        """
+        try:
+            from faster_whisper import (  # type: ignore[import-untyped]  # Slow import, only when downloading
+                download_model,
+            )
+
+            download_model(model, cache_dir=str(self.cache_dir))
+        except Exception as exc:  # noqa: BLE001
+            self.download_finished.emit(model, str(exc))
+            return
+        self.download_finished.emit(model, "")
+
     def _load_model(self, model_size: str) -> Any:
-        """Load a model once from the cache, downloading it only when missing.
+        """Load a downloaded model once from the cache without contacting huggingface.co.
 
         Args:
             model_size (str): The faster-whisper model name.
@@ -314,29 +422,18 @@ class Transcriber(QObject):
         """
         with self.model_lock:
             if self.model_size != model_size:
-                self.status_changed.emit(
-                    f"Loading the {model_size} model. The first use downloads it…"
-                )
-                # Read when huggingface_hub is first imported; silences its cache and token notices
-                os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-                os.environ.setdefault("HF_HUB_VERBOSITY", "error")
-                from faster_whisper import (  # type: ignore[import-untyped]  # Slow import, only when recording
+                self.status_changed.emit(f"Loading the {model_size} model…")
+                from faster_whisper import (  # Slow import, only when recording
                     WhisperModel,
                 )
-                from huggingface_hub.errors import LocalEntryNotFoundError
 
-                options: dict[str, Any] = {
-                    "device": "cpu",
-                    "compute_type": "int8",
-                    "download_root": str(self.cache_dir),
-                }
-                try:
-                    # Cached models load without contacting huggingface.co
-                    self.model = WhisperModel(
-                        model_size, local_files_only=True, **options
-                    )
-                except LocalEntryNotFoundError:
-                    self.model = WhisperModel(model_size, **options)
+                self.model = WhisperModel(
+                    model_size,
+                    device="cpu",
+                    compute_type="int8",
+                    download_root=str(self.cache_dir),
+                    local_files_only=True,
+                )
                 self.model_size = model_size
                 self.status_changed.emit("")
             return self.model

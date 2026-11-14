@@ -241,7 +241,10 @@ class MainWindow(QWidget):
         self.pages = QStackedWidget(self)
         self.pages.addWidget(self.chat_area)
         self.settings_page = SettingsPage(
-            self.ai_sender.settings_store, self.ai_sender.claude_bridge, self
+            self.ai_sender.settings_store,
+            self.ai_sender.claude_bridge,
+            self.transcriber,
+            self,
         )
         settings_scroll = QScrollArea()
         settings_scroll.setWidgetResizable(True)

@@ -46,15 +46,20 @@ class TranscriptPanel(QWidget):
         transcriber.recording_changed.connect(lambda _recording: self._refresh())
         transcriber.speaking_changed.connect(self._on_speaking_changed)
         transcriber.status_changed.connect(self._on_status_changed)
+        transcriber.download_finished.connect(self._on_download_finished)
         self._refresh()
 
     def wanted(self) -> bool:
         """Report whether there is anything to show.
 
         Returns:
-            bool: True while recording or while transcript lines exist.
+            bool: True while recording, while transcript lines exist, or while a model is missing.
         """
-        return self.transcriber.recording or bool(self.transcriber.segments)
+        return (
+            self.transcriber.recording
+            or bool(self.transcriber.segments)
+            or self.transcriber.missing_model
+        )
 
     def resizeEvent(self, event: QResizeEvent | None) -> None:
         """Re-elide the caption to the new width.
@@ -166,6 +171,10 @@ class TranscriptPanel(QWidget):
             status (str): The status, or an empty string to show captions.
         """
         self.status = status
+        self._refresh()  # The missing-model notice also changes visibility
+
+    def _on_download_finished(self, _model: str, _error: str) -> None:
+        """Drop the downloading note from the caption."""
         self._refresh_caption()
 
     def _refresh(self) -> None:
@@ -180,19 +189,26 @@ class TranscriptPanel(QWidget):
             f"<b>{SOURCE_LABELS[segment.source]}</b>&nbsp; {html.escape(segment.text)}</p>"
             for segment in segments
         ]
+        model = self.transcriber.recording_model
+        model_note = (
+            f"{'Transcribing' if recording else 'Transcribed'} with {model}."
+            if model
+            else ""
+        )
         hint = (
             f"<p style='margin: 2px 0 0 0; color: {qss(PRIMARY_COLOR, 110)};'>"
-            "Bright lines are sent with your next message. Dimmed lines were already sent.</p>"
+            f"Bright lines are sent with your next message. Dimmed lines were already sent. {model_note}</p>"
         )
         self.text.setText(
             "".join(lines) + hint
             if lines
-            else f"<p style='color: {qss(PRIMARY_COLOR, 110)};'>Speech from your microphone (You) and computer audio (Them) appears here.</p>"
+            else f"<p style='color: {qss(PRIMARY_COLOR, 110)};'>Speech from your microphone (You) and computer audio (Them) appears here. {model_note}</p>"
         )
         label = f"{unsent} new" if unsent else "Transcript"
         self.toggle_button.setText(f"{label} {'▾' if self.expanded else '▴'}")
         self.toggle_button.setToolTip(
-            "Hide transcript" if self.expanded else "Show full transcript"
+            f"{'Hide transcript' if self.expanded else 'Show full transcript'}"
+            f"{f' · {model}' if model else ''}"
         )
         self.toggle_button.setAccessibleName(
             f"{'Hide' if self.expanded else 'Show'} transcript, {unsent} lines not yet sent"
@@ -223,8 +239,16 @@ class TranscriptPanel(QWidget):
     def _refresh_caption(self) -> None:
         """Show status, the latest line, or a hint, elided to one line."""
         segments = self.transcriber.segments
+        transcriber = self.transcriber
         if self.status:
             text = self.status
+        elif (
+            transcriber.recording
+            and transcriber.downloading
+            and (not segments or segments[-1].seq < transcriber.first_seq)
+        ):
+            # Until this recording's first line, say why the new model is not in use yet
+            text = f"Using {transcriber.recording_model} while {transcriber.downloading} downloads…"
         elif segments:
             latest = segments[-1]
             text = f"{SOURCE_LABELS[latest.source]}: {latest.text}"

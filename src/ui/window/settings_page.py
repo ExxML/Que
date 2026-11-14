@@ -20,6 +20,7 @@ from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.settings import WHISPER_MODELS, SettingsStore
+from core.transcriber import Transcriber
 from ui.directory_picker import choose_directory
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
 
@@ -42,10 +43,13 @@ class SettingsPage(QWidget):
         self,
         settings_store: SettingsStore,
         claude_bridge: ClaudeBridge,
+        transcriber: Transcriber,
         parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self.settings_store = settings_store
+        self.transcriber = transcriber
+        transcriber.download_finished.connect(self._on_whisper_downloaded)
         self.catalog = ProviderCatalog(claude_bridge)
         self.catalog.completed.connect(self._on_loaded)
         self.catalog.failed.connect(self._on_failed)
@@ -77,11 +81,11 @@ class SettingsPage(QWidget):
         self._show_directory(self.settings_store.claude_directory())
         self.gemini_button.setChecked(self.provider == "gemini")
         self.claude_button.setChecked(self.provider == "claude")
-        self.whisper_combo.blockSignals(True)
-        self.whisper_combo.setCurrentIndex(
-            self.whisper_combo.findData(self.settings_store.whisper_model())
+        self._select_whisper(
+            self.transcriber.downloading
+            or self.transcriber.active_model()
+            or "small.en"
         )
-        self.whisper_combo.blockSignals(False)
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
@@ -227,7 +231,12 @@ class SettingsPage(QWidget):
         self.whisper_combo = _SettingsComboBox()
         for model in WHISPER_MODELS:
             self.whisper_combo.addItem(WHISPER_LABELS[model], model)
-        self.whisper_combo.currentIndexChanged.connect(self._save_whisper_model)
+        self.whisper_combo.currentIndexChanged.connect(self._on_whisper_changed)
+        self.download_button = QPushButton("Download")
+        self.download_button.clicked.connect(self._download_whisper)
+        transcription_row = QHBoxLayout()
+        transcription_row.addWidget(self.whisper_combo, 1)
+        transcription_row.addWidget(self.download_button)
         transcription_label = QLabel("&Transcription")
         transcription_label.setBuddy(self.whisper_combo)
         # Separate form, so match the provider form's label column to align the combos
@@ -238,10 +247,16 @@ class SettingsPage(QWidget):
                 if (label := form.labelForField(field)) is not None
             )
         )
-        transcription_form.addRow(transcription_label, self.whisper_combo)
+        transcription_form.addRow(transcription_label, transcription_row)
         layout.addLayout(transcription_form)
+        self.download_status = QLabel()
+        self.download_status.setTextFormat(Qt.TextFormat.PlainText)
+        self.download_status.setWordWrap(True)
+        self.download_status.setAccessibleName("Transcription model download status")
+        self.download_status.hide()
+        layout.addWidget(self.download_status)
         transcription_hint = QLabel(
-            "Audio is transcribed on this computer and never uploaded. Larger models are more accurate but slower, and download once. Applies the next time you start recording (Ctrl+Shift+R)."
+            "Audio is transcribed on this computer and never uploaded. Download a model once to use it. Larger models are more accurate but slower. Applies the next time you start recording (Ctrl+Shift+R)."
         )
         transcription_hint.setWordWrap(True)
         layout.addWidget(transcription_hint)
@@ -325,14 +340,107 @@ class SettingsPage(QWidget):
         self.directory_input.setText(directory)
         self.no_directory_button.setEnabled(bool(directory))
 
-    def _save_whisper_model(self, index: int) -> None:
-        """Save the chosen transcription model.
+    def _select_whisper(self, model: str) -> None:
+        """Show a transcription model as selected without saving it.
+
+        Args:
+            model (str): The faster-whisper model name.
+        """
+        self.whisper_combo.blockSignals(True)
+        self.whisper_combo.setCurrentIndex(max(0, self.whisper_combo.findData(model)))
+        self.whisper_combo.blockSignals(False)
+        self._refresh_whisper()
+
+    def _refresh_whisper(self) -> None:
+        """Mark downloaded models and offer to download the selected one when missing."""
+        downloaded = self.transcriber.downloaded_models()
+        for index, model in enumerate(WHISPER_MODELS):
+            self.whisper_combo.setItemText(
+                index,
+                f"{WHISPER_LABELS[model]} · downloaded"
+                if model in downloaded
+                else WHISPER_LABELS[model],
+            )
+        selected = self.whisper_combo.currentData() in downloaded
+        downloading = bool(self.transcriber.downloading)
+        self.download_button.setEnabled(not selected and not downloading)
+        self.download_button.setText(
+            "Downloading…" if downloading else "Downloaded" if selected else "Download"
+        )
+
+    def _on_whisper_changed(self, index: int) -> None:
+        """Save a downloaded model, or explain that the selected model must be downloaded.
 
         Args:
             index (int): The selected model index.
         """
+        model = str(self.whisper_combo.itemData(index))
+        self._refresh_whisper()
+        if model in self.transcriber.downloaded_models():
+            self._save_whisper_model(model)
+            if not self.transcriber.downloading:
+                self.download_status.hide()
+            return
+        if self.transcriber.downloading:
+            return
+        active = self.transcriber.active_model()
+        self._show_download_status(
+            f"Download this model to use it. Recording uses the {active} model until then."
+            if active
+            else "Download this model to start transcribing."
+        )
+
+    def _download_whisper(self) -> None:
+        """Start downloading the selected model."""
+        model = str(self.whisper_combo.currentData())
+        self.transcriber.download(model)
+        self._show_download_status(
+            f"Downloading the {model} model. You can keep using Que meanwhile."
+        )
+        self._refresh_whisper()
+
+    def _on_whisper_downloaded(self, model: str, error: str) -> None:
+        """Report a finished download and select the new model for transcription.
+
+        Args:
+            model (str): The faster-whisper model name.
+            error (str): The download error, or an empty string on success.
+        """
+        if error:
+            self._show_download_status(
+                f"Could not download the {model} model. Check your internet connection and try again. ({error})"
+            )
+        else:
+            try:
+                self.settings_store.save_whisper_model(model)
+            except OSError:
+                self._show_download_status(
+                    f"Downloaded the {model} model, but it could not be selected. Check that Que's data folder is writable."
+                )
+            else:
+                self._show_download_status(
+                    f"Downloaded the {model} model and selected it for transcription."
+                )
+                self._select_whisper(model)
+        self._refresh_whisper()
+
+    def _show_download_status(self, text: str) -> None:
+        """Show download progress or results below the transcription settings.
+
+        Args:
+            text (str): The status to show.
+        """
+        self.download_status.setText(text)
+        self.download_status.show()
+
+    def _save_whisper_model(self, model: str) -> None:
+        """Save the chosen transcription model.
+
+        Args:
+            model (str): The faster-whisper model name.
+        """
         try:
-            self.settings_store.save_whisper_model(WHISPER_MODELS[index])
+            self.settings_store.save_whisper_model(model)
         except OSError:
             self.save_status.setText(
                 "The transcription model could not be saved. Check that Que's data folder is writable."
