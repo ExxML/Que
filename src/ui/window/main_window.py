@@ -271,6 +271,8 @@ class MainWindow(QWidget):
         self.input_field = InputField(self)
 
         self.pages = QStackedWidget(self)
+        # Keep page scrollbars inside the 1px window border instead of flush with the window edge
+        self.pages.setContentsMargins(0, 0, 4, 0)
         self.pages.addWidget(self.chat_area)
         self.settings_page = SettingsPage(
             self.ai_sender.settings_store,
