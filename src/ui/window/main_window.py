@@ -15,7 +15,6 @@ from PyQt6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QPushButton,
-    QScrollArea,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -27,7 +26,7 @@ from core.chat_history import ChatHistory, Conversation
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.transcriber import Transcriber
-from ui.chat.chat_area import SCROLLBAR_STYLE, ChatArea
+from ui.chat.chat_area import ChatArea
 from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
 from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
@@ -279,18 +278,7 @@ class MainWindow(QWidget):
             self.transcriber,
             self,
         )
-        settings_scroll = QScrollArea()
-        settings_scroll.setWidgetResizable(True)
-        settings_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
-        settings_scroll.setStyleSheet(
-            "QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; }"
-        )
-        # Styled on the bar itself so combo popups inside settings keep their own look
-        settings_scrollbar = settings_scroll.verticalScrollBar()
-        assert settings_scrollbar is not None
-        settings_scrollbar.setStyleSheet(SCROLLBAR_STYLE)
-        settings_scroll.setWidget(self.settings_page)
-        self.pages.addWidget(settings_scroll)
+        self.pages.addWidget(self.settings_page)
 
         # Create screenshot tray as a floating overlay (not in any layout)
         self.screenshot_tray = ScreenshotTray(self.screenshot_manager, self)

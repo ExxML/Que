@@ -9,10 +9,14 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
+    QStackedWidget,
+    QTabBar,
     QVBoxLayout,
     QWidget,
 )
@@ -22,6 +26,7 @@ from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.settings import WHISPER_MODELS, SettingsStore
 from core.transcriber import Transcriber
+from ui.chat.chat_area import SCROLLBAR_STYLE
 from ui.directory_picker import choose_directory
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
 
@@ -97,7 +102,7 @@ class SettingsPage(QWidget):
             self.status.setText(self.settings_store.error)
 
     def _init_UI(self) -> None:
-        """Build an accessible form that applies verified settings automatically."""
+        """Build accessible, tabbed forms that apply verified settings automatically."""
         # Styling the drop-down area replaces the native arrow, so supply one
         arrow_path = (
             Path(__file__).resolve().parents[2] / "assets" / "dropdown_arrow.svg"
@@ -116,15 +121,40 @@ class SettingsPage(QWidget):
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
             QComboBox QAbstractItemView {{ background: {qss(BG_COLOR)}; color: {qss(PRIMARY_COLOR)};
                 selection-background-color: {qss(PRIMARY_COLOR, 50)}; }}
+            QScrollArea, QScrollArea > QWidget > QWidget {{ background: transparent; }}
+            QFrame#tab_row {{ background: transparent; border-bottom: 1px solid {qss(PRIMARY_COLOR, 40)}; }}
+            QTabBar::tab {{
+                color: {qss(PRIMARY_COLOR, 150)}; background: transparent; border: none;
+                border-bottom: 2px solid transparent; padding: 6px 2px; margin-right: 20px;
+            }}
+            QTabBar::tab:hover {{ color: {qss(PRIMARY_COLOR, 220)}; }}
+            QTabBar::tab:selected {{ color: {qss(PRIMARY_COLOR)}; border-bottom-color: {qss(PRIMARY_COLOR)}; }}
         """)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(22, 12, 22, 18)
-        layout.setSpacing(12)
-        title = QLabel("AI settings")
+        # Only the tab contents scroll, so the title, tabs, and save status stay visible
+        page_layout = QVBoxLayout(self)
+        page_layout.setContentsMargins(0, 12, 0, 18)
+        page_layout.setSpacing(8)
+        title = QLabel("Settings")
         font = title.font()
         font.setPointSize(17)
         title.setFont(font)
-        layout.addWidget(title)
+        title.setContentsMargins(22, 0, 22, 0)
+        page_layout.addWidget(title)
+        tab_row = QFrame()
+        tab_row.setObjectName("tab_row")
+        tab_row_layout = QHBoxLayout(tab_row)
+        tab_row_layout.setContentsMargins(22, 0, 22, 0)
+        self.tab_bar = QTabBar()
+        self.tab_bar.setDrawBase(False)
+        self.tab_bar.setExpanding(False)
+        self.tab_bar.setAccessibleName("Settings sections")
+        tab_row_layout.addWidget(self.tab_bar)
+        tab_row_layout.addStretch()
+        page_layout.addWidget(tab_row)
+        self.tab_pages = QStackedWidget()
+        self.tab_bar.currentChanged.connect(self.tab_pages.setCurrentIndex)
+        page_layout.addWidget(self.tab_pages, 1)
+        layout = self._add_tab("&AI")
         description = QLabel("Choose your AI provider and the defaults for new chats.")
         description.setWordWrap(True)
         layout.addWidget(description)
@@ -230,6 +260,8 @@ class SettingsPage(QWidget):
         )
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
+        layout.addStretch(1)
+        voice_layout = self._add_tab("&Voice")
         transcription_form = QFormLayout()
         self.whisper_combo = _SettingsComboBox()
         for model in WHISPER_MODELS:
@@ -242,27 +274,21 @@ class SettingsPage(QWidget):
         transcription_row.addWidget(self.download_button)
         transcription_label = QLabel("&Transcription")
         transcription_label.setBuddy(self.whisper_combo)
-        # Separate form, so match the provider form's label column to align the combos
-        transcription_label.setMinimumWidth(
-            max(
-                label.sizeHint().width()
-                for field in (self.model_combo, self.effort_combo)
-                if (label := form.labelForField(field)) is not None
-            )
-        )
         transcription_form.addRow(transcription_label, transcription_row)
-        layout.addLayout(transcription_form)
+        voice_layout.addLayout(transcription_form)
         self.download_status = QLabel()
         self.download_status.setTextFormat(Qt.TextFormat.PlainText)
         self.download_status.setWordWrap(True)
         self.download_status.setAccessibleName("Transcription model download status")
         self.download_status.hide()
-        layout.addWidget(self.download_status)
+        voice_layout.addWidget(self.download_status)
         transcription_hint = QLabel(
             "Audio is transcribed on this computer and never uploaded. Download a model once to use it. Larger models are more accurate but slower. Applies the next time you start recording (Ctrl+Shift+R)."
         )
         transcription_hint.setWordWrap(True)
-        layout.addWidget(transcription_hint)
+        voice_layout.addWidget(transcription_hint)
+        voice_layout.addStretch(1)
+        window_layout = self._add_tab("&Window")
         self.tray_checkbox = QCheckBox("Show system tray &icon")
         self.tray_checkbox.toggled.connect(
             lambda enabled: self._save_toggle(
@@ -272,12 +298,11 @@ class SettingsPage(QWidget):
                 enabled,
             )
         )
-        layout.addWidget(self.tray_checkbox)
-        tray_hint = QLabel(
-            "Without the tray icon, show or hide Que with its hotkey and quit with the close button or quit hotkey."
+        self._add_toggle(
+            window_layout,
+            self.tray_checkbox,
+            "Without the tray icon, show or hide Que with its hotkey and quit with the close button or quit hotkey.",
         )
-        tray_hint.setWordWrap(True)
-        layout.addWidget(tray_hint)
         # Checked before connecting so the saved state is shown without re-saving it
         self.capture_checkbox = QCheckBox("Hide from screen &recording")
         self.capture_checkbox.setChecked(self.settings_store.capture_hidden())
@@ -289,12 +314,11 @@ class SettingsPage(QWidget):
                 hidden,
             )
         )
-        layout.addWidget(self.capture_checkbox)
-        capture_hint = QLabel(
-            "Screenshots, recordings, and screen sharing don't show Que. When off, Que also appears in its own screenshots."
+        self._add_toggle(
+            window_layout,
+            self.capture_checkbox,
+            "Screenshots, recordings, and screen sharing don't show Que. When off, Que also appears in its own screenshots.",
         )
-        capture_hint.setWordWrap(True)
-        layout.addWidget(capture_hint)
         self.click_through_checkbox = QCheckBox("&Click through window")
         self.click_through_checkbox.setChecked(self.settings_store.click_through())
         self.click_through_checkbox.toggled.connect(
@@ -305,16 +329,58 @@ class SettingsPage(QWidget):
                 enabled,
             )
         )
-        layout.addWidget(self.click_through_checkbox)
-        click_through_hint = QLabel(
-            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Ctrl+Shift+X to turn click-through on or off."
+        self._add_toggle(
+            window_layout,
+            self.click_through_checkbox,
+            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Ctrl+Shift+X to turn click-through on or off.",
         )
-        click_through_hint.setWordWrap(True)
-        layout.addWidget(click_through_hint)
-        layout.addStretch(1)
+        window_layout.addStretch(1)
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
-        layout.addWidget(self.save_status)
+        self.save_status.setContentsMargins(22, 0, 22, 0)
+        page_layout.addWidget(self.save_status)
+
+    def _add_tab(self, name: str) -> QVBoxLayout:
+        """Add a tab whose contents scroll independently below the tab bar.
+
+        Args:
+            name (str): The tab label, with an optional mnemonic.
+
+        Returns:
+            QVBoxLayout: The layout to fill with the tab's settings.
+        """
+        content = QWidget()
+        tab_layout = QVBoxLayout(content)
+        tab_layout.setContentsMargins(22, 14, 22, 8)
+        tab_layout.setSpacing(12)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        # Styled on the bar itself so combo popups inside settings keep their own look
+        scrollbar = scroll.verticalScrollBar()
+        assert scrollbar is not None
+        scrollbar.setStyleSheet(SCROLLBAR_STYLE)
+        scroll.setWidget(content)
+        self.tab_pages.addWidget(scroll)
+        self.tab_bar.addTab(name)
+        return tab_layout
+
+    def _add_toggle(self, layout: QVBoxLayout, checkbox: QCheckBox, hint: str) -> None:
+        """Add a checkbox with its explanation grouped closely below it.
+
+        Args:
+            layout (QVBoxLayout): The tab layout to add the setting to.
+            checkbox (QCheckBox): The checkbox that toggles the setting.
+            hint (str): The explanation of what the setting does.
+        """
+        group = QVBoxLayout()
+        group.setSpacing(4)
+        group.addWidget(checkbox)
+        hint_label = QLabel(hint)
+        hint_label.setWordWrap(True)
+        group.addWidget(hint_label)
+        checkbox.setAccessibleDescription(hint)
+        layout.addLayout(group)
 
     def _select_provider(self, provider: str) -> None:
         """Retain draft defaults when switching the provider toggle.
