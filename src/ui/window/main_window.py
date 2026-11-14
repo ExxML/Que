@@ -738,7 +738,7 @@ class MainWindow(QWidget):
             pass
 
     def _is_topmost_window(self) -> bool:
-        """Check if the main window is the topmost window at its corner positions.
+        """Check that no window above the main window covers its corner positions.
 
         Returns:
             bool: True if the main window is topmost at all sampled points.
@@ -752,6 +752,13 @@ class MainWindow(QWidget):
             self_root = ctypes.windll.user32.GetAncestor(
                 wintypes.HWND(self_hwnd), ga_root
             )
+            # Compare z-order instead of identity: WindowFromPoint skips click-through windows,
+            # so it returns the window beneath, which must not count as covering this one
+            gw_hwndprev = 3
+            windows_above: set[int] = set()
+            hwnd = self_root
+            while hwnd := ctypes.windll.user32.GetWindow(hwnd, gw_hwndprev):
+                windows_above.add(int(hwnd))
             padding = 15
             corners = [
                 rect.topLeft() + QPoint(padding, padding),
@@ -766,7 +773,7 @@ class MainWindow(QWidget):
                     target_root = ctypes.windll.user32.GetAncestor(
                         wintypes.HWND(hwnd_at_pt), ga_root
                     )
-                    if int(self_root) != int(target_root):
+                    if int(target_root) in windows_above:
                         return False
             return True
         except Exception:  # noqa: BLE001
