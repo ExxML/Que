@@ -7,7 +7,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.claude_bridge import ClaudeBridge
 from core.gemini_efforts import load_efforts
-from core.model_catalog import ModelOption, compatible_model
+from core.model_catalog import EFFORT_WARNING, ModelOption, compatible_model
 
 
 @dataclass(frozen=True)
@@ -101,9 +101,7 @@ class ProviderCatalog(QObject):
                         )
                         status = "Healthy · Gemini accepted a test generation request."
                     if not efforts:
-                        status += (
-                            " Effort capabilities unavailable; using model defaults."
-                        )
+                        status += f" {EFFORT_WARNING}"
             self.completed.emit(revision, ProviderResult(provider, models, status))
         except Exception as exc:  # noqa: BLE001
             message = str(exc)

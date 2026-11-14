@@ -27,9 +27,6 @@ class InputSettings(QWidget):
         self.effort_dropdown.hide()
         self.model_dropdown.setAccessibleName("Model")
         self.effort_dropdown.setAccessibleName("Reasoning effort")
-        self.effort_dropdown.setToolTip(
-            "Reasoning effort. Higher levels can take longer."
-        )
         self.record_button = _RecordButton()
         self.set_recording(False)
         self.directory_widget = QWidget()
@@ -184,6 +181,10 @@ class InputSettings(QWidget):
         self.model_changed.emit(model_id)
         self.effort_dropdown.set_options(
             [(level.title(), level) for level in self.models[model_id].effort_levels]
+        )
+        self.effort_dropdown.setToolTip(
+            self.models[model_id].effort_warning
+            or "Reasoning effort. Higher levels can take longer."
         )
         self.effort_dropdown.setVisible(
             self.models[model_id].effort_levels != ("default",)

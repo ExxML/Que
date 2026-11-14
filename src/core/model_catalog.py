@@ -8,6 +8,14 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.gemini_efforts import load_efforts
 
+# Every level the installed SDK can send, offered unverified when the docs table is unreadable.
+API_EFFORTS = tuple(
+    level.value.lower()
+    for level in types.ThinkingLevel
+    if level is not types.ThinkingLevel.THINKING_LEVEL_UNSPECIFIED
+)
+EFFORT_WARNING = "Could not read Gemini's supported effort levels from its docs, so every level is offered. Gemini rejects levels a model does not support."
+
 
 @dataclass(frozen=True)
 class ModelOption:
@@ -16,6 +24,7 @@ class ModelOption:
     model_id: str
     display_name: str
     effort_levels: tuple[str, ...]
+    effort_warning: str = ""
 
 
 def compatible_model(
@@ -29,7 +38,8 @@ def compatible_model(
 
     Args:
         model (types.Model): Metadata returned by Gemini's Models API.
-        efforts (dict[str, tuple[str, ...]] | None): Published effort capabilities.
+        efforts (dict[str, tuple[str, ...]] | None): Published effort capabilities; empty
+            offers every API level with a warning to thinking models.
 
     Returns:
         ModelOption | None: A compatible model, or None for an unsupported variant.
@@ -48,7 +58,11 @@ def compatible_model(
     if version < (2, 5):
         return None
     levels: tuple[str, ...] = ("default",)
-    if model.thinking is not False:
+    warning = ""
+    if model.thinking and not efforts:
+        levels = ("default", *API_EFFORTS)
+        warning = EFFORT_WARNING
+    elif model.thinking is not False:
         published = (efforts or {}).get(model_id, ())
         if not published:
             base_id = re.sub(
@@ -63,7 +77,7 @@ def compatible_model(
         or display_name.startswith("models/")
     ):
         display_name = model_id.replace("-", " ").title()
-    return ModelOption(model_id, display_name, levels)
+    return ModelOption(model_id, display_name, levels, warning)
 
 
 class ModelCatalog(QObject):

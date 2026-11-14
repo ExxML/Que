@@ -17,8 +17,8 @@ from PyQt6.QtWidgets import QApplication, QWidget
 
 from core.ai_sender import AISender
 from core.claude_bridge import ClaudeBridge
-from core.gemini_efforts import parse_efforts
-from core.model_catalog import ModelOption, compatible_model
+from core.gemini_efforts import load_efforts, parse_efforts
+from core.model_catalog import EFFORT_WARNING, ModelOption, compatible_model
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
@@ -143,6 +143,33 @@ class ProviderTests(unittest.TestCase):
         )
         assert option is not None
         self.assertEqual(option.effort_levels, ("default",))
+
+    def test_efforts_are_fetched_without_caching(self) -> None:
+        """Return only the live table, and nothing once the fetch fails."""
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = (
+            b"| Model | Levels Supported |\n| --- | --- |\n| gemini-2.5-pro | max |"
+        )
+        with patch("urllib.request.urlopen", return_value=response):
+            self.assertEqual(load_efforts(), {"gemini-2.5-pro": ("max",)})
+        with patch("urllib.request.urlopen", side_effect=OSError):
+            self.assertEqual(load_efforts(), {})
+
+    def test_unreadable_efforts_offer_every_level_with_warning(self) -> None:
+        """Keep efforts selectable but flagged when the docs table cannot be read."""
+        thinking = types.Model(
+            name="gemini-2.5-pro", supported_actions=["generateContent"], thinking=True
+        )
+        option = compatible_model(thinking, {})
+        assert option is not None
+        self.assertEqual(
+            option.effort_levels, ("default", "minimal", "low", "medium", "high")
+        )
+        self.assertEqual(option.effort_warning, EFFORT_WARNING)
+        option = compatible_model(thinking, {"gemini-2.5-pro": ("low",)})
+        assert option is not None
+        self.assertEqual(option.effort_levels, ("default", "low"))
+        self.assertEqual(option.effort_warning, "")
 
 
 class ClaudeBridgeTests(unittest.TestCase):

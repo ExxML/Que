@@ -1,8 +1,6 @@
-import json
 import re
 import urllib.request
 from html.parser import HTMLParser
-from pathlib import Path
 
 
 def parse_efforts(document: str) -> dict[str, tuple[str, ...]]:
@@ -53,46 +51,23 @@ def parse_efforts(document: str) -> dict[str, tuple[str, ...]]:
 
 
 def load_efforts() -> dict[str, tuple[str, ...]]:
-    """Fetch current effort capabilities and keep the last successful table locally.
+    """Fetch current effort capabilities from Gemini's thinking documentation.
+
+    The Models API reports only whether a model thinks, so the documentation table is
+    the sole published source of per-model levels. Nothing is stored between fetches.
 
     Returns:
         dict[str, tuple[str, ...]]: Published capabilities, or an empty mapping if unavailable.
     """
-    cache = (
-        Path(__file__).resolve().parent.parent
-        / "data"
-        / "cache"
-        / "gemini_efforts.json"
+    request = urllib.request.Request(
+        "https://ai.google.dev/gemini-api/docs/thinking",
+        headers={"Accept": "text/markdown, text/html", "User-Agent": "Que"},
     )
     try:
-        request = urllib.request.Request(
-            "https://ai.google.dev/gemini-api/docs/thinking",
-            headers={"Accept": "text/markdown, text/html", "User-Agent": "Que"},
-        )
         with urllib.request.urlopen(request, timeout=15) as response:
-            result = parse_efforts(response.read(2_000_000).decode("utf-8"))
-        if result:
-            try:
-                cache.parent.mkdir(parents=True, exist_ok=True)
-                cache.write_text(json.dumps(result), encoding="utf-8")
-            except OSError:
-                pass
-            return result
+            return parse_efforts(response.read(2_000_000).decode("utf-8"))
     except (OSError, ValueError):
-        pass
-    try:
-        data = json.loads(cache.read_text(encoding="utf-8"))
-        if isinstance(data, dict):
-            return {
-                model: tuple(levels)
-                for model, levels in data.items()
-                if isinstance(levels, list)
-                and levels
-                and all(isinstance(level, str) for level in levels)
-            }
-    except (OSError, ValueError):
-        pass
-    return {}
+        return {}
 
 
 class _TableParser(HTMLParser):
