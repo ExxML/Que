@@ -7,6 +7,11 @@ from typing import Any
 import win32crypt  # type: ignore[import-untyped]
 
 WHISPER_MODELS: tuple[str, ...] = ("tiny.en", "base.en", "small.en", "medium.en")
+CONTEXT_DOCUMENTS: dict[str, str] = {
+    "resume": "Resume",
+    "cover_letter": "Cover letter",
+    "interview_script": "Interview script",
+}
 
 
 class SettingsStore:
@@ -90,6 +95,23 @@ class SettingsStore:
         """
         return self.data.get("click_through") is True
 
+    def context_documents(self) -> dict[str, tuple[str, str]]:
+        """Return the saved documents that give the AI context about the user.
+
+        Returns:
+            dict[str, tuple[str, str]]: The file name and extracted text by document kind.
+        """
+        documents = self.data.get("context_documents")
+        if not isinstance(documents, dict):
+            return {}
+        return {
+            kind: (str(document.get("name", "")), str(document["text"]))
+            for kind, document in documents.items()
+            if kind in CONTEXT_DOCUMENTS
+            and isinstance(document, dict)
+            and document.get("text")
+        }
+
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
 
@@ -172,6 +194,23 @@ class SettingsStore:
             enabled (bool): Whether the window should ignore mouse input.
         """
         self._write({**self.data, "click_through": enabled})
+
+    def save_context_document(self, kind: str, name: str, text: str) -> None:
+        """Atomically save a context document, or remove it when the text is empty.
+
+        Args:
+            kind (str): The document kind from CONTEXT_DOCUMENTS.
+            name (str): The original file name to display.
+            text (str): The extracted document text.
+        """
+        documents = {
+            saved_kind: {"name": saved_name, "text": saved_text}
+            for saved_kind, (saved_name, saved_text) in self.context_documents().items()
+            if saved_kind != kind
+        }
+        if text:
+            documents[kind] = {"name": name, "text": text}
+        self._write({**self.data, "context_documents": documents})
 
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.

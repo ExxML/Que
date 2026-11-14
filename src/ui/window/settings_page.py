@@ -22,12 +22,13 @@ from PyQt6.QtWidgets import (
 )
 
 from core.claude_bridge import ClaudeBridge
+from core.document_text import extract_text
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
-from core.settings import WHISPER_MODELS, SettingsStore
+from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
-from ui.directory_picker import choose_directory
+from ui.directory_picker import choose_directory, choose_file
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
 
 WHISPER_LABELS: dict[str, str] = {
@@ -97,6 +98,7 @@ class SettingsPage(QWidget):
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
+        self._show_documents()
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
@@ -261,6 +263,48 @@ class SettingsPage(QWidget):
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
         layout.addStretch(1)
+        documents_layout = self._add_tab("&Documents")
+        documents_description = QLabel(
+            "Add your resume, cover letter, and interview script so answers fit your experience, like during an interview."
+        )
+        documents_description.setWordWrap(True)
+        documents_layout.addWidget(documents_description)
+        self.document_names: dict[str, QLineEdit] = {}
+        self.document_remove_buttons: dict[str, QPushButton] = {}
+        for kind, label in CONTEXT_DOCUMENTS.items():
+            document_label = QLabel(label)
+            document_name = QLineEdit()
+            document_name.setReadOnly(True)
+            document_name.setPlaceholderText("No file")
+            document_name.setAccessibleName(label)
+            document_label.setBuddy(document_name)
+            upload_button = QPushButton("Upload…")
+            upload_button.setAccessibleName(f"Upload {label.lower()}")
+            upload_button.clicked.connect(
+                lambda _checked, kind=kind: self._upload_document(kind)
+            )
+            remove_button = QPushButton("Remove")
+            remove_button.setAccessibleName(f"Remove {label.lower()}")
+            remove_button.clicked.connect(
+                lambda _checked, kind=kind: self._save_document(kind, "", "")
+            )
+            document_row = QHBoxLayout()
+            document_row.addWidget(document_name, 1)
+            document_row.addWidget(upload_button)
+            document_row.addWidget(remove_button)
+            document_group = QVBoxLayout()
+            document_group.setSpacing(4)
+            document_group.addWidget(document_label)
+            document_group.addLayout(document_row)
+            documents_layout.addLayout(document_group)
+            self.document_names[kind] = document_name
+            self.document_remove_buttons[kind] = remove_button
+        documents_hint = QLabel(
+            "PDF, Word (.docx), or text files. Que saves only their text on this computer and sends it once at the start of each new chat, so changes apply to your next new chat."
+        )
+        documents_hint.setWordWrap(True)
+        documents_layout.addWidget(documents_hint)
+        documents_layout.addStretch(1)
         voice_layout = self._add_tab("&Voice")
         transcription_form = QFormLayout()
         self.whisper_combo = _SettingsComboBox()
@@ -448,6 +492,58 @@ class SettingsPage(QWidget):
         """
         self.directory_input.setText(directory)
         self.no_directory_button.setEnabled(bool(directory))
+
+    def _upload_document(self, kind: str) -> None:
+        """Ask for a document and save its text as context for new chats.
+
+        Args:
+            kind (str): The document kind from CONTEXT_DOCUMENTS.
+        """
+        filename = choose_file(
+            self,
+            f"Choose your {CONTEXT_DOCUMENTS[kind].lower()}",
+            str(Path.home()),
+            "Documents (*.pdf *.docx *.txt *.md)",
+        )
+        if not filename:
+            return
+        path = Path(filename)
+        try:
+            text = extract_text(path)
+        except ValueError as error:
+            self.save_status.setText(str(error))
+            return
+        self._save_document(kind, path.name, text)
+
+    def _save_document(self, kind: str, name: str, text: str) -> None:
+        """Save a document's text, or remove the document when the text is empty.
+
+        Args:
+            kind (str): The document kind from CONTEXT_DOCUMENTS.
+            name (str): The original file name to display.
+            text (str): The extracted document text.
+        """
+        try:
+            self.settings_store.save_context_document(kind, name, text)
+        except OSError:
+            self.save_status.setText(
+                f"The {CONTEXT_DOCUMENTS[kind].lower()} could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self._show_documents()
+        self.save_status.setText(
+            "Changes saved automatically. They apply to new chats."
+        )
+
+    def _show_documents(self) -> None:
+        """Display each saved document's name and size, and offer removal only when saved."""
+        documents = self.settings_store.context_documents()
+        for kind, document_name in self.document_names.items():
+            name, text = documents.get(kind, ("", ""))
+            document_name.setText(
+                f"{name} · {len(text.split()):,} words" if text else ""
+            )
+            self.document_remove_buttons[kind].setEnabled(bool(text))
 
     def _select_whisper(self, model: str) -> None:
         """Show a transcription model as selected without saving it.

@@ -12,7 +12,7 @@ from google.genai import interactions
 
 from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
-from core.settings import SettingsStore
+from core.settings import CONTEXT_DOCUMENTS, SettingsStore
 
 
 @dataclass(frozen=True)
@@ -31,22 +31,25 @@ class InteractionRequest:
     claude_directory: Path | None = None
     transcript: str = ""
     transcript_seq: int = 0
+    context: str = ""
 
     @property
     def prompt(self) -> str:
-        """Return the message with any new audio transcript prepended as context.
+        """Return the message with any documents and new audio transcript prepended as context.
 
         Returns:
             str: The text sent to the provider.
         """
-        if not self.transcript:
-            return self.message
-        return f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. It may be unrelated to my request.
+        prompt = self.message
+        if self.transcript:
+            prompt = f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. It may be unrelated to my request.
 <transcript>
 {self.transcript}
 </transcript>
 
-{self.message}"""
+{prompt}"""
+        # Documents lead so new conversations share a prefix the provider can cache
+        return f"{self.context}\n\n{prompt}" if self.context else prompt
 
 
 class AISender:
@@ -192,6 +195,8 @@ class AISender:
             self.claude_directory,
             transcript,
             transcript_seq,
+            # Providers keep earlier turns, so documents are sent once per conversation
+            "" if self.previous_interaction_id else self._context(),
         )
 
     def commit_interaction(
@@ -327,3 +332,21 @@ class AISender:
                     f"Details: {exc}"
                 ) from exc
             raise
+
+    def _context(self) -> str:
+        """Wrap the user's saved documents as background for a new conversation.
+
+        Returns:
+            str: The documents with usage instructions, or an empty string when none are saved.
+        """
+        documents = self.settings_store.context_documents()
+        sections = [
+            f"<{kind}>\n{documents[kind][1]}\n</{kind}>"
+            for kind in CONTEXT_DOCUMENTS
+            if kind in documents
+        ]
+        if not sections:
+            return ""
+        joined = "\n".join(sections)
+        return f"""Background documents about me. Tailor your answers to my real experience. When I'm asked an interview question, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
+{joined}"""
