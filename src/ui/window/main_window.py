@@ -373,15 +373,15 @@ class MainWindow(QWidget):
         self.show()
 
         # Set display affinity to exclude main window from screen capture (Windows 10+)
-        # hwnd = int(self.winId())
-        # WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        # result = ctypes.windll.user32.SetWindowDisplayAffinity(
-        #     hwnd, WDA_EXCLUDEFROMCAPTURE
-        # )
-        # if result == 0:
-        #     print(
-        #         "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
-        #     )
+        hwnd = int(self.winId())
+        WDA_EXCLUDEFROMCAPTURE = 0x00000011
+        result = ctypes.windll.user32.SetWindowDisplayAffinity(
+            hwnd, WDA_EXCLUDEFROMCAPTURE
+        )
+        if result == 0:
+            print(
+                "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
+            )
 
         # Setup timer to raise main window so it is always visible (certain Windows operations override the stay on top hint)
         self.visibility_timer = QTimer(self)
