@@ -23,5 +23,7 @@ if __name__ == "__main__":
     app.aboutToQuit.connect(ai_sender.claude_bridge.close)
     shortcut_manager = ShortcutManager(main_window, screenshot_manager)
     tray_icon = SystemTray(main_window, shortcut_manager)
+    tray_icon.setVisible(ai_sender.settings_store.system_tray())
+    main_window.settings_page.system_tray_saved.connect(tray_icon.setVisible)
 
     sys.exit(app.exec())

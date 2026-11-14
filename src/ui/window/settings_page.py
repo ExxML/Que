@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QWheelEvent
 from PyQt6.QtWidgets import (
     QButtonGroup,
+    QCheckBox,
     QComboBox,
     QFormLayout,
     QHBoxLayout,
@@ -35,6 +36,7 @@ class SettingsPage(QWidget):
 
     saved = pyqtSignal(object)
     directory_saved = pyqtSignal(str)
+    system_tray_saved = pyqtSignal(bool)
 
     def __init__(
         self,
@@ -80,6 +82,9 @@ class SettingsPage(QWidget):
             self.whisper_combo.findData(self.settings_store.whisper_model())
         )
         self.whisper_combo.blockSignals(False)
+        self.tray_checkbox.blockSignals(True)
+        self.tray_checkbox.setChecked(self.settings_store.system_tray())
+        self.tray_checkbox.blockSignals(False)
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
@@ -91,7 +96,7 @@ class SettingsPage(QWidget):
             Path(__file__).resolve().parents[2] / "assets" / "dropdown_arrow.svg"
         ).as_posix()
         self.setStyleSheet(f"""
-            QLabel {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; }}
+            QLabel, QCheckBox {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; }}
             QLineEdit, QComboBox, QPushButton {{
                 color: {qss(PRIMARY_COLOR)}; background: transparent;
                 border: 1px solid {qss(PRIMARY_COLOR, 65)}; border-radius: 6px;
@@ -240,6 +245,14 @@ class SettingsPage(QWidget):
         )
         transcription_hint.setWordWrap(True)
         layout.addWidget(transcription_hint)
+        self.tray_checkbox = QCheckBox("Show system tray &icon")
+        self.tray_checkbox.toggled.connect(self._save_system_tray)
+        layout.addWidget(self.tray_checkbox)
+        tray_hint = QLabel(
+            "Without the tray icon, show or hide Que with its hotkey and quit with the close button or quit hotkey."
+        )
+        tray_hint.setWordWrap(True)
+        layout.addWidget(tray_hint)
         layout.addStretch(1)
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
@@ -326,6 +339,22 @@ class SettingsPage(QWidget):
             )
             return
         self.save_status.setText("Changes saved automatically.")
+
+    def _save_system_tray(self, enabled: bool) -> None:
+        """Save and apply whether to show the system tray icon.
+
+        Args:
+            enabled (bool): Whether the tray icon should be visible.
+        """
+        try:
+            self.settings_store.save_system_tray(enabled)
+        except OSError:
+            self.save_status.setText(
+                "The tray setting could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self.save_status.setText("Changes saved automatically.")
+        self.system_tray_saved.emit(enabled)
 
     def _on_key_changed(self, _text: str) -> None:
         """Validate a new key automatically after a short typing pause."""

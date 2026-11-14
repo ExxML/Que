@@ -66,6 +66,14 @@ class SettingsStore:
         model = self.data.get("whisper_model")
         return str(model) if model in WHISPER_MODELS else "small.en"
 
+    def system_tray(self) -> bool:
+        """Return whether to show the system tray icon, defaulting to shown.
+
+        Returns:
+            bool: True when the tray icon should be visible.
+        """
+        return self.data.get("system_tray") is not False
+
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
 
@@ -124,6 +132,14 @@ class SettingsStore:
             model (str): The faster-whisper model name.
         """
         self._write({**self.data, "whisper_model": model})
+
+    def save_system_tray(self, enabled: bool) -> None:
+        """Atomically save whether to show the system tray icon.
+
+        Args:
+            enabled (bool): Whether the tray icon should be visible.
+        """
+        self._write({**self.data, "system_tray": enabled})
 
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.

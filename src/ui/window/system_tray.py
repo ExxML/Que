@@ -36,8 +36,6 @@ class SystemTray(QSystemTrayIcon):
         # Connect the activated signal (click) to toggle the window
         self.activated.connect(self._on_tray_activated)
 
-        self.show()
-
     def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         """Handle system tray icon activation events.
 
