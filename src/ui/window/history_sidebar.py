@@ -4,6 +4,7 @@ from collections.abc import Callable
 from PyQt6.QtCore import (
     QEasingCurve,
     QEvent,
+    QObject,
     QPointF,
     Qt,
     QVariantAnimation,
@@ -16,6 +17,8 @@ from PyQt6.QtGui import (
     QResizeEvent,
 )
 from PyQt6.QtWidgets import (
+    QAbstractButton,
+    QApplication,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -27,6 +30,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core.chat_history import Conversation
+from ui.input.selection_dropdown import SelectionDropdown
 from ui.theme import (
     DANGER_COLOR,
     PRIMARY_COLOR,
@@ -64,7 +68,8 @@ class HistorySidebar(QWidget):
 
     The drawer replaces the pixels beneath it with the window background instead of
     blending over them, so the translucent overlay never compounds into a darker layer.
-    The chat beside it stays interactive; Escape closes the drawer.
+    The chat beside it stays interactive; Escape or a click elsewhere in the window
+    other than on a button closes the drawer.
     """
 
     conversation_selected = pyqtSignal(str)
@@ -107,12 +112,18 @@ class HistorySidebar(QWidget):
         self.raise_()
         self._animate(1.0)
         self.conversation_list.setFocus()
+        app = QApplication.instance()
+        assert app is not None
+        app.installEventFilter(self)
 
     def close_sidebar(self) -> None:
         """Slide the drawer out and hand focus back to the window."""
         if not self.opened:
             return
         self.opened = False
+        app = QApplication.instance()
+        if app is not None:
+            app.removeEventFilter(self)
         self._animate(0.0)
         self.closed.emit()
 
@@ -161,6 +172,28 @@ class HistorySidebar(QWidget):
                 row.request_delete()
         else:
             super().keyPressEvent(event)
+
+    def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:
+        """Close the drawer when the window is clicked anywhere but the drawer or a button.
+
+        Args:
+            watched (QObject): The object receiving the event.
+            event (QEvent): The event being processed.
+
+        Returns:
+            bool: Whether the base class filtered out the event.
+        """
+        if (
+            event is not None
+            and event.type() == QEvent.Type.MouseButtonPress
+            and isinstance(watched, QWidget)
+            and watched.window() is self.window()
+            and watched is not self
+            and not self.isAncestorOf(watched)
+            and not self._is_in_button(watched)
+        ):
+            self.close_sidebar()
+        return super().eventFilter(watched, event)
 
     def paintEvent(self, _event: QPaintEvent | None) -> None:
         """Paint the drawer as the bare window background, border included."""
@@ -232,6 +265,22 @@ class HistorySidebar(QWidget):
         self.conversation_list.currentItemChanged.connect(self._on_current_changed)
         layout.addWidget(self.conversation_list, stretch=1)
         layout.addStretch()
+
+    def _is_in_button(self, widget: QWidget) -> bool:
+        """Report whether a widget is a button or sits inside one.
+
+        Args:
+            widget (QWidget): The widget that received the click.
+
+        Returns:
+            bool: True when the widget or one of its ancestors is a button.
+        """
+        current: QWidget | None = widget
+        while current is not None:
+            if isinstance(current, (QAbstractButton, SelectionDropdown)):
+                return True
+            current = current.parentWidget()
+        return False
 
     def _animate(self, target: float) -> None:
         """Animate the drawer from its current position to the target.
