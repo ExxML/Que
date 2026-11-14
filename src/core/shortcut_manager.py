@@ -67,6 +67,7 @@ class ShortcutManager(QObject):
     toggle_history_signal = pyqtSignal()
     send_message_signal = pyqtSignal(str)
     toggle_recording_signal = pyqtSignal()
+    toggle_click_through_signal = pyqtSignal()
 
     def __init__(
         self, main_window: MainWindow, screenshot_manager: ScreenshotManager
@@ -88,6 +89,10 @@ class ShortcutManager(QObject):
         self.toggle_history_signal.connect(self.main_window.toggle_history)
         self.send_message_signal.connect(self.main_window.send_message)
         self.toggle_recording_signal.connect(self.main_window.transcriber.toggle)
+        # Toggling the settings checkbox saves the change and applies it to the window
+        self.toggle_click_through_signal.connect(
+            self.main_window.settings_page.click_through_checkbox.toggle
+        )
 
         # Initialize animation
         self.animation_timer = QTimer()
@@ -136,6 +141,7 @@ class ShortcutManager(QObject):
             Ctrl + Alt + <ArrowKeys> - Move main window
             Ctrl + Shift + Up / Down - Scroll chat area
             Ctrl + Shift + S - Take a screenshot
+            Ctrl + Shift + X - Turn click-through on / off
             Ctrl + N - Start a new chat (previous chat stays in history)
             Ctrl + H - Show / hide conversation history
             Ctrl + Q - Minimize main window
@@ -155,6 +161,7 @@ class ShortcutManager(QObject):
             (MOD_CTRL | MOD_SHIFT, VK_UP): (self._scroll_up, True),
             (MOD_CTRL | MOD_SHIFT, VK_DOWN): (self._scroll_down, True),
             (MOD_CTRL | MOD_SHIFT, ord("S")): (self._screenshot, False),
+            (MOD_CTRL | MOD_SHIFT, ord("X")): (self._toggle_click_through, False),
             (MOD_CTRL, ord("Q")): (self._minimize, False),
             (MOD_CTRL, ord("N")): (self._clear_all_chat, False),
             (MOD_CTRL, ord("H")): (self._toggle_history, False),
@@ -481,6 +488,10 @@ class ShortcutManager(QObject):
     def _toggle_recording(self) -> None:
         """Start or stop recording and transcribing audio."""
         self.toggle_recording_signal.emit()
+
+    def _toggle_click_through(self) -> None:
+        """Turn mouse click-through on or off for the main window."""
+        self.toggle_click_through_signal.emit()
 
     def _generate_with_screenshot(self) -> None:
         """Take a screenshot then automatically generate content."""

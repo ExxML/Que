@@ -74,6 +74,22 @@ class SettingsStore:
         """
         return self.data.get("system_tray") is not False
 
+    def capture_hidden(self) -> bool:
+        """Return whether to hide the window from screen capture, defaulting to hidden.
+
+        Returns:
+            bool: True when screenshots and recordings should omit the window.
+        """
+        return self.data.get("capture_hidden") is not False
+
+    def click_through(self) -> bool:
+        """Return whether mouse input passes through the window, defaulting to off.
+
+        Returns:
+            bool: True when the window should ignore mouse input.
+        """
+        return self.data.get("click_through") is True
+
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
 
@@ -140,6 +156,22 @@ class SettingsStore:
             enabled (bool): Whether the tray icon should be visible.
         """
         self._write({**self.data, "system_tray": enabled})
+
+    def save_capture_hidden(self, hidden: bool) -> None:
+        """Atomically save whether to hide the window from screen capture.
+
+        Args:
+            hidden (bool): Whether screenshots and recordings should omit the window.
+        """
+        self._write({**self.data, "capture_hidden": hidden})
+
+    def save_click_through(self, enabled: bool) -> None:
+        """Atomically save whether mouse input passes through the window.
+
+        Args:
+            enabled (bool): Whether the window should ignore mouse input.
+        """
+        self._write({**self.data, "click_through": enabled})
 
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.

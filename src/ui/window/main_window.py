@@ -71,6 +71,8 @@ class MainWindow(QWidget):
         self.input_field.input_settings.reload_requested.connect(self._refresh_models)
         self.settings_page.saved.connect(self._on_settings_saved)
         self.settings_page.directory_saved.connect(self._set_claude_directory)
+        self.settings_page.capture_hidden_saved.connect(self.set_capture_hidden)
+        self.settings_page.click_through_saved.connect(self.set_click_through)
         self.input_field.input_settings.directory_requested.connect(
             self._choose_claude_directory
         )
@@ -112,6 +114,30 @@ class MainWindow(QWidget):
             self.repaint()
             QApplication.processEvents()
         super().hide()
+
+    def set_capture_hidden(self, hidden: bool) -> None:
+        """Exclude the window from or include it in screen capture (Windows 10+).
+
+        Args:
+            hidden (bool): Whether screenshots and recordings should omit the window.
+        """
+        wda_none, wda_excludefromcapture = 0x00000000, 0x00000011
+        result = ctypes.windll.user32.SetWindowDisplayAffinity(
+            int(self.winId()), wda_excludefromcapture if hidden else wda_none
+        )
+        if result == 0:
+            print("Warning: SetWindowDisplayAffinity failed.")
+
+    def set_click_through(self, enabled: bool) -> None:
+        """Let mouse input pass through the window to the windows behind it.
+
+        Args:
+            enabled (bool): Whether the window ignores mouse input.
+        """
+        visible = self.isVisible()
+        self.setWindowFlag(Qt.WindowType.WindowTransparentForInput, enabled)
+        if visible:
+            self.show()  # Changing window flags hides the window
 
     def send_message(self, message: str) -> None:
         """Send a user message with any pending screenshot attachments.
@@ -206,7 +232,10 @@ class MainWindow(QWidget):
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.Tool
-            # Qt.WindowType.WindowTransparentForInput # Click-through
+        )
+        self.setWindowFlag(
+            Qt.WindowType.WindowTransparentForInput,
+            self.ai_sender.settings_store.click_through(),
         )
 
         # Translucent bg for rounded corners
@@ -372,16 +401,7 @@ class MainWindow(QWidget):
 
         self.show()
 
-        # Set display affinity to exclude main window from screen capture (Windows 10+)
-        hwnd = int(self.winId())
-        WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        result = ctypes.windll.user32.SetWindowDisplayAffinity(
-            hwnd, WDA_EXCLUDEFROMCAPTURE
-        )
-        if result == 0:
-            print(
-                "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
-            )
+        self.set_capture_hidden(self.ai_sender.settings_store.capture_hidden())
 
         # Setup timer to raise main window so it is always visible (certain Windows operations override the stay on top hint)
         self.visibility_timer = QTimer(self)
