@@ -15,6 +15,30 @@ from PyQt6.QtWidgets import QGraphicsEffect, QScrollArea, QVBoxLayout, QWidget
 
 from ui.chat.chat_bubble import ChatBubble
 
+SCROLLBAR_STYLE = """
+    QScrollBar:vertical {
+        background-color: rgba(0, 0, 0, 0);
+        width: 5px;
+    }
+    QScrollBar::handle:vertical {
+        background-color: rgba(255, 255, 255, 77);
+        border-radius: 2px;
+        min-height: 20px;
+    }
+    QScrollBar::handle:vertical:hover {
+        background-color: rgba(255, 255, 255, 128);
+    }
+    QScrollBar::handle:vertical:disabled {
+        background-color: transparent;
+    }
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+        height: 0px;
+    }
+    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+        background: none;
+    }
+"""
+
 
 class ChatArea(QScrollArea):
     """Display message history in a scrollable chat area."""
@@ -27,18 +51,19 @@ class ChatArea(QScrollArea):
         self._init_scroll_animation()
         self._reset_stream()
 
-    def add_message(self, message: str, is_user: bool) -> None:
+    def add_message(self, message: str, is_user: bool, transcript: str = "") -> None:
         """Add a new message to the chat area.
 
         Args:
             message (str): The message text to display.
             is_user (bool): Whether the message is from the user.
+            transcript (str): Audio transcript sent with a user message.
         """
         # Remove the stretch before adding new message
         self.chat_layout.takeAt(self.chat_layout.count() - 1)
 
         # Create and add the chat bubble
-        bubble = ChatBubble(message, is_user)
+        bubble = ChatBubble(message, is_user, transcript)
         self.chat_layout.addWidget(bubble)
 
         # Pre-create the assistant loading bubble so it is visible when the chat scrolls down
@@ -115,15 +140,15 @@ class ChatArea(QScrollArea):
                 if widget is not None:
                     widget.deleteLater()
 
-    def load_messages(self, messages: list[tuple[str, bool]]) -> None:
+    def load_messages(self, messages: list[tuple[str, bool, str]]) -> None:
         """Replace the chat with a saved transcript and scroll to its end.
 
         Args:
-            messages (list[tuple[str, bool]]): Message texts paired with whether each is from the user.
+            messages (list[tuple[str, bool, str]]): Message texts with whether each is from the user and its audio transcript.
         """
         self.clear_chat_messages()
-        for message, is_user in messages:
-            bubble = ChatBubble(message, is_user)
+        for message, is_user, transcript in messages:
+            bubble = ChatBubble(message, is_user, transcript)
             if not is_user:
                 bubble.set_bot_message(message)
             self.chat_layout.insertWidget(self.chat_layout.count() - 1, bubble)
@@ -161,33 +186,15 @@ class ChatArea(QScrollArea):
         self.scrollbar = scrollbar
 
         # Style the scroll area
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QScrollArea {
                 background-color: transparent;
                 border: none;
             }
-            QScrollBar:vertical {
-                background-color: rgba(0, 0, 0, 0);
-                width: 5px;
-            }
-            QScrollBar::handle:vertical {
-                background-color: rgba(255, 255, 255, 77);
-                border-radius: 2px;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background-color: rgba(255, 255, 255, 128);
-            }
-            QScrollBar::handle:vertical:disabled {
-                background-color: transparent;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
+        """
+            + SCROLLBAR_STYLE
+        )
 
         # Apply fade effect to the top and bottom edges of the viewport
         viewport = self.viewport()

@@ -6,6 +6,8 @@ from typing import Any
 
 import win32crypt  # type: ignore[import-untyped]
 
+WHISPER_MODELS: tuple[str, ...] = ("tiny.en", "base.en", "small.en", "medium.en")
+
 
 class SettingsStore:
     """Persist provider defaults and protect the Gemini key with Windows DPAPI."""
@@ -54,6 +56,15 @@ class SettingsStore:
             str: The directory path, or an empty string when unset.
         """
         return str(self.data.get("claude_directory", ""))
+
+    def whisper_model(self) -> str:
+        """Return the saved transcription model, defaulting to small.en.
+
+        Returns:
+            str: The faster-whisper model name.
+        """
+        model = self.data.get("whisper_model")
+        return str(model) if model in WHISPER_MODELS else "small.en"
 
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
@@ -105,6 +116,14 @@ class SettingsStore:
             directory (str): The directory new sessions start in.
         """
         self._write({**self.data, "claude_directory": directory})
+
+    def save_whisper_model(self, model: str) -> None:
+        """Atomically save the transcription model.
+
+        Args:
+            model (str): The faster-whisper model name.
+        """
+        self._write({**self.data, "whisper_model": model})
 
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.

@@ -2,6 +2,7 @@ import ctypes
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QWheelEvent
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QComboBox,
@@ -17,9 +18,16 @@ from PyQt6.QtWidgets import (
 from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
-from core.settings import SettingsStore
+from core.settings import WHISPER_MODELS, SettingsStore
 from ui.directory_picker import choose_directory
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
+
+WHISPER_LABELS: dict[str, str] = {
+    "tiny.en": "Tiny · fastest · 75 MB",
+    "base.en": "Base · fast · 145 MB",
+    "small.en": "Small · recommended · 480 MB",
+    "medium.en": "Medium · most accurate · 1.5 GB",
+}
 
 
 class SettingsPage(QWidget):
@@ -67,6 +75,11 @@ class SettingsPage(QWidget):
         self._show_directory(self.settings_store.claude_directory())
         self.gemini_button.setChecked(self.provider == "gemini")
         self.claude_button.setChecked(self.provider == "claude")
+        self.whisper_combo.blockSignals(True)
+        self.whisper_combo.setCurrentIndex(
+            self.whisper_combo.findData(self.settings_store.whisper_model())
+        )
+        self.whisper_combo.blockSignals(False)
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
@@ -205,6 +218,28 @@ class SettingsPage(QWidget):
         )
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
+        transcription_form = QFormLayout()
+        self.whisper_combo = _SettingsComboBox()
+        for model in WHISPER_MODELS:
+            self.whisper_combo.addItem(WHISPER_LABELS[model], model)
+        self.whisper_combo.currentIndexChanged.connect(self._save_whisper_model)
+        transcription_label = QLabel("&Transcription")
+        transcription_label.setBuddy(self.whisper_combo)
+        # Separate form, so match the provider form's label column to align the combos
+        transcription_label.setMinimumWidth(
+            max(
+                label.sizeHint().width()
+                for field in (self.model_combo, self.effort_combo)
+                if (label := form.labelForField(field)) is not None
+            )
+        )
+        transcription_form.addRow(transcription_label, self.whisper_combo)
+        layout.addLayout(transcription_form)
+        transcription_hint = QLabel(
+            "Audio is transcribed on this computer and never uploaded. Larger models are more accurate but slower, and download once. Applies the next time you start recording (Ctrl+Shift+R)."
+        )
+        transcription_hint.setWordWrap(True)
+        layout.addWidget(transcription_hint)
         layout.addStretch(1)
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
@@ -276,6 +311,21 @@ class SettingsPage(QWidget):
         """
         self.directory_input.setText(directory)
         self.no_directory_button.setEnabled(bool(directory))
+
+    def _save_whisper_model(self, index: int) -> None:
+        """Save the chosen transcription model.
+
+        Args:
+            index (int): The selected model index.
+        """
+        try:
+            self.settings_store.save_whisper_model(WHISPER_MODELS[index])
+        except OSError:
+            self.save_status.setText(
+                "The transcription model could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self.save_status.setText("Changes saved automatically.")
 
     def _on_key_changed(self, _text: str) -> None:
         """Validate a new key automatically after a short typing pause."""
@@ -448,7 +498,16 @@ class SettingsPage(QWidget):
 
 
 class _SettingsComboBox(QComboBox):
-    """Exclude native settings popups from Windows screen capture."""
+    """Exclude native settings popups from Windows screen capture and ignore wheel selection."""
+
+    def wheelEvent(self, event: QWheelEvent | None) -> None:
+        """Pass wheel scrolling to the settings page instead of changing the selection.
+
+        Args:
+            event (QWheelEvent): The wheel event to forward to the parent.
+        """
+        if event is not None:
+            event.ignore()
 
     def showPopup(self) -> None:
         """Apply the overlay's capture exclusion before showing the popup."""

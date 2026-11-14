@@ -66,6 +66,7 @@ class ShortcutManager(QObject):
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
     send_message_signal = pyqtSignal(str)
+    toggle_recording_signal = pyqtSignal()
 
     def __init__(
         self, main_window: MainWindow, screenshot_manager: ScreenshotManager
@@ -86,6 +87,7 @@ class ShortcutManager(QObject):
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)
         self.send_message_signal.connect(self.main_window.send_message)
+        self.toggle_recording_signal.connect(self.main_window.transcriber.toggle)
 
         # Initialize animation
         self.animation_timer = QTimer()
@@ -128,6 +130,7 @@ class ShortcutManager(QObject):
 
         Default Shortcuts:
             Ctrl + E - Show / hide main window (always active)
+            Ctrl + Shift + R - Start / stop audio recording (always active)
             Ctrl + D - Generate AI output (trigger on release)
             Ctrl + G - Fix / improve code (trigger on release)
             Ctrl + Alt + <ArrowKeys> - Move main window
@@ -140,6 +143,7 @@ class ShortcutManager(QObject):
         """
         self.always_active_hotkeys = {
             (MOD_CTRL, ord("E")): (self._toggle_window_visibility, False),
+            (MOD_CTRL | MOD_SHIFT, ord("R")): (self._toggle_recording, False),
             (MOD_CTRL | MOD_ALT | MOD_SHIFT, ord("Q")): (self._close_app, False),
         }
 
@@ -473,6 +477,10 @@ class ShortcutManager(QObject):
     def _toggle_history(self) -> None:
         """Show or hide the conversation history sidebar."""
         self.toggle_history_signal.emit()
+
+    def _toggle_recording(self) -> None:
+        """Start or stop recording and transcribing audio."""
+        self.toggle_recording_signal.emit()
 
     def _generate_with_screenshot(self) -> None:
         """Take a screenshot then automatically generate content."""

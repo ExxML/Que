@@ -51,6 +51,13 @@ src/assets/ — Icons and images
 
 Use `threading.Thread(daemon=True)` for background work — not `QThread` (Nuitka compatibility issue).
 
+## Translucency Rules
+
+The window background is one translucent fill (`BG_COLOR` at `WINDOW_ALPHA`, painted by `MainWindow._paint_frame`). Translucent fills compound, so any widget that paints its own translucent background inside the window looks darker than the window. This bug has recurred (history sidebar, model dropdowns, transcript panel); avoid it:
+- Never give an in-window widget a translucent background fill. Use `background: transparent` and a border for framing (see `InputField`'s input container).
+- Dock new panels in the layout and grow the window by their height (see `InputField` and `TranscriptPanel`) instead of floating them over the chat, so they never cover text and need no fill.
+- If a widget must float over content, clear its area and repaint the window frame instead of filling over it (`CompositionMode_Source` with transparent, then `MainWindow._paint_frame`; see `HistorySidebar.paintEvent`).
+
 ## Hotkey System
 
 Hotkeys registered in `ShortcutManager._define_hotkeys()` as `(modifier_bitmask, vk_code) → (callback, repeat_allowed)` in two dicts:

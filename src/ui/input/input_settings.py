@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtCore import QPointF, QRectF, Qt, pyqtSignal
+from PyQt6.QtGui import QFontMetrics, QPainter, QPaintEvent, QPen
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
 from core.model_catalog import ModelOption
 from ui.input.selection_dropdown import SelectionDropdown
-from ui.theme import PRIMARY_COLOR, qss
+from ui.theme import DANGER_COLOR, PRIMARY_COLOR, qcolor, qss
 
 
 class InputSettings(QWidget):
@@ -30,6 +30,8 @@ class InputSettings(QWidget):
         self.effort_dropdown.setToolTip(
             "Reasoning effort. Higher levels can take longer."
         )
+        self.record_button = _RecordButton()
+        self.set_recording(False)
         self.directory_widget = QWidget()
         self.directory_widget.hide()
         self.directory_button = QPushButton()
@@ -86,6 +88,20 @@ class InputSettings(QWidget):
             else "Claude has no project files. Click to choose a directory."
         )
         self.clear_directory_button.setVisible(bool(directory))
+
+    def set_recording(self, recording: bool) -> None:
+        """Show whether audio is being recorded.
+
+        Args:
+            recording (bool): Whether recording is active.
+        """
+        self.record_button.setChecked(recording)
+        self.record_button.setToolTip(
+            "Stop recording audio (Ctrl+Shift+R)"
+            if recording
+            else "Record and transcribe your microphone and computer audio (Ctrl+Shift+R)"
+        )
+        self.record_button.update()
 
     def show_loading(self) -> None:
         """Clear stale model and effort choices during provider discovery."""
@@ -149,6 +165,7 @@ class InputSettings(QWidget):
         self.directory_button.clicked.connect(self.directory_requested)
         self.clear_directory_button.clicked.connect(self.directory_cleared)
         layout.addWidget(self.directory_widget)
+        layout.addWidget(self.record_button)
         layout.addStretch()
         layout.addWidget(self.model_dropdown)
         layout.addWidget(self.effort_dropdown)
@@ -171,3 +188,36 @@ class InputSettings(QWidget):
         self.effort_dropdown.setVisible(
             self.models[model_id].effort_levels != ("default",)
         )
+
+
+class _RecordButton(QPushButton):
+    """Draw a microphone glyph that turns red while recording."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setCheckable(True)
+        self.setFixedSize(24, 24)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setAccessibleName("Record audio")
+        self.setStyleSheet("QPushButton { background: transparent; border: none; }")
+
+    def paintEvent(self, _event: QPaintEvent | None) -> None:
+        """Paint the microphone in the idle, hover, or recording color."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        if self.isChecked():
+            color = qcolor(DANGER_COLOR)
+        else:
+            color = qcolor(PRIMARY_COLOR, 255 if self.underMouse() else 128)
+        center = self.width() / 2
+        pen = QPen(color, 1.4)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+        if self.isChecked():
+            painter.setBrush(color)
+        painter.drawRoundedRect(QRectF(center - 3, 4, 6, 10), 3, 3)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        # Cradle arc under the capsule, then the stand
+        painter.drawArc(QRectF(center - 5.5, 6.5, 11, 11), 200 * 16, 140 * 16)
+        painter.drawLine(QPointF(center, 17.5), QPointF(center, 20))
+        painter.drawLine(QPointF(center - 3, 20), QPointF(center + 3, 20))

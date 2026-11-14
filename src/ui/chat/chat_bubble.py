@@ -2,7 +2,7 @@ import math
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from ui.chat.ai_formatter import format_message
 from ui.theme import PRIMARY_COLOR, qss
@@ -11,10 +11,13 @@ from ui.theme import PRIMARY_COLOR, qss
 class ChatBubble(QWidget):
     """Render a chat bubble for displaying messages."""
 
-    def __init__(self, message: str, is_user: bool = False) -> None:
+    def __init__(
+        self, message: str, is_user: bool = False, transcript: str = ""
+    ) -> None:
         super().__init__()
         self.message = message
         self.is_user = is_user
+        self.transcript = transcript
         self._loading_timer: QTimer | None = None
         self._init_UI()
 
@@ -84,7 +87,10 @@ class ChatBubble(QWidget):
                 self.message_label.setFixedWidth(natural_width)
 
             layout.addStretch()
-            layout.addWidget(self.message_label)
+            if self.transcript:
+                layout.addLayout(self._transcript_column(max_width))
+            else:
+                layout.addWidget(self.message_label)
         else:
             # Bot messages: transparent, aligned left
             self.message_label.setStyleSheet(f"""
@@ -103,6 +109,51 @@ class ChatBubble(QWidget):
             layout.addStretch()
 
         layout.setSpacing(0)
+
+    def _transcript_column(self, max_width: int) -> QVBoxLayout:
+        """Stack the message above a collapsed audio transcript disclosure.
+
+        Args:
+            max_width (int): The widest the transcript may grow.
+
+        Returns:
+            QVBoxLayout: The column holding the message, transcript, and toggle.
+        """
+        column = QVBoxLayout()
+        column.setSpacing(2)
+        column.addWidget(self.message_label, alignment=Qt.AlignmentFlag.AlignRight)
+        transcript_label = QLabel(self.transcript)
+        transcript_label.setTextFormat(Qt.TextFormat.PlainText)
+        transcript_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        transcript_label.setWordWrap(True)
+        transcript_label.setMaximumWidth(max_width)
+        transcript_label.setFont(QFont("Helvetica", 9))
+        transcript_label.setStyleSheet(
+            f"QLabel {{ color: {qss(PRIMARY_COLOR, 150)}; background: transparent; padding: 2px 5px; }}"
+        )
+        transcript_label.hide()
+        toggle = QPushButton("Audio transcript ▾")
+        toggle.setAccessibleName("Show audio transcript sent with this message")
+        toggle.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        toggle.setFont(QFont("Helvetica", 8))
+        toggle.setStyleSheet(f"""
+            QPushButton {{ color: {qss(PRIMARY_COLOR, 110)}; background: transparent; border: none; padding: 0 2px; }}
+            QPushButton:hover {{ color: {qss(PRIMARY_COLOR)}; }}
+        """)
+
+        def on_toggle() -> None:
+            """Show or hide the transcript."""
+            transcript_label.setVisible(not transcript_label.isVisible())
+            toggle.setText(
+                f"Audio transcript {'▴' if transcript_label.isVisible() else '▾'}"
+            )
+
+        toggle.clicked.connect(on_toggle)
+        column.addWidget(transcript_label, alignment=Qt.AlignmentFlag.AlignRight)
+        column.addWidget(toggle, alignment=Qt.AlignmentFlag.AlignRight)
+        return column
 
     def _tick_loading(self) -> None:
         """Advance the loading animation by one frame."""

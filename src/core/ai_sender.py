@@ -29,6 +29,24 @@ class InteractionRequest:
     session_id: str = ""
     client: genai.Client | None = None
     claude_directory: Path | None = None
+    transcript: str = ""
+    transcript_seq: int = 0
+
+    @property
+    def prompt(self) -> str:
+        """Return the message with any new audio transcript prepended as context.
+
+        Returns:
+            str: The text sent to the provider.
+        """
+        if not self.transcript:
+            return self.message
+        return f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. It may be unrelated to my request.
+<transcript>
+{self.transcript}
+</transcript>
+
+{self.message}"""
 
 
 class AISender:
@@ -139,13 +157,19 @@ class AISender:
         self.claude_session_id = session_id
 
     def prepare_request(
-        self, message: str, attachments: list[str] | None = None
+        self,
+        message: str,
+        attachments: list[str] | None = None,
+        transcript: str = "",
+        transcript_seq: int = 0,
     ) -> InteractionRequest:
         """Snapshot a new turn on the Qt thread and supersede older requests.
 
         Args:
             message (str): The new user message.
             attachments (list[str], optional): Paths to this turn's attachments.
+            transcript (str): Audio transcript recorded since the last committed turn.
+            transcript_seq (int): The last transcript segment included.
 
         Returns:
             InteractionRequest: The immutable worker inputs.
@@ -166,6 +190,8 @@ class AISender:
             self.claude_session_id if self.previous_interaction_id else str(uuid4()),
             self.client,
             self.claude_directory,
+            transcript,
+            transcript_seq,
         )
 
     def commit_interaction(
@@ -210,7 +236,7 @@ class AISender:
             return None
         if request.provider == "claude":
             return self.claude_bridge.send_message(
-                request.message,
+                request.prompt,
                 request.attachments,
                 request.model,
                 request.effort_level,
@@ -238,7 +264,7 @@ class AISender:
                     ),
                 }
             )
-        parts.append({"type": "text", "text": request.message})
+        parts.append({"type": "text", "text": request.prompt})
         if stop_flag.is_set():
             return None
         try:

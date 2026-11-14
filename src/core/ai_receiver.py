@@ -34,13 +34,19 @@ class AIReceiver(QObject):
         self.error.connect(self._on_response_error)
 
     def handle_message(
-        self, message: str, attachments: list[str] | None = None
+        self,
+        message: str,
+        attachments: list[str] | None = None,
+        transcript: str = "",
+        transcript_seq: int = 0,
     ) -> None:
         """Handle a user message by displaying it and starting AI generation.
 
         Args:
             message (str): The user's message text.
             attachments (list[str], optional): List of file paths to attach to the request.
+            transcript (str): Audio transcript recorded since the last committed turn.
+            transcript_seq (int): The last transcript segment included.
         """
         # Stop the current stream and finalize any in-progress bubble
         self.stop_flag.set()
@@ -56,11 +62,13 @@ class AIReceiver(QObject):
         self.stop_flag = threading.Event()
         local_flag = self.stop_flag
 
-        request = self.ai_sender.prepare_request(message, attachments)
+        request = self.ai_sender.prepare_request(
+            message, attachments, transcript, transcript_seq
+        )
         self.request = request
 
         # Immediately add user's message to the chat area
-        self.chat_area.add_message(message, is_user=True)
+        self.chat_area.add_message(message, is_user=True, transcript=transcript)
 
         # Start new thread
         self.ai_thread = threading.Thread(

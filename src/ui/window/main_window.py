@@ -26,7 +26,8 @@ from core.ai_sender import AISender, InteractionRequest
 from core.chat_history import ChatHistory, Conversation
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
-from ui.chat.chat_area import ChatArea
+from core.transcriber import Transcriber
+from ui.chat.chat_area import SCROLLBAR_STYLE, ChatArea
 from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
 from ui.theme import BG_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
@@ -34,6 +35,7 @@ from ui.window.header_icon_button import HeaderIconButton
 from ui.window.history_sidebar import HistorySidebar
 from ui.window.screenshot_tray import ScreenshotTray
 from ui.window.settings_page import SettingsPage
+from ui.window.transcript_panel import TranscriptPanel
 
 
 class MainWindow(QWidget):
@@ -42,11 +44,15 @@ class MainWindow(QWidget):
     BG_COLOR = qcolor(BG_COLOR, WINDOW_ALPHA)
 
     def __init__(
-        self, ai_sender: AISender, screenshot_manager: ScreenshotManager
+        self,
+        ai_sender: AISender,
+        screenshot_manager: ScreenshotManager,
+        transcriber: Transcriber | None = None,
     ) -> None:
         super().__init__()
         self.ai_sender = ai_sender
         self.screenshot_manager = screenshot_manager
+        self.transcriber = transcriber or Transcriber(ai_sender.settings_store)
         self.chat_history = ChatHistory()
         # The open chat keeps one saved conversation per provider, mirroring AISender.contexts
         self.conversations: dict[str, Conversation | None] = {
@@ -70,6 +76,12 @@ class MainWindow(QWidget):
         )
         self.input_field.input_settings.directory_cleared.connect(
             lambda: self._set_claude_directory("")
+        )
+        self.input_field.input_settings.record_button.clicked.connect(
+            self.transcriber.toggle
+        )
+        self.transcriber.recording_changed.connect(
+            self.input_field.input_settings.set_recording
         )
         self._show_claude_directory()
         self._refresh_models()
@@ -114,7 +126,11 @@ class MainWindow(QWidget):
             return
         attachments = self.screenshot_manager.get_and_clear_pending()
         self.screenshot_tray.clear()
-        self.worker.handle_message(message, attachments or None)
+        # The transcript stays pending until the turn commits, so failed turns resend it
+        transcript, transcript_seq = self.transcriber.pending()
+        self.worker.handle_message(
+            message, attachments or None, transcript, transcript_seq
+        )
 
     def toggle_history(self) -> None:
         """Open or close the conversation history sidebar."""
@@ -135,6 +151,7 @@ class MainWindow(QWidget):
         self.pages.setCurrentIndex(1)
         self.input_field.hide()
         self.screenshot_tray.hide()
+        self.transcript_panel.hide()
         self.settings_button.setText("Back to chat")
 
     def quit_app(self) -> None:
@@ -142,6 +159,7 @@ class MainWindow(QWidget):
         # Stop any active worker
         if self.worker is not None:
             self.worker.stop()
+        self.transcriber.stop()
 
         self.chat_area.clear_chat_messages()
         self.ai_sender.reset_chat()
@@ -151,7 +169,7 @@ class MainWindow(QWidget):
             app.quit()
 
     def resizeEvent(self, event: QResizeEvent | None) -> None:
-        """Reposition the floating screenshot tray when the window is resized.
+        """Reposition the floating input overlays when the window is resized.
 
         Args:
             event (QResizeEvent): The resize event passed to the base widget.
@@ -231,11 +249,19 @@ class MainWindow(QWidget):
         settings_scroll.setStyleSheet(
             "QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; }"
         )
+        # Styled on the bar itself so combo popups inside settings keep their own look
+        settings_scrollbar = settings_scroll.verticalScrollBar()
+        assert settings_scrollbar is not None
+        settings_scrollbar.setStyleSheet(SCROLLBAR_STYLE)
         settings_scroll.setWidget(self.settings_page)
         self.pages.addWidget(settings_scroll)
 
         # Create screenshot tray as a floating overlay (not in any layout)
         self.screenshot_tray = ScreenshotTray(self.screenshot_manager, self)
+
+        # Transcript panel is docked above the input; the window grows by its height
+        self.transcript_panel = TranscriptPanel(self.transcriber, self)
+        self.transcript_panel_height = 0  # Height currently added to the window
 
         # Create and add title bar buttons
         header_button_style = f"""
@@ -320,15 +346,17 @@ class MainWindow(QWidget):
 
         # Add chat area
         main_layout.addWidget(self.pages, stretch=1)
+        main_layout.addWidget(self.transcript_panel)
 
         # Add input field
         self.input_field.message_sent.connect(self.send_message)
         self.input_field.height_changed.connect(self._on_input_height_changed)
         main_layout.addWidget(self.input_field)
 
-        # Position the floating screenshot tray above the input field
+        # Position the floating screenshot tray above the input field and transcript panel
         self.screenshot_tray.raise_()
         self.screenshot_tray.visibility_changed.connect(self._position_screenshot_tray)
+        self.transcript_panel.size_changed.connect(self._sync_transcript_panel)
 
         # Create the history sidebar as a floating overlay over everything below the header
         self.history_sidebar = HistorySidebar(self, self._paint_frame)
@@ -342,15 +370,15 @@ class MainWindow(QWidget):
         self.show()
 
         # Set display affinity to exclude main window from screen capture (Windows 10+)
-        hwnd = int(self.winId())
-        WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        result = ctypes.windll.user32.SetWindowDisplayAffinity(
-            hwnd, WDA_EXCLUDEFROMCAPTURE
-        )
-        if result == 0:
-            print(
-                "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
-            )
+        # hwnd = int(self.winId())
+        # WDA_EXCLUDEFROMCAPTURE = 0x00000011
+        # result = ctypes.windll.user32.SetWindowDisplayAffinity(
+        #     hwnd, WDA_EXCLUDEFROMCAPTURE
+        # )
+        # if result == 0:
+        #     print(
+        #         "Warning: SetWindowDisplayAffinity failed. May appear in screenshots."
+        #     )
 
         # Setup timer to raise main window so it is always visible (certain Windows operations override the stay on top hint)
         self.visibility_timer = QTimer(self)
@@ -465,6 +493,7 @@ class MainWindow(QWidget):
         self.input_field.show()
         self.settings_button.setText("Settings")
         self.screenshot_tray.setVisible(bool(self.screenshot_manager.pending_paths))
+        self._sync_transcript_panel()
         self.input_field.input_field.setFocus()
 
     def _clear_all_chat(self) -> None:
@@ -474,6 +503,7 @@ class MainWindow(QWidget):
         self.ai_sender.reset_chat()
         self.screenshot_manager.clear_screenshots()
         self.screenshot_tray.clear()
+        self.transcriber.clear()
         self.conversations = {"gemini": None, "claude": None}
         self._refresh_history()
         if self.ai_sender.models:
@@ -484,18 +514,37 @@ class MainWindow(QWidget):
             )
 
     def _position_screenshot_tray(self) -> None:
-        """Place the screenshot tray above the input field."""
+        """Place the screenshot tray above the input field and any transcript panel."""
         tray = self.screenshot_tray
         if self.pages.currentIndex() == 1:
             tray.hide()
             return
+        layout = self.layout()
+        assert layout is not None
+        layout.activate()  # Apply pending panel visibility changes before reading positions
+        panel = self.transcript_panel
         tray_h = tray.height()
         tray.setGeometry(
             0,
-            self.input_field.y() - tray_h,
+            (panel.y() if panel.isVisible() else self.input_field.y()) - tray_h,
             self.width(),
             tray_h,
         )
+
+    def _sync_transcript_panel(self) -> None:
+        """Show the transcript panel on the chat page and grow the window by its height.
+
+        Like the input field, the panel extends the window downward instead of
+        shrinking or covering the chat.
+        """
+        panel = self.transcript_panel
+        height = panel.height() if panel.wanted() else 0
+        delta = height - self.transcript_panel_height
+        self.transcript_panel_height = height
+        panel.setVisible(panel.wanted() and self.pages.currentIndex() == 0)
+        if delta:
+            self.resize(self.width(), self.height() + delta)
+        self._position_screenshot_tray()
 
     def _paint_frame(self, painter: QPainter) -> None:
         """Paint the rounded window background and border in window coordinates.
@@ -560,9 +609,11 @@ class MainWindow(QWidget):
             title = " ".join(interaction_request.message.split())[:80]
             conversation = Conversation(provider, title or "Untitled chat")
             self.conversations[provider] = conversation
-        conversation.messages.append(
-            {"role": "user", "text": interaction_request.message}
-        )
+        self.transcriber.mark_sent(interaction_request.transcript_seq)
+        user_message = {"role": "user", "text": interaction_request.message}
+        if interaction_request.transcript:
+            user_message["transcript"] = interaction_request.transcript
+        conversation.messages.append(user_message)
         conversation.messages.append({"role": "assistant", "text": response})
         conversation.interaction_id = interaction_id
         conversation.session_id = (
@@ -601,7 +652,11 @@ class MainWindow(QWidget):
         self.conversations[conversation.provider] = conversation
         self.chat_area.load_messages(
             [
-                (message["text"], message["role"] == "user")
+                (
+                    message["text"],
+                    message["role"] == "user",
+                    message.get("transcript", ""),
+                )
                 for message in conversation.messages
             ]
         )

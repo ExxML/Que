@@ -207,7 +207,9 @@ class InteractionsTests(unittest.TestCase):
                     )
                 )
                 receiver.handle_message("hello")
-                chat.add_message.assert_called_once_with("hello", is_user=True)
+                chat.add_message.assert_called_once_with(
+                    "hello", is_user=True, transcript=""
+                )
                 assert receiver.ai_thread is not None
                 self.assertTrue(receiver.ai_thread.daemon)
                 receiver.ai_thread.join(timeout=5)
