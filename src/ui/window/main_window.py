@@ -30,7 +30,7 @@ from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE, ChatArea
 from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
-from ui.theme import BG_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
+from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
 from ui.window.header_icon_button import HeaderIconButton
 from ui.window.history_sidebar import HistorySidebar
 from ui.window.screenshot_tray import ScreenshotTray
@@ -59,6 +59,7 @@ class MainWindow(QWidget):
             "gemini": None,
             "claude": None,
         }
+        self.capture_hidden = False
         self._init_UI()
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.worker.turn_committed.connect(self._on_turn_committed)
@@ -127,6 +128,9 @@ class MainWindow(QWidget):
         )
         if result == 0:
             print("Warning: SetWindowDisplayAffinity failed.")
+        # A failed call leaves the window capturable, so the red border must show then too
+        self.capture_hidden = hidden and result != 0
+        self.update()
 
     def set_click_through(self, enabled: bool) -> None:
         """Let mouse input pass through the window to the windows behind it.
@@ -590,7 +594,10 @@ class MainWindow(QWidget):
             border_width, border_width, -border_width, -border_width
         )
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.setPen(QPen(qcolor(PRIMARY_COLOR, 128), border_width))
+        border_color = (
+            qcolor(PRIMARY_COLOR, 128) if self.capture_hidden else qcolor(DANGER_COLOR)
+        )
+        painter.setPen(QPen(border_color, border_width))
         painter.drawRoundedRect(border_rect, radius, radius)
 
     def _position_history_sidebar(self) -> None:
