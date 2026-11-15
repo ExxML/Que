@@ -10,6 +10,7 @@ __pycache__/
 # Linting
 .mypy_cache/
 .ruff_cache/
+.stealth-runs/
 
 # Data files
 src/data/

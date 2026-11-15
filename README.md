@@ -23,6 +23,8 @@ $env:PYTHONPATH = "src"
 python -m unittest discover -s test -p "test_*.py" -v
 ```
 
+Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
+
 Compile .exe using Nuitka
 ```bash
 pip install nuitka

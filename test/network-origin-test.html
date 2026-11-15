@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Owned local-network observability probe</title>
+<h1>Permissioned origin → owned loopback control</h1>
+<p>Host this fixture on your permissioned HTTPS origin. Start stealth/network_origin.py with that exact origin. This fixture makes requests only to the single loopback control URL entered below. It does not scan ports or read Que diagnostics.</p>
+<label>Owned control URL <input id="target" size="60" placeholder="http://127.0.0.1:PORT/control"></label>
+<label>State <select id="phase"><option>Que absent</option><option>Que idle</option><option>Que active</option><option>owned endpoint stopped</option></select></label>
+<button id="run">Run fetch and WebSocket probes</button><button id="save">Download raw observations</button><pre id="log"></pre>
+<script>
+"use strict";
+const records = [];
+function record(kind, data) { records.push({kind, data, wall_ms: Date.now(), phase: document.getElementById("phase").value, origin: location.origin, userAgent: navigator.userAgent}); document.getElementById("log").textContent = JSON.stringify(records, null, 2); }
+document.getElementById("run").onclick = async () => {
+    try {
+        if (location.protocol !== "https:") throw new Error("A real permissioned HTTPS origin is required; localhost results do not substitute");
+        const target = new URL(document.getElementById("target").value);
+        if (target.protocol !== "http:" || target.hostname !== "127.0.0.1" || !target.port || target.pathname !== "/control" || target.search || target.hash || target.username) throw new Error("Use only the explicitly started owned loopback control endpoint");
+        for (const name of ["local-network", "loopback-network", "local-network-access"]) {
+            try { record("permission", {name, state: (await navigator.permissions.query({name})).state}); }
+            catch (error) { record("permission-unsupported", {name, error: error.name}); }
+        }
+        const start = performance.now();
+        try { const response = await fetch(target, {mode: "cors", cache: "no-store", signal: AbortSignal.timeout(10000)}); record("fetch", {target: target.href, status: response.status, body: await response.text(), duration_ms: performance.now() - start}); }
+        catch (error) { record("fetch-error", {target: target.href, error: error.name, message: error.message, duration_ms: performance.now() - start}); }
+        const ws = new WebSocket(target.href.replace("http:", "ws:"));
+        const timeout = setTimeout(() => { record("websocket-timeout", {}); ws.close(); }, 10000);
+        ws.onmessage = event => record("websocket", {target: target.href, text: event.data});
+        ws.onerror = () => record("websocket-error", {target: target.href});
+        ws.onclose = event => { clearTimeout(timeout); record("websocket-close", {code: event.code, clean: event.wasClean}); };
+    } catch (error) { record("probe-error", {name: error.name, message: error.message}); }
+};
+document.getElementById("save").onclick = () => { const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([JSON.stringify(records, null, 2)], {type: "application/json"})); link.download = "owned-origin-probe.json"; link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 1000); };
+</script></html>

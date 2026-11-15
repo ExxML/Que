@@ -1,0 +1,317 @@
+[
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": true
+  },
+  {
+    "class": "QMenu",
+    "name": "",
+    "accessible": "",
+    "parent_class": "",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "ScreenshotThumbnail",
+    "enabled": true
+  },
+  {
+    "class": "_AutoResizeTextEdit",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "AI settings",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Claude directory",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "HeaderIconButton",
+    "name": "",
+    "accessible": "Conversation history",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Cover letter",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Default Claude directory",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Delete conversation",
+    "parent_class": "_ConversationRow",
+    "enabled": true
+  },
+  {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Gemini API key",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Interview script",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "SelectionDropdown",
+    "name": "",
+    "accessible": "Model",
+    "parent_class": "InputSettings",
+    "enabled": true
+  },
+  {
+    "class": "HeaderIconButton",
+    "name": "",
+    "accessible": "New chat",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "SelectionDropdown",
+    "name": "",
+    "accessible": "Reasoning effort",
+    "parent_class": "InputSettings",
+    "enabled": true
+  },
+  {
+    "class": "_RecordButton",
+    "name": "",
+    "accessible": "Record audio",
+    "parent_class": "InputSettings",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Remove cover letter",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Remove interview script",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Remove resume",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Resume",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QListWidget",
+    "name": "",
+    "accessible": "Saved conversations",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QToolButton",
+    "name": "ScrollLeftButton",
+    "accessible": "Scroll Left",
+    "parent_class": "QTabBar",
+    "enabled": true
+  },
+  {
+    "class": "QToolButton",
+    "name": "ScrollRightButton",
+    "accessible": "Scroll Right",
+    "parent_class": "QTabBar",
+    "enabled": true
+  },
+  {
+    "class": "QTabBar",
+    "name": "",
+    "accessible": "Settings sections",
+    "parent_class": "QFrame",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Show audio transcript sent with this message",
+    "parent_class": "ChatBubble",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Show transcript, 2 lines not yet sent",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Upload cover letter",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Upload interview script",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Upload resume",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Use no directory",
+    "parent_class": "QWidget",
+    "enabled": true
+  }
+]

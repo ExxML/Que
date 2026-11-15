@@ -1,119 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Focus & Visibility Test</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-      background: #111;
-      color: #eee;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-  </style>
-</head>
-<body>
-  <h1>Focus & Visibility Test</h1>
-  <p id="status">🟢 Window and tab are active</p>
-
-  <br>
-
-  <div style="margin: 20px 0;">
-    <h2>Text Testing Area</h2>
-    <div
-      id="text-testing-area"
-      contenteditable="true"
-      style="background: #222; padding: 10px; text-align: left; min-height: 40px; font-family: monospace; font-size: 14px; outline: 1px solid #444; white-space: pre-wrap; word-break: break-word;"
-    ></div>
-  </div>
-
-  <br>
-
-  <div style="margin: 20px 0;">
-    <h2>Input Events Log</h2>
-    <div id="events" style="background: #222; padding: 10px; text-align: left; max-height: 350px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
-  </div>
-
-  <script>
-    const status = document.getElementById('status');
-
-    function updateStatus(source) {
-      let message;
-      let color;
-
-      if (document.hidden) {
-        message = `🔴 Tab is hidden (${source})`;
-        color = '#600';
-      } else if (document.hasFocus()) {
-        message = `🟢 Window and tab are active (${source})`;
-        color = '#111';
-      } else {
-        message = `🟠 Window lost focus (${source})`;
-        color = '#663300';
-      }
-
-      status.textContent = message;
-      document.body.style.background = color;
-    }
-
-    // Detect window-level focus changes
-    window.addEventListener('focus', () => updateStatus('focus event'));
-    window.addEventListener('blur', () => updateStatus('blur event'));
-
-    // Detect tab visibility changes (switching tabs)
-    document.addEventListener('visibilitychange', () => updateStatus('visibilitychange event'));
-
-    // Initialize on load
-    updateStatus('initial load');
-
-    // Input Events Logger
-    const eventsContainer = document.getElementById('events');
-    const maxEvents = 50;
-    const events = [];
-
-    function addEvent(type, event, details = '') {
-      const timestamp = new Date().toLocaleTimeString();
-      const eventData = {
-        timestamp,
-        type,
-        details: details || `${event.type}${event.key ? ` (${event.key})` : ''}${event.button !== undefined ? ` (button ${event.button})` : ''}${event.ctrlKey || event.altKey || event.shiftKey || event.metaKey ? ` [${event.ctrlKey ? 'Ctrl ' : ''}${event.altKey ? 'Alt ' : ''}${event.shiftKey ? 'Shift ' : ''}${event.metaKey ? 'Meta' : ''}]` : ''}`
-      };
-
-      events.unshift(eventData);
-
-      if (events.length > maxEvents) {
-        events.pop();
-      }
-
-      updateEventsDisplay();
-    }
-
-    function updateEventsDisplay() {
-      eventsContainer.innerHTML = events.map(event =>
-        `<div style="margin: 2px 0; padding: 2px;">[${event.timestamp}] <strong>${event.type}</strong>: ${event.details}</div>`
-      ).join('');
-    }
-
-    // Keyboard Events
-    document.addEventListener('keydown', (e) => addEvent('KEYBOARD', e));
-    document.addEventListener('keyup', (e) => addEvent('KEYBOARD', e));
-    document.addEventListener('keypress', (e) => addEvent('KEYBOARD', e));
-
-    // Mouse Events (excluding movement events)
-    document.addEventListener('click', (e) => addEvent('MOUSE', e));
-    document.addEventListener('mousedown', (e) => addEvent('MOUSE', e));
-    document.addEventListener('mouseup', (e) => addEvent('MOUSE', e));
-    document.addEventListener('dblclick', (e) => addEvent('MOUSE', e));
-    document.addEventListener('contextmenu', (e) => addEvent('MOUSE', e));
-    document.addEventListener('wheel', (e) => addEvent('MOUSE', e));
-
-    // Touch Events (for mobile/touch devices)
-    document.addEventListener('touchstart', (e) => addEvent('TOUCH', e));
-    document.addEventListener('touchend', (e) => addEvent('TOUCH', e));
-    document.addEventListener('touchmove', (e) => addEvent('TOUCH', e));
-    document.addEventListener('touchcancel', (e) => addEvent('TOUCH', e));
-  </script>
-</body>
-</html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Que browser observability audit</title>
+<style>
+body{font:16px system-ui;margin:0;color:#eee;background:#15191f}main{max-width:1100px;margin:auto;padding:24px}h1{font-size:25px}fieldset{border:1px solid #778;margin:16px 0;padding:16px}label{display:inline-block;margin:6px}input,select,textarea,button{font:inherit;padding:6px;margin:4px;background:#252e39;color:inherit;border:1px solid #8793a5;border-radius:4px}button{cursor:pointer}button:disabled{opacity:.5}textarea{width:95%;min-height:65px}video{max-width:48%;max-height:350px}#status{position:sticky;top:0;background:#283546;padding:12px;z-index:3}#events{white-space:pre-wrap;max-height:240px;overflow:auto;font:12px monospace}#text-testing-area{min-height:70px;border:1px solid #9bc;padding:10px;white-space:pre-wrap}#pattern{width:100%;height:360px;background:repeating-conic-gradient(#eef 0 25%,#224 0 50%) 0/64px 64px;position:relative}#beacon{position:absolute;left:0;top:0;width:64px;height:64px}pre{white-space:pre-wrap}details{margin:12px 0}.warning{color:#ffcd80}
+#pattern.positive-control{background:#ff00ff}</style>
+<div id="status" role="status">Connecting to the local evidence recorder…</div><main>
+<h1>Que browser observability audit</h1>
+<p>Use synthetic data and physical keys. This page records only browser capabilities. Native diagnostics stay in a separate local directory. A silent page alone cannot establish a passing result.</p>
+<p class="warning">Live runs use real provider requests, microphone/loopback audio, and model downloads. Reveal only dummy credentials. Set up permissions before the measurement countdown.</p>
+<fieldset><legend>Configuration and action</legend>
+<label>Browser <select id="browser"><option>chrome</option><option>edge</option><option>firefox</option></select></label>
+<label>Display <select id="display"><option>single-100</option><option>dual-100-150-secondary-left</option></select></label>
+<label>Placement <select id="placement"><option>same-monitor</option><option>different-monitors</option></select></label>
+<label>Browser state <select id="window_mode"><option>normal</option><option>maximized</option><option>F11</option><option>DOM-fullscreen</option><option>fullscreen-video</option></select></label>
+<label>Capture source <select id="capture_source"><option>none</option><option>monitor</option><option>window</option><option>browser</option><option>Que-if-offered</option></select></label>
+<label>Exclusion <select id="exclusion"><option value="true">enabled</option><option value="false">disabled</option></select></label>
+<label>Repeat <select id="repeat"><option>1</option><option>2</option><option>3</option></select></label>
+<label>Action <select id="scenario"></select></label><pre id="instructions"></pre>
+<label>Interval seconds <input id="seconds" type="number" min="5" max="600" value="15"></label>
+<label><input id="confirmed" type="checkbox">I verified this physical configuration and stable browser channel.</label>
+<textarea id="config-notes" placeholder="Browser version/channel, permissions, displays/scaling, keyboard/IME, speakers/headset, provider/model and settings."></textarea>
+<button id="begin">Start after 5-second setup countdown</button><button id="download">Download page evidence</button></fieldset>
+<fieldset><legend>Browser probes — set up before the interval</legend>
+<button id="capture">Share a real display/window/tab</button><button id="mic">Acquire real microphone</button><button id="camera">Acquire camera</button><button id="devices">Enumerate audio devices</button><button id="stop-media">Stop media</button>
+<button id="fullscreen">DOM fullscreen</button><button id="video-fullscreen">Video fullscreen</button><button id="pointer-lock">Pointer lock</button><button id="keyboard-lock">Keyboard lock</button><button id="rtc">Local WebRTC statistics</button>
+<button id="clipboard">Read permitted clipboard</button><button id="directory">Read permitted synthetic directory</button><button id="speak">Play synthetic loopback phrase</button><button id="camera-frame">Save camera frame</button><button id="ping">Probe owned reachable control</button>
+<video id="capture-video" autoplay muted playsinline></video><video id="camera-video" autoplay muted playsinline></video>
+<p>Place Que over the checkerboard. Map the footprint and changing beacon to source pixels. Include borders/shadows. Recalibrate after geometry/source changes. The runner's <code>calibration</code> command creates a visible native positive control.</p>
+<label>Footprint x,y,w,h <input id="roi" value="100,100,320,200"></label><label>Beacon x,y,w,h <input id="beacon-roi" value="0,0,32,32"></label>
+<button id="dom-control">Toggle page positive control for tab/window capture</button><button id="baseline">Save baseline with Que hidden</button><button id="positive">Measure visible native positive control</button><button id="negative">Confirm native control removed</button>
+<div id="pattern"><div id="beacon"></div></div></fieldset>
+<fieldset><legend>Input and pointer surface</legend><p>Physically type here; try selection, composition, navigation, boundaries and wheel. Shift-drag tests pointer capture.</p><div id="text-testing-area" contenteditable="true" spellcheck="false" aria-label="Input testing area"></div></fieldset>
+<fieldset><legend>Review the completed interval</legend><p>Proof fields require event:sequence or receipt:path#sha256 references. Completion requires a hash-bound action receipt with retained raw artifacts (see STEALTH_AUDIT.md). Free-text claims cannot pass. Missing evidence is incomplete. Focus loss, exposed keys, calibrated pixel differences and audio disruption are also evaluated automatically.</p>
+<textarea id="completion" placeholder="Completion receipt: receipt:relative/path.json#sha256 (create after reviewing raw action artifacts)."></textarea><div id="proof"></div>
+<textarea id="review" placeholder="Review the timeline, captured frames and media continuity; describe the tested protection and limits."></textarea><textarea id="leaks" placeholder="One direct leak or observable effect per line. Permission-boundary exposure remains a limitation."></textarea><input id="unsupported" placeholder="Unsupported API/hardware, if applicable"><button id="review-save" disabled>Save evidence review</button></fieldset>
+<details><summary>Statistical probes</summary><p>Use the runner's two independently randomized batches of 20 baseline/action pairs. Mark intervals for absent, idle, screenshotting, recording, transcription, streaming and unrelated CPU/network controls.</p><button id="cpu-load">Toggle unrelated worker CPU control</button><button id="network-load">Toggle unrelated loopback network control</button></details>
+<fieldset><legend>Additional permissioned probes</legend><button id="idle-probe">System idle state (60-second minimum)</button><button id="pressure-probe">CPU pressure</button><button id="eyedropper-probe">Select a screen pixel</button><button id="screen-probe">Display details and changes</button><button id="worklet-probe">Audio rendering continuity</button><button id="gpu-probe">Toggle GPU timing</button><label>Owned storage fixture MiB <input id="storage-mib" type="number" min="1" max="2048" value="64"></label><button id="storage-probe">Start storage timing</button><button id="storage-stop">Stop and remove owned storage fixture</button><button id="memory-probe">Toggle 32 MiB memory timing</button><button id="clipboard-formats">Read permitted clipboard formats</button></fieldset><details><summary>Capabilities and permissions</summary><pre id="capabilities"></pre></details><h2>Recent events</h2><pre id="events"></pre></main><script src="/research.js"></script><script src="/observer.js"></script></html>
