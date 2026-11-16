@@ -264,6 +264,8 @@ def full(directory: Path, metadata: dict[str, Any], base: list[Result]) -> int:
                     metadata["command"],
                     cwd=directory / "fixtures",
                     env=child_environment(directory),
+                    # A child inheriting a piped audit> stdin freezes on Windows while the prompt reads it.
+                    stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
@@ -306,6 +308,7 @@ def full(directory: Path, metadata: dict[str, Any], base: list[Result]) -> int:
                 children.append(
                     subprocess.Popen(
                         [sys.executable, str(ASSETS / "stealth" / "calibration.py")],
+                        stdin=subprocess.DEVNULL,
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                     )

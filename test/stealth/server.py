@@ -160,7 +160,9 @@ class EvidenceStore:
     def begin(self, value: dict[str, Any]) -> str:
         """Create a distinct attempt so reruns never erase prior failures."""
         with self.lock:
-            spec = self.trials[value["id"]]
+            spec = self.trials.get(value["id"])
+            if spec is None:
+                raise ValueError(f"Not a required matrix cell: {value['id']}")
             if (
                 "QPushButton('Show')" in spec["scenario"].get("action", "")
                 and self.credential_mode != "dummy"
@@ -605,8 +607,10 @@ class ObserverHandler(BaseHTTPRequestHandler):
                 self.send_error(404)
         except ConnectionError:
             raise
-        except (KeyError, ValueError, TypeError, OSError):
-            self.send_error(400, "Invalid or unwritable evidence; trial cannot pass.")
+        except (KeyError, ValueError, TypeError, OSError) as error:
+            # The reason phrase must be single-line Latin-1; it tells the operator what was rejected.
+            reason = " ".join(f"{type(error).__name__}: {error}".split())[:300]
+            self.send_error(400, reason.encode("ascii", "replace").decode())
 
     def log_message(self, format: str, *args: Any) -> None:
         """Suppress URLs and evidence payloads in console logs."""

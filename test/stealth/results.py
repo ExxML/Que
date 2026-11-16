@@ -31,11 +31,19 @@ class Result:
 def atomic_json(path: Path, value: Any) -> None:
     """Replace a JSON checkpoint after flushing its complete contents."""
     temporary = path.with_suffix(f"{path.suffix}.tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(value, handle, indent=2, allow_nan=False)
-        handle.flush()
-        os.fsync(handle.fileno())
-    temporary.replace(path)
+    # Windows background scanners briefly lock freshly written files (~1 in 4,000 replaces).
+    for remaining in range(40, -1, -1):
+        try:
+            with temporary.open("w", encoding="utf-8") as handle:
+                json.dump(value, handle, indent=2, allow_nan=False)
+                handle.flush()
+                os.fsync(handle.fileno())
+            temporary.replace(path)
+            return
+        except PermissionError:
+            if not remaining:
+                raise
+            time.sleep(0.025)
 
 
 def read_json(path: Path) -> Any:

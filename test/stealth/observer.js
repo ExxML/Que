@@ -34,22 +34,31 @@ async function api(path, body) {
     const response = await fetch(path, {method: body === undefined ? "GET" : "POST", headers: {
         "X-Audit-Token": token, "Content-Type": "application/json"
     }, body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store"});
-    if (!response.ok) throw new Error(`Evidence recorder HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Evidence recorder HTTP ${response.status} ${response.statusText}`.trim());
     return response.json();
 }
 async function flush() {
     if (busy || registering) return;
     busy = true;
     try {
-        while (queue.length) {
+        // Pause while an attempt registers; the server rejects events naming an unregistered attempt.
+        // Send only what is queued now: at 240 Hz the queue never empties, and looping exhausts loopback ports.
+        const target = seq;
+        while (queue.length && queue[0].seq <= target && !registering) {
             const batch = queue.slice(0, 1000);
             const result = await api("/api/events", {session, events: batch});
             if (result.ack < batch[batch.length - 1].seq) throw new Error("Incomplete acknowledgement");
             queue.splice(0, batch.length);
         }
     } catch (error) {
-        transportFailed = true;
-        $("status").textContent = `Logger interrupted: ${error.message}. Run cannot pass.`;
+        if (error instanceof TypeError) {
+            // Network failure: keep the queue; the next heartbeat flush resends it and the server dedupes by hash.
+            log("logger-retry", {message: error.message});
+            $("status").textContent = `Logger retrying after network error (${error.message}); evidence is queued, not lost.`;
+        } else {
+            transportFailed = true;
+            $("status").textContent = `Logger interrupted: ${error.message}. Run cannot pass.`;
+        }
     } finally { busy = false; }
 }
 function onButton(id, action) {
@@ -98,6 +107,11 @@ async function begin() {
         capture: captureStream?.getVideoTracks()[0]?.getSettings(), cpu_control: workerLoad, network_control: loopbackLoad});
     try {
         await api("/api/begin", {id, session, attempt, start_ms: marker.wall_ms, configuration_confirmed: true, configuration_notes: $("config-notes").value});
+    } catch (error) {
+        // A rejected attempt was never registered; un-tag its queued events so later uploads are not rejected too.
+        for (const event of queue) if (event.attempt === attempt) event.attempt = null;
+        attempt = null; $("scenario").disabled = false;
+        throw new Error(`Interval not registered (${error.message}). Check the configuration fields and try again`);
     } finally { registering = false; }
     log("heartbeat", {hasFocus: document.hasFocus(), visibility: document.visibilityState});
     $("status").textContent = `MEASURING ${selected.id}: perform the physical action now (${seconds}s).`;
@@ -254,7 +268,8 @@ window.addEventListener("unhandledrejection", event => log("observer-error", {me
 navigator.mediaDevices?.addEventListener("devicechange", () => log("devicechange"));
 $("text-testing-area").addEventListener("pointerdown", event => { if (event.shiftKey) event.target.setPointerCapture(event.pointerId); });
 worker.onmessage = event => { const now = performance.now(); log("worker-timing", {...event.data, receive_interval_ms: now - workerTimer}); workerTimer = now; };
-try { new PerformanceObserver(list => { for (const item of list.getEntries()) log("resource", {name: item.name, initiatorType: item.initiatorType, duration: item.duration, transferSize: item.transferSize}); }).observe({type: "resource", buffered: true}); } catch (error) { log("unsupported", {probe: "resource timing", name: error.name}); }
+// The logger's own uploads are excluded; logging them re-triggers an upload and loops forever.
+try { new PerformanceObserver(list => { for (const item of list.getEntries()) if (new URL(item.name).pathname !== "/api/events") log("resource", {name: item.name, initiatorType: item.initiatorType, duration: item.duration, transferSize: item.transferSize}); }).observe({type: "resource", buffered: true}); } catch (error) { log("unsupported", {probe: "resource timing", name: error.name}); }
 try { new PerformanceObserver(list => { for (const item of list.getEntries()) log("longtask", {duration: item.duration}); }).observe({type: "longtask"}); } catch { log("unsupported", {probe: "longtask"}); }
 function animation(now) { log("animation", {interval_ms: now - previousAnimation}); previousAnimation = now; requestAnimationFrame(animation); }
 requestAnimationFrame(animation);
