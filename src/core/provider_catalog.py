@@ -1,3 +1,4 @@
+import contextlib
 import threading
 from dataclasses import dataclass
 
@@ -107,4 +108,6 @@ class ProviderCatalog(QObject):
             message = str(exc)
             if api_key:
                 message = message.replace(api_key, "[API key]")
-            self.failed.emit(revision, message)
+            # Que quit and Qt deleted this object
+            with contextlib.suppress(RuntimeError):
+                self.failed.emit(revision, message)

@@ -1,5 +1,6 @@
 """Connect Que to its input helper process and turn the helper's decisions into Qt signals."""
 
+import contextlib
 import ctypes
 import json
 import math
@@ -338,14 +339,15 @@ class HookClient(QObject):
             self.commands = commands
             for message in list(self.state.values()):
                 commands.send_bytes(json.dumps(message).encode("utf-8"))
-        try:
-            while True:
-                message = json.loads(events.recv_bytes())
-                self.last_received = time.monotonic()
-                self.received.emit(message)
-        except (EOFError, OSError, ValueError):
-            pass
-        self.received.emit({"type": "disconnected", "generation": generation})
+        with contextlib.suppress(RuntimeError):  # Que quit and Qt deleted this object
+            try:
+                while True:
+                    message = json.loads(events.recv_bytes())
+                    self.last_received = time.monotonic()
+                    self.received.emit(message)
+            except (EOFError, OSError, ValueError):
+                pass
+            self.received.emit({"type": "disconnected", "generation": generation})
 
     def _check_helper(self) -> None:
         """Restart a helper that stopped responding, telling the user input may be exposed."""
