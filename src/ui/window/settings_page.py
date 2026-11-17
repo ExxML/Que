@@ -46,6 +46,7 @@ class SettingsPage(QWidget):
     system_tray_saved = pyqtSignal(bool)
     capture_hidden_saved = pyqtSignal(bool)
     click_through_saved = pyqtSignal(bool)
+    elevation_saved = pyqtSignal(bool)  # Applies at the next launch, so nothing listens
 
     def __init__(
         self,
@@ -155,7 +156,7 @@ class SettingsPage(QWidget):
         self.tab_pages = QStackedWidget()
         self.tab_bar.currentChanged.connect(self.tab_pages.setCurrentIndex)
         page_layout.addWidget(self.tab_pages, 1)
-        layout = self._add_tab("&AI")
+        layout = self._add_tab("AI")
         description = QLabel("Choose your AI provider and the defaults for new chats.")
         description.setWordWrap(True)
         layout.addWidget(description)
@@ -248,8 +249,8 @@ class SettingsPage(QWidget):
         self.effort_combo = _SettingsComboBox()
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
         self.effort_combo.currentIndexChanged.connect(self._save)
-        form.addRow("Default &model", self.model_combo)
-        form.addRow("Default &effort", self.effort_combo)
+        form.addRow("Default model", self.model_combo)
+        form.addRow("Default effort", self.effort_combo)
         layout.addLayout(form)
         effort_hint = QLabel(
             "Higher effort can take longer. You can change model and effort below the chat input."
@@ -262,7 +263,7 @@ class SettingsPage(QWidget):
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
         layout.addStretch(1)
-        documents_layout = self._add_tab("&Documents")
+        documents_layout = self._add_tab("Documents")
         documents_description = QLabel(
             "Add your resume, cover letter, and interview script so answers fit your experience, like during an interview."
         )
@@ -304,7 +305,7 @@ class SettingsPage(QWidget):
         documents_hint.setWordWrap(True)
         documents_layout.addWidget(documents_hint)
         documents_layout.addStretch(1)
-        voice_layout = self._add_tab("&Voice")
+        voice_layout = self._add_tab("Voice")
         transcription_form = QFormLayout()
         self.whisper_combo = _SettingsComboBox()
         for model in WHISPER_MODELS:
@@ -315,7 +316,7 @@ class SettingsPage(QWidget):
         transcription_row = QHBoxLayout()
         transcription_row.addWidget(self.whisper_combo, 1)
         transcription_row.addWidget(self.download_button)
-        transcription_label = QLabel("&Transcription")
+        transcription_label = QLabel("Transcription")
         transcription_label.setBuddy(self.whisper_combo)
         transcription_form.addRow(transcription_label, transcription_row)
         voice_layout.addLayout(transcription_form)
@@ -331,8 +332,8 @@ class SettingsPage(QWidget):
         transcription_hint.setWordWrap(True)
         voice_layout.addWidget(transcription_hint)
         voice_layout.addStretch(1)
-        window_layout = self._add_tab("&Window")
-        self.tray_checkbox = QCheckBox("Show system tray &icon")
+        window_layout = self._add_tab("Window")
+        self.tray_checkbox = QCheckBox("Show system tray icon")
         self.tray_checkbox.toggled.connect(
             lambda enabled: self._save_toggle(
                 self.settings_store.save_system_tray,
@@ -347,7 +348,7 @@ class SettingsPage(QWidget):
             "Without the tray icon, show or hide Que with its hotkey and quit with the close button or quit hotkey.",
         )
         # Checked before connecting so the saved state is shown without re-saving it
-        self.capture_checkbox = QCheckBox("Hide from screen &recording")
+        self.capture_checkbox = QCheckBox("Hide from screen recording")
         self.capture_checkbox.setChecked(self.settings_store.capture_hidden())
         self.capture_checkbox.toggled.connect(
             lambda hidden: self._save_toggle(
@@ -362,7 +363,7 @@ class SettingsPage(QWidget):
             self.capture_checkbox,
             "Screenshots, recordings, and screen sharing don't show Que. When off, Que also appears in its own screenshots.",
         )
-        self.click_through_checkbox = QCheckBox("&Click through window")
+        self.click_through_checkbox = QCheckBox("Click through window")
         self.click_through_checkbox.setChecked(self.settings_store.click_through())
         self.click_through_checkbox.toggled.connect(
             lambda enabled: self._save_toggle(
@@ -377,6 +378,21 @@ class SettingsPage(QWidget):
             self.click_through_checkbox,
             "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Right Ctrl+Shift+X to turn click-through on or off.",
         )
+        self.elevation_checkbox = QCheckBox("Allow shortcuts in admin apps")
+        self.elevation_checkbox.setChecked(self.settings_store.elevate_helper())
+        self.elevation_checkbox.toggled.connect(
+            lambda enabled: self._save_toggle(
+                self.settings_store.save_elevate_helper,
+                self.elevation_saved,
+                "admin apps",
+                enabled,
+            )
+        )
+        self._add_toggle(
+            window_layout,
+            self.elevation_checkbox,
+            "Que asks for administrator permission when it starts, so its shortcuts work and keys stay hidden in apps running as administrator, such as Task Manager. The permission prompt takes focus from the active app, so start Que before opening other apps. Takes effect the next time Que starts.",
+        )
         window_layout.addStretch(1)
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
@@ -387,7 +403,7 @@ class SettingsPage(QWidget):
         """Add a tab whose contents scroll independently below the tab bar.
 
         Args:
-            name (str): The tab label, with an optional mnemonic.
+            name (str): The tab label.
 
         Returns:
             QVBoxLayout: The layout to fill with the tab's settings.

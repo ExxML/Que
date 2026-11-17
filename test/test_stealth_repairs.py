@@ -16,8 +16,8 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 from numpy.typing import NDArray
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QObject, QPoint, QRect, Qt, QTimer
+from PyQt6.QtWidgets import QApplication, QWidget
 from stealth.hooks import HookDriver
 
 from core.hook_client import HookClient
@@ -33,7 +33,7 @@ from core.hook_host import HookHost
 from core.settings import SettingsStore
 from core.transcriber import Transcriber
 from core.window_policy import native
-from ui.input.input_router import KeyTranslator
+from ui.input.input_router import InputRouter, KeyTranslator
 from ui.window.main_window import MainWindow
 
 
@@ -489,6 +489,88 @@ class HelperWatchdogTests(unittest.TestCase):
             self.client._check_helper()
         spawn.assert_not_called()
         self.assertEqual(self.alerts, [])
+
+    def test_declined_elevation_starts_an_unelevated_helper(self) -> None:
+        """Start the normal helper at once when the UAC prompt is declined."""
+        listener = MagicMock()
+        with (
+            patch("core.hook_client.ElevatedProcess", side_effect=OSError("declined")),
+            patch.object(self.client, "_spawn") as spawn,
+        ):
+            self.client._launch_elevated(
+                listener, "pipe", b"key", self.client.generation
+            )
+        listener.close.assert_called_once()
+        spawn.assert_called_once()
+
+    def test_only_the_first_helper_asks_for_elevation(self) -> None:
+        """Never show UAC on a restart, and explain the admin-window limit once."""
+        failures: list[str] = []
+        self.client.failed.connect(failures.append)
+        self.client.connected = False
+        self.client.elevate = True
+        self.client.admin_notice = True
+        with (
+            patch("core.hook_client.Listener"),
+            patch("core.hook_client.subprocess.Popen") as popen,
+            patch("core.hook_client.threading.Thread") as thread,
+        ):
+            self.client._spawn()
+            self.assertEqual(
+                thread.call_args.kwargs["target"], self.client._launch_elevated
+            )
+            popen.assert_not_called()
+            self.assertEqual(failures, [])
+            self.client._spawn()
+            self.client._spawn()
+        self.assertEqual(popen.call_count, 2)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("administrator", failures[0])
+
+
+class ElevationSettingTests(unittest.TestCase):
+    """Ask for administrator permission only when the user opted in."""
+
+    def test_elevation_is_off_until_saved_on(self) -> None:
+        """Default to no UAC prompt and remember the user's choice across launches."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.json"
+            self.assertFalse(SettingsStore(path).elevate_helper())
+            SettingsStore(path).save_elevate_helper(True)
+            self.assertTrue(SettingsStore(path).elevate_helper())
+            SettingsStore(path).save_elevate_helper(False)
+            self.assertFalse(SettingsStore(path).elevate_helper())
+
+
+class DragCoalescingTests(unittest.TestCase):
+    """Keep a window edge on the pointer however fast the input helper reports moves."""
+
+    def test_fast_moves_apply_only_the_newest_position(self) -> None:
+        """Apply one resize per event-loop pass and the pending one at release."""
+        app = QApplication.instance() or QApplication([])
+        router = InputRouter.__new__(InputRouter)
+        QObject.__init__(router)
+        router.windows = {}
+        router.last_position = QPoint()
+        router.tooltip_timer = QTimer()
+        router.buttons = Qt.MouseButton.LeftButton
+        router.pressed = {}
+        router.frame_action = None
+        router.drag = (QWidget(), QPoint(), QRect(), "r")
+        router.drag_position = None
+        applied: list[QPoint] = []
+        with patch.object(router, "_drag_to", side_effect=applied.append):
+            for _ in range(5):
+                router.on_pointer(0x200, 0, 0, 0, 0)
+            self.assertEqual(applied, [])
+            app.processEvents()
+            self.assertEqual(len(applied), 1)
+            router.on_pointer(0x200, 0, 0, 0, 0)
+            router.on_pointer(0x202, 0, 0, 0, 0)
+            self.assertEqual(len(applied), 2)
+            app.processEvents()
+        self.assertEqual(len(applied), 2)
+        self.assertIsNone(router.drag)
 
 
 class HelperProcessTests(unittest.TestCase):

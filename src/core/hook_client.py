@@ -1,6 +1,8 @@
 """Connect Que to its input helper process and turn the helper's decisions into Qt signals."""
 
+import ctypes
 import json
+import math
 import os
 import secrets
 import subprocess
@@ -8,6 +10,7 @@ import sys
 import threading
 import time
 from collections.abc import Callable
+from ctypes import wintypes
 from multiprocessing.connection import Connection, Listener, PipeConnection
 from pathlib import Path
 from typing import Any
@@ -20,6 +23,14 @@ CREATE_NO_WINDOW = 0x08000000
 STARTUP_SECONDS = 15.0  # Generous, so a slow cold start (antivirus scan) is never reported as a failure
 SILENCE_SECONDS = 3.0
 WATCHDOG_SECONDS = 1.0
+ELEVATION_DECLINED = (
+    "Que's input helper is not running as administrator, so Que's shortcuts don't work "
+    "and keys aren't hidden while an administrator app such as Task Manager is focused."
+)
+STILL_ACTIVE = 259
+SEE_MASK_NOCLOSEPROCESS = 0x00000040
+SEE_MASK_FLAG_NO_UI = 0x00000400
+SW_HIDE = 0
 
 
 def hook_host_command(address: str) -> list[str]:
@@ -54,8 +65,13 @@ class HookClient(QObject):
     alert = pyqtSignal(str)
     received = pyqtSignal(object)
 
-    def __init__(self) -> None:
+    def __init__(self, elevate: bool = False) -> None:
         super().__init__()
+        # Windows hides input to administrator windows from hooks of unelevated processes
+        self.elevate = elevate and not ctypes.windll.shell32.IsUserAnAdmin()
+        self.admin_notice = (
+            self.elevate
+        )  # Explain the limit once a helper runs unelevated
         self.outbox: Callable[[dict[str, Any]], None] = self._send_to_host
         self.state: dict[str, dict[str, Any]] = {}
         self.held_modifiers: tuple[int, ...] = ()
@@ -64,7 +80,7 @@ class HookClient(QObject):
         self.started = False
         self.stopping = False
         self.generation = 0
-        self.process: subprocess.Popen[bytes] | None = None
+        self.process: subprocess.Popen[bytes] | ElevatedProcess | None = None
         self.commands: Connection | PipeConnection | None = None
         self.send_lock = threading.Lock()
         self.last_received = (
@@ -192,6 +208,12 @@ class HookClient(QObject):
         elif kind == "ready":
             self.connected = True
         elif (
+            kind == "elevation_declined"
+            and int(message["generation"]) == self.generation
+            and not self.stopping
+        ):
+            self._spawn()
+        elif (
             kind == "disconnected"
             and int(message["generation"]) == self.generation
             and not self.stopping
@@ -231,12 +253,29 @@ class HookClient(QObject):
         if self.process is not None and self.process.poll() is None:
             self.process.kill()
         self.process = None
-        self.commands = None
+        with self.send_lock:
+            if self.commands is not None:
+                # Windows may refuse to kill an elevated helper; a closed pipe makes it exit
+                self.commands.close()
+            self.commands = None
         self.connected = False
         address = rf"\\.\pipe\que-input-{secrets.token_hex(16)}"
         authkey = secrets.token_bytes(32)
         try:
             listener = Listener(address, family="AF_PIPE", authkey=authkey)
+            if self.elevate:
+                # One prompt per launch: UAC takes focus from the active app, so a restart never asks
+                self.elevate = False
+                self.deadline = math.inf  # The UAC prompt waits for the user
+                threading.Thread(
+                    target=self._launch_elevated,
+                    args=(listener, address, authkey, self.generation),
+                    daemon=True,
+                ).start()
+                return
+            if self.admin_notice:
+                self.admin_notice = False
+                self.failed.emit(ELEVATION_DECLINED)
             self.process = subprocess.Popen(
                 hook_host_command(address),
                 env={**os.environ, AUTH_ENVIRONMENT: authkey.hex()},
@@ -253,6 +292,29 @@ class HookClient(QObject):
         threading.Thread(
             target=self._connect, args=(listener, self.generation), daemon=True
         ).start()
+
+    def _launch_elevated(
+        self, listener: Listener, address: str, authkey: bytes, generation: int
+    ) -> None:
+        """Start the helper as administrator behind a UAC prompt, then connect to it.
+
+        Args:
+            listener (Listener): The authenticated pipe listener.
+            address (str): The named pipe the helper connects to.
+            authkey (bytes): The pipe secret, passed on the command line because an
+                elevated process never inherits this process's environment.
+            generation (int): The helper instance this thread serves.
+        """
+        try:
+            process = ElevatedProcess(hook_host_command(address) + [authkey.hex()])
+        except OSError:  # Declined or not allowed
+            listener.close()
+            self.received.emit({"type": "elevation_declined", "generation": generation})
+            return
+        if generation == self.generation:  # Otherwise `_connect` closes it and it exits
+            self.process = process
+            self.deadline = time.monotonic() + STARTUP_SECONDS
+        self._connect(listener, generation)
 
     def _connect(self, listener: Listener, generation: int) -> None:
         """Accept the helper's two pipes, send the current state, and relay its events.
@@ -306,3 +368,87 @@ class HookClient(QObject):
                 "hidden. Restarting it."
             )
             self._spawn()
+
+
+class ElevatedProcess:
+    """Start a process as administrator and offer the `Popen` calls Que uses."""
+
+    def __init__(self, command: list[str]) -> None:
+        info = _ShellExecuteInfo()
+        info.cbSize = ctypes.sizeof(_ShellExecuteInfo)
+        info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI
+        info.lpVerb = "runas"
+        info.lpFile = command[0]
+        info.lpParameters = subprocess.list2cmdline(command[1:])
+        info.lpDirectory = os.getcwd()
+        info.nShow = SW_HIDE
+        if not _shell32.ShellExecuteExW(ctypes.byref(info)) or not info.hProcess:
+            raise ctypes.WinError(ctypes.get_last_error())
+        self.handle = int(info.hProcess)
+
+    def poll(self) -> int | None:
+        """Return the exit code, or None while the process runs.
+
+        Returns:
+            int | None: The exit code once the process has exited.
+        """
+        code = wintypes.DWORD()
+        if not _kernel32.GetExitCodeProcess(self.handle, ctypes.byref(code)):
+            return None
+        return None if code.value == STILL_ACTIVE else int(code.value)
+
+    def kill(self) -> None:
+        """End the process; it also exits by itself once Que disconnects."""
+        _kernel32.TerminateProcess(self.handle, 1)
+
+    def wait(self, timeout: float) -> int:
+        """Wait for the process to exit.
+
+        Args:
+            timeout (float): The longest wait in seconds.
+
+        Returns:
+            int: The exit code.
+        """
+        _kernel32.WaitForSingleObject(self.handle, int(timeout * 1000))
+        code = self.poll()
+        if code is None:
+            raise subprocess.TimeoutExpired("elevated input helper", timeout)
+        return code
+
+
+class _ShellExecuteInfo(ctypes.Structure):
+    """Mirror the Win32 SHELLEXECUTEINFOW structure."""
+
+    _fields_ = [
+        ("cbSize", wintypes.DWORD),
+        ("fMask", wintypes.ULONG),
+        ("hwnd", wintypes.HWND),
+        ("lpVerb", wintypes.LPCWSTR),
+        ("lpFile", wintypes.LPCWSTR),
+        ("lpParameters", wintypes.LPCWSTR),
+        ("lpDirectory", wintypes.LPCWSTR),
+        ("nShow", ctypes.c_int),
+        ("hInstApp", wintypes.HINSTANCE),
+        ("lpIDList", ctypes.c_void_p),
+        ("lpClass", wintypes.LPCWSTR),
+        ("hkeyClass", wintypes.HKEY),
+        ("dwHotKey", wintypes.DWORD),
+        ("hIconOrMonitor", wintypes.HANDLE),
+        ("hProcess", wintypes.HANDLE),
+    ]
+
+
+_shell32 = ctypes.WinDLL("shell32", use_last_error=True)
+_shell32.ShellExecuteExW.argtypes = [ctypes.POINTER(_ShellExecuteInfo)]
+_shell32.ShellExecuteExW.restype = wintypes.BOOL
+_kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+_kernel32.GetExitCodeProcess.argtypes = [
+    wintypes.HANDLE,
+    ctypes.POINTER(wintypes.DWORD),
+]
+_kernel32.GetExitCodeProcess.restype = wintypes.BOOL
+_kernel32.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+_kernel32.TerminateProcess.restype = wintypes.BOOL
+_kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+_kernel32.WaitForSingleObject.restype = wintypes.DWORD

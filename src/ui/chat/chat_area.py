@@ -9,6 +9,7 @@ from PyQt6.QtCore import (
     QRectF,
     Qt,
     QTimer,
+    pyqtSignal,
 )
 from PyQt6.QtGui import QColor, QLinearGradient, QPainter, QPixmap, QWheelEvent
 from PyQt6.QtWidgets import QGraphicsEffect, QScrollArea, QVBoxLayout, QWidget
@@ -43,6 +44,8 @@ SCROLLBAR_STYLE = """
 class ChatArea(QScrollArea):
     """Display message history in a scrollable chat area."""
 
+    screenshot_opened = pyqtSignal(list, int)  # Screenshot paths, index to show
+
     def __init__(self, main_window: QWidget) -> None:
         super().__init__(main_window)
         self.streaming_bubble: ChatBubble | None = None
@@ -51,19 +54,26 @@ class ChatArea(QScrollArea):
         self._init_scroll_animation()
         self._reset_stream()
 
-    def add_message(self, message: str, is_user: bool, transcript: str = "") -> None:
+    def add_message(
+        self,
+        message: str,
+        is_user: bool,
+        transcript: str = "",
+        screenshots: tuple[str, ...] = (),
+    ) -> None:
         """Add a new message to the chat area.
 
         Args:
             message (str): The message text to display.
             is_user (bool): Whether the message is from the user.
             transcript (str): Audio transcript sent with a user message.
+            screenshots (tuple[str, ...]): Screenshot files sent with a user message.
         """
         # Remove the stretch before adding new message
         self.chat_layout.takeAt(self.chat_layout.count() - 1)
 
         # Create and add the chat bubble
-        bubble = ChatBubble(message, is_user, transcript)
+        bubble = self._bubble(message, is_user, transcript, screenshots)
         self.chat_layout.addWidget(bubble)
 
         # Pre-create the assistant loading bubble so it is visible when the chat scrolls down
@@ -140,15 +150,18 @@ class ChatArea(QScrollArea):
                 if widget is not None:
                     widget.deleteLater()
 
-    def load_messages(self, messages: list[tuple[str, bool, str]]) -> None:
+    def load_messages(
+        self, messages: list[tuple[str, bool, str, tuple[str, ...]]]
+    ) -> None:
         """Replace the chat with a saved transcript and scroll to its end.
 
         Args:
-            messages (list[tuple[str, bool, str]]): Message texts with whether each is from the user and its audio transcript.
+            messages (list[tuple[str, bool, str, tuple[str, ...]]]): Message texts with whether
+                each is from the user, its audio transcript, and its screenshot files.
         """
         self.clear_chat_messages()
-        for message, is_user, transcript in messages:
-            bubble = ChatBubble(message, is_user, transcript)
+        for message, is_user, transcript, screenshots in messages:
+            bubble = self._bubble(message, is_user, transcript, screenshots)
             if not is_user:
                 bubble.set_bot_message(message)
             self.chat_layout.insertWidget(self.chat_layout.count() - 1, bubble)
@@ -211,6 +224,28 @@ class ChatArea(QScrollArea):
         self.scrollbar.rangeChanged.connect(
             lambda _min, _max: QTimer.singleShot(0, self._update_fade_visibility)
         )
+
+    def _bubble(
+        self,
+        message: str,
+        is_user: bool,
+        transcript: str,
+        screenshots: tuple[str, ...],
+    ) -> ChatBubble:
+        """Create a message bubble whose screenshot previews open through this chat area.
+
+        Args:
+            message (str): The message text to display.
+            is_user (bool): Whether the message is from the user.
+            transcript (str): Audio transcript sent with a user message.
+            screenshots (tuple[str, ...]): Screenshot files sent with a user message.
+
+        Returns:
+            ChatBubble: The new bubble.
+        """
+        bubble = ChatBubble(message, is_user, transcript, screenshots)
+        bubble.screenshot_opened.connect(self.screenshot_opened)
+        return bubble
 
     def _update_fade_visibility(self) -> None:
         """Scale each fade edge based on distance from the nearest scroll edge."""

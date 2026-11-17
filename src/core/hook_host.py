@@ -80,16 +80,17 @@ WNDPROC = ctypes.WINFUNCTYPE(
 )
 
 
-def run_hook_host(address: str) -> int:
+def run_hook_host(address: str, authkey_hex: str = "") -> int:
     """Connect to Que, host the hooks until Que disconnects and owned input drains.
 
     Args:
         address (str): The named pipe Que listens on.
+        authkey_hex (str): The pipe secret when started elevated, which drops the environment.
 
     Returns:
         int: The process exit code.
     """
-    authkey = bytes.fromhex(os.environ.pop(AUTH_ENVIRONMENT, ""))
+    authkey = bytes.fromhex(os.environ.pop(AUTH_ENVIRONMENT, "") or authkey_hex)
     try:
         commands = Client(address, family="AF_PIPE", authkey=authkey)
         events = Client(address, family="AF_PIPE", authkey=authkey)

@@ -233,7 +233,7 @@ class InteractionsTests(unittest.TestCase):
                 )
                 receiver.handle_message("hello")
                 chat.add_message.assert_called_once_with(
-                    "hello", is_user=True, transcript=""
+                    "hello", is_user=True, transcript="", screenshots=()
                 )
                 assert receiver.ai_thread is not None
                 self.assertTrue(receiver.ai_thread.daemon)

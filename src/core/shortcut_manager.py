@@ -42,7 +42,10 @@ class ShortcutManager(QObject):
         super().__init__()
         self.main_window = main_window
         self.screenshot_manager = screenshot_manager
-        self.hook_client = HookClient()
+        # Read once: changing it mid-session would prompt or restart the helper, so it waits for the next launch
+        self.hook_client = HookClient(
+            elevate=main_window.ai_sender.settings_store.elevate_helper()
+        )
         self.actions: dict[str, Callable[[], None]] = {
             name: getattr(self, f"_{name}") for name in ACTION_NAMES
         }

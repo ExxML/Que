@@ -3,8 +3,8 @@ import sys
 from core.hook_host import run_hook_host
 
 # The input helper is this same program; start it before loading the heavy UI and AI libraries
-if __name__ == "__main__" and len(sys.argv) == 3 and sys.argv[1] == "--hook-host":
-    sys.exit(run_hook_host(sys.argv[2]))
+if __name__ == "__main__" and len(sys.argv) in (3, 4) and sys.argv[1] == "--hook-host":
+    sys.exit(run_hook_host(*sys.argv[2:]))
 
 import ctranslate2  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose DLLs crash CTranslate2 model loading otherwise
 from PyQt6.QtWidgets import QApplication

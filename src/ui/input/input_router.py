@@ -105,6 +105,7 @@ class InputRouter(QObject):
         self.last_click = (0.0, 0, QPoint())
         self.last_position = QPoint()
         self.drag: tuple[QWidget, QPoint, QRect, str] | None = None
+        self.drag_position: QPoint | None = None  # Latest move not yet applied
         self.frame_action: tuple[QWidget, int] | None = None
         self.translator = KeyTranslator()
         self.closed = False
@@ -353,7 +354,10 @@ class InputRouter(QObject):
         self.last_position = global_position
         if message == 0x200:
             if self.drag is not None:
-                self._drag_to(global_position)
+                # Moves arrive faster than a resize repaints; apply only the newest one
+                if self.drag_position is None:
+                    QTimer.singleShot(0, self._apply_drag)
+                self.drag_position = global_position
                 return
             captured = next(iter(self.pressed.values()), None)
             if self._alive(captured):
@@ -460,6 +464,7 @@ class InputRouter(QObject):
                             frame.showMaximized()
                     return
                 if self.drag is not None:
+                    self._apply_drag()
                     self.drag = None
                     return
                 if self._alive(captured):
@@ -693,6 +698,12 @@ class InputRouter(QObject):
             self.drag = (window, position, window.geometry(), edge)
             return True
         return False
+
+    def _apply_drag(self) -> None:
+        """Apply the newest pending drag position, if any."""
+        position, self.drag_position = self.drag_position, None
+        if position is not None:
+            self._drag_to(position)
 
     def _drag_to(self, position: QPoint) -> None:
         """Apply the current local move or resize on the Qt thread.

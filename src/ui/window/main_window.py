@@ -2,6 +2,7 @@ import ctypes
 import time
 from ctypes import wintypes
 from pathlib import Path
+from typing import Any
 
 from PyQt6.QtCore import QPoint, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
@@ -34,6 +35,7 @@ from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor
 from ui.window.header_icon_button import HeaderIconButton
 from ui.window.history_sidebar import HistorySidebar
 from ui.window.screenshot_tray import ScreenshotTray
+from ui.window.screenshot_viewer import ScreenshotViewer
 from ui.window.settings_page import SettingsPage
 from ui.window.transcript_panel import TranscriptPanel
 
@@ -129,6 +131,8 @@ class MainWindow(QWidget):
                 self.settings_page.key_input.EchoMode.Password
             )
             self.settings_page.show_key.setChecked(False)
+            if hasattr(self, "screenshot_viewer"):
+                self.screenshot_viewer.close_viewer()
             self.repaint()
             QApplication.processEvents()
         super().hide()
@@ -163,7 +167,10 @@ class MainWindow(QWidget):
                 "Open Settings to connect your AI provider, or retry loading models."
             )
             return
-        attachments = self.screenshot_manager.get_and_clear_pending()
+        # Sent screenshots move into history storage so the chat can show them later
+        attachments = self.chat_history.keep_screenshots(
+            self.screenshot_manager.get_and_clear_pending()
+        )
         self.screenshot_tray.clear()
         # The transcript stays pending until the turn commits, so failed turns resend it
         transcript, transcript_seq = self.transcriber.pending()
@@ -175,6 +182,7 @@ class MainWindow(QWidget):
         """Open or close the conversation history sidebar."""
         if not self.history_sidebar.opened:
             self.input_field.input_settings.close_popups()
+            self.screenshot_viewer.close_viewer()
             self._refresh_history()
             self._position_history_sidebar()
         self.history_sidebar.toggle()
@@ -182,6 +190,7 @@ class MainWindow(QWidget):
     def show_settings(self) -> None:
         """Open provider settings in the same capture-excluded overlay."""
         self.history_sidebar.close_sidebar()
+        self.screenshot_viewer.close_viewer()
         if self.pages.currentIndex() == 1:
             self._close_settings()
             return
@@ -220,6 +229,7 @@ class MainWindow(QWidget):
         super().resizeEvent(event)
         self._position_screenshot_tray()
         self._position_history_sidebar()
+        self._position_screenshot_viewer()
 
     # Override mousePressEvent to automatically set focus to input field
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
@@ -404,6 +414,10 @@ class MainWindow(QWidget):
         self.history_sidebar.conversation_deleted.connect(self._delete_conversation)
         self.history_sidebar.closed.connect(self._on_history_closed)
 
+        # Sent screenshots open enlarged over everything below the header
+        self.screenshot_viewer = ScreenshotViewer(self, self._paint_frame)
+        self.chat_area.screenshot_opened.connect(self._open_screenshots)
+
         # Unset cursor for all child widgets to preserve system cursor
         self._unset_cursor_recursive(self)
 
@@ -535,6 +549,7 @@ class MainWindow(QWidget):
     def _clear_all_chat(self) -> None:
         """Clear all chat data, screenshots, and screenshot tray thumbnails."""
         self.worker.stop()
+        self.screenshot_viewer.close_viewer()
         self.chat_area.clear_chat_messages()
         self.ai_sender.reset_chat()
         self.screenshot_manager.clear_screenshots()
@@ -616,6 +631,23 @@ class MainWindow(QWidget):
             0, top, HistorySidebar.PANEL_WIDTH, self.height() - top
         )
 
+    def _position_screenshot_viewer(self) -> None:
+        """Place the screenshot viewer over everything below the header."""
+        top = self.pages.y()
+        self.screenshot_viewer.setGeometry(0, top, self.width(), self.height() - top)
+
+    def _open_screenshots(self, paths: list[str], index: int) -> None:
+        """Show a sent message's screenshots enlarged.
+
+        Args:
+            paths (list[str]): The message's screenshot files.
+            index (int): The screenshot to show first.
+        """
+        self.history_sidebar.close_sidebar()
+        self.input_field.input_settings.close_popups()
+        self._position_screenshot_viewer()
+        self.screenshot_viewer.open_screenshots(paths, index)
+
     def _refresh_history(self) -> None:
         """Rebuild the sidebar list and highlight the open conversation."""
         active = self.conversations[self.ai_sender.provider]
@@ -649,9 +681,17 @@ class MainWindow(QWidget):
             conversation = Conversation(provider, title or "Untitled chat")
             self.conversations[provider] = conversation
         self.transcriber.mark_sent(interaction_request.transcript_seq)
-        user_message = {"role": "user", "text": interaction_request.message}
+        user_message: dict[str, Any] = {
+            "role": "user",
+            "text": interaction_request.message,
+        }
         if interaction_request.transcript:
             user_message["transcript"] = interaction_request.transcript
+        screenshots = self.chat_history.screenshot_names(
+            interaction_request.attachments
+        )
+        if screenshots:
+            user_message["screenshots"] = screenshots
         conversation.messages.append(user_message)
         conversation.messages.append({"role": "assistant", "text": response})
         conversation.interaction_id = interaction_id
@@ -673,6 +713,7 @@ class MainWindow(QWidget):
             conversation_id (str): The saved conversation identifier.
         """
         self.history_sidebar.close_sidebar()
+        self.screenshot_viewer.close_viewer()
         if self.pages.currentIndex() == 1:
             self._close_settings()
         conversation = self.chat_history.get(conversation_id)
@@ -695,6 +736,7 @@ class MainWindow(QWidget):
                     message["text"],
                     message["role"] == "user",
                     message.get("transcript", ""),
+                    self.chat_history.screenshot_paths(message),
                 )
                 for message in conversation.messages
             ]

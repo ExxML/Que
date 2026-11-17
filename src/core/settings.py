@@ -95,6 +95,14 @@ class SettingsStore:
         """
         return self.data.get("click_through") is True
 
+    def elevate_helper(self) -> bool:
+        """Return whether to start the input helper as administrator, defaulting to off.
+
+        Returns:
+            bool: True when Que should ask for administrator permission at startup.
+        """
+        return self.data.get("elevate_helper") is True
+
     def context_documents(self) -> dict[str, tuple[str, str]]:
         """Return the saved documents that give the AI context about the user.
 
@@ -194,6 +202,14 @@ class SettingsStore:
             enabled (bool): Whether the window should ignore mouse input.
         """
         self._write({**self.data, "click_through": enabled})
+
+    def save_elevate_helper(self, enabled: bool) -> None:
+        """Atomically save whether to start the input helper as administrator.
+
+        Args:
+            enabled (bool): Whether Que should ask for administrator permission at startup.
+        """
+        self._write({**self.data, "elevate_helper": enabled})
 
     def save_context_document(self, kind: str, name: str, text: str) -> None:
         """Atomically save a context document, or remove it when the text is empty.

@@ -1,23 +1,49 @@
 import math
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtCore import QEvent, QRectF, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import (
+    QEnterEvent,
+    QFont,
+    QPainter,
+    QPainterPath,
+    QPaintEvent,
+    QPen,
+    QPixmap,
+)
+from PyQt6.QtWidgets import (
+    QAbstractButton,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ui.chat.ai_formatter import format_message
-from ui.theme import PRIMARY_COLOR, qss
+from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
+
+PREVIEW_WIDTH = 64
+PREVIEW_HEIGHT = 36
+PREVIEW_SPACING = 4
 
 
 class ChatBubble(QWidget):
-    """Render a chat bubble for displaying messages."""
+    """Render a chat bubble for displaying messages and what was attached to them."""
+
+    screenshot_opened = pyqtSignal(list, int)  # Screenshot paths, index to show
 
     def __init__(
-        self, message: str, is_user: bool = False, transcript: str = ""
+        self,
+        message: str,
+        is_user: bool = False,
+        transcript: str = "",
+        screenshots: tuple[str, ...] = (),
     ) -> None:
         super().__init__()
         self.message = message
         self.is_user = is_user
         self.transcript = transcript
+        self.screenshots = list(screenshots)
         self._loading_timer: QTimer | None = None
         self._init_UI()
 
@@ -87,8 +113,8 @@ class ChatBubble(QWidget):
                 self.message_label.setFixedWidth(natural_width)
 
             layout.addStretch()
-            if self.transcript:
-                layout.addLayout(self._transcript_column(max_width))
+            if self.transcript or self.screenshots:
+                layout.addLayout(self._attachment_column(max_width))
             else:
                 layout.addWidget(self.message_label)
         else:
@@ -110,18 +136,64 @@ class ChatBubble(QWidget):
 
         layout.setSpacing(0)
 
-    def _transcript_column(self, max_width: int) -> QVBoxLayout:
-        """Stack the message above a collapsed audio transcript disclosure.
+    def _attachment_column(self, max_width: int) -> QVBoxLayout:
+        """Stack the message above its screenshots and a collapsed audio transcript disclosure.
 
         Args:
-            max_width (int): The widest the transcript may grow.
+            max_width (int): The widest the attachments may grow.
 
         Returns:
-            QVBoxLayout: The column holding the message, transcript, and toggle.
+            QVBoxLayout: The column holding the message and its attachments.
         """
         column = QVBoxLayout()
         column.setSpacing(2)
         column.addWidget(self.message_label, alignment=Qt.AlignmentFlag.AlignRight)
+        if self.screenshots:
+            column.addLayout(self._screenshot_row(max_width))
+        if self.transcript:
+            self._add_transcript(column, max_width)
+        return column
+
+    def _screenshot_row(self, max_width: int) -> QHBoxLayout:
+        """Build a right-aligned row of screenshot previews that open the viewer.
+
+        When more screenshots were sent than fit, the last preview counts the rest.
+
+        Args:
+            max_width (int): The widest the row may grow.
+
+        Returns:
+            QHBoxLayout: The row of previews.
+        """
+        row = QHBoxLayout()
+        row.setSpacing(PREVIEW_SPACING)
+        row.addStretch()
+        total = len(self.screenshots)
+        shown = min(total, max(1, max_width // (PREVIEW_WIDTH + PREVIEW_SPACING)))
+        for index in range(shown):
+            hidden = total - shown if index == shown - 1 else 0
+            preview = _ScreenshotPreview(self.screenshots[index], hidden, self)
+            preview.setAccessibleName(
+                f"View screenshot {index + 1} of {total} sent with this message"
+            )
+            preview.setToolTip(
+                f"View {total} screenshots" if hidden else "View screenshot"
+            )
+            preview.clicked.connect(
+                lambda _checked=False, index=index: self.screenshot_opened.emit(
+                    self.screenshots, index
+                )
+            )
+            row.addWidget(preview)
+        return row
+
+    def _add_transcript(self, column: QVBoxLayout, max_width: int) -> None:
+        """Add a collapsed disclosure showing the audio transcript sent with the message.
+
+        Args:
+            column (QVBoxLayout): The column to add the transcript and its toggle to.
+            max_width (int): The widest the transcript may grow.
+        """
         transcript_label = QLabel(self.transcript)
         transcript_label.setTextFormat(Qt.TextFormat.PlainText)
         transcript_label.setTextInteractionFlags(
@@ -153,7 +225,6 @@ class ChatBubble(QWidget):
         toggle.clicked.connect(on_toggle)
         column.addWidget(transcript_label, alignment=Qt.AlignmentFlag.AlignRight)
         column.addWidget(toggle, alignment=Qt.AlignmentFlag.AlignRight)
-        return column
 
     def _tick_loading(self) -> None:
         """Advance the loading animation by one frame."""
@@ -183,3 +254,70 @@ class ChatBubble(QWidget):
         )
         self.message_label.setText(html)
         self._loading_frame = (self._loading_frame + 1) % 20
+
+
+class _ScreenshotPreview(QAbstractButton):
+    """Show a small rounded preview of a sent screenshot that opens it when clicked."""
+
+    def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:
+        super().__init__(chat_bubble)
+        self.hidden = hidden  # Screenshots after this one that have no preview
+        self.hovered = False
+        self.setFixedSize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.pixmap = QPixmap(path)
+        if not self.pixmap.isNull():
+            self.pixmap = self.pixmap.scaled(
+                PREVIEW_WIDTH,
+                PREVIEW_HEIGHT,
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+
+    def enterEvent(self, event: QEnterEvent | None) -> None:
+        """Brighten the border while the pointer is over the preview.
+
+        Args:
+            event (QEnterEvent): The enter event.
+        """
+        self.hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event: QEvent | None) -> None:
+        """Restore the border once the pointer leaves the preview.
+
+        Args:
+            event (QEvent): The leave event.
+        """
+        self.hovered = False
+        self.update()
+        super().leaveEvent(event)
+
+    def paintEvent(self, _event: QPaintEvent | None) -> None:
+        """Draw the screenshot clipped to rounded corners, with a count of any hidden ones."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect = QRectF(self.rect()).adjusted(0.5, 0.5, -0.5, -0.5)
+        clip = QPainterPath()
+        clip.addRoundedRect(rect, 4.0, 4.0)
+        painter.setClipPath(clip)
+        if self.pixmap.isNull():
+            painter.setPen(qcolor(PRIMARY_COLOR, 200))
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, "Missing")
+        else:
+            # Center the expanded image so the crop is even on both sides
+            painter.drawPixmap(
+                (self.width() - self.pixmap.width()) // 2,
+                (self.height() - self.pixmap.height()) // 2,
+                self.pixmap,
+            )
+        if self.hidden:
+            painter.fillRect(rect, qcolor(BG_COLOR, 170))
+            painter.setPen(qcolor(PRIMARY_COLOR))
+            painter.setFont(QFont("Helvetica", 10, QFont.Weight.Bold))
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, f"+{self.hidden}")
+        painter.setClipping(False)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(qcolor(PRIMARY_COLOR, 200 if self.hovered else 90), 1.0))
+        painter.drawRoundedRect(rect, 4.0, 4.0)

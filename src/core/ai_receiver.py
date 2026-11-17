@@ -68,7 +68,12 @@ class AIReceiver(QObject):
         self.request = request
 
         # Immediately add user's message to the chat area
-        self.chat_area.add_message(message, is_user=True, transcript=transcript)
+        self.chat_area.add_message(
+            message,
+            is_user=True,
+            transcript=transcript,
+            screenshots=tuple(attachments or ()),
+        )
 
         # Start new thread
         self.ai_thread = threading.Thread(
