@@ -380,6 +380,11 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--report-only", action="store_true")
     parser.add_argument(
+        "--allow-incomplete",
+        action="store_true",
+        help="Exit 0 when an offline audit is INCOMPLETE (no FAIL); the report still says INCOMPLETE.",
+    )
+    parser.add_argument(
         "--cross-origin-isolated",
         action="store_true",
         help="Serve an additional COOP/COEP condition with normal browser isolation policies.",
@@ -540,6 +545,8 @@ def main() -> int:
             )
         return full(directory, metadata, base)
     code = write_reports(directory, metadata, base)
+    if args.allow_incomplete and verdict(base)[0] == "INCOMPLETE":
+        code = 0
     counts = {
         status: sum(result.status == status for result in base)
         for status in ("PASS", "FAIL", "INCONCLUSIVE", "UNSUPPORTED")

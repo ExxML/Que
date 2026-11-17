@@ -4351,7 +4351,7 @@
     "source": "ui/chat/ai_formatter.py",
     "line": 73,
     "expression": "def _format_code_block(match: re.Match[str]) -> str:",
-    "sha256": "cabd435a7e116ef1d828d074204e597ac121c9d87b39f99769f18ce8958a8bd3"
+    "sha256": "1d620f9933188f2e572d7c362c2740e650d559092ea58bbac6eacedfc8dbcdf8"
   },
   "ui/chat/chat_area.py:46:routine": {
     "category": "routine",
@@ -4680,7 +4680,7 @@
     "source": "ui/chat/chat_bubble.py",
     "line": 113,
     "expression": "def _transcript_column(self, max_width: int) -> QVBoxLayout:",
-    "sha256": "e855fe7173220ed8eb9957e3628e12eb344f9312327ae6fd3e2fa8e4c2b6796b"
+    "sha256": "259181d427fa0c46ca4e2adac3febbb0d7535403c9f43c7332c1404eda931b70"
   },
   "ui/chat/chat_bubble.py:158:routine": {
     "category": "routine",
@@ -4778,7 +4778,7 @@
     "source": "ui/input/input_field.py",
     "line": 21,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "915451ae1e67d498ebf6af529c32ecee4fb87619a4aea34cc4bdfba383f1e61f"
+    "sha256": "aa7c951569936b0f51a33ee6d8ad00aaec0ab14cd066ede3cf5d3633f1c8bcfe"
   },
   "ui/input/input_field.py:106:routine": {
     "category": "routine",
@@ -5751,7 +5751,7 @@
     "source": "ui/input/input_settings.py",
     "line": 140,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "b0216fe866420313f5094493504fee742294a7a9427b6b70844c0457381a6f48"
+    "sha256": "3a944cbc54c0f86ed0ae41cfd5237e856cf2c3f3f642cdf6bc15c4db3c2e4fe5"
   },
   "ui/input/input_settings.py:170:routine": {
     "category": "routine",
@@ -5772,7 +5772,7 @@
     "source": "ui/input/input_settings.py",
     "line": 205,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
-    "sha256": "f078fbec5fa480988d54a01388edb8cea4c455cd00cfb51ea1f7e28d2d7d0d94"
+    "sha256": "b7b08a8048675c0802b86da4afee6617c17232c428d25376270d9755bf4e0718"
   },
   "ui/input/input_settings.py:59:branch": {
     "category": "branch",
@@ -5800,7 +5800,7 @@
     "source": "ui/input/input_settings.py",
     "line": 209,
     "expression": "if self.isChecked():",
-    "sha256": "774495a3315bc51e1e5079dd928031a614211b0822ed46bf98089c8a4b2fb632"
+    "sha256": "c32a0c94771495e617b9c1240f3337c86800392227c5580c91d1179aab7a312a"
   },
   "ui/input/input_settings.py:217:branch": {
     "category": "branch",
@@ -5982,7 +5982,7 @@
     "source": "ui/input/selection_dropdown.py",
     "line": 390,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
-    "sha256": "01157e2bac10a01572068f7f1d57d3d28f47992a996aa4ad5f2895714e24d7fb"
+    "sha256": "4e3fd96807afb21649d45d33b4bc6621a042343f4484bdd172c4492661340fdf"
   },
   "ui/input/selection_dropdown.py:426:routine": {
     "category": "routine",
@@ -6080,7 +6080,7 @@
     "source": "ui/input/selection_dropdown.py",
     "line": 394,
     "expression": "if self.is_hovered:",
-    "sha256": "62ec48505fc10addfe1f35c8cdd3b31e758e99687a1011a16158f56e3331213c"
+    "sha256": "61ac56c5e5de5e77d0517a838e93f8c7b849c242af076b066000f4c6b5084e27"
   },
   "ui/input/selection_dropdown.py:103:branch": {
     "category": "branch",
@@ -6150,12 +6150,12 @@
     "source": "ui/window/header_icon_button.py",
     "line": 20,
     "expression": "def paintEvent(self, event: QPaintEvent | None) -> None:",
-    "sha256": "f5b071099353e33efe709a13e2736e17741b287e0d03204d516a3f3c859dbfb7"
+    "sha256": "8d1b07cb5abf4b59970741e5912f5a21d4b0c03fe0c961ff139fdc691ae01213"
   },
-  "ui/window/header_icon_button.py:40:branch": {
+  "ui/window/header_icon_button.py:42:branch": {
     "category": "branch",
     "source": "ui/window/header_icon_button.py",
-    "line": 40,
+    "line": 42,
     "expression": "if self.glyph == 'menu':",
     "sha256": "ed42f77b5eef27bee5bedb8c201f69512ecadec2d01e9c9d2aeb4386025dc858"
   },
@@ -6262,7 +6262,7 @@
     "source": "ui/window/history_sidebar.py",
     "line": 224,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "b4e158ccf04eee1a5a1f071e8ef484cd8ad419378741f679a00439565bbe3908"
+    "sha256": "261b6172ee79ef01f6be6742a65c572c8918ae50be93bccb2426147cce22c4e9"
   },
   "ui/window/history_sidebar.py:269:routine": {
     "category": "routine",
@@ -6318,7 +6318,7 @@
     "source": "ui/window/history_sidebar.py",
     "line": 351,
     "expression": "def __init__(self, conversation: Conversation, now: float, parent: QWidget) -> None:",
-    "sha256": "573acf2947367ed853574a880563a63f2a66bfaaf1bd828ca793acd27c47ef96"
+    "sha256": "9f8f59661fa68247c140211b63c443fc8f0b445b71f874aa0a7e19feca2d2db2"
   },
   "ui/window/history_sidebar.py:395:routine": {
     "category": "routine",
@@ -6332,7 +6332,7 @@
     "source": "ui/window/history_sidebar.py",
     "line": 410,
     "expression": "def disarm(self) -> None:",
-    "sha256": "804d7e1d5162239111a68343ab8f98890718d26b8d75ddaacf84bcbc980893b4"
+    "sha256": "feb29ab90ac2ee6563542f7cb676f80ac61686aaf4e27722ce91c3ee8018cbb5"
   },
   "ui/window/history_sidebar.py:423:routine": {
     "category": "routine",
@@ -6549,7 +6549,7 @@
     "source": "ui/window/main_window.py",
     "line": 241,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "860870c8ca109c1704ba45e725d69186368728a10512a28ca820b2fe3f030042"
+    "sha256": "bb8179a02f040c15417de8598e370120769b880fc56a37686dbc8d71e41dfe72"
   },
   "ui/window/main_window.py:419:routine": {
     "category": "routine",
@@ -7039,7 +7039,7 @@
     "source": "ui/window/settings_page.py",
     "line": 105,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "5039782024bb0242093157ae3ae89316e0fbe8f65827cb76f675bf7a80e1cd10"
+    "sha256": "7772b929181192f8b1266da0fca20a45e68ecb07dc8d360b05b42412a976742e"
   },
   "ui/window/settings_page.py:386:routine": {
     "category": "routine",
@@ -7473,7 +7473,7 @@
     "source": "ui/window/transcript_panel.py",
     "line": 73,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "e252aaff85dd2c059d472a3ca034915e1f9eb498a66285b299a4c7c0fdc796d0"
+    "sha256": "e7eac04d823c34de323c5dfbff54b83214aff8ccc63a8ddf199512a504a0844e"
   },
   "ui/window/transcript_panel.py:141:routine": {
     "category": "routine",
@@ -7515,14 +7515,14 @@
     "source": "ui/window/transcript_panel.py",
     "line": 180,
     "expression": "def _refresh(self) -> None:",
-    "sha256": "7e331582525e4d71249c7d46c2ea1ae6d52d83b18698ccb802b1f09891b9a862"
+    "sha256": "06840c506ee914cbcae437494afa9baab6f0e605ae2c0b7bcfebb70423b967a5"
   },
   "ui/window/transcript_panel.py:227:routine": {
     "category": "routine",
     "source": "ui/window/transcript_panel.py",
     "line": 227,
     "expression": "def _refresh_indicators(self) -> None:",
-    "sha256": "582518502e3fb3f899c1c50ea09f1af761e41d7ab0daf3a56601e2ffcd22d6c3"
+    "sha256": "5e949be7c6989f3947248cb3849da6497adf5fd8bb5569d823826952fdaf8d28"
   },
   "ui/window/transcript_panel.py:239:routine": {
     "category": "routine",
