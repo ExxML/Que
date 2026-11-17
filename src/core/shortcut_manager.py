@@ -57,7 +57,7 @@ class ShortcutManager(QObject):
         self.hook_failed.connect(self.main_window.chat_area.show_stream_error)
         self.move_direction.connect(self._move_by_direction)
         self.screenshot_signal.connect(self.screenshot_manager.take_screenshot)
-        self.clear_all_chat_signal.connect(self.main_window._clear_all_chat)
+        self.clear_all_chat_signal.connect(self.main_window._new_chat)
         self.minimize_signal.connect(self.main_window.hide)
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)

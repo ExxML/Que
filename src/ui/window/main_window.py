@@ -327,7 +327,7 @@ class MainWindow(QWidget):
         self.new_chat_button.setFixedSize(36, 32)
         self.new_chat_button.setAccessibleName("New chat")
         self.new_chat_button.setToolTip("New chat (Right Ctrl+N)")
-        self.new_chat_button.clicked.connect(self._clear_all_chat)
+        self.new_chat_button.clicked.connect(self._new_chat)
         self.new_chat_button.setStyleSheet(header_button_style)
         header_layout = QHBoxLayout()
         header_layout.addWidget(self.history_button)
@@ -525,6 +525,12 @@ class MainWindow(QWidget):
         self.screenshot_tray.setVisible(bool(self.screenshot_manager.pending_paths))
         self._sync_transcript_panel()
         self.input_field.input_field.setFocus()
+
+    def _new_chat(self) -> None:
+        """Start a new chat in the default directory with the history sidebar closed."""
+        self.history_sidebar.close_sidebar()
+        self._set_claude_directory(self.ai_sender.settings_store.claude_directory())
+        self._clear_all_chat()
 
     def _clear_all_chat(self) -> None:
         """Clear all chat data, screenshots, and screenshot tray thumbnails."""
