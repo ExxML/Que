@@ -4,7 +4,7 @@ Last updated: 2026-11-15. Guided-run scope: **Edge stable only, one 2560×1600 d
 
 This file is the one place to start. Section 1 lists every known Que defect: those reproduced physically in this guided run in full, and those found earlier only offline as an index into [STEALTH_REPAIR_HANDOFF.md](STEALTH_REPAIR_HANDOFF.md), which holds their traces and repair guidance. Section 2 lists test-harness defects. Section 3 lists what is still untested. Procedure: [STEALTH_AUDIT.md](STEALTH_AUDIT.md). Older: [STEALTH_FINDINGS.md](STEALTH_FINDINGS.md), [STEALTH_RESEARCH.md](STEALTH_RESEARCH.md).
 
-Run directories (git-ignored, local only): `.stealth-runs/guided-edge-150` and `-b` to `-e` (voided by harness bugs H-001 to H-007); **`.stealth-runs/guided-edge-150-f` (Batch A)**; **`.stealth-runs/guided-edge-150-g` (Batches B–F)**. Helper `.stealth-runs/tools/transients.py RUN OUTDIR id…` crops each non-main Que window's native rect from retained frames vs the baseline (used for CAP-001/002).
+Run directories (git-ignored, local only): `.stealth-runs/guided-edge-150` and `-b` to `-e` (voided by harness bugs H-001 to H-007); **`.stealth-runs/guided-edge-150-f` (Batch A)**; **`.stealth-runs/guided-edge-150-g` (Batches B–F)**. Analysis helpers are now in the repository: `python test/stealth/manual.py transients RUN OUTDIR id…` crops each non-main Que window's native rect from retained frames vs the baseline (used for CAP-001/002); see [STEALTH_MANUAL_TESTING.md](STEALTH_MANUAL_TESTING.md) for the full manual procedure.
 
 ## Repair status (2026-11-15)
 

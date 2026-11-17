@@ -2,6 +2,8 @@
 
 This is an evidence-based audit, not a guarantee that Que is undetectable. The suite reports `PASS`, `FAIL`, `INCONCLUSIVE`, and `UNSUPPORTED` for the exact tested configuration. Required unsupported or missing coverage prevents a complete pass. Known defects are real failures, not expected-failure tests.
 
+For a hands-on manual session (runner, observer setup, calibration, every physical test, analysis with `test/stealth/manual.py`), follow the [manual testing walkthrough](STEALTH_MANUAL_TESTING.md).
+
 Production code is unchanged. Ordinary regression tests and compliance checks have separate outcomes and CI jobs. See [findings](STEALTH_FINDINGS.md) and the [research and investigation ledger](STEALTH_RESEARCH.md).
 
 ## Run

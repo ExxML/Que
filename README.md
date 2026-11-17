@@ -23,7 +23,7 @@ $env:PYTHONPATH = "src"
 python -m unittest discover -s test -p "test_*.py" -v
 ```
 
-Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
+Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. For hands-on checks with a real keyboard, screen and browser, follow the [manual stealth testing walkthrough](test/STEALTH_MANUAL_TESTING.md). See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
 
 Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_hook.dll`, built from `native/que_hook.c` and committed with it, so running Que needs no compiler. After changing `native/que_hook.c`, rebuild it with MSVC (Visual Studio Build Tools, C++) or gcc and commit both files. Nuitka skips DLLs in data directories, so the build command below names it explicitly.
 ```bash
