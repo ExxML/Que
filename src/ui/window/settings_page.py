@@ -1,4 +1,3 @@
-import ctypes
 from collections.abc import Callable
 from pathlib import Path
 
@@ -859,12 +858,3 @@ class _SettingsComboBox(QComboBox):
         """
         if event is not None:
             event.ignore()
-
-    def showPopup(self) -> None:
-        """Apply the overlay's capture exclusion before showing the popup."""
-        view = self.view()
-        if view is not None:
-            popup = view.window()
-            if popup is not None:
-                ctypes.windll.user32.SetWindowDisplayAffinity(int(popup.winId()), 0x11)
-        super().showPopup()

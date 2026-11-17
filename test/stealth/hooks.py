@@ -1,4 +1,4 @@
-"""Exercise the unchanged production hook with real structures and mocked Win32 calls."""
+"""Exercise the production hook decisions with real structures and mocked Win32 calls."""
 
 import ctypes
 import itertools
@@ -6,9 +6,8 @@ import random
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from PyQt6.QtCore import QObject
-
-from core.shortcut_manager import ShortcutManager
+from core.hook_engine import HookEngine
+from core.hook_host import HookHost
 from core.win32_hook import (
     KBDLLHOOKSTRUCT,
     LLKHF_EXTENDED,
@@ -26,28 +25,23 @@ class HookDriver:
     """Invoke the actual callback while recording downstream delivery and actions."""
 
     def __init__(self, visible: bool = True) -> None:
-        self.manager = ShortcutManager.__new__(ShortcutManager)
-        QObject.__init__(self.manager)
-        self.window = MagicMock()
-        self.window.isVisible.return_value = visible
-        self.manager.main_window = self.window
-        self.manager.hook_handle = None
-        self.manager.hook_thread_id = None
-        self.manager.held_vk_codes = set()
-        self.manager.suppressed_vk_codes = set()
-        self.manager.held_modifier_vks = set()
-        self.manager.suppressed_mod_events = {}
         self.actions: list[str] = []
+        self.events: list[dict[str, Any]] = []
         self.delivered: list[tuple[int, bool, bool]] = []
         self.trace: list[dict[str, Any]] = []
-        for _, _, name, _, _ in HOTKEYS:
-            setattr(
-                self.manager, f"_{name}", lambda name=name: self.actions.append(name)
-            )
-        self.manager._set_hotkeys()
+        self.manager = HookEngine(self.observe)
+        self.manager.window_visible = visible
+        self.window = MagicMock()
+        self.window.isVisible.return_value = visible
         self.api = MagicMock()
         self.api.CallNextHookEx.return_value = 0
         self.api.keybd_event.side_effect = self.replay
+
+    def observe(self, event: dict[str, Any]) -> None:
+        """Record every event the engine sends to Que, and each shortcut action separately."""
+        self.events.append(event)
+        if event["type"] == "action":
+            self.actions.append(event["name"])
 
     def replay(self, vk: int, scan: int, flags: int, extra: Any) -> None:
         """Record the OS-visible replay and verify injected callbacks pass through."""
@@ -74,7 +68,7 @@ class HookDriver:
             else (WM_KEYDOWN if down else WM_KEYUP)
         )
         event = KBDLLHOOKSTRUCT(vkCode=vk, scanCode=vk, flags=flags)
-        with patch("core.shortcut_manager.user32", self.api):
+        with patch("core.hook_engine.user32", self.api):
             result = self.manager._low_level_keyboard_proc(
                 code, message, ctypes.addressof(event)
             )
@@ -359,6 +353,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
             if case == "visibility":
                 driver.event(72)
                 driver.window.isVisible.return_value = False
+                driver.manager.window_visible = False
                 driver.event(72)
                 driver.event(72, False)
             elif case == "overlap":
@@ -390,19 +385,27 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
         )
     for installed in (True, False):
         driver = HookDriver()
-        driver.manager.hook_proc_ref = MagicMock()
+        commands, events = MagicMock(), MagicMock()
+        commands.recv_bytes.side_effect = EOFError
+        host = HookHost(commands, events)
         driver.api.SetWindowsHookExW.return_value = 42 if installed else None
-        driver.api.GetMessageW.return_value = 0
         with (
-            patch("core.shortcut_manager.user32", driver.api),
-            patch("core.shortcut_manager.kernel32"),
+            patch("core.hook_host.user32", driver.api),
+            patch("core.hook_host.kernel32"),
+            patch("core.hook_host.system"),
+            patch("core.hook_host.native") as native_api,
+            patch.object(HookHost, "_create_monitor_window", return_value=True),
+            patch.object(HookHost, "_register_raw_input", return_value=True),
         ):
-            driver.manager._hook_thread_entry()
-            driver.manager._stop_hook()
+            native_api.GetMessageW.return_value = 0
+            code = host.run()
+        sent = [call.args[0].decode("utf-8") for call in events.send_bytes.call_args_list]
         ok = (
-            driver.api.UnhookWindowsHookEx.call_count == int(installed)
+            code == 0 and driver.api.UnhookWindowsHookEx.call_count == 2
             if installed
-            else not driver.api.GetMessageW.called
+            else code == 1
+            and not native_api.GetMessageW.called
+            and any("Keyboard hook unavailable" in text for text in sent)
         )
         record(
             f"hook.installation.{installed}",

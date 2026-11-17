@@ -112,7 +112,7 @@ class TranscriptDeliveryTests(unittest.TestCase):
         with (
             patch.object(self.transcriber, "downloaded_models", return_value=["tiny.en"]),
             patch.object(self.transcriber, "_transcribe_loop"),
-            patch.object(self.transcriber, "_capture"),
+            patch.object(self.transcriber, "_capture_sources"),
         ):
             self.transcriber.downloading = "small.en"
             self.transcriber.start()

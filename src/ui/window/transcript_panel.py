@@ -240,7 +240,12 @@ class TranscriptPanel(QWidget):
         """Show status, the latest line, or a hint, elided to one line."""
         segments = self.transcriber.segments
         transcriber = self.transcriber
-        if self.status:
+        health = " ".join(
+            value for value in transcriber.source_health.values() if value
+        )
+        if transcriber.recording and health:
+            text = health
+        elif self.status:
             text = self.status
         elif (
             transcriber.recording

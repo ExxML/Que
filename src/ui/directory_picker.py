@@ -1,4 +1,3 @@
-import ctypes
 from pathlib import Path
 
 from PyQt6.QtWidgets import QFileDialog, QWidget
@@ -49,8 +48,6 @@ def _run(dialog: QFileDialog) -> str:
     Returns:
         str: The chosen path, or an empty string when canceled.
     """
-    # Qt cannot apply capture exclusion to the native Windows picker before it appears
-    ctypes.windll.user32.SetWindowDisplayAffinity(int(dialog.winId()), 0x11)
     if dialog.exec() != QFileDialog.DialogCode.Accepted or not dialog.selectedFiles():
         return ""
     return str(Path(dialog.selectedFiles()[0]))

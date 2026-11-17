@@ -3,6 +3,7 @@ import ctypes.wintypes
 
 # Hook & message constants
 WH_KEYBOARD_LL = 13
+WH_MOUSE_LL = 14
 WM_KEYDOWN = 0x0100
 WM_KEYUP = 0x0101
 WM_SYSKEYDOWN = 0x0104
@@ -118,6 +119,8 @@ user32.GetAsyncKeyState.argtypes = [ctypes.c_int]
 user32.GetAsyncKeyState.restype = ctypes.c_short
 kernel32.GetModuleHandleW.argtypes = [ctypes.wintypes.LPCWSTR]
 kernel32.GetModuleHandleW.restype = ctypes.wintypes.HMODULE
+kernel32.GetTickCount.argtypes = []
+kernel32.GetTickCount.restype = ctypes.wintypes.DWORD
 user32.keybd_event.argtypes = [
     ctypes.c_ubyte,
     ctypes.c_ubyte,

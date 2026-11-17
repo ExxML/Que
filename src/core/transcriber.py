@@ -1,6 +1,7 @@
 import os
 import queue
 import threading
+import time
 from collections import deque
 from dataclasses import dataclass
 from difflib import SequenceMatcher
@@ -28,6 +29,7 @@ PORTAUDIO_LOCK = threading.Lock()  # PortAudio setup and teardown are not thread
 MODEL_FILES = ("config.json", "model.bin", "tokenizer.json", "vocabulary.txt")
 MISSING_MODEL_STATUS = "No transcription model yet. Download one in Settings."
 MISSING_MODEL_MS = 8000  # How long the missing-model notice stays up
+SOURCE_QUIET_SECONDS = 5.0
 
 # Read when huggingface_hub is first imported; silences its cache and token notices
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
@@ -57,6 +59,8 @@ class Transcriber(QObject):
     transcribed = pyqtSignal(str, str)  # source, text (worker thread to Qt thread)
     failed = pyqtSignal(str, bool)  # message, whether recording must stop
     download_finished = pyqtSignal(str, str)  # model, error or an empty string
+    source_status = pyqtSignal(str, str, object)
+    session_failed = pyqtSignal(str, bool, object)
 
     def __init__(self, settings_store: SettingsStore) -> None:
         super().__init__()
@@ -76,6 +80,7 @@ class Transcriber(QObject):
         self.model_lock = threading.Lock()
         self.downloading = ""  # Model being downloaded, or an empty string
         self.missing_model = False  # Showing the missing-model notice
+        self.source_health: dict[str, str] = {}
         self.notice_timer = QTimer(self)
         self.notice_timer.setSingleShot(True)
         self.notice_timer.setInterval(MISSING_MODEL_MS)
@@ -83,6 +88,8 @@ class Transcriber(QObject):
         self.transcribed.connect(self._on_transcribed)
         self.failed.connect(self._on_failed)
         self.download_finished.connect(self._on_download_finished)
+        self.source_status.connect(self._on_source_status)
+        self.session_failed.connect(self._on_session_failed)
 
     def toggle(self) -> None:
         """Start recording when stopped, otherwise stop."""
@@ -111,18 +118,18 @@ class Transcriber(QObject):
         self.recording_model = model
         self.first_seq = self.next_seq
         self.stop_event = threading.Event()
+        self.source_health.clear()
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
         threading.Thread(
             target=self._transcribe_loop,
-            args=(utterances, model),
+            args=(utterances, model, self.stop_event),
             daemon=True,
         ).start()
-        for source in SOURCE_LABELS:
-            threading.Thread(
-                target=self._capture,
-                args=(source, self.stop_event, utterances),
-                daemon=True,
-            ).start()
+        threading.Thread(
+            target=self._capture_sources,
+            args=(tuple(SOURCE_LABELS), self.stop_event, utterances),
+            daemon=True,
+        ).start()
         self.status_changed.emit("")
         self.recording_changed.emit(True)
 
@@ -262,86 +269,241 @@ class Transcriber(QObject):
             self.stop()
         self.status_changed.emit(message)
 
+    def _on_source_status(self, source: str, status: str, session: object) -> None:
+        """Report source health on the Qt thread, ignoring stopped or stale sessions.
+
+        Args:
+            source (str): The affected audio source.
+            status (str): The current problem, or an empty string on recovery.
+            session (object): The recording session's stop event.
+        """
+        if session is not self.stop_event or not self.recording:
+            return
+        self.source_health[source] = status
+        self.status_changed.emit(
+            " ".join(value for value in self.source_health.values() if value)
+        )
+
+    def _on_session_failed(self, message: str, fatal: bool, session: object) -> None:
+        """Keep delayed failures from a previous session from stopping a new recording.
+
+        Args:
+            message (str): The capture or recognition error.
+            fatal (bool): Whether the affected recording must stop.
+            session (object): The session whose operation failed.
+        """
+        if not self.recording or session is self.stop_event:
+            self.failed.emit(message, fatal)
+
     def _capture(
         self,
         source: str,
         stop_event: threading.Event,
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
     ) -> None:
-        """Read one WASAPI source until stopped and queue its utterances.
+        """Capture a single source through the same owner-thread path used by recording.
 
         Args:
-            source (str): "you" for the default microphone, "them" for system output.
+            source (str): The source to acquire.
+            stop_event (threading.Event): The session stop flag.
+            utterances (queue.Queue): The transcription input queue.
+        """
+        self._capture_sources((source,), stop_event, utterances)
+
+    def _capture_sources(
+        self,
+        sources: tuple[str, ...],
+        stop_event: threading.Event,
+        utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
+    ) -> None:
+        """Own both WASAPI streams and their PortAudio host on one daemon thread.
+
+        Args:
+            sources (tuple[str, ...]): The sources in acquisition order.
             stop_event (threading.Event): The recording session's stop flag.
             utterances (queue.Queue): The transcription worker's input queue.
         """
         audio: Any = None
-        stream: Any = None
-        segmenter = _Segmenter()
-        chunks: queue.Queue[bytes] = queue.Queue()
+        captures: dict[str, _CaptureState] = {}
+        finished: set[str] = set()
         try:
-
-            def on_audio(data: bytes, *_args: Any) -> tuple[None, int]:
-                """Hand audio to the capture thread without blocking PortAudio.
-
-                Args:
-                    data (bytes): Interleaved 32-bit float frames.
-
-                Returns:
-                    tuple[None, int]: No output data and the continue flag.
-                """
-                chunks.put(data)
-                return None, int(pyaudiowpatch.paContinue)
-
             with PORTAUDIO_LOCK:
                 audio = pyaudiowpatch.PyAudio()
-                if source == "them":
-                    device = audio.get_default_wasapi_loopback()
-                else:
-                    wasapi = audio.get_host_api_info_by_type(pyaudiowpatch.paWASAPI)
-                    device = audio.get_device_info_by_index(
-                        wasapi["defaultInputDevice"]
-                    )
-                channels = int(device["maxInputChannels"])
-                rate = int(device["defaultSampleRate"])
-                # Callback mode because a silent loopback device delivers no data and would block a read
-                stream = audio.open(
-                    format=pyaudiowpatch.paFloat32,
-                    channels=channels,
-                    rate=rate,
-                    input=True,
-                    input_device_index=int(device["index"]),
-                    frames_per_buffer=int(rate * CHUNK_SECONDS),
-                    stream_callback=on_audio,
-                )
-            while not stop_event.is_set():
+            for source in sources:
                 try:
-                    data = chunks.get(timeout=CHUNK_SECONDS)
-                except queue.Empty:
-                    utterance = segmenter.feed(np.zeros(0, np.float32), CHUNK_SECONDS)
-                else:
-                    utterance = segmenter.feed(_to_mono_16k(data, channels, rate))
-                self._emit_speaking(source, segmenter)
-                if utterance is not None:
-                    utterances.put((source, utterance))
-            utterance = segmenter.flush()
-            if utterance is not None:
-                utterances.put((source, utterance))
-        except Exception as exc:  # noqa: BLE001
-            self.failed.emit(
-                f"{SOURCE_LABELS[source]} audio is unavailable: {exc}", False
-            )
+                    with PORTAUDIO_LOCK:
+                        captures[source] = self._open_source(audio, source)
+                except Exception as error:  # noqa: BLE001
+                    self._report_source_failure(source, error, stop_event)
+                    utterances.put(None)
+                    finished.add(source)
+            while captures and not stop_event.is_set():
+                # Wait only when no source has audio queued, so a silent source never paces the others
+                idle = all(capture.chunks.empty() for capture in captures.values())
+                for index, (source, capture) in enumerate(tuple(captures.items())):
+                    try:
+                        utterance = self._poll_source(
+                            capture,
+                            stop_event,
+                            CHUNK_SECONDS if idle and not index else 0.0,
+                        )
+                        if utterance is not None:
+                            utterances.put((source, utterance))
+                    except Exception as error:  # noqa: BLE001
+                        self._report_source_failure(source, error, stop_event)
+                        finished.add(source)
+                        del captures[source]
+                        try:
+                            self._close_source(capture, utterances)
+                        except Exception as close_error:  # noqa: BLE001
+                            self._report_source_failure(source, close_error, stop_event)
+        except Exception as error:  # noqa: BLE001
+            for source in sources:
+                if source not in finished:
+                    self._report_source_failure(source, error, stop_event)
         finally:
-            try:
+            for source, capture in captures.items():
+                try:
+                    self._close_source(capture, utterances)
+                except Exception as error:  # noqa: BLE001
+                    self._report_source_failure(source, error, stop_event)
+                finally:
+                    finished.add(source)
+            for source in sources:
+                if source not in finished:
+                    utterances.put(None)
+                    self.speaking_changed.emit(source, False)
+            if audio is not None:
                 with PORTAUDIO_LOCK:
-                    if stream is not None:
-                        stream.stop_stream()
-                        stream.close()
-                    if audio is not None:
-                        audio.terminate()
-            finally:
-                utterances.put(None)
-                self.speaking_changed.emit(source, False)
+                    audio.terminate()
+
+    def _open_source(self, audio: Any, source: str) -> "_CaptureState":
+        """Open a device on the same thread that initialized the PortAudio host.
+
+        Args:
+            audio (Any): The session's PyAudio host.
+            source (str): The microphone or system-output source.
+
+        Returns:
+            _CaptureState: The open stream and its independent segmentation state.
+        """
+        if source == "them":
+            device = audio.get_default_wasapi_loopback()
+        else:
+            wasapi = audio.get_host_api_info_by_type(pyaudiowpatch.paWASAPI)
+            device = audio.get_device_info_by_index(wasapi["defaultInputDevice"])
+        capture = _CaptureState(
+            source, int(device["maxInputChannels"]), int(device["defaultSampleRate"])
+        )
+
+        def on_audio(data: bytes, *_args: Any) -> tuple[None, int]:
+            """Queue callback audio without blocking PortAudio.
+
+            Args:
+                data (bytes): Interleaved float frames.
+
+            Returns:
+                tuple[None, int]: No output audio and the continue flag.
+            """
+            capture.chunks.put(data)
+            return None, int(pyaudiowpatch.paContinue)
+
+        capture.stream = audio.open(
+            format=pyaudiowpatch.paFloat32,
+            channels=capture.channels,
+            rate=capture.rate,
+            input=True,
+            input_device_index=int(device["index"]),
+            frames_per_buffer=int(capture.rate * CHUNK_SECONDS),
+            stream_callback=on_audio,
+        )
+        return capture
+
+    def _poll_source(
+        self,
+        capture: "_CaptureState",
+        stop_event: threading.Event,
+        timeout: float = CHUNK_SECONDS,
+    ) -> NDArray[np.float32] | None:
+        """Poll one source and report a microphone that stopped delivering audio.
+
+        Args:
+            capture (_CaptureState): The source's stream, queue, and segmenter.
+            stop_event (threading.Event): The session identity for health signals.
+            timeout (float): How long to wait for audio when none is queued.
+
+        Returns:
+            NDArray[np.float32] | None: A completed utterance, when present.
+        """
+        if not capture.stream.is_active():
+            raise OSError(
+                "The audio stream stopped delivering data. Restart recording."
+            )
+        now = time.monotonic()
+        try:
+            data = capture.chunks.get(timeout=timeout)
+        except queue.Empty:
+            # Count the silence that actually elapsed since this source was last polled
+            utterance = capture.segmenter.feed(
+                np.zeros(0, np.float32), max(timeout, now - capture.last_poll)
+            )
+        else:
+            samples = _to_mono_16k(data, capture.channels, capture.rate)
+            if samples.size:
+                capture.last_data = now
+            utterance = capture.segmenter.feed(samples)
+        capture.last_poll = now
+        # A working microphone delivers audio even in silence, while system output delivers
+        # nothing whenever no sound plays, so only a microphone without data is a definite failure
+        status = (
+            f"{SOURCE_LABELS[capture.source]}: no audio data for {int(SOURCE_QUIET_SECONDS)} s. Check the microphone."
+            if capture.source == "you"
+            and now - capture.last_data >= SOURCE_QUIET_SECONDS
+            else ""
+        )
+        if status != capture.health:
+            capture.health = status
+            self.source_status.emit(capture.source, status, stop_event)
+        self._emit_speaking(capture.source, capture.segmenter)
+        return utterance
+
+    def _close_source(
+        self,
+        capture: "_CaptureState",
+        utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
+    ) -> None:
+        """Flush and close a source on its owner thread, always sending one completion marker.
+
+        Args:
+            capture (_CaptureState): The source to close.
+            utterances (queue.Queue): The transcription queue to complete.
+        """
+        try:
+            utterance = capture.segmenter.flush()
+            if utterance is not None:
+                utterances.put((capture.source, utterance))
+            with PORTAUDIO_LOCK:
+                try:
+                    capture.stream.stop_stream()
+                finally:
+                    capture.stream.close()
+        finally:
+            utterances.put(None)
+            self.speaking_changed.emit(capture.source, False)
+
+    def _report_source_failure(
+        self, source: str, error: Exception, stop_event: threading.Event
+    ) -> None:
+        """Report a device error without silently abandoning the other source.
+
+        Args:
+            source (str): The failed source.
+            error (Exception): The device or stream failure.
+            stop_event (threading.Event): The session identity for health reporting.
+        """
+        message = f"{SOURCE_LABELS[source]} audio is unavailable: {error}"
+        self.source_status.emit(source, message, stop_event)
+        self.session_failed.emit(message, False, stop_event)
 
     def _emit_speaking(self, source: str, segmenter: "_Segmenter") -> None:
         """Signal when a source starts or stops speaking.
@@ -358,18 +520,22 @@ class Transcriber(QObject):
         self,
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
         model_size: str,
+        stop_event: threading.Event | None = None,
     ) -> None:
         """Transcribe queued utterances in order until both capture threads finish.
 
         Args:
             utterances (queue.Queue): Utterances from both sources, ending with one None per source.
             model_size (str): The faster-whisper model name.
+            stop_event (threading.Event, optional): The session whose recognition health is reported.
         """
         try:
             model = self._load_model(model_size)
         except Exception as exc:  # noqa: BLE001
-            self.failed.emit(
-                f"Could not load the {model_size} transcription model: {exc}", True
+            self.session_failed.emit(
+                f"Could not load the {model_size} transcription model: {exc}",
+                True,
+                stop_event if stop_event is not None else self.stop_event,
             )
             return
         finished = 0
@@ -389,7 +555,11 @@ class Transcriber(QObject):
                 )
                 text = " ".join(segment.text.strip() for segment in segments).strip()
             except Exception as exc:  # noqa: BLE001
-                self.failed.emit(f"Transcription failed: {exc}", False)
+                self.session_failed.emit(
+                    f"Transcription failed: {exc}",
+                    False,
+                    stop_event if stop_event is not None else self.stop_event,
+                )
                 continue
             if text:
                 self.transcribed.emit(source, text)
@@ -437,6 +607,20 @@ class Transcriber(QObject):
                 self.model_size = model_size
                 self.status_changed.emit("")
             return self.model
+
+
+class _CaptureState:
+    """Keep one source's callback queue and health separate from the other source."""
+
+    def __init__(self, source: str, channels: int, rate: int) -> None:
+        self.source = source
+        self.channels = channels
+        self.rate = rate
+        self.stream: Any = None
+        self.chunks: queue.Queue[bytes] = queue.Queue()
+        self.segmenter = _Segmenter()
+        self.last_data = self.last_poll = time.monotonic()
+        self.health = ""
 
 
 class _Segmenter:

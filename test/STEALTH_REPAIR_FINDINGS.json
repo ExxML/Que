@@ -1,0 +1,1039 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "revision": "324c3cb00356ec7625ca586a0c56c75fdff6232a",
+  "production_changed": false,
+  "overall": "FAIL",
+  "full_desktop_validation": "INCOMPLETE",
+  "user_scope": "Run unattended checks and prepare the remaining guided run.",
+  "regression_tests_passed": 111,
+  "source_hashes": {
+    "assets/blank.ico": "b824ae4f2c3f8bea55c0be6d8bd2a3872e7083a17b85e9a493820d8afa21c779",
+    "assets/dropdown_arrow.svg": "0d487d93846a94e5bef9c81c08d0170a5bb11355a0294acf3ec6658c9d986a46",
+    "assets/que.ico": "5d278e09d5f98351a6eb9440fbbb443ae25c59d89df366e80ea113e44d7eac92",
+    "assets/screenshot_icon.png": "f4e151b7e6aaf6eb0fb8637d4a9358bc6989402aa759487186f7c2ab8ff27c2e",
+    "core/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core/ai_receiver.py": "ee56d35416a448cac0e01d79db11ddf99fe2ad50a07359d900b155010cdfdb2d",
+    "core/ai_sender.py": "f7e7b1c7292774332388303dd50d61ec390b566eaf1236abeef5f71cd6996e40",
+    "core/chat_history.py": "f9b49868d5e7c1b364dcbcba4a4bbe5c6abfb6ad899385953de96429d3e2fd59",
+    "core/claude_bridge.py": "6c5c61eefb44d1f556a5774102ad971fb8121245bdb4c831c3d4b87d3f5edea8",
+    "core/document_text.py": "cb3bb52c2b15c7e1e775764d8c7d80b6210f9639af7bd7a0ad56c8703647dbf1",
+    "core/gemini_efforts.py": "67f96679a422641df4fb3743048feb22088a4284627f606a3b455c528a35a800",
+    "core/model_catalog.py": "3a1273813b53007bbc269c76fd5fd5702d0e470a5f7eb8fd0a56c1a9234cc1fc",
+    "core/provider_catalog.py": "4cd7d74489130615a3d9c1d101a1b9fa81afd204e9cfd2228e7fc3cd828661d3",
+    "core/screenshot_manager.py": "a5bf97b003818acf767d171ef5b2f17c277b8d515c72d82b4fea5b09708b6cf7",
+    "core/settings.py": "cde2686d8fc086d8f5ac7ca7107befc6bac51e5266f3feb2487932b55a860728",
+    "core/shortcut_manager.py": "4b46954c37bf5a7c56c6a1bd9c21b1ebba993c25095a4f10b7616bce5fde04ac",
+    "core/transcriber.py": "507c5d1f44687e8e4ff792753f624c4753cae951c448e000fb532ecde288039d",
+    "core/win32_hook.py": "9c46bb4f838b45424fc17a24d8baad12c21a37e3040b5db0344b31eae79178c4",
+    "que.py": "d8cab98061c8f6b7679a5551daaa187e1459780c66edc035a298ff0e43ceff85",
+    "ui/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ui/chat/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ui/chat/ai_formatter.py": "5ab4960cfa1d84819d2a19c117c0d941bcf53fc4c7b38311d9a4eaf2a81c748b",
+    "ui/chat/chat_area.py": "dbe7f79f65346780c59d91fdcf43cdff7b19be45ca5ea4bb29d7be424517c96f",
+    "ui/chat/chat_bubble.py": "d8504011aab3c0a40abdfc5e7beb051e86af3c7811a7d0a95df0a9786daafc0e",
+    "ui/directory_picker.py": "dc47b58cf3b97722e7f0a021f5c05f6f2bdeae15c2f4688282520563b7bce39e",
+    "ui/input/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ui/input/input_field.py": "c92fcf47a4d2aa0b8f2333c72d7138f31a3ea1dfabce674822a6bd36dcbef211",
+    "ui/input/input_settings.py": "e2e6041f43bb8a3038989e837bc283042a65cd7bb197e9fbd914793200c608f3",
+    "ui/input/selection_dropdown.py": "d373a4c9cdd17c99d11e5e3bc035a8a118c569f0c8085226d22735c5a0f8cada",
+    "ui/theme.py": "4eabf77a1e5dc62830a5b054586331d410e4b63937f1c892d0511e2ff1f22a1c",
+    "ui/window/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ui/window/header_icon_button.py": "2a28c1184d602fcc41a6518ea4400bdc2562f04564838d62314ce1a4fdc55758",
+    "ui/window/history_sidebar.py": "4114827f9e5371c2da364ad19db26a660fbd48c4338d0279918c7cc240db76ed",
+    "ui/window/main_window.py": "19277caac25533c7ad0965fdf061ff307a007f60eb8f152eeaa0939e699b8f63",
+    "ui/window/screenshot_tray.py": "1c37995d7bc97f265fce2c28d4ce1eeb937c2000a78222da4b13437ae643ea4f",
+    "ui/window/settings_page.py": "b04c01c72a2da5402d865fff20c57b268c3d7aedd4b5ac4dd43925170e9bd752",
+    "ui/window/system_tray.py": "98869f54f098e2818cf5ec6045d04c32b43f1efcef62b841259cd9d95cb616c5",
+    "ui/window/transcript_panel.py": "abc2eea8d8d4190db49e3492d52e5a3869cbf81cdbef96c85b8fb2c4f6af6320"
+  },
+  "offline_counts": {
+    "PASS": 3737,
+    "FAIL": 6813,
+    "INCONCLUSIVE": 1
+  },
+  "source_full_initial_counts": {
+    "PASS": 3738,
+    "FAIL": 6813,
+    "INCONCLUSIVE": 202577
+  },
+  "source_full_after_resume_counts": {
+    "PASS": 3738,
+    "FAIL": 6813,
+    "INCONCLUSIVE": 202576
+  },
+  "package_full_counts": {
+    "PASS": 3737,
+    "FAIL": 6813,
+    "INCONCLUSIVE": 202578
+  },
+  "measured_desktop_attempts": {
+    "source": 0,
+    "candidate": 0
+  },
+  "offline_execution_gaps": 329,
+  "offline_gaps_by_file": {
+    "que.py": 1,
+    "core/ai_receiver.py": 3,
+    "core/ai_sender.py": 13,
+    "core/chat_history.py": 1,
+    "core/claude_bridge.py": 29,
+    "core/gemini_efforts.py": 1,
+    "core/model_catalog.py": 2,
+    "core/provider_catalog.py": 6,
+    "core/screenshot_manager.py": 5,
+    "core/settings.py": 5,
+    "core/shortcut_manager.py": 27,
+    "core/transcriber.py": 18,
+    "core/win32_hook.py": 4,
+    "ui/directory_picker.py": 4,
+    "ui/chat/ai_formatter.py": 3,
+    "ui/chat/chat_area.py": 32,
+    "ui/chat/chat_bubble.py": 16,
+    "ui/input/input_field.py": 5,
+    "ui/input/input_settings.py": 3,
+    "ui/input/selection_dropdown.py": 13,
+    "ui/window/header_icon_button.py": 3,
+    "ui/window/history_sidebar.py": 35,
+    "ui/window/main_window.py": 55,
+    "ui/window/screenshot_tray.py": 8,
+    "ui/window/settings_page.py": 27,
+    "ui/window/system_tray.py": 4,
+    "ui/window/transcript_panel.py": 6
+  },
+  "declared_contracts": 676,
+  "declared_deterministic_cells": 199935,
+  "declared_cells_are_executions": false,
+  "environment": {
+    "windows": "Windows-10-10.0.26200-SP0",
+    "version": "10.0.26200",
+    "monitors": [
+      {
+        "Monitor": [
+          0,
+          0,
+          2560,
+          1600
+        ],
+        "Work": [
+          0,
+          0,
+          2560,
+          1528
+        ],
+        "Flags": 1,
+        "Device": "\\\\.\\DISPLAY1",
+        "dpi": [
+          144,
+          144
+        ],
+        "dpi_result": 0
+      }
+    ],
+    "keyboard_layout": 67702793,
+    "dpi_awareness_result": -2147024891,
+    "time_ns": 1794711144773732100,
+    "dpi_note": "Native coordinates; inspect actual display settings to confirm the required scaling configuration."
+  },
+  "browser_versions": {
+    "chrome": {
+      "file_version": [
+        157,
+        0,
+        8103,
+        51
+      ],
+      "sha256": "5b835c10836045119334d9524e62437110e00e1bd20612c9072a0ae155f94a17"
+    },
+    "edge": {
+      "file_version": [
+        157,
+        0,
+        4341,
+        46
+      ],
+      "sha256": "3e2c8557b5ca4d78868d3089346146ceab94f198ce3d58526ce8f6c8d4b4167c"
+    }
+  },
+  "candidate": {
+    "sha256": "66aa3007f8fa43e12fdeb5d579aa0b80a5447b959f3d856bb52e3651b7f161cb",
+    "provenance_verified": false
+  },
+  "issues": [
+    {
+      "id": "KEY-001",
+      "title": "Consumed action key repeats leak after modifier release",
+      "classification": "confirmed controlled callback failure",
+      "code": "src/core/shortcut_manager.py:235",
+      "reproducer": "hook.ctrl-e-release-ctrl-repeat-e"
+    },
+    {
+      "id": "KEY-002",
+      "title": "Visibility transition replays a consumed held shortcut",
+      "classification": "confirmed controlled callback failure",
+      "code": "src/core/shortcut_manager.py:239",
+      "reproducer": "hook.visibility"
+    },
+    {
+      "id": "KEY-003",
+      "title": "Duplicate modifier down leaves downstream modifier unbalanced",
+      "classification": "confirmed controlled callback failure; physical trigger unverified",
+      "code": "src/core/shortcut_manager.py:218",
+      "reproducer": "hook.modifier-repeat"
+    },
+    {
+      "id": "KEY-004",
+      "title": "Action exception escapes low-level callback",
+      "classification": "confirmed Python callback failure; native dispatch consequence unverified",
+      "code": "src/core/shortcut_manager.py:253",
+      "reproducer": "hook.callback-exception"
+    },
+    {
+      "id": "KEY-005",
+      "title": "Null hook installation enters message loop",
+      "classification": "confirmed controlled installation failure",
+      "code": "src/core/shortcut_manager.py:331",
+      "reproducer": "hook.installation.False"
+    },
+    {
+      "id": "TOP-001",
+      "title": "Topmost query error returns success",
+      "classification": "confirmed native diagnostic defect; no physical occlusion claim",
+      "code": "src/ui/window/main_window.py:769",
+      "reproducer": "failure.topmost-query-error"
+    },
+    {
+      "id": "CAP-001",
+      "title": "Transient combo animation window has affinity zero",
+      "classification": "native exposure candidate reproduced three times; browser pixels unverified",
+      "code": "src/ui/window/settings_page.py:865",
+      "reproducer": "popup-affinity.py"
+    },
+    {
+      "id": "CAP-002",
+      "title": "Menu and tooltip-related native handles have affinity zero",
+      "classification": "native exposure candidates; browser pixels unverified",
+      "code": "src/ui/window/system_tray.py:30",
+      "reproducer": "native_surfaces.py"
+    },
+    {
+      "id": "AUDIO-001",
+      "title": "Concurrent Que capture loses loopback source",
+      "classification": "real operation failure reproduced; cause unresolved",
+      "code": "src/core/transcriber.py:285",
+      "reproducer": "live_audio.py --capture-only"
+    },
+    {
+      "id": "BUILD-001",
+      "title": "Candidate startup needs environment credential",
+      "classification": "candidate staging incompatibility; source provenance unknown",
+      "code": "que.dist/que.exe",
+      "reproducer": "package_startup.py"
+    },
+    {
+      "id": "PROVIDER-001",
+      "title": "Raw text attachment rejected; normal extracted context succeeds",
+      "classification": "unsupported raw backend input, not demonstrated normal UI defect",
+      "code": "src/core/ai_sender.py:259",
+      "reproducer": "live_providers.py; live_context.py"
+    },
+    {
+      "id": "AUDIT-001",
+      "title": "Resume drops full-run prerequisite explanation",
+      "classification": "confirmed audit persistence defect; overall FAIL retained",
+      "code": "test/run_stealth.py:213",
+      "reproducer": "compare report-before-resume.json with report.json"
+    }
+  ],
+  "controlled_reproduction_traces": [
+    {
+      "check": "hook.ctrl-e-release-ctrl-repeat-e",
+      "events": [
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 69,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 17,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 69,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 0
+        },
+        {
+          "vk": 69,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        }
+      ],
+      "delivered": [
+        [
+          69,
+          true,
+          false
+        ]
+      ],
+      "actions": [
+        "toggle_window_visibility"
+      ]
+    },
+    {
+      "check": "hook.visibility",
+      "events": [
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 72,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 72,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 72,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 17,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 0
+        }
+      ],
+      "delivered": [
+        [
+          17,
+          true,
+          true
+        ],
+        [
+          72,
+          true,
+          true
+        ],
+        [
+          17,
+          false,
+          false
+        ]
+      ],
+      "actions": [
+        "toggle_history"
+      ]
+    },
+    {
+      "check": "hook.modifier-repeat",
+      "events": [
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 65,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 65,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 0
+        },
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 17,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        }
+      ],
+      "delivered": [
+        [
+          17,
+          true,
+          true
+        ],
+        [
+          65,
+          true,
+          true
+        ],
+        [
+          65,
+          false,
+          false
+        ]
+      ],
+      "actions": []
+    },
+    {
+      "check": "hook.callback-exception",
+      "events": [
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        }
+      ],
+      "delivered": [],
+      "actions": []
+    },
+    {
+      "check": "hook.installation.False",
+      "events": [],
+      "delivered": [],
+      "actions": []
+    },
+    {
+      "check": "hook.permutations.toggle_recording.(17, 16).(17, 16, 82).True",
+      "events": [
+        {
+          "vk": 17,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 16,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 82,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 82,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 17,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 82,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        },
+        {
+          "vk": 16,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 0
+        },
+        {
+          "vk": 82,
+          "down": true,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 0
+        },
+        {
+          "vk": 82,
+          "down": false,
+          "system": false,
+          "flags": 0,
+          "code": 0,
+          "result": 1
+        }
+      ],
+      "delivered": [
+        [
+          16,
+          true,
+          true
+        ],
+        [
+          82,
+          true,
+          true
+        ],
+        [
+          16,
+          false,
+          false
+        ],
+        [
+          82,
+          true,
+          false
+        ]
+      ],
+      "actions": [
+        "toggle_recording"
+      ]
+    },
+    {
+      "check": "failure.topmost-query-error",
+      "trigger": "Raise RuntimeError from frameGeometry inside the real _is_topmost_window method.",
+      "reported_topmost": true,
+      "expected": "A failed observation must not assert verified topmost state.",
+      "scope": "Controlled native failure handling; physical visibility and website detection remain unmeasured."
+    }
+  ],
+  "browser_harness_checks": [
+    {
+      "name": "chrome-ordinary",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/browser_smoke.py",
+        "--browser",
+        "chrome",
+        "--output",
+        ".stealth-runs\\handoff-automation\\chrome-ordinary"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711040028,
+      "end_ms": 1794711042731,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    },
+    {
+      "name": "chrome-isolated",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/browser_smoke.py",
+        "--browser",
+        "chrome",
+        "--output",
+        ".stealth-runs\\handoff-automation\\chrome-isolated",
+        "--cross-origin-isolated"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711042731,
+      "end_ms": 1794711045644,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    },
+    {
+      "name": "chrome-resources",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/resource_smoke.py",
+        "--browser",
+        "chrome",
+        "--output",
+        ".stealth-runs\\handoff-automation\\chrome-resources"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711045645,
+      "end_ms": 1794711047788,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    },
+    {
+      "name": "edge-ordinary",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/browser_smoke.py",
+        "--browser",
+        "edge",
+        "--output",
+        ".stealth-runs\\handoff-automation\\edge-ordinary"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711047789,
+      "end_ms": 1794711050993,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    },
+    {
+      "name": "edge-isolated",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/browser_smoke.py",
+        "--browser",
+        "edge",
+        "--output",
+        ".stealth-runs\\handoff-automation\\edge-isolated",
+        "--cross-origin-isolated"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711050993,
+      "end_ms": 1794711054227,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    },
+    {
+      "name": "edge-resources",
+      "command": [
+        ".venv\\Scripts\\python.exe",
+        "test/stealth/resource_smoke.py",
+        "--browser",
+        "edge",
+        "--output",
+        ".stealth-runs\\handoff-automation\\edge-resources"
+      ],
+      "exit_code": 0,
+      "start_ms": 1794711054228,
+      "end_ms": 1794711056425,
+      "scope": "Synthetic headless harness check; not physical Que validation."
+    }
+  ],
+  "network_protocol_checks": {
+    "scope": "Owned protocol check only; no deployed public-origin browser policy validation.",
+    "checks": [
+      {
+        "origin": "https://audit.example",
+        "path": "/control",
+        "status": 200,
+        "expected": 200,
+        "pass": true
+      },
+      {
+        "origin": "https://foreign.example",
+        "path": "/control",
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      {
+        "origin": "https://audit.example",
+        "path": "/native/windows.jsonl",
+        "status": 403,
+        "expected": 403,
+        "pass": true
+      },
+      {
+        "path": "/control",
+        "websocket": true,
+        "pass": true
+      }
+    ]
+  },
+  "native_source_summary": {
+    "sample_count": 1295,
+    "max_interval_ms": 69,
+    "mean_interval_ms": 62.41267387944359,
+    "potential_occlusions": [
+      {
+        "hwnd": 15532916,
+        "start_ms": 1794711181372,
+        "end_ms": null,
+        "duration_ms": 44164
+      }
+    ],
+    "attempts_with_sampling_gaps_over_250ms": [],
+    "interpretation": "Rectangle overlap is a native diagnostic; transparency/cloaking can produce candidates. Correlate physical confirmation before claiming physical occlusion. Events shorter than sample gaps may be missed. No timer exemption applies."
+  },
+  "audio_capture_retry": {
+    "scope": "Instrumented real backend device acquisition and synthetic WAV transcription. No browser capture, physical speech or live device transcription claim. Raw live audio is not retained.",
+    "records": [
+      {
+        "operation": "live-wasapi-open-stop",
+        "status": "FAILED_OPERATION",
+        "wall_ms": 1794711779992,
+        "opened": [
+          {
+            "channels": 4,
+            "rate": 48000,
+            "input_device_index": 9,
+            "callbacks": 30,
+            "bytes": 2304000
+          }
+        ],
+        "completion_sentinels": 2,
+        "errors": [
+          {
+            "message": "Them audio is unavailable: [Errno -9999] Unanticipated host error",
+            "fatal": false
+          }
+        ]
+      }
+    ]
+  },
+  "audio_direct_controls": {
+    "scope": "Direct real PyAudio acquisition, no Que UI and no browser. Output control contains zeros only; no captured audio retained.",
+    "observations": [
+      {
+        "silent_output_control": false,
+        "callbacks": 0,
+        "bytes": 0,
+        "input_device_index": 10,
+        "opened": true
+      },
+      {
+        "silent_output_control": true,
+        "callbacks": 19,
+        "bytes": 729600,
+        "input_device_index": 10,
+        "opened": true
+      }
+    ]
+  },
+  "normal_document_image_transcript": {
+    "scope": "Normal extracted-document backend path, synthetic image and supplied synthetic transcript. No screenshot-taking, UI or browser protection assertion.",
+    "records": [
+      {
+        "provider": "gemini",
+        "status": "PASS_OPERATION",
+        "model": "gemini-2.5-flash",
+        "response": "ORANGE-TELESCOPE-42, red, BICYCLE",
+        "context_in_request": true,
+        "completion_received": true,
+        "wall_ms": 1794711684595
+      },
+      {
+        "provider": "claude",
+        "status": "PASS_OPERATION",
+        "model": "default",
+        "response": "ORANGE-TELESCOPE-42, red, BICYCLE",
+        "context_in_request": true,
+        "completion_received": true,
+        "wall_ms": 1794711687285
+      }
+    ]
+  },
+  "popup_transition_repetitions": [
+    {
+      "artifact": ".stealth-runs/handoff-full-source/native/popup-affinity.json",
+      "sha256": "4206337cfb6c2f1cf4ea710fea29c4bae7b0c253a712bdb300c7ab56f7f3369d",
+      "animation_disabled_control": false,
+      "assertion_status": "DIAGNOSTIC_OBSERVATION",
+      "qt_version": "6.9.0",
+      "set_affinity_calls": [
+        {
+          "hwnd": 5441276,
+          "affinity": 17,
+          "result": 1,
+          "last_error": 0,
+          "wall_ms": 1794711999988
+        }
+      ],
+      "unexcluded_visible_samples": 32,
+      "first_unexcluded_ms": 125.4514999964158,
+      "last_unexcluded_ms": 276.8540999968536,
+      "observed_span_ms": 151.40260000043781,
+      "final_sample": {
+        "elapsed_ms": 700.4029000017908,
+        "widgets": [
+          {
+            "class": "QWidget",
+            "hwnd": 6883208,
+            "affinity": 17,
+            "geometry": [
+              534,
+              240,
+              130,
+              46
+            ]
+          },
+          {
+            "class": "QFrame",
+            "hwnd": 5441276,
+            "affinity": 17,
+            "geometry": [
+              545,
+              304,
+              108,
+              38
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "artifact": ".stealth-runs/handoff-full-source/native/popup-repeat-2.json",
+      "sha256": "f613eac7fadf11cc43fbcb68b0009592668937eec8145aed5a5a8f19993ef11f",
+      "animation_disabled_control": false,
+      "assertion_status": "DIAGNOSTIC_OBSERVATION",
+      "qt_version": "6.9.0",
+      "set_affinity_calls": [
+        {
+          "hwnd": 5506812,
+          "affinity": 17,
+          "result": 1,
+          "last_error": 0,
+          "wall_ms": 1794712087302
+        }
+      ],
+      "unexcluded_visible_samples": 33,
+      "first_unexcluded_ms": 109.30750000261469,
+      "last_unexcluded_ms": 261.3402999995742,
+      "observed_span_ms": 152.0327999969595,
+      "final_sample": {
+        "elapsed_ms": 700.2186000026995,
+        "widgets": [
+          {
+            "class": "QFrame",
+            "hwnd": 5506812,
+            "affinity": 17,
+            "geometry": [
+              545,
+              304,
+              108,
+              38
+            ]
+          },
+          {
+            "class": "QWidget",
+            "hwnd": 1771020,
+            "affinity": 17,
+            "geometry": [
+              534,
+              240,
+              130,
+              46
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "artifact": ".stealth-runs/handoff-full-source/native/popup-repeat-3.json",
+      "sha256": "b39a08709ebbe6debf0d682f0b490a2c699ec23cef45c4e5df8a145ce89b84c9",
+      "animation_disabled_control": false,
+      "assertion_status": "DIAGNOSTIC_OBSERVATION",
+      "qt_version": "6.9.0",
+      "set_affinity_calls": [
+        {
+          "hwnd": 1836556,
+          "affinity": 17,
+          "result": 1,
+          "last_error": 0,
+          "wall_ms": 1794712088978
+        }
+      ],
+      "unexcluded_visible_samples": 32,
+      "first_unexcluded_ms": 106.80850000062492,
+      "last_unexcluded_ms": 255.7191999949282,
+      "observed_span_ms": 148.9106999943033,
+      "final_sample": {
+        "elapsed_ms": 700.3339000002597,
+        "widgets": [
+          {
+            "class": "QFrame",
+            "hwnd": 1836556,
+            "affinity": 17,
+            "geometry": [
+              545,
+              304,
+              108,
+              38
+            ]
+          },
+          {
+            "class": "QWidget",
+            "hwnd": 7997342,
+            "affinity": 17,
+            "geometry": [
+              534,
+              240,
+              130,
+              46
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "artifact": ".stealth-runs/handoff-full-source/native/popup-no-animation-control.json",
+      "sha256": "1b4d6385352eccb46109bfa979f68a2af64808913d8e050a204775990ddbaccf",
+      "animation_disabled_control": true,
+      "assertion_status": "DIAGNOSTIC_OBSERVATION",
+      "qt_version": "6.9.0",
+      "set_affinity_calls": [
+        {
+          "hwnd": 8062878,
+          "affinity": 17,
+          "result": 1,
+          "last_error": 0,
+          "wall_ms": 1794712090707
+        }
+      ],
+      "unexcluded_visible_samples": 0,
+      "first_unexcluded_ms": null,
+      "last_unexcluded_ms": null,
+      "observed_span_ms": null,
+      "final_sample": {
+        "elapsed_ms": 700.344099997892,
+        "widgets": [
+          {
+            "class": "QFrame",
+            "hwnd": 8062878,
+            "affinity": 17,
+            "geometry": [
+              545,
+              304,
+              108,
+              38
+            ]
+          },
+          {
+            "class": "QWidget",
+            "hwnd": 4524014,
+            "affinity": 17,
+            "geometry": [
+              534,
+              240,
+              130,
+              46
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "artifact": ".stealth-runs/handoff-full-source/native/popup-assertion-reproduction.json",
+      "sha256": "9df4144c76429c2dbb690734fe9e3768c2a52695aff63d551f124519f0edc346",
+      "animation_disabled_control": false,
+      "assertion_status": "FAIL_NATIVE_AFFINITY",
+      "qt_version": "6.9.0",
+      "set_affinity_calls": [
+        {
+          "hwnd": 4589550,
+          "affinity": 17,
+          "result": 1,
+          "last_error": 0,
+          "wall_ms": 1794712701169
+        }
+      ],
+      "unexcluded_visible_samples": 33,
+      "first_unexcluded_ms": 109.83800000394695,
+      "last_unexcluded_ms": 262.3526000024867,
+      "observed_span_ms": 152.51459999853978,
+      "final_sample": {
+        "elapsed_ms": 700.1814000032027,
+        "widgets": [
+          {
+            "class": "QFrame",
+            "hwnd": 4589550,
+            "affinity": 17,
+            "geometry": [
+              545,
+              304,
+              108,
+              38
+            ]
+          },
+          {
+            "class": "QWidget",
+            "hwnd": 5636338,
+            "affinity": 17,
+            "geometry": [
+              534,
+              240,
+              130,
+              46
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "resume_dropped_checks": [
+    "prerequisite.firefox"
+  ],
+  "repair_instructions": "test/STEALTH_REPAIR_HANDOFF.md",
+  "unperformed": [
+    "Physical keyboard/action trials",
+    "Permissioned browser capture and calibration",
+    "Physical topmost review",
+    "Firefox",
+    "Required single-100-percent and mixed-DPI display layouts",
+    "Browser and Que live audio co-capture",
+    "Public HTTPS-origin local-network permission policies",
+    "Paired statistical desktop experiments",
+    "Exact release provenance and physical release validation",
+    "All declared unattempted matrix cells"
+  ],
+  "evidence_manifest": {
+    "path": ".stealth-runs/handoff-evidence-manifest.json",
+    "sha256": "4fb5bc6afd9e2c8e782dd86254b059876406ff8bc677954aee061968379f0232",
+    "artifacts": 149
+  },
+  "evidence_bundle": {
+    "path": ".stealth-runs/handoff-evidence.zip",
+    "sha256": "995dd1346a41147f2c234286b7412f85232829432e6725319cd1c223fb6df1aa",
+    "bytes": 16518046
+  },
+  "report_hashes": {
+    ".stealth-runs\\handoff-offline": "cd9922058343e3865a352e8ddd0225d660906e5051ef33a7b1b67c79052166a9",
+    ".stealth-runs\\handoff-full-source": "597d6651636fb85cc11638b62c147f2adff0363b90b6cc5dd0b64b5a410b66e4",
+    ".stealth-runs\\handoff-full-package": "de0fa44333e2a648a9b01aea962f9f739ed689a0069a2ab276852984c00e684e"
+  }
+}

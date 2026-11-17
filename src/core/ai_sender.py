@@ -257,6 +257,16 @@ class AISender:
         parts: list[dict[str, str]] = []
         for filepath in request.attachments:
             mime_type = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+            if mime_type.startswith("text/"):
+                parts.append(
+                    {
+                        "type": "text",
+                        "text": Path(filepath).read_text(
+                            encoding="utf-8", errors="replace"
+                        ),
+                    }
+                )
+                continue
             kind = mime_type.split("/")[0]
             if kind not in ("image", "audio", "video"):
                 kind = "document"
@@ -325,10 +335,15 @@ class AISender:
             if stop_flag.is_set():
                 return None
             if request.previous_interaction_id:
+                context_error = (
+                    "The saved interaction is expired or unavailable. "
+                    if getattr(exc, "status_code", getattr(exc, "code", None)) == 404
+                    and "interaction" in str(exc).lower()
+                    else ""
+                )
                 raise RuntimeError(
-                    "Could not continue the saved Gemini conversation. Its server-side "
-                    "state may be expired or unavailable. Context has not been reset. "
-                    "Retry, or use New chat (+) to explicitly start a new conversation. "
+                    "Gemini could not complete this request. Context has not been reset. "
+                    f"{context_error}Check the provider error below before retrying. "
                     f"Details: {exc}"
                 ) from exc
             raise

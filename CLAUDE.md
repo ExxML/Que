@@ -36,7 +36,11 @@ src/assets/ — Icons and images
 
 **Key components:**
 - `src/que.py` — Entry point; wires all components together
-- `core/shortcut_manager.py` — Win32 `WH_KEYBOARD_LL` hook on a dedicated thread; emits Qt signals for all actions
+- `core/shortcut_manager.py` — Runs hotkey actions on the Qt thread; the physical keys are decided by the input helper
+- `core/hook_engine.py` / `core/hook_host.py` — Qt-free keyboard/mouse decision logic and the input helper process (`que.py --hook-host`) that hosts the `WH_KEYBOARD_LL`/`WH_MOUSE_LL` hooks plus Raw Input leak detection, so Que's own work can never stall the hooks
+- `core/hook_client.py` — Starts and supervises the helper over authenticated named pipes; turns its events into Qt signals
+- `core/window_policy.py` — Applies capture affinity and non-activating, click-through styles to every top-level window before it is shown
+- `ui/input/input_router.py` — Delivers routed keys and clicks to Qt widgets without activating Que's windows
 - `core/win32_hook.py` — ctypes bindings for Win32 keyboard hook constants and types
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
@@ -47,7 +51,7 @@ src/assets/ — Icons and images
 
 ## Threading Rules
 
-**UI work must happen on the main Qt thread.** The hook thread and AI generation thread communicate with UI exclusively through `pyqtSignal`. Never call UI methods directly from a non-main thread.
+**UI work must happen on the main Qt thread.** The input-helper pipe reader thread and AI generation thread communicate with UI exclusively through `pyqtSignal`. Never call UI methods directly from a non-main thread.
 
 Use `threading.Thread(daemon=True)` for background work — not `QThread` (Nuitka compatibility issue).
 
@@ -60,9 +64,11 @@ The window background is one translucent fill (`BG_COLOR` at `WINDOW_ALPHA`, pai
 
 ## Hotkey System
 
-Hotkeys registered in `ShortcutManager._define_hotkeys()` as `(modifier_bitmask, vk_code) → (callback, repeat_allowed)` in two dicts:
-- `_always_active_hotkeys` — active even when overlay is hidden
-- `_main_window_hotkeys` — only active when overlay is visible
+Hotkeys are declared once in `core/hook_engine.py` `HOTKEYS` as `(modifier_bitmask, vk_code, action_name, repeat_allowed, always_active)`; `HookEngine` builds two tables from it:
+- `always_active_hotkeys` — active even when overlay is hidden
+- `main_window_hotkeys` — only active when overlay is visible
+
+The helper sends the action name to Que, and `ShortcutManager` runs its `_<action_name>` method.
 
 All matched key events are suppressed (return 1 from hook proc).
 

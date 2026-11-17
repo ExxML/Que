@@ -31,7 +31,7 @@ def inspect_controls(source: Path, output: Path) -> None:
             socket.socket, "connect", side_effect=RuntimeError("Offline inventory")
         ),
         patch("core.provider_catalog.ProviderCatalog.refresh", return_value=1),
-        patch("core.shortcut_manager.ShortcutManager._start_hook"),
+        patch("core.hook_client.HookClient.start"),
         patch.object(MainWindow, "show"),
     ):
         settings = SettingsStore(source / "data" / "config.json")

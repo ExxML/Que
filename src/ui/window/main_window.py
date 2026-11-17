@@ -3,7 +3,7 @@ import time
 from ctypes import wintypes
 from pathlib import Path
 
-from PyQt6.QtCore import QPoint, Qt, QTimer
+from PyQt6.QtCore import QPoint, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QMouseEvent,
     QPainter,
@@ -26,6 +26,7 @@ from core.chat_history import ChatHistory, Conversation
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.transcriber import Transcriber
+from core.window_policy import install_window_policy
 from ui.chat.chat_area import ChatArea
 from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
@@ -41,6 +42,8 @@ class MainWindow(QWidget):
     """Render the main application window and its chat controls."""
 
     BG_COLOR = qcolor(BG_COLOR, WINDOW_ALPHA)
+    quit_requested = pyqtSignal()
+    mouse_routing_changed = pyqtSignal(bool)
 
     def __init__(
         self,
@@ -49,6 +52,9 @@ class MainWindow(QWidget):
         transcriber: Transcriber | None = None,
     ) -> None:
         super().__init__()
+        application = QApplication.instance()
+        assert isinstance(application, QApplication)
+        self.window_policy = install_window_policy(application)
         self.ai_sender = ai_sender
         self.screenshot_manager = screenshot_manager
         self.transcriber = transcriber or Transcriber(ai_sender.settings_store)
@@ -59,8 +65,12 @@ class MainWindow(QWidget):
             "claude": None,
         }
         self.capture_hidden = False
+        self.topmost_error = ""  # Last reported visibility-check failure
         self._init_UI()
         self.worker = AIReceiver(ai_sender, self.chat_area)
+        self.window_policy.failed.connect(self.on_window_policy_failed)
+        for error in self.window_policy.errors:
+            self.chat_area.show_stream_error(error)
         self.worker.turn_committed.connect(self._on_turn_committed)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
@@ -101,6 +111,14 @@ class MainWindow(QWidget):
             self.show()
             self.raise_()  # Bring to front
 
+    def on_window_policy_failed(self, message: str) -> None:
+        """Defer error rendering until the native window callback has returned.
+
+        Args:
+            message (str): The window protection failure.
+        """
+        QTimer.singleShot(0, lambda: self.chat_area.show_stream_error(message))
+
     def hide(self) -> None:
         """Close settings popups and flush the backing store before hiding."""
         if hasattr(self, "input_field"):
@@ -116,19 +134,14 @@ class MainWindow(QWidget):
         super().hide()
 
     def set_capture_hidden(self, hidden: bool) -> None:
-        """Exclude the window from or include it in screen capture (Windows 10+).
+        """Exclude Que's windows from or include them in screen capture (Windows 10+).
 
         Args:
-            hidden (bool): Whether screenshots and recordings should omit the window.
+            hidden (bool): Whether screenshots, recordings, and screen sharing should omit Que.
         """
-        wda_none, wda_excludefromcapture = 0x00000000, 0x00000011
-        result = ctypes.windll.user32.SetWindowDisplayAffinity(
-            int(self.winId()), wda_excludefromcapture if hidden else wda_none
-        )
-        if result == 0:
-            print("Warning: SetWindowDisplayAffinity failed.")
-        # A failed call leaves the window capturable, so the red border must show then too
-        self.capture_hidden = hidden and result != 0
+        self.window_policy.set_capture_hidden(hidden)
+        # A failed exclusion leaves the window capturable, so the red border must show then too
+        self.capture_hidden = hidden and self.window_policy.protect(int(self.winId()))
         self.update()
 
     def set_click_through(self, enabled: bool) -> None:
@@ -137,10 +150,7 @@ class MainWindow(QWidget):
         Args:
             enabled (bool): Whether the window ignores mouse input.
         """
-        visible = self.isVisible()
-        self.setWindowFlag(Qt.WindowType.WindowTransparentForInput, enabled)
-        if visible:
-            self.show()  # Changing window flags hides the window
+        self.mouse_routing_changed.emit(not enabled)
 
     def send_message(self, message: str) -> None:
         """Send a user message with any pending screenshot attachments.
@@ -184,6 +194,10 @@ class MainWindow(QWidget):
         self.settings_button.setText("Back to chat")
 
     def quit_app(self) -> None:
+        """Request shutdown after the input hooks finish consumed physical presses."""
+        self.quit_requested.emit()
+
+    def finish_quit(self) -> None:
         """Quit the application, stopping any active worker and clearing chat."""
         # Stop any active worker
         if self.worker is not None:
@@ -235,11 +249,11 @@ class MainWindow(QWidget):
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.Tool
+            | Qt.WindowType.WindowDoesNotAcceptFocus
+            | Qt.WindowType.WindowTransparentForInput
         )
-        self.setWindowFlag(
-            Qt.WindowType.WindowTransparentForInput,
-            self.ai_sender.settings_store.click_through(),
-        )
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips)
 
         # Translucent bg for rounded corners
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -393,9 +407,8 @@ class MainWindow(QWidget):
         # Unset cursor for all child widgets to preserve system cursor
         self._unset_cursor_recursive(self)
 
-        self.show()
-
         self.set_capture_hidden(self.ai_sender.settings_store.capture_hidden())
+        self.show()
 
         # Setup timer to raise main window so it is always visible (certain Windows operations override the stay on top hint)
         self.visibility_timer = QTimer(self)
@@ -720,18 +733,16 @@ class MainWindow(QWidget):
         self.resize(self.width(), self.height() + delta_height)
 
     def _ensure_window_visible(self) -> None:
-        """Raise the main window if it is no longer the topmost window."""
-        try:
-            if not self._is_topmost_window():
-                self.raise_()
-        except Exception:  # noqa: BLE001, S110
-            pass
+        """Raise the main window if a window above it covers it."""
+        if self.isVisible() and self._is_topmost_window() is False:
+            self.raise_()
 
-    def _is_topmost_window(self) -> bool:
+    def _is_topmost_window(self) -> bool | None:
         """Check that no window above the main window covers its corner positions.
 
         Returns:
-            bool: True if the main window is topmost at all sampled points.
+            bool | None: True if the main window is topmost at all sampled points, False if a
+                window above covers one, or None when the check failed (reported, never assumed).
         """
         try:
             rect = self.frameGeometry()
@@ -742,8 +753,9 @@ class MainWindow(QWidget):
             self_root = ctypes.windll.user32.GetAncestor(
                 wintypes.HWND(self_hwnd), ga_root
             )
-            # Compare z-order instead of identity: WindowFromPoint skips click-through windows,
-            # so it returns the window beneath, which must not count as covering this one
+            # Compare z-order instead of identity: WindowFromPoint skips click-through windows
+            # (Que itself and transparent overlays), so it returns the window beneath, which
+            # must not count as covering this one
             gw_hwndprev = 3
             windows_above: set[int] = set()
             hwnd = self_root
@@ -765,6 +777,11 @@ class MainWindow(QWidget):
                     )
                     if int(target_root) in windows_above:
                         return False
+            self.topmost_error = ""
             return True
-        except Exception:  # noqa: BLE001
-            return True
+        except Exception as error:  # noqa: BLE001
+            message = f"Could not verify Que's window visibility: {error}"
+            if self.topmost_error != message:
+                self.topmost_error = message
+                self.chat_area.show_stream_error(message)
+            return None

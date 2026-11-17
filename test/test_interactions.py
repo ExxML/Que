@@ -119,6 +119,25 @@ class InteractionsTests(unittest.TestCase):
                 self.assertEqual(self.sender.previous_interaction_id, "saved")
                 self.assertTrue(self.responses[-1].is_closed)
 
+    def test_text_attachment_is_sent_as_text_content(self) -> None:
+        """Serialize UTF-8 text attachments as supported text parts instead of documents."""
+        with tempfile.TemporaryDirectory() as directory:
+            attachment = Path(directory) / "fixture.txt"
+            attachment.write_text("Fixture café", encoding="utf-8")
+            self.sender.send_message(self.sender.prepare_request("read", [str(attachment)]), lambda _: None, threading.Event())
+        content = self.bodies[-1]["input"][0]["content"]
+        self.assertEqual(content[0], {"type": "text", "text": "Fixture café"})
+
+    def test_request_failure_does_not_guess_conversation_expiration(self) -> None:
+        """Keep ordinary request errors distinct from a reported missing interaction."""
+        self.sender.previous_interaction_id = "saved"
+        self.status = 400
+        with self.assertRaises(RuntimeError) as raised:
+            self.sender.send_message(self.sender.prepare_request("turn"), lambda _: None, threading.Event())
+        self.assertNotIn("saved interaction is expired or unavailable", str(raised.exception))
+        self.assertIn("Context has not been reset", str(raised.exception))
+        self.assertEqual(self.sender.previous_interaction_id, "saved")
+
     def test_unavailable_context_has_no_fallback(self) -> None:
         """Surface an expired server chain without starting a fresh conversation."""
         self.sender.previous_interaction_id = "expired"
