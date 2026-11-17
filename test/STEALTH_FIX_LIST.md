@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-15. Guided-run scope: **Edge stable only, one 2560×1600 display at 150% (240 Hz)**, source target at revision `3769ab6` (`src/` identical to `324c3cb` used by the offline handoff). Chrome, Firefox, 100% and dual-monitor cells were not tested.
 
-This file is the one place to start. Section 1 lists every known Que defect: those reproduced physically in this guided run in full, and those found earlier only offline as an index into [STEALTH_REPAIR_HANDOFF.md](STEALTH_REPAIR_HANDOFF.md), which holds their traces and repair guidance. Section 2 lists test-harness defects. Section 3 lists what is still untested. Procedure: [STEALTH_AUDIT.md](STEALTH_AUDIT.md). Older: [STEALTH_FINDINGS.md](STEALTH_FINDINGS.md), [STEALTH_RESEARCH.md](STEALTH_RESEARCH.md).
+This file is the one place to start. Section 1 lists every known Que defect: those reproduced physically in this guided run in full, and those found earlier only offline as an index (their original traces were in a handoff document since removed; see git history). Section 2 lists test-harness defects. Section 3 lists what is still untested. Procedure: [STEALTH_AUDIT.md](STEALTH_AUDIT.md). Older: [STEALTH_FINDINGS.md](STEALTH_FINDINGS.md), [STEALTH_RESEARCH.md](STEALTH_RESEARCH.md).
 
 Run directories (git-ignored, local only): `.stealth-runs/guided-edge-150` and `-b` to `-e` (voided by harness bugs H-001 to H-007); **`.stealth-runs/guided-edge-150-f` (Batch A)**; **`.stealth-runs/guided-edge-150-g` (Batches B–F)**. Analysis helpers are now in the repository: `python test/stealth/manual.py transients RUN OUTDIR id…` crops each non-main Que window's native rect from retained frames vs the baseline (used for CAP-001/002); see [STEALTH_MANUAL_TESTING.md](STEALTH_MANUAL_TESTING.md) for the full manual procedure.
 
@@ -167,9 +167,9 @@ Harness and operator notes from this run (no `test/` changes made):
 - Design note: the tray **icon** itself is drawn by the Windows shell and cannot be excluded by Que; only Que-owned popup windows can.
 - Fixed when: re-running these three attempts shows the surfaces physically but no corresponding pixels in capture frames. Likely direction: a single application-level hook that applies `WDA_EXCLUDEFROMCAPTURE` to every Que top-level window on `Show`/`winId` creation (event filter on `QEvent.Type.Show`/`WinIdChange` for windows, menus and tooltips), plus disabling Qt UI animations so no unexcluded effect windows are created. Verify there is no first-frame gap (affinity must be set before the window first becomes visible).
 
-### Earlier defects not yet re-tested physically (index into the handoff)
+### Earlier defects not yet re-tested physically
 
-Read each entry in [STEALTH_REPAIR_HANDOFF.md](STEALTH_REPAIR_HANDOFF.md) before fixing it.
+The original traces and repair notes were in `test/STEALTH_REPAIR_HANDOFF.md`, since removed (see git history).
 
 | ID | Status | Priority | Where | One-line summary |
 |---|---|---|---|---|

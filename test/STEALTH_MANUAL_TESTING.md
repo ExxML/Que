@@ -7,7 +7,7 @@ This is the hands-on guide for checking, with a real keyboard, mouse, screen and
 | **This file** | How to run a manual session end to end: setup, calibration, every test, analysis and recording. |
 | [STEALTH_AUDIT.md](STEALTH_AUDIT.md) | The audit harness itself: modes, exit codes, evidence model, receipts, statistics. |
 | [STEALTH_FIX_LIST.md](STEALTH_FIX_LIST.md) | The single record of findings and their status. Record every result there. |
-| [STEALTH_RESEARCH.md](STEALTH_RESEARCH.md), [STEALTH_REPAIR_HANDOFF.md](STEALTH_REPAIR_HANDOFF.md) | Background research and earlier offline evidence. |
+| [STEALTH_RESEARCH.md](STEALTH_RESEARCH.md) | Background research. |
 
 Tools used here, all in the repository:
 - `test/run_stealth.py`: the runner (observer page, isolated Que, native recorder).

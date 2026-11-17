@@ -1,13 +1,5 @@
 # Observability findings — 2026-11-14
 
-## Latest unattended execution and repair handoff
-
-The requested unattended source and packaged full-mode runs, live backend checks, native popup investigations, and remaining guided work are documented in [STEALTH_REPAIR_HANDOFF.md](STEALTH_REPAIR_HANDOFF.md) and [its machine-readable evidence index](STEALTH_REPAIR_FINDINGS.json). Read these first; the deep-review sections below describe the earlier run.
-
-The new runs retain the six controlled source defects. Additional findings include a roughly 149–152 ms unexcluded native combo-animation window reproduced three times, unexcluded menu/tooltip candidates, a simultaneous loopback acquisition failure, a packaged credential/staging incompatibility, and loss of a prerequisite explanation on report-only resume. Browser pixel exposure and physical topmost behavior remain unverified. Both full sessions contain zero measured desktop attempts; their unperformed matrix cells remain incomplete.
-
-Both providers now have successful synthetic live operation evidence, and model download/loading plus synthetic transcription were exercised. These are bounded backend checks, not stealth passes. Production code remains unchanged.
-
 ## Deep review results
 
 The current compliance result is **FAIL**, with **3,737 PASS, 6,813 FAIL and 1 INCONCLUSIVE** offline checks. The failing count is mostly repeated hook-release permutations, not thousands of distinct bugs. Broader desktop/release coverage remains **INCOMPLETE**.
@@ -27,10 +19,10 @@ Additional research produced runnable idle, pressure, EyeDropper, display-change
 
 An initial Edge isolated-context smoke found that readiness waited on service-worker registration. Core startup now proceeds independently, while network/provider scenarios separately require actual worker/resource/endpoint observations. The failed output is retained alongside the successful retry. A temporary encoding issue in an earlier local test run was corrected; no production code or unrelated regression content changed.
 
-Current offline artifacts: `.stealth-runs/final-review/`, with browser/worker/protocol smoke evidence in the paths recorded in [the JSON findings](STEALTH_FINDINGS.json). The final report hash and representative new traces are retained there. Resume/report-only verified unchanged harness and staged-source hashes and preserved FAIL. Source files under `src/` are unchanged. No physical keyboard/capture, live-provider/audio, mixed-DPI, public-origin policy, or exact-release validation is claimed. The existing `que.dist/que.exe` candidate was located and hashed; its release provenance is unverified.
+Current offline artifacts: `.stealth-runs/final-review/`, with browser/worker/protocol smoke evidence in the paths recorded in the JSON findings (removed; see git history). The final report hash and representative new traces are retained there. Resume/report-only verified unchanged harness and staged-source hashes and preserved FAIL. Source files under `src/` are unchanged. No physical keyboard/capture, live-provider/audio, mixed-DPI, public-origin policy, or exact-release validation is claimed. The existing `que.dist/que.exe` candidate was located and hashed; its release provenance is unverified.
 
 
-The suite was implemented without changing `src/`. This initial audit **fails compliance**. It does not establish physical browser invisibility or release validation. See [run instructions](STEALTH_AUDIT.md) and the checked-in [machine-readable findings and reproduction traces](STEALTH_FINDINGS.json).
+The suite was implemented without changing `src/`. This initial audit **fails compliance**. It does not establish physical browser invisibility or release validation. See [run instructions](STEALTH_AUDIT.md).
 
 Source revision: `324c3cb00356ec7625ca586a0c56c75fdff6232a`. The tested hook file SHA-256 is `4b46954c37bf5a7c56c6a1bd9c21b1ebba993c25095a4f10b7616bce5fde04ac`.
 
