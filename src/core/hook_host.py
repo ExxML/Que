@@ -19,7 +19,7 @@ import queue
 import sys
 import threading
 import winreg
-from multiprocessing.connection import Client, Connection
+from multiprocessing.connection import Client, Connection, PipeConnection
 from pathlib import Path
 from typing import Any
 
@@ -105,8 +105,8 @@ class HookHost:
 
     def __init__(
         self,
-        commands: Connection,
-        events: Connection,
+        commands: Connection | PipeConnection,
+        events: Connection | PipeConnection,
         library: Path | None = LIBRARY_PATH,
     ) -> None:
         self.commands = commands

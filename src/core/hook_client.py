@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 from collections.abc import Callable
-from multiprocessing.connection import Connection, Listener
+from multiprocessing.connection import Connection, Listener, PipeConnection
 from pathlib import Path
 from typing import Any
 
@@ -65,7 +65,7 @@ class HookClient(QObject):
         self.stopping = False
         self.generation = 0
         self.process: subprocess.Popen[bytes] | None = None
-        self.commands: Connection | None = None
+        self.commands: Connection | PipeConnection | None = None
         self.send_lock = threading.Lock()
         self.last_received = (
             0.0  # Written by the pipe thread, so a busy UI thread is not "silence"

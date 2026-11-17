@@ -551,9 +551,9 @@ def run() -> dict[str, object]:
         "failures": failures,
         "policy_errors": policy.errors,
     }
-    Path(".stealth-runs/repair-native-surfaces-report.json").write_text(
-        json.dumps(report, indent=2)
-    )
+    report_path = Path(".stealth-runs/repair-native-surfaces-report.json")
+    report_path.parent.mkdir(exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2))
     assert not failures, json.dumps(
         {
             "failures": list(

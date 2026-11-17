@@ -119,10 +119,10 @@ def discover_operations(source: Path) -> dict[str, dict[str, Any]]:
                 "category": category,
                 "source": relative,
                 "line": line,
-                "expression": ast.unparse(node).splitlines()[0],
-                "sha256": hashlib.sha256(
-                    ast.dump(node, include_attributes=False).encode()
-                ).hexdigest(),
+                "expression": ast.unparse(node)
+                .splitlines()[0]
+                .replace("lambda :", "lambda:"),
+                "sha256": hashlib.sha256(_stable_dump(node).encode()).hexdigest(),
             }
     return operations
 
@@ -162,3 +162,24 @@ def compare_inventory(source: Path, approved: Path) -> Result:
         "\n".join(changes)
         or "Every discovered control and connection has a reviewed inventory entry.",
     )
+
+
+def _stable_dump(node: Any) -> str:
+    """Serialize an AST without the empty fields that only some Python versions include.
+
+    Args:
+        node (Any): The AST node, list, or value to serialize.
+
+    Returns:
+        str: A representation that is identical on every supported Python version.
+    """
+    if isinstance(node, ast.AST):
+        fields = [
+            f"{name}={_stable_dump(value)}"
+            for name, value in ast.iter_fields(node)
+            if value is not None and value != []
+        ]
+        return f"{type(node).__name__}({', '.join(fields)})"
+    if isinstance(node, list):
+        return f"[{', '.join(_stable_dump(item) for item in node)}]"
+    return repr(node)
