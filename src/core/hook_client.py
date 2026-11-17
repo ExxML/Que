@@ -17,7 +17,7 @@ from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 from core.hook_host import AUTH_ENVIRONMENT
 
 CREATE_NO_WINDOW = 0x08000000
-STARTUP_SECONDS = 15.0  # A source checkout imports Qt in the helper before it connects
+STARTUP_SECONDS = 15.0  # Generous, so a slow cold start (antivirus scan) is never reported as a failure
 SILENCE_SECONDS = 3.0
 WATCHDOG_SECONDS = 1.0
 

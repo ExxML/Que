@@ -4,6 +4,10 @@ Windows silently drops a low-level hook whose callback misses its deadline and l
 the event through. Hosting the hooks in a separate process keeps them independent of
 Que's interpreter lock and UI work, and a Raw Input listener in the same process
 detects any physical event the hooks missed so they can be restored at once.
+
+The hooks themselves run in the compiled engine (`core.native_hook`) on a native thread
+that never waits for Python. If that library cannot load, the helper falls back to
+`HookEngine` callbacks in Python and warns that protection is reduced.
 """
 
 import ctypes
@@ -14,10 +18,19 @@ import os
 import queue
 import sys
 import threading
+import winreg
 from multiprocessing.connection import Client, Connection
+from pathlib import Path
 from typing import Any
 
 from core.hook_engine import HookEngine, InputMonitor, key_identity
+from core.native_hook import (
+    LIBRARY_PATH,
+    STATUS_KEYBOARD,
+    STATUS_MEMORY_LOCKED,
+    STATUS_PRIORITY,
+    NativeHookEngine,
+)
 from core.win32_hook import HOOKPROC, WH_KEYBOARD_LL, WH_MOUSE_LL, kernel32, user32
 
 # Private handles so these signatures never change the shared ctypes.windll functions
@@ -28,6 +41,7 @@ AUTH_ENVIRONMENT = "QUE_HOOK_AUTH"
 WM_INPUT = 0x00FF
 WM_TIMER = 0x0113
 WM_CLOSE = 0x0010
+WM_HOOK_EVENTS = 0x8040  # WM_APP + 0x40: the native hook thread has decisions waiting
 HWND_MESSAGE = -3
 RID_INPUT = 0x10000003
 RIM_TYPEMOUSE = 0
@@ -39,6 +53,8 @@ RI_KEY_E1 = 0x04
 TIMER_ID = 1
 TIMER_MS = 100
 HEARTBEAT_TICKS = 10
+HOOK_TIMEOUT_KEY = r"Control Panel\Desktop"
+HOOK_TIMEOUT_MS = 1000  # The most Windows allows; read at sign-in
 # Raw mouse button flags -> (hook button value, pressed)
 RAW_BUTTONS = {
     0x0001: (1, True),
@@ -79,6 +95,7 @@ def run_hook_host(address: str) -> int:
         events = Client(address, family="AF_PIPE", authkey=authkey)
     except OSError:
         return 2
+    _raise_hook_timeout()
     host = HookHost(commands, events)
     return host.run()
 
@@ -86,14 +103,34 @@ def run_hook_host(address: str) -> int:
 class HookHost:
     """Own the hooks, the Raw Input leak detector, and the pipe to Que on one message-loop thread."""
 
-    def __init__(self, commands: Connection, events: Connection) -> None:
+    def __init__(
+        self,
+        commands: Connection,
+        events: Connection,
+        library: Path | None = LIBRARY_PATH,
+    ) -> None:
         self.commands = commands
         self.events = events
         self.outbox: queue.SimpleQueue[dict[str, Any] | None] = queue.SimpleQueue()
-        self.engine = HookEngine(self.outbox.put)
+        self.native: NativeHookEngine | None = None
+        if library is not None:
+            try:
+                self.native = NativeHookEngine(self.outbox.put, library)
+            except OSError as error:
+                self._send(
+                    {
+                        "type": "error",
+                        "text": f"Que's fast input hook could not load ({error}). Using the "
+                        "slower fallback: keys may reach other apps while the PC is very busy.",
+                    }
+                )
+        self.fallback = HookEngine(
+            self.outbox.put
+        )  # Python callbacks, used without the library
+        self.engine: HookEngine | NativeHookEngine = self.native or self.fallback
         self.engine.monitor = InputMonitor()
-        self.keyboard_proc = HOOKPROC(self.engine._low_level_keyboard_proc)
-        self.mouse_proc = HOOKPROC(self.engine._mouse_proc)
+        self.keyboard_proc = HOOKPROC(self.fallback._low_level_keyboard_proc)
+        self.mouse_proc = HOOKPROC(self.fallback._mouse_proc)
         self.window_proc = WNDPROC(self._window_proc)
         self.thread_id = 0
         self.window = 0
@@ -129,11 +166,13 @@ class HookHost:
         Returns:
             bool: Whether both hooks are installed.
         """
+        if self.native is not None:
+            return self._install_native(self.native)
         module = kernel32.GetModuleHandleW(None)
-        self.engine.keyboard_handle = user32.SetWindowsHookExW(
+        self.fallback.keyboard_handle = user32.SetWindowsHookExW(
             WH_KEYBOARD_LL, self.keyboard_proc, module, 0
         )
-        if not self.engine.keyboard_handle:
+        if not self.fallback.keyboard_handle:
             self._send(
                 {
                     "type": "error",
@@ -142,10 +181,10 @@ class HookHost:
                 }
             )
             return False
-        self.engine.mouse_handle = user32.SetWindowsHookExW(
+        self.fallback.mouse_handle = user32.SetWindowsHookExW(
             WH_MOUSE_LL, self.mouse_proc, module, 0
         )
-        if not self.engine.mouse_handle:
+        if not self.fallback.mouse_handle:
             self._send(
                 {
                     "type": "error",
@@ -159,10 +198,13 @@ class HookHost:
 
     def uninstall(self) -> None:
         """Remove both hooks; Windows may already have removed a timed-out hook."""
-        for handle in (self.engine.keyboard_handle, self.engine.mouse_handle):
+        if self.native is not None:
+            self.native.stop()
+            return
+        for handle in (self.fallback.keyboard_handle, self.fallback.mouse_handle):
             if handle:
                 user32.UnhookWindowsHookEx(handle)
-        self.engine.keyboard_handle = self.engine.mouse_handle = None
+        self.fallback.keyboard_handle = self.fallback.mouse_handle = None
 
     def _run(self) -> int:
         """Install the hooks and pump messages until shutdown, after process setup.
@@ -266,6 +308,8 @@ class HookHost:
         try:
             if message == WM_INPUT:
                 self._on_raw_input(lparam)
+            elif message == WM_HOOK_EVENTS and self.native is not None:
+                self.native.drain()
             elif message == WM_TIMER and wparam == TIMER_ID:
                 self._on_timer()
             elif message == WM_CLOSE:
@@ -333,24 +377,33 @@ class HookHost:
 
     def _on_timer(self) -> None:
         """Restore the hooks after any missed event, send heartbeats, and finish shutdown."""
+        if self.native is not None:
+            self.native.drain()  # Normally drained on notification; this is a backstop
         monitor = self.engine.monitor
         if monitor is not None:
             missed = monitor.expire(int(kernel32.GetTickCount()))
             if missed:
-                self.uninstall()
+                if self.native is None:
+                    self.uninstall()  # The native engine reinstalls in one step
                 restored = self.install()
                 self._send({"type": "leak", "events": missed, "restored": restored})
         self.ticks += 1
         if self.ticks % HEARTBEAT_TICKS == 0:
-            self._send(
-                {
-                    "type": "heartbeat",
-                    "raw_events": monitor.raw_events if monitor is not None else None,
-                    "missed_events": monitor.missed_events
-                    if monitor is not None
-                    else None,
-                }
-            )
+            heartbeat: dict[str, Any] = {
+                "type": "heartbeat",
+                "raw_events": monitor.raw_events if monitor is not None else None,
+                "missed_events": monitor.missed_events if monitor is not None else None,
+            }
+            if self.native is not None:
+                stats = self.native.stats()
+                heartbeat.update(
+                    native=True,
+                    late_events=stats["late_events"],
+                    max_late_ms=stats["max_late_ms"],
+                    memory_locked=bool(stats["status"] & STATUS_MEMORY_LOCKED),
+                    priority=bool(stats["status"] & STATUS_PRIORITY),
+                )
+            self._send(heartbeat)
         if not self.connected and self.engine.drained():
             native.PostQuitMessage(0)
 
@@ -383,6 +436,57 @@ class HookHost:
             event (dict[str, Any]): The event to send.
         """
         self.outbox.put(event)
+
+    def _install_native(self, native_engine: NativeHookEngine) -> bool:
+        """Start the compiled engine's hook thread, or reinstall its hooks if it is running.
+
+        Args:
+            native_engine (NativeHookEngine): The compiled engine.
+
+        Returns:
+            bool: Whether both hooks are installed.
+        """
+        if native_engine.started:
+            status = native_engine.reinstall()
+        else:
+            status = native_engine.start(self.window, WM_HOOK_EVENTS)
+        if status & STATUS_KEYBOARD:
+            return True
+        stats = native_engine.stats()
+        if stats["mouse_error"]:
+            text = f"Mouse hook unavailable (Windows error {stats['mouse_error']})."
+        else:
+            text = (
+                f"Keyboard hook unavailable (Windows error {stats['keyboard_error']})."
+            )
+        self._send({"type": "error", "text": text})
+        return False
+
+
+def _raise_hook_timeout() -> None:
+    """Give hook callbacks Windows' longest deadline, effective from the next sign-in.
+
+    Windows lets a key through when a hook misses LowLevelHooksTimeout. Que's callbacks
+    normally return in microseconds, so a longer deadline only adds margin.
+    """
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            HOOK_TIMEOUT_KEY,
+            0,
+            winreg.KEY_READ | winreg.KEY_SET_VALUE,
+        ) as key:
+            try:
+                current, _kind = winreg.QueryValueEx(key, "LowLevelHooksTimeout")
+                if int(current) >= HOOK_TIMEOUT_MS:
+                    return
+            except (OSError, ValueError):
+                pass  # Unset or unreadable: Windows uses its default
+            winreg.SetValueEx(
+                key, "LowLevelHooksTimeout", 0, winreg.REG_DWORD, HOOK_TIMEOUT_MS
+            )
+    except OSError:
+        pass  # Only margin; the hooks work without it
 
 
 def _key_name(scan: int, extended: bool) -> str:

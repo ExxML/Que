@@ -38,6 +38,7 @@ src/assets/ — Icons and images
 - `src/que.py` — Entry point; wires all components together
 - `core/shortcut_manager.py` — Runs hotkey actions on the Qt thread; the physical keys are decided by the input helper
 - `core/hook_engine.py` / `core/hook_host.py` — Qt-free keyboard/mouse decision logic and the input helper process (`que.py --hook-host`) that hosts the `WH_KEYBOARD_LL`/`WH_MOUSE_LL` hooks plus Raw Input leak detection, so Que's own work can never stall the hooks
+- `core/native_hook.py` + `native/que_hook.c` — The hook callbacks in compiled code (`src/assets/que_hook.dll`, committed; rebuild with `python native/build.py`): a C port of `HookEngine`'s rules on its own native thread with locked memory, so no Python work can delay a callback. `HookEngine` stays the reference; `test/test_native_hook.py` requires identical decisions. Policy tables (`HOTKEYS` etc.) are passed in from `core/hook_engine.py`, never duplicated in C.
 - `core/hook_client.py` — Starts and supervises the helper over authenticated named pipes; turns its events into Qt signals
 - `core/window_policy.py` — Applies capture affinity and non-activating, click-through styles to every top-level window before it is shown
 - `ui/input/input_router.py` — Delivers routed keys and clicks to Qt widgets without activating Que's windows

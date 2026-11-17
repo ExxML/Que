@@ -25,10 +25,15 @@ python -m unittest discover -s test -p "test_*.py" -v
 
 Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
 
+Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_hook.dll`, built from `native/que_hook.c` and committed with it, so running Que needs no compiler. After changing `native/que_hook.c`, rebuild it with MSVC (Visual Studio Build Tools, C++) or gcc and commit both files. Nuitka skips DLLs in data directories, so the build command below names it explicitly.
+```bash
+python native/build.py
+```
+
 Compile .exe using Nuitka
 ```bash
 pip install nuitka
-python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-data-dir="src/assets=assets" src/que.py
+python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-data-dir="src/assets=assets" --include-data-files="src/assets/que_hook.dll=assets/que_hook.dll" src/que.py
 ```
 > [!NOTE]
 > Due to the large google.genai library, the first compilation will take a long time (20-30 minutes using Nuitka).

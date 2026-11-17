@@ -387,7 +387,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
         driver = HookDriver()
         commands, events = MagicMock(), MagicMock()
         commands.recv_bytes.side_effect = EOFError
-        host = HookHost(commands, events)
+        host = HookHost(commands, events, library=None)  # The Python fallback path
         driver.api.SetWindowsHookExW.return_value = 42 if installed else None
         with (
             patch("core.hook_host.user32", driver.api),

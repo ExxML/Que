@@ -102,7 +102,7 @@ class OwnershipTests(unittest.TestCase):
         """Verify the reported error and early return before the helper's message loop."""
         commands, events = MagicMock(), MagicMock()
         commands.recv_bytes.side_effect = EOFError
-        host = HookHost(commands, events)
+        host = HookHost(commands, events, library=None)  # The Python fallback path
         with patch("core.hook_host.user32") as api, patch("core.hook_host.kernel32") as kernel, patch("core.hook_host.system"), patch("core.hook_host.native") as native_api, patch.object(HookHost, "_create_monitor_window", return_value=True):
             api.SetWindowsHookExW.return_value = None
             kernel.GetLastError.return_value = 5
@@ -110,6 +110,28 @@ class OwnershipTests(unittest.TestCase):
         self.assertFalse(native_api.GetMessageW.called)
         sent = [json.loads(call.args[0]) for call in events.send_bytes.call_args_list]
         self.assertIn("error 5", sent[0]["text"])
+
+    def test_failed_native_install_reports_and_never_enters_message_loop(self) -> None:
+        """Report the compiled engine's install error and stop before the message loop."""
+        commands, events = MagicMock(), MagicMock()
+        commands.recv_bytes.side_effect = EOFError
+        host = HookHost(commands, events)
+        assert host.native is not None
+        stats = {"status": 0, "keyboard_error": 5, "mouse_error": 0, "late_events": 0, "max_late_ms": 0, "dropped_events": 0}
+        with patch.object(host.native, "start", return_value=0), patch.object(host.native, "stats", return_value=stats), patch("core.hook_host.system"), patch("core.hook_host.native") as native_api, patch.object(HookHost, "_create_monitor_window", return_value=True):
+            self.assertEqual(host.run(), 1)
+        self.assertFalse(native_api.GetMessageW.called)
+        sent = [json.loads(call.args[0]) for call in events.send_bytes.call_args_list]
+        self.assertIn("Keyboard hook unavailable (Windows error 5)", sent[0]["text"])
+
+    def test_missing_native_library_falls_back_with_a_warning(self) -> None:
+        """Keep the Python hooks working and warn when the compiled engine cannot load."""
+        host = HookHost(MagicMock(), MagicMock(), library=Path("missing-que-hook.dll"))
+        self.assertIsNone(host.native)
+        self.assertIs(host.engine, host.fallback)
+        warning = host.outbox.get_nowait()
+        assert warning is not None
+        self.assertIn("fast input hook could not load", warning["text"])
 
     def test_mouse_press_is_owned_across_exit_and_routing_toggle(self) -> None:
         """Suppress releases outside Que while motion continues downstream."""
