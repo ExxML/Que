@@ -19,8 +19,9 @@ HOTKEYS = [
     (8, 81, "minimize", False, False),
     (8, 78, "clear_all_chat", False, False),
     (8, 72, "toggle_history", False, False),
-    (8, 68, "generate_with_screenshot", False, False),
-    (8, 71, "generate_with_screenshot_fix", False, False),
+    (8, 68, "solve_coding_problem", False, False),
+    (8, 71, "fix_code", False, False),
+    (8, 77, "solve_question", False, False),
 ]
 SURFACES = [
     "main overlay",

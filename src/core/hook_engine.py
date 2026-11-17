@@ -51,8 +51,9 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE, ord("Q"), "minimize", False, False),
     (MOD_QUE, ord("N"), "clear_all_chat", False, False),
     (MOD_QUE, ord("H"), "toggle_history", False, False),
-    (MOD_QUE, ord("D"), "generate_with_screenshot", False, False),
-    (MOD_QUE, ord("G"), "generate_with_screenshot_fix", False, False),
+    (MOD_QUE, ord("D"), "solve_coding_problem", False, False),
+    (MOD_QUE, ord("G"), "fix_code", False, False),
+    (MOD_QUE, ord("M"), "solve_question", False, False),
 )
 ACTION_NAMES = tuple(name for _, _, name, _, _ in HOTKEYS)
 

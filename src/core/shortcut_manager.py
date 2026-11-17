@@ -270,8 +270,8 @@ class ShortcutManager(QObject):
         """Turn mouse click-through on or off for the main window."""
         self.toggle_click_through_signal.emit()
 
-    def _generate_with_screenshot(self) -> None:
-        """Take a screenshot then automatically generate content."""
+    def _solve_coding_problem(self) -> None:
+        """Take a screenshot then ask for a full solution to the coding problem on screen."""
         self.screenshot_signal.emit()
         self.send_message_signal.emit(
             """Help me solve this programming problem. Be concise.
@@ -284,9 +284,18 @@ class ShortcutManager(QObject):
 7. Give me the time and space complexity for the solution."""
         )
 
-    def _generate_with_screenshot_fix(self) -> None:
-        """Take a screenshot then automatically generate content to fix or improve code."""
+    def _fix_code(self) -> None:
+        """Take a screenshot then ask to fix or improve the code on screen."""
         self.screenshot_signal.emit()
         self.send_message_signal.emit(
             "Fix or improve the code based on the new instructions. Then, state the changes you made."
+        )
+
+    def _solve_question(self) -> None:
+        """Take a screenshot then ask for an answer and explanation to any question on screen."""
+        self.screenshot_signal.emit()
+        self.send_message_signal.emit(
+            """Solve the question in the screenshot. It may be on any topic (ex. behavioural, data structures and algorithms, systems, databases, system design). Be concise.
+1. Give the answer or solution first, in the format that suits the question (ex. code for a coding question, a query for a database question, a structured answer for a behavioural question, components and trade-offs for a system design question).
+2. Then explain the reasoning behind it."""
         )

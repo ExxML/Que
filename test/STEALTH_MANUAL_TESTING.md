@@ -43,7 +43,7 @@ Manual results are evidence for finding and fixing real issues, not certificatio
   | Right Ctrl+Q | Minimise | no |
   | Right Ctrl+N | New chat | no |
   | Right Ctrl+H | History | no |
-  | Right Ctrl+D / Right Ctrl+G / Right Ctrl+M | Screenshot and solve / fix the code / answer aloud | no |
+  | Right Ctrl+D / Right Ctrl+G / Right Ctrl+M | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
 - For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.
