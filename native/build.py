@@ -31,12 +31,13 @@ def main() -> int:
         if vcvars is not None:
             # Static runtime: the DLL depends only on system libraries
             # A script file avoids cmd.exe's quoting rules for paths with spaces
+            # /Brepro: timestamps become a content hash, so an unchanged source rebuilds byte-identical
             script = Path(work) / "build.cmd"
             script.write_text(
                 f'@call "{vcvars}" >nul 2>&1\r\n'
-                f'@cl /nologo /O2 /W4 /WX /MT /GS /guard:cf /LD /DQUE_SOURCE_SHA256=\\"{digest}\\" '
+                f'@cl /nologo /Brepro /O2 /W4 /WX /MT /GS /guard:cf /LD /DQUE_SOURCE_SHA256=\\"{digest}\\" '
                 f'"{SOURCE}" /Fe:que_hook.dll '
-                "/link /DYNAMICBASE /NXCOMPAT /guard:cf user32.lib kernel32.lib\r\n",
+                "/link /Brepro /DYNAMICBASE /NXCOMPAT /guard:cf user32.lib kernel32.lib\r\n",
                 encoding="utf-8",
             )
             result = subprocess.run(
