@@ -16,6 +16,10 @@ Tools used here, all in the repository:
 
 Manual results are evidence for finding and fixing real issues, not certification. The page offers fixed display presets (for example `single-100`); when your setup differs, pick the closest and describe the real setup in the configuration notes. Official verdicts then stay INCONCLUSIVE, which is expected.
 
+## Quick manual site (no runner)
+
+For a self-judging, click-through version of most of these tests, run `python test/manual_site/serve.py` and open <http://localhost:8765/> in the browser under test. It covers keyboard, focus, pointer, screen capture (calibrated per-pixel diff), audio, timing, clipboard, EyeDropper and manual visual checks, with per-test verdicts and a Markdown/JSON report. It is standalone: no evidence recorder, hash-bound receipts or official verdicts, so record results in STEALTH_FIX_LIST.md as usual.
+
 ## 1. Roles and ground rules
 
 - **Operator**: performs physical actions only, in short batches, and reports what they saw that the evidence cannot show (did Que hide, did text appear in Que, did the volume OSD show).

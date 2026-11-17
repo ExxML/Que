@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Que Stealth Lab</title>
+<style>
+:root{
+  --bg:#0d1117;--panel:#141a22;--card:#1a212b;--card2:#202938;--line:#2b3544;--text:#e6ebf2;--muted:#94a2b6;--accent:#6aa9ff;--accent-ink:#06142b;
+  --pass:#46c07f;--pass-bg:#11301f;--fail:#ff7070;--fail-bg:#3b171a;--warn:#f2b94b;--warn-bg:#3a2f12;--info:#6aa9ff;--info-bg:#13263f;--void:#94a2b6;--void-bg:#232b37;
+  --st1:#d7deec;--st2:#1b2332;--radius:12px;color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f3f5f9;--panel:#fff;--card:#f6f8fb;--card2:#eaeff6;--line:#d5dde8;--text:#18212e;--muted:#566377;--accent:#1d5fd1;--accent-ink:#fff;
+  --pass:#12803f;--pass-bg:#dff5e8;--fail:#c42b2b;--fail-bg:#fde4e4;--warn:#8a5a00;--warn-bg:#fff0cc;--info:#1d5fd1;--info-bg:#e1ecfd;--void:#566377;--void-bg:#e6ebf2;color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f3f5f9;--panel:#fff;--card:#f6f8fb;--card2:#eaeff6;--line:#d5dde8;--text:#18212e;--muted:#566377;--accent:#1d5fd1;--accent-ink:#fff;
+  --pass:#12803f;--pass-bg:#dff5e8;--fail:#c42b2b;--fail-bg:#fde4e4;--warn:#8a5a00;--warn-bg:#fff0cc;--info:#1d5fd1;--info-bg:#e1ecfd;--void:#566377;--void-bg:#e6ebf2;color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:minmax(380px,540px) 1fr;height:100vh}
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-right:1px solid var(--line);position:relative}
+.armed .panel::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--warn);z-index:5;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.armed .panel::before{animation:none}}
+.top{padding:14px 16px 8px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.top h1{font-size:17px;margin:0;letter-spacing:.2px;cursor:default;user-select:none}
+.top p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.top .tools{display:flex;gap:6px;align-items:center}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px 10px;border-bottom:1px solid var(--line)}
+.tab{background:transparent;border:1px solid transparent;border-radius:999px;padding:5px 11px;cursor:pointer;color:var(--muted);display:flex;gap:6px;align-items:center}
+.tab:hover{background:var(--card2)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.tab .n{font-size:11px;opacity:.85;font-variant-numeric:tabular-nums}
+.tab .dot{width:8px;height:8px;border-radius:50%;background:var(--fail)}
+#content{flex:1;overflow:auto;padding:14px 16px 24px;min-height:0;scrollbar-gutter:stable}
+.sec>h2{font-size:15px;margin:4px 0 4px}
+.sec>.lead{color:var(--muted);margin:0 0 12px}
+.group{margin:20px 0 8px;font-size:11.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin:0 0 10px}
+.card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card .title{font-weight:650;font-size:14px}
+.card .why{color:var(--muted);margin:4px 0 8px;font-size:13px}
+.card ol{margin:6px 0 10px;padding-left:20px}
+.card li{margin:2px 0}
+.card.compact{padding:9px 12px}
+.card.compact .title{font-size:13.5px}
+.card.compact .hint{margin:3px 0 0;color:var(--muted);font-size:12.5px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.btn.danger{border-color:var(--fail);color:var(--fail)}
+.chip{display:inline-flex;gap:5px;align-items:center;border-radius:999px;padding:2px 9px 2px 7px;font-size:12px;font-weight:650;white-space:nowrap;border:1px solid transparent}
+.chip b{font-size:11px}
+.chip.idle{color:var(--muted);border-color:var(--line)}
+.chip.pass{color:var(--pass);background:var(--pass-bg)}
+.chip.fail{color:var(--fail);background:var(--fail-bg)}
+.chip.review{color:var(--warn);background:var(--warn-bg)}
+.chip.info{color:var(--info);background:var(--info-bg)}
+.chip.void{color:var(--void);background:var(--void-bg)}
+kbd{font:600 11.5px ui-monospace,Consolas,monospace;background:var(--card2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;white-space:nowrap}
+code{font:12px ui-monospace,Consolas,monospace;background:var(--card2);padding:0 4px;border-radius:4px}
+.runbox{margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--warn-bg);border:1px solid var(--warn)}
+.runbox .runline{font-weight:650}
+.bar{height:5px;border-radius:3px;background:var(--line);margin:8px 0;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--warn)}
+.live{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.confirm{margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--info-bg);border:1px solid var(--info)}
+.confirm .q{margin:4px 0}
+.findings{list-style:none;margin:8px 0 0;padding:0}
+.findings li{display:flex;gap:8px;padding:3px 0;align-items:flex-start;overflow-wrap:anywhere}
+.findings .g{flex:none;width:16px;text-align:center;font-weight:800}
+.findings .ok .g{color:var(--pass)}.findings .bad .g{color:var(--fail)}.findings .warn .g{color:var(--warn)}.findings .info .g{color:var(--info)}
+details{margin:6px 0}summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+pre.log{font:11.5px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;max-height:220px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0 0}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:8px 0}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.delta-warn{color:var(--warn);font-weight:700}
+.steps-list{list-style:none;margin:8px 0;padding:0}
+.steps-list li{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:start;padding:7px 0;border-top:1px solid var(--line)}
+.steps-list .si{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--card2);color:var(--muted)}
+.steps-list .si.ok{background:var(--pass-bg);color:var(--pass)}.steps-list .si.err{background:var(--fail-bg);color:var(--fail)}.steps-list .si.busy{background:var(--warn-bg);color:var(--warn)}
+.msg{font-size:12.5px;color:var(--muted)}.msg.err{color:var(--fail)}.msg.ok{color:var(--pass)}
+.banner{padding:8px 12px;border-radius:10px;margin:8px 0;font-size:13px}
+.banner.warn{background:var(--warn-bg);border:1px solid var(--warn)}
+.banner.bad{background:var(--fail-bg);border:1px solid var(--fail)}
+.banner.ok{background:var(--pass-bg);border:1px solid var(--pass)}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.thumbs figure{margin:0;max-width:100%}.thumbs img{max-width:100%;border:1px solid var(--line);border-radius:6px;image-rendering:pixelated}
+.thumbs figcaption{font-size:11.5px;color:var(--muted)}
+video.preview{width:100%;max-width:240px;border-radius:8px;border:1px solid var(--line);background:#000;display:block}
+video.preview.big{max-width:100%}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.meter>i{display:block;height:100%;width:0;background:var(--pass)}
+select,input[type=number],textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+textarea{width:100%;min-height:70px;resize:vertical}
+label.chk{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.manual-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--card);border:0;padding:4px 10px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"].ok{background:var(--pass-bg);color:var(--pass);font-weight:700}
+.seg button[aria-pressed="true"].no{background:var(--fail-bg);color:var(--fail);font-weight:700}
+.seg button[aria-pressed="true"].na{background:var(--void-bg);color:var(--void);font-weight:700}
+.monitor{border-top:1px solid var(--line);background:var(--card);padding:8px 14px;font-size:12.5px}
+.monitor .strip{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:1px 9px;background:var(--card2);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.pill.good{color:var(--pass)}.pill.bad{color:var(--fail)}.pill.warn{color:var(--warn)}
+.monitor pre.log{max-height:170px}
+.stage{position:relative;overflow:hidden;background:repeating-conic-gradient(var(--st1) 0 25%,var(--st2) 0 50%) 0 0/72px 72px;min-height:300px}
+.stage[data-mode="solid"]{background:#2a6f97}
+.stage[data-mode="lane"]{background:linear-gradient(var(--st2),var(--st2))}
+.stage[data-mode="lane"]::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 63px,rgba(255,255,255,.07) 63px 64px),repeating-linear-gradient(90deg,transparent 0 63px,rgba(255,255,255,.07) 63px 64px)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.stage:not([data-mode="lane"]) canvas{display:none}
+.stage-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:12px;background:#10151d;color:#e6ebf2;font-weight:650;text-align:center;border:1px solid #394456}
+.stage-label small{display:block;font-weight:400;color:#9aa8bd}
+.stage[data-mode="solid"] .stage-label,.stage[data-mode="lane"] .stage-label{display:none}
+#beacon{position:absolute;left:12px;top:12px;width:28px;height:28px;background:#ff00ff;border:2px solid #fff;border-radius:4px}
+#beacon.b{background:#00ff66}
+#toast{position:fixed;left:16px;bottom:70px;background:var(--card2);border:1px solid var(--accent);border-radius:10px;padding:8px 14px;z-index:20;max-width:min(500px,calc(100vw - 32px))}
+@media (max-width:1000px){
+  .app{grid-template-columns:1fr;height:auto}
+  .panel{height:auto;border-right:0}
+  #content{overflow:visible}
+  .stage{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel" id="panel">
+    <header class="top">
+      <div>
+        <h1 id="title" tabindex="-1">Que Stealth Lab</h1>
+        <p>Can a web page tell Que is running? Click this title to give the page focus.</p>
+      </div>
+      <div class="tools">
+        <span class="pill" id="flag-anom" title="Unexpected events seen by the always-on monitor">Anomalies <b>0</b></span>
+        <button class="btn small" id="theme" aria-label="Toggle light or dark theme">Theme</button>
+      </div>
+    </header>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Test areas"></nav>
+    <main id="content"></main>
+    <footer class="monitor" id="monitor">
+      <div class="strip" aria-live="off">
+        <span class="pill" id="m-focus">Focus —</span>
+        <span class="pill" id="m-keys">Keys seen 0</span>
+        <span class="pill" id="m-last">Last event —</span>
+        <button class="btn small" id="m-toggle" aria-expanded="false" aria-controls="m-log-wrap">Event log</button>
+      </div>
+      <div id="m-log-wrap" hidden>
+        <div class="row" style="margin-top:6px">
+          <label class="chk"><input type="checkbox" id="f-key" checked> keys</label>
+          <label class="chk"><input type="checkbox" id="f-focus" checked> focus</label>
+          <label class="chk"><input type="checkbox" id="f-ptr" checked> pointer</label>
+          <label class="chk"><input type="checkbox" id="f-other" checked> other</label>
+          <button class="btn small" id="m-clear">Clear</button>
+        </div>
+        <pre class="log" id="m-log" aria-label="Recent events"></pre>
+      </div>
+    </footer>
+  </aside>
+  <section class="stage" id="stage" data-mode="board" role="presentation">
+    <div id="beacon"></div>
+    <canvas id="trail"></canvas>
+    <div class="stage-label">STAGE<small>Place Que over this area for pointer, capture and pixel tests.<br>Leave it untouched while a test runs.</small></div>
+  </section>
+</div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+'use strict';
+(() => {
+/* ───────────────────────── utilities ───────────────────────── */
+const $ = (s, r = document) => r.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid == null || kid === false) continue;
+    el.append(typeof kid === 'object' && kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('qsl:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('qsl:' + k, JSON.stringify(v)); } catch { /* storage unavailable: results just are not persisted */ } },
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fmtMs = n => (n == null || Number.isNaN(n)) ? '—' : (Math.abs(n) >= 100 ? n.toFixed(0) : n.toFixed(Math.abs(n) >= 10 ? 1 : 2)) + ' ms';
+const median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+function stats(a) {
+  if (!a.length) return null;
+  const s = [...a].sort((x, y) => x - y), n = s.length, mean = s.reduce((p, c) => p + c, 0) / n;
+  const q = p => s[Math.min(n - 1, Math.floor(p * n))];
+  return { n, mean, min: s[0], p50: q(0.5), p95: q(0.95), p99: q(0.99), max: s[n - 1], sd: Math.sqrt(s.reduce((p, c) => p + (c - mean) ** 2, 0) / n) };
+}
+function rich(s) {
+  const out = []; const re = /\[\[(.+?)\]\]|\*\*(.+?)\*\*|`(.+?)`/g; let i = 0, m;
+  while ((m = re.exec(s))) {
+    if (m.index > i) out.push(s.slice(i, m.index));
+    out.push(m[1] != null ? h('kbd', {}, m[1]) : m[2] != null ? h('strong', {}, m[2]) : h('code', {}, m[3]));
+    i = re.lastIndex;
+  }
+  if (i < s.length) out.push(s.slice(i));
+  return out;
+}
+let toastTimer = 0;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+}
+const ok = text => ({ lvl: 'ok', text }), bad = text => ({ lvl: 'bad', text }), warn = text => ({ lvl: 'warn', text }), info = text => ({ lvl: 'info', text });
+const GLYPH = { ok: '✓', bad: '✗', warn: '!', info: 'i' };
+
+/* ───────────────────────── status model ───────────────────────── */
+const STATUS = {
+  idle: ['○', 'Not run'], pass: ['✓', 'No leak seen'], fail: ['✗', 'Leak found'], review: ['!', 'Review'], info: ['i', 'Info'], void: ['–', 'Void'],
+};
+function chip(status, label) {
+  const [g, l] = STATUS[status] || STATUS.idle;
+  return h('span', { class: 'chip ' + status }, h('b', { 'aria-hidden': 'true' }, g), label || l);
+}
+const results = store.get('results', {});
+const baselines = store.get('baselines', {});
+const ALL = []; // every reportable test: {id, tab, title}
+const resultListeners = new Set();
+function setResult(id, r) {
+  results[id] = { status: r.status, findings: (r.findings || []).slice(0, 30), at: Date.now(), metrics: r.metrics || null };
+  store.set('results', results);
+  resultListeners.forEach(fn => fn(id));
+}
+
+/* ───────────────────────── event bus + always-on monitors ───────────────────────── */
+const bus = {
+  log: [], subs: new Set(), n: 0, guard: 0, anomalies: [],
+  emit(type, data, o) {
+    const ev = Object.assign({ n: ++this.n, t: performance.now(), type }, data);
+    if (!o || o.store !== false) { this.log.push(ev); if (this.log.length > 4000) this.log.splice(0, 1000); }
+    this.subs.forEach(fn => { try { fn(ev); } catch (e) { console.error(e); } });
+    return ev;
+  },
+  subscribe(fn) { this.subs.add(fn); return () => this.subs.delete(fn); },
+  anomaly(sev, text) {
+    this.anomalies.push({ t: performance.now(), sev, text });
+    this.emit('anomaly', { sev, text });
+  },
+};
+const whereOf = t => !(t instanceof Element) ? 'page' : t.closest('#panel') ? 'panel' : t.closest('#stage') ? 'stage' : 'page';
+const modsOf = e => (e.shiftKey ? 'S' : '') + (e.ctrlKey ? 'C' : '') + (e.altKey ? 'A' : '') + (e.metaKey ? 'M' : '');
+const tsOf = e => (e.timeStamp > 0 ? e.timeStamp : performance.now());
+const keyDown = new Map(); // code -> last event time, for stuck-key detection
+let lastBlurAt = -1e9, lastFocusAt = -1e9;
+
+function installMonitors() {
+  addEventListener('keydown', e => {
+    bus.emit('key', { phase: 'down', key: e.key, code: e.code, repeat: e.repeat, mods: modsOf(e), where: whereOf(e.target), trusted: e.isTrusted, t: tsOf(e) });
+    keyDown.set(e.code, tsOf(e));
+    if (bus.guard > 0) e.preventDefault();
+  }, true);
+  addEventListener('keyup', e => {
+    const had = keyDown.delete(e.code);
+    bus.emit('key', { phase: 'up', key: e.key, code: e.code, repeat: false, mods: modsOf(e), where: whereOf(e.target), trusted: e.isTrusted, t: tsOf(e) });
+    if (!had && performance.now() - lastBlurAt > 2500 && performance.now() - lastFocusAt > 2500) bus.anomaly('warn', `Key-up for ${e.code} with no key-down seen (orphan key-up).`);
+    if (bus.guard > 0) e.preventDefault();
+  }, true);
+  addEventListener('blur', e => {
+    if (e.target !== window) return;
+    lastBlurAt = performance.now(); keyDown.clear();
+    bus.emit('blur', { t: tsOf(e) }); bus.anomaly('info', 'Window lost focus.');
+  });
+  addEventListener('focus', e => { if (e.target === window) { lastFocusAt = performance.now(); bus.emit('focus', { t: tsOf(e) }); } });
+  document.addEventListener('visibilitychange', () => { bus.emit('vis', { state: document.visibilityState }); bus.anomaly('info', `Page visibility → ${document.visibilityState}.`); });
+  setInterval(() => { if (!document.hasFocus()) bus.emit('focuspoll', { hasFocus: false }, { store: false }); }, 100);
+  setInterval(() => {
+    const now = performance.now();
+    for (const [code, t] of keyDown) if (now - t > 1500 && document.hasFocus()) {
+      keyDown.delete(code); bus.anomaly('warn', `${code} went down but never repeated or released (half key stream).`);
+    }
+  }, 500);
+  addEventListener('pointermove', e => bus.emit('pmove', { x: e.clientX, y: e.clientY, where: whereOf(e.target), t: tsOf(e) }, { store: false }), { capture: true, passive: true });
+  addEventListener('pointerdown', e => bus.emit('pdown', { x: e.clientX, y: e.clientY, b: e.button, where: whereOf(e.target), t: tsOf(e) }), true);
+  addEventListener('pointerup', e => bus.emit('pup', { x: e.clientX, y: e.clientY, where: whereOf(e.target), t: tsOf(e) }), true);
+  addEventListener('click', e => bus.emit('click', { x: e.clientX, y: e.clientY, where: whereOf(e.target), t: tsOf(e) }), true);
+  addEventListener('contextmenu', e => bus.emit('ctx', { x: e.clientX, y: e.clientY, where: whereOf(e.target), t: tsOf(e) }), true);
+  addEventListener('wheel', e => bus.emit('wheel', { x: e.clientX, y: e.clientY, dy: e.deltaY, where: whereOf(e.target), t: tsOf(e) }), { capture: true, passive: true });
+  let lastLeave = -1e9;
+  const onLeave = e => {
+    const t = tsOf(e); if (t - lastLeave < 8) return; lastLeave = t;
+    const x = e.clientX, y = e.clientY, m = 12;
+    const interior = Number.isFinite(x) && x > m && y > m && x < innerWidth - m && y < innerHeight - m;
+    bus.emit('pleave', { x, y, interior, t });
+    if (interior) bus.anomaly('warn', `Pointer "left" the page at interior point (${Math.round(x)}, ${Math.round(y)}): something covers the page there.`);
+  };
+  document.documentElement.addEventListener('pointerleave', onLeave);
+  addEventListener('mouseout', e => { if (e.relatedTarget === null) onLeave(e); });
+  document.documentElement.addEventListener('pointerenter', e => bus.emit('penter', { x: e.clientX, y: e.clientY, t: tsOf(e) }));
+  addEventListener('resize', () => bus.emit('resize', { w: innerWidth, h: innerHeight }));
+  document.addEventListener('fullscreenchange', () => bus.emit('fs', { on: !!document.fullscreenElement }));
+  document.addEventListener('pointerlockchange', () => bus.emit('plock', { on: !!document.pointerLockElement }));
+  document.addEventListener('pointerlockerror', () => bus.emit('plockerr', {}));
+  navigator.mediaDevices?.addEventListener?.('devicechange', () => bus.emit('devchange', {}));
+  addEventListener('online', () => bus.emit('net', { state: 'online' }));
+  addEventListener('offline', () => bus.emit('net', { state: 'offline' }));
+  navigator.connection?.addEventListener?.('change', () => bus.emit('net', { state: `connection ${navigator.connection.effectiveType || '?'} rtt ${navigator.connection.rtt}ms` }));
+  document.addEventListener('freeze', () => bus.emit('lifecycle', { state: 'freeze' }));
+  document.addEventListener('resume', () => bus.emit('lifecycle', { state: 'resume' }));
+  addEventListener('pagehide', () => bus.emit('lifecycle', { state: 'pagehide' }));
+  const watchDpr = () => {
+    const mq = matchMedia(`(resolution: ${devicePixelRatio}dppx)`);
+    mq.addEventListener('change', () => { bus.emit('dpr', { dpr: devicePixelRatio }); watchDpr(); }, { once: true });
+  };
+  watchDpr();
+}
+
+function describe(ev) {
+  switch (ev.type) {
+    case 'key': return `${ev.phase === 'down' ? '↓' : '↑'} ${ev.code || ev.key}${ev.repeat ? ' (repeat)' : ''}${ev.mods ? ' [' + ev.mods + ']' : ''}`;
+    case 'blur': return 'window BLUR';
+    case 'focus': return 'window focus';
+    case 'focuspoll': return 'hasFocus() = false';
+    case 'vis': return `visibility → ${ev.state}`;
+    case 'pdown': return `pointer down (${Math.round(ev.x)}, ${Math.round(ev.y)}) on ${ev.where}`;
+    case 'pup': return `pointer up (${Math.round(ev.x)}, ${Math.round(ev.y)})`;
+    case 'click': return `click (${Math.round(ev.x)}, ${Math.round(ev.y)}) on ${ev.where}`;
+    case 'ctx': return `contextmenu (${Math.round(ev.x)}, ${Math.round(ev.y)})`;
+    case 'wheel': return `wheel Δy ${Math.round(ev.dy)} at (${Math.round(ev.x)}, ${Math.round(ev.y)})`;
+    case 'pleave': return `pointer LEFT page at (${Math.round(ev.x)}, ${Math.round(ev.y)}) ${ev.interior ? 'INTERIOR' : 'edge'}`;
+    case 'penter': return `pointer entered page (${Math.round(ev.x)}, ${Math.round(ev.y)})`;
+    case 'resize': return `resize ${ev.w}×${ev.h}`;
+    case 'fs': return `fullscreen ${ev.on ? 'entered' : 'EXITED'}`;
+    case 'plock': return `pointer lock ${ev.on ? 'acquired' : 'RELEASED'}`;
+    case 'plockerr': return 'pointer lock error';
+    case 'dpr': return `devicePixelRatio → ${ev.dpr}`;
+    case 'devchange': return 'media devices changed';
+    case 'net': return `network: ${ev.state}`;
+    case 'lifecycle': return `lifecycle: ${ev.state}`;
+    case 'anomaly': return `ANOMALY (${ev.sev}): ${ev.text}`;
+    case 'ui': return `[you] ${ev.action}`;
+    case 'audio': return `audio: ${ev.kind}${ev.detail ? ' ' + ev.detail : ''}`;
+    default: return ev.type;
+  }
+}
+const GROUPS = { key: 'key', blur: 'focus', focus: 'focus', focuspoll: 'focus', vis: 'focus', pdown: 'ptr', pup: 'ptr', click: 'ptr', ctx: 'ptr', wheel: 'ptr', pleave: 'ptr', penter: 'ptr' };
+const fmtT = ms => (ms / 1000).toFixed(3) + 's';
+
+function installMonitorUi() {
+  const keys = $('#m-keys'), last = $('#m-last'), foc = $('#m-focus'), logEl = $('#m-log'), anom = $('#flag-anom');
+  let keyCount = 0, dirty = false, lines = [];
+  const filters = { key: $('#f-key'), focus: $('#f-focus'), ptr: $('#f-ptr'), other: $('#f-other') };
+  bus.subscribe(ev => {
+    if (ev.type === 'key') { keyCount++; keys.textContent = `Keys seen ${keyCount}`; }
+    if (ev.type === 'pmove' || ev.type === 'focuspoll') return;
+    last.textContent = `Last: ${describe(ev).slice(0, 38)}`;
+    lines.push({ ev, g: GROUPS[ev.type] || 'other' });
+    if (lines.length > 300) lines.splice(0, 100);
+    dirty = true;
+    if (ev.type === 'anomaly') {
+      const warns = bus.anomalies.filter(a => a.sev === 'warn').length;
+      anom.replaceChildren('Anomalies ', h('b', {}, String(warns)));
+      anom.classList.toggle('bad', warns > 0);
+    }
+  });
+  const paintLog = () => {
+    if (!dirty || $('#m-log-wrap').hidden) return; dirty = false;
+    const t0 = bus.log[0]?.t || 0;
+    logEl.textContent = lines.filter(l => filters[l.g].checked).slice(-120).reverse().map(l => `${fmtT(l.ev.t - t0).padStart(9)}  ${describe(l.ev)}`).join('\n');
+  };
+  setInterval(paintLog, 300);
+  setInterval(() => {
+    const f = document.hasFocus();
+    foc.textContent = f ? 'Focus ● page focused' : 'Focus ○ page NOT focused';
+    foc.className = 'pill ' + (f ? 'good' : 'warn');
+  }, 200);
+  $('#m-toggle').onclick = e => {
+    const w = $('#m-log-wrap'); w.hidden = !w.hidden; e.currentTarget.setAttribute('aria-expanded', String(!w.hidden)); dirty = true; paintLog();
+  };
+  $('#m-clear').onclick = () => { lines = []; keyCount = 0; keys.textContent = 'Keys seen 0'; logEl.textContent = ''; };
+  Object.values(filters).forEach(f => f.addEventListener('change', () => { dirty = true; paintLog(); }));
+}
+
+/* ───────────────────────── stage ───────────────────────── */
+const Stage = {
+  el: $('#stage'), canvas: $('#trail'), mode: 'board',
+  setMode(m) {
+    if (this.mode === m) return;
+    this.mode = m; this.el.dataset.mode = m;
+    if (m === 'lane') { this.resize(); this.clear(); }
+  },
+  resize() { const r = this.el.getBoundingClientRect(); this.canvas.width = Math.max(1, Math.round(r.width)); this.canvas.height = Math.max(1, Math.round(r.height)); },
+  clear() { const c = this.canvas.getContext('2d'); c.clearRect(0, 0, this.canvas.width, this.canvas.height); this.prev = null; },
+  draw(ev) {
+    if (this.mode !== 'lane') return;
+    const r = this.el.getBoundingClientRect(), c = this.canvas.getContext('2d');
+    const x = ev.x - r.left, y = ev.y - r.top;
+    if (this.canvas.width !== Math.round(r.width)) this.resize();
+    c.strokeStyle = '#6aa9ff'; c.lineWidth = 2; c.lineCap = 'round';
+    if (this.prev && Math.hypot(x - this.prev.x, y - this.prev.y) < 400) { c.beginPath(); c.moveTo(this.prev.x, this.prev.y); c.lineTo(x, y); c.stroke(); }
+    this.prev = { x, y };
+  },
+  mark(x, y, color, glyph) {
+    if (this.mode !== 'lane') return;
+    const r = this.el.getBoundingClientRect(), c = this.canvas.getContext('2d');
+    c.fillStyle = color; c.font = '700 18px system-ui'; c.fillText(glyph, x - r.left - 6, y - r.top + 6);
+  },
+};
+function installStage() {
+  setInterval(() => $('#beacon').classList.toggle('b'), 125); // blinks so captured frames keep arriving and a frozen stream is detectable
+  bus.subscribe(ev => {
+    if (ev.type === 'pmove') Stage.draw(ev);
+    else if (ev.type === 'pleave' && ev.interior) Stage.mark(ev.x, ev.y, '#ff7070', '●');
+    else if ((ev.type === 'pdown' || ev.type === 'wheel') && ev.where === 'stage') Stage.mark(ev.x, ev.y, '#f2b94b', '✕');
+  });
+}
+
+/* ───────────────────────── window-test engine ───────────────────────── */
+const Runner = { active: null };
+const E = {
+  keyList: (keys, t0) => keys.slice(0, 14).map(k => `${k.phase === 'down' ? '↓' : '↑'}${k.code || k.key}${t0 != null ? '@' + fmtT(k.t - t0) : ''}`).join(' ') + (keys.length > 14 ? ` … (+${keys.length - 14})` : ''),
+  noKeys(ctx, what) {
+    if (!ctx.keys.length) return { status: 'pass', findings: [ok(`0 key events reached the page${what ? ' during ' + what : ''}.`)] };
+    return { status: 'fail', findings: [bad(`${ctx.keys.length} key event(s) reached the page: ${E.keyList(ctx.keys, ctx.t0)}. A Que shortcut must be swallowed completely.`)] };
+  },
+  noFocusLoss(ctx) {
+    const f = [], blurs = ctx.by('blur').length, vis = ctx.by('vis').length, polls = ctx.by('focuspoll').length;
+    if (!blurs && !vis && !polls) return { fail: false, findings: [ok('Focus never left the page (0 blur events, 0 failed hasFocus() polls, 0 visibility changes).')] };
+    f.push(bad(`Focus left the page: ${blurs} blur, ${polls} failed hasFocus() poll(s), ${vis} visibility change(s). If you did not click another window yourself, this is a focus leak.`));
+    return { fail: true, findings: f };
+  },
+};
+
+function makeCtx(events, o) {
+  const pointerish = new Set(['pdown', 'pup', 'click', 'wheel', 'ctx']);
+  const evs = events.filter(e => !(pointerish.has(e.type) && e.where === 'panel'));
+  return {
+    events: evs, t0: o.t0, startFocus: o.startFocus, extra: o.extra, answers: o.answers, baseline: o.baseline, isBaseline: !!o.isBaseline,
+    keys: evs.filter(e => e.type === 'key'),
+    moves: evs.filter(e => e.type === 'pmove'),
+    by: type => evs.filter(e => e.type === type),
+    focusLost: evs.some(e => e.type === 'blur' || e.type === 'focuspoll' || (e.type === 'vis' && e.state !== 'visible')),
+  };
+}
+
+function windowTest(def) {
+  ALL.push({ id: def.id, tab: def.tab, title: def.title });
+  const compact = !!def.compact;
+  let phase = 'idle', events = [], unsub = null, guardOn = false, t0 = 0, startFocus = true, extra = null, timers = {}, runBaseline = false;
+
+  const chipSlot = h('span');
+  const setChip = st => chipSlot.replaceChildren(chip(st));
+  const startBtn = h('button', { class: 'btn primary' + (compact ? ' small' : ''), onclick: begin }, def.startLabel || 'Start');
+  const runline = h('div', { class: 'runline' }), bar = h('i'), live = h('div', { class: 'live' });
+  const stopBtn = h('button', { class: 'btn small', onclick: () => (phase === 'countdown' ? cancel() : finish()) }, 'Stop');
+  const run = h('div', { class: 'runbox', hidden: true, role: 'status' }, runline, h('div', { class: 'bar' }, bar), live, h('div', { class: 'row' }, stopBtn));
+  const confirm = h('div', { class: 'confirm', hidden: true });
+  const result = h('div', { hidden: true, 'aria-live': 'polite' });
+  const baseBox = def.baseline ? h('input', { type: 'checkbox', id: 'bl-' + def.id }) : null;
+
+  const head = h('div', { class: 'card-head' },
+    h('div', {}, h('div', { class: 'title' }, def.title),
+      compact ? h('div', { class: 'hint' }, def.keys ? [rich(def.keys), ' — '] : '', rich((def.steps || []).join(' '))) : null),
+    h('div', { class: 'row' }, compact ? startBtn : null, chipSlot));
+  const card = h('article', { class: 'card' + (compact ? ' compact' : ''), id: 't-' + def.id }, head,
+    compact ? null : [
+      def.why ? h('p', { class: 'why' }, rich(def.why)) : null,
+      def.steps ? h('ol', {}, def.steps.map(s => h('li', {}, rich(s)))) : null,
+    ],
+    def.danger ? h('div', { class: 'banner warn' }, rich(def.danger)) : null,
+    def.controls ? def.controls() : null,
+    baseBox ? h('label', { class: 'chk' }, baseBox, h('span', {}, 'This run is the ', h('strong', {}, 'baseline'), ' (Que NOT running): save its numbers for comparison.')) : null,
+    compact ? null : h('div', { class: 'row' }, startBtn, h('span', { class: 'msg' }, `${def.seconds || 20} s measurement`)),
+    run, confirm, result);
+
+  function setPhase(p) {
+    phase = p; run.hidden = !(p === 'countdown' || p === 'measuring'); confirm.hidden = p !== 'confirm';
+    startBtn.disabled = !(p === 'idle' || p === 'done');
+  }
+  function release() {
+    clearInterval(timers.m); clearTimeout(timers.cd);
+    if (unsub) { unsub(); unsub = null; }
+    if (guardOn) { bus.guard--; guardOn = false; }
+    Runner.active = null; document.body.classList.remove('armed');
+  }
+  function cancel() { release(); setPhase('idle'); }
+  function begin() {
+    if (Runner.active) { toast(`Finish "${Runner.active}" first.`); return; }
+    const why = def.precheck && def.precheck();
+    if (why) { toast(why); return; }
+    document.activeElement?.blur?.();
+    Runner.active = def.title; document.body.classList.add('armed'); result.hidden = true;
+    runBaseline = !!(baseBox && baseBox.checked);
+    let n = def.countdown ?? 3; stopBtn.textContent = 'Cancel'; setPhase('countdown');
+    const tick = () => {
+      if (n > 0) { runline.textContent = `Get ready… ${n}`; live.textContent = def.needsFocus === false ? '' : 'Click the page title (top left) so the page has focus, then wait. Do not touch DevTools or other windows.'; n--; timers.cd = setTimeout(tick, 1000); }
+      else measure();
+    };
+    tick();
+  }
+  function liveText() {
+    const c = t => events.filter(e => e.type === t && !((t === 'pdown' || t === 'wheel') && e.where === 'panel')).length;
+    return `keys ${c('key')} · focus losses ${c('blur') + c('vis')} · clicks ${c('pdown')} · wheel ${c('wheel')} · pointer moves ${c('pmove')}`;
+  }
+  function measure() {
+    events = []; t0 = performance.now(); startFocus = document.hasFocus(); extra = null;
+    unsub = bus.subscribe(ev => events.push(ev));
+    if (def.guard) { bus.guard++; guardOn = true; }
+    if (def.stage) Stage.setMode(def.stage);
+    if (def.stage === 'lane') Stage.clear();
+    if (def.onStart) { try { def.onStart(); } catch (err) { release(); setPhase('idle'); toast(err.message); return; } }
+    stopBtn.textContent = 'Stop now'; setPhase('measuring');
+    const total = (def.seconds || 20) * 1000;
+    timers.m = setInterval(() => {
+      const el = performance.now() - t0;
+      runline.textContent = `MEASURING — ${def.action || 'perform the steps now'} (${(el / 1000).toFixed(1)} / ${total / 1000} s)`;
+      bar.style.width = Math.min(100, el / total * 100) + '%';
+      live.textContent = (!document.hasFocus() && def.needsFocus !== false ? 'Page is NOT focused. ' : '') + liveText();
+      if (el >= total) finish();
+    }, 150);
+  }
+  function finish() {
+    if (phase !== 'measuring') return;
+    const endT = performance.now();
+    release();
+    if (def.onStop) extra = def.onStop() || null;
+    events = events.filter(e => e.t <= endT + 1);
+    if (runBaseline) { judge([]); return; }
+    const qs = def.questions || [{ text: def.confirmText || 'Did Que do what the steps describe (the action visibly happened in Que)?' }];
+    const picks = qs.map(() => null);
+    confirm.replaceChildren(h('strong', {}, 'Operator check'),
+      qs.map((q, i) => h('div', { class: 'q' }, h('div', {}, rich(q.text)), h('div', { class: 'seg', role: 'group' },
+        ['Yes', 'No'].map(lbl => h('button', { 'aria-pressed': 'false', class: lbl === 'Yes' ? 'ok' : 'no', onclick: ev => {
+          picks[i] = lbl === 'Yes';
+          ev.currentTarget.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === ev.currentTarget)));
+          judgeBtn.disabled = picks.some(p => p === null);
+        } }, lbl))))),
+      h('div', { class: 'row' }, judgeBtn, h('button', { class: 'btn small', onclick: () => { setPhase('idle'); } }, 'Discard run')));
+    judgeBtn.disabled = true; judgeBtn.onclick = () => judge(picks, qs);
+    setPhase('confirm');
+  }
+  const judgeBtn = h('button', { class: 'btn primary small' }, 'Show verdict');
+
+  function judge(answers, qs) {
+    const ctx = makeCtx(events, { t0, startFocus, extra, answers, baseline: baselines[def.id], isBaseline: runBaseline });
+    let r;
+    try { r = def.evaluate(ctx); } catch (err) { r = { status: 'void', findings: [warn('Evaluator error: ' + err.message)] }; }
+    r = { status: r.status, findings: [...r.findings], metrics: r.metrics };
+    if (runBaseline) {
+      baselines[def.id] = r.metrics || {}; store.set('baselines', baselines);
+      r = { status: 'info', findings: [info('Saved as the baseline run. Start Que and run this test again to compare.'), ...r.findings], metrics: r.metrics };
+    } else {
+      const softNo = (qs || []).filter((q, i) => q.soft && answers[i] === false);
+      if (softNo.length) { if (r.status === 'pass') r.status = 'review'; r.findings.push(warn('Que feature check failed (not page-visible): ' + softNo.map(q => q.text).join(' / '))); }
+      const noAt = (qs || []).findIndex((q, i) => !q.soft && answers[i] === false);
+      if (noAt >= 0) {
+        if (qs[noAt].failOnNo) { r.status = 'fail'; r.findings.unshift(bad(`Operator reported: "${qs[noAt].noMeans || 'expectation not met'}".`)); }
+        else { r.status = 'void'; r.findings.unshift(warn('Operator said the Que action did not happen as described, so a quiet page proves nothing. Repeat the run.')); }
+      } else if (def.needsFocus !== false && !startFocus && r.status === 'pass') {
+        r.status = 'void'; r.findings.unshift(warn('The page was not focused when measuring began, so key events would not have been visible. Repeat and click the page title during the countdown.'));
+      } else if (!def.allowBlur && ctx.focusLost && r.status === 'pass') {
+        r.status = 'review'; r.findings.unshift(warn('Focus left the page during the run (see the log). If you clicked DevTools or another window, repeat; if not, it is a focus leak.'));
+      }
+    }
+    show(r);
+  }
+  function show(r) {
+    setPhase('done'); result.hidden = false; setChip(r.status);
+    const lines = events.filter(e => e.type !== 'pmove').slice(0, 400).map(e => `${fmtT(e.t - t0).padStart(9)}  ${describe(e)}`).join('\n');
+    result.replaceChildren(
+      h('ul', { class: 'findings' }, r.findings.map(f => h('li', { class: f.lvl }, h('span', { class: 'g', 'aria-hidden': 'true' }, GLYPH[f.lvl]), h('span', {}, rich(f.text))))),
+      r.extra ? r.extra : null,
+      events.length ? h('details', {}, h('summary', {}, `Recorded events (${events.filter(e => e.type !== 'pmove').length}${events.some(e => e.type === 'pmove') ? ` + ${events.filter(e => e.type === 'pmove').length} pointer moves` : ''})`), h('pre', { class: 'log' }, lines || '(none)')) : null);
+    setResult(def.id, r);
+  }
+  const saved = results[def.id];
+  setChip(saved ? saved.status : 'idle');
+  if (saved) { result.hidden = false; result.append(h('ul', { class: 'findings' }, saved.findings.map(f => h('li', { class: f.lvl }, h('span', { class: 'g', 'aria-hidden': 'true' }, GLYPH[f.lvl]), h('span', {}, rich(f.text))))), h('p', { class: 'msg' }, `Saved result from ${new Date(saved.at).toLocaleString()}. Run again to replace it.`)); }
+  return card;
+}
+
+/* ───────────────────────── keyboard tests ───────────────────────── */
+const SHORTCUTS = [
+  ['toggle_window_visibility', 'Show / hide Que', '[[Right Ctrl]]+[[E]]', 'Press it twice: Que hides, then shows. Works while Que is hidden.', 14],
+  ['toggle_recording', 'Start / stop recording', '[[Right Ctrl]]+[[Shift]]+[[R]]', 'Press once to start, again to stop (download a Whisper model in Settings → Voice first). Works while hidden.', 18],
+  ['move_window_left', 'Move Que left', '[[Right Ctrl]]+[[Alt]]+[[←]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
+  ['move_window_right', 'Move Que right', '[[Right Ctrl]]+[[Alt]]+[[→]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_up', 'Move Que up', '[[Right Ctrl]]+[[Alt]]+[[↑]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_down', 'Move Que down', '[[Right Ctrl]]+[[Alt]]+[[↓]]', 'Hold for about 1 s, then release.', 12],
+  ['scroll_up', 'Scroll chat up', '[[Right Ctrl]]+[[Shift]]+[[↑]]', 'Hold for about 1 s with a long chat open.', 12],
+  ['scroll_down', 'Scroll chat down', '[[Right Ctrl]]+[[Shift]]+[[↓]]', 'Hold for about 1 s with a long chat open.', 12],
+  ['screenshot', 'Screenshot', '[[Right Ctrl]]+[[Shift]]+[[S]]', 'Press once; a thumbnail appears in Que.', 12],
+  ['toggle_click_through', 'Toggle click-through', '[[Right Ctrl]]+[[Shift]]+[[X]]', 'Press twice (on, then off again).', 12],
+  ['minimize', 'Minimise Que', '[[Right Ctrl]]+[[Q]]', 'Press once, then [[Right Ctrl]]+[[E]] outside the measurement to bring Que back.', 12],
+  ['clear_all_chat', 'New chat', '[[Right Ctrl]]+[[N]]', 'Press once; the chat clears.', 12],
+  ['toggle_history', 'History sidebar', '[[Right Ctrl]]+[[H]]', 'Press twice (open, close).', 12],
+  ['solve_coding_problem', 'Solve coding problem', '[[Right Ctrl]]+[[D]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
+  ['fix_code', 'Fix code', '[[Right Ctrl]]+[[G]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['solve_question', 'Solve any question', '[[Right Ctrl]]+[[M]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+].map(([id, title, keys, how, seconds]) => ({ id: 'kbd.sc.' + id, tab: 'keyboard', group: 'Every shortcut', compact: true, title, keys, steps: [how], seconds, guard: true, startLabel: 'Test',
+  confirmText: `Did the shortcut work in Que (${title.toLowerCase()})?`,
+  evaluate(ctx) {
+    const r = E.noKeys(ctx, 'the shortcut');
+    const odd = ctx.events.filter(e => ['resize', 'fs', 'plock', 'dpr'].includes(e.type));
+    if (odd.length) { if (r.status === 'pass') r.status = 'review'; r.findings.push(warn(`Window geometry/fullscreen events appeared: ${odd.map(describe).join('; ')}.`)); }
+    return r;
+  } }));
+SHORTCUTS.push({ id: 'kbd.sc.close_app', tab: 'keyboard', group: 'Every shortcut', compact: true, title: 'Quit Que', keys: '[[Right Ctrl]]+[[Alt]]+[[Shift]]+[[Q]]',
+  steps: ['Press once. **This quits Que**; relaunch it with `python src/Que.py` afterwards. Watch for orphan key-ups after Que disappears (KEY-006).'], seconds: 12, guard: true, startLabel: 'Test (quits Que)',
+  confirmText: 'Did Que quit (window gone)?', evaluate: ctx => E.noKeys(ctx, 'quitting') });
+
+const KEY_TESTS = [
+  { id: 'kbd.release-order', tab: 'keyboard', group: 'Edge cases', title: 'Modifier released before the action key (KEY-001)',
+    why: 'If Que stops owning a key when its modifier is released, the still-held key reaches the page as a half key stream (down events with no up).',
+    steps: ['Hold [[Right Ctrl]], then hold [[E]] until Que hides and about 1.5 s more.', 'Release [[Right Ctrl]] first, wait 1 s, then release [[E]].', 'Afterwards press [[Right Ctrl]]+[[E]] to show Que again.'],
+    seconds: 15, guard: true, confirmText: 'Que hid exactly once and stayed hidden until you showed it?', evaluate: ctx => E.noKeys(ctx, 'the sequence') },
+  { id: 'kbd.natural-mods', tab: 'keyboard', group: 'Edge cases', title: 'Ordinary modifiers behave naturally (MODHOLD-001)', baseline: true,
+    why: 'A page can fingerprint any app that holds back Shift/Ctrl/Alt: the modifier arrives 0–1 ms before the next key and never auto-repeats. Natural typing shows hundreds of ms and repeats.',
+    steps: ['Hold [[Shift]] for about 1.5 s, type `ab`, release.', 'Hold **Left** [[Ctrl]] for about 1.5 s, press [[A]], release.', 'Optional: run once with Que quit and tick “baseline” to compare.'],
+    seconds: 25, confirmText: 'Que was running (not quit) and visible during this run?',
+    evaluate(ctx) {
+      const isMod = c => /^(Shift|Control|Alt|Meta)(Left|Right)$/.test(c || '');
+      const downs = ctx.keys.filter(k => k.phase === 'down'), gaps = [];
+      downs.forEach((k, i) => {
+        if (!isMod(k.code) || k.repeat || k.code === 'ControlRight') return;
+        const nx = downs.slice(i + 1).find(x => !isMod(x.code));
+        if (nx && nx.t - k.t < 5000) gaps.push({ code: k.code, gap: nx.t - k.t });
+      });
+      const reps = downs.filter(k => isMod(k.code) && k.repeat).length;
+      const holds = ctx.keys.filter(k => k.phase === 'down' && isMod(k.code) && !k.repeat).map(k => {
+        const up = ctx.keys.find(u => u.phase === 'up' && u.code === k.code && u.t > k.t); return up ? up.t - k.t : 0; });
+      const metrics = { medianGap: median(gaps.map(g => g.gap)), reps };
+      const f = [info(`Modifier → next key gaps: ${gaps.map(g => `${g.code} ${fmtMs(g.gap)}`).join(', ') || 'none'}; held-modifier auto-repeats: ${reps}.`)];
+      if (ctx.baseline) f.push(info(`Baseline (Que quit): median gap ${fmtMs(ctx.baseline.medianGap)}, repeats ${ctx.baseline.reps}.`));
+      if (ctx.isBaseline) return { status: 'info', findings: f, metrics };
+      if (gaps.length < 2) return { status: 'void', findings: [warn('Fewer than 2 modifier→letter pairs were seen. Hold the modifier ~1.5 s, then type a letter.'), ...f], metrics };
+      let status = 'pass';
+      if (gaps.some(g => g.gap < 8)) { status = 'fail'; f.unshift(bad('A modifier key-down arrived under 8 ms before the next key: it was held back and replayed with that key. Natural typing shows hundreds of ms.')); }
+      if (reps === 0 && holds.some(d => d >= 1000)) { status = 'fail'; f.unshift(bad('A modifier was held over 1 s but produced no auto-repeat key-downs, which a real keyboard always does.')); }
+      if (status === 'pass') f.unshift(ok('Modifiers arrive when pressed and auto-repeat while held, like a keyboard with no Que.'));
+      return { status, findings: f, metrics };
+    } },
+  { id: 'kbd.alt-tab', tab: 'keyboard', group: 'Edge cases', title: 'Alt+Tab looks ordinary', baseline: true,
+    why: 'On Windows a page sees Alt go down 100–160 ms before the window blurs. If Que holds Alt back, the key-down arrives with the blur or not at all.',
+    steps: ['Do 3 times: [[Alt]]+[[Tab]] to another window, [[Alt]]+[[Tab]] back, wait 2 s.', 'Avoid clicking anything.'],
+    seconds: 40, allowBlur: true, confirmText: 'Each Alt+Tab switched windows exactly once?',
+    evaluate(ctx) {
+      const blurs = ctx.by('blur'), gaps = [], f = [];
+      blurs.forEach(b => {
+        const alt = ctx.keys.filter(k => k.phase === 'down' && /^Alt/.test(k.code) && k.t <= b.t && b.t - k.t < 1500).pop();
+        gaps.push(alt ? b.t - alt.t : null);
+      });
+      const metrics = { medianGap: median(gaps.filter(g => g != null)) };
+      f.push(info(`Alt key-down → blur gaps: ${gaps.map(g => g == null ? 'no Alt seen' : fmtMs(g)).join(', ') || 'none'}.`));
+      if (ctx.baseline) f.push(info(`Baseline (Que quit): median ${fmtMs(ctx.baseline.medianGap)}.`));
+      if (ctx.isBaseline) return { status: 'info', findings: f, metrics };
+      if (blurs.length < 2) return { status: 'void', findings: [warn('Fewer than 2 focus losses recorded; switch away and back at least twice.'), ...f], metrics };
+      const badGaps = gaps.filter(g => g == null || g < 40);
+      if (badGaps.length) { f.unshift(bad(`${badGaps.length} of ${gaps.length} switches showed no Alt key-down, or one under 40 ms before the blur (it was held back and replayed). Natural: 100–160 ms. If a blur was not an Alt+Tab, repeat.`)); return { status: 'fail', findings: f, metrics }; }
+      f.unshift(ok('Every switch showed Alt going down well before the blur.'));
+      return { status: 'pass', findings: f, metrics };
+    } },
+  { id: 'kbd.rctrl-replay', tab: 'keyboard', group: 'Edge cases', title: 'Right Ctrl + a non-Que key still works as Ctrl',
+    why: 'Right Ctrl is Que\'s dedicated key. With a key that is not a Que shortcut it is replayed so it still acts as Ctrl. Known, accepted trade-off: ControlRight and the key arrive ~0 ms apart.',
+    steps: ['Press [[Right Ctrl]]+[[C]] once (not a Que shortcut).'], seconds: 10, confirmText: 'Que did not react to the chord?',
+    evaluate(ctx) {
+      const d = ctx.keys.filter(k => k.phase === 'down'), rc = d.find(k => k.code === 'ControlRight'), c = d.find(k => k.code === 'KeyC');
+      if (!rc || !c) return { status: 'fail', findings: [bad('Right Ctrl+C did not reach the page; Que swallowed an ordinary Ctrl chord.')] };
+      return { status: 'pass', findings: [ok(`ControlRight and C both arrived (${fmtMs(c.t - rc.t)} apart). Expected replay behaviour.`)] };
+    } },
+  { id: 'kbd.leftctrl-not-que', tab: 'keyboard', group: 'Edge cases', title: 'Left Ctrl shortcuts are not Que\'s',
+    why: 'Only Right Ctrl starts a Que shortcut. Left Ctrl+E must reach the page untouched.',
+    steps: ['Make sure Que is visible.', 'Press **Left** [[Ctrl]]+[[E]] once.'], seconds: 10, guard: true, confirmText: 'Que did NOT hide or react?',
+    evaluate(ctx) {
+      const d = ctx.keys.filter(k => k.phase === 'down');
+      if (d.some(k => k.code === 'ControlLeft') && d.some(k => k.code === 'KeyE')) return { status: 'pass', findings: [ok('ControlLeft and E reached the page as an ordinary chord.')] };
+      return { status: 'fail', findings: [bad('Left Ctrl+E did not reach the page; Que is intercepting a chord that is not its own.')] };
+    } },
+  { id: 'kbd.hidden-passthrough', tab: 'keyboard', group: 'Edge cases', title: 'Hidden Que does not steal keys',
+    why: 'While Que is hidden only its three always-on shortcuts may be intercepted. Everything else must reach the page.',
+    steps: ['Hide Que with [[Right Ctrl]]+[[E]] (before starting).', 'Press [[Right Ctrl]]+[[M]] once.', 'Afterwards show Que again with [[Right Ctrl]]+[[E]].'],
+    seconds: 10, guard: true, confirmText: 'Que was hidden and did not react (no AI request started)?',
+    evaluate(ctx) {
+      const d = ctx.keys.filter(k => k.phase === 'down');
+      if (d.some(k => k.code === 'ControlRight') && d.some(k => k.code === 'KeyM')) return { status: 'pass', findings: [ok('Right Ctrl+M reached the page while Que was hidden.')] };
+      return { status: 'fail', findings: [bad('Right Ctrl+M did not reach the page while Que was hidden; a non-always-on shortcut was intercepted.')] };
+    } },
+  { id: 'kbd.typing-passthrough', tab: 'keyboard', group: 'Typing in Que', title: 'Typing in Que stays invisible to the page',
+    why: 'While you type in Que, letters go to Que only. Function keys, media keys, Caps Lock and system chords like Alt+Tab still reach Windows. Pass-through keys appearing here is correct; letters appearing is a leak.',
+    steps: ['Click Que\'s input. Type `abc`, then [[Enter]].', 'Press [[F2]], then Volume Up.', 'Press [[Caps Lock]], type `xyz`, press [[Caps Lock]] again.', '[[Alt]]+[[Tab]] away and [[Alt]]+[[Tab]] back to this page.', 'Type `qq` (typing mode has ended; these must reach the page).'],
+    seconds: 60, allowBlur: true, countdown: 5,
+    questions: [{ text: 'Your typing appeared in Que (`abc`, then `XYZ` in the right case)?' }],
+    evaluate(ctx) {
+      const f = []; let status = 'pass';
+      const blur = ctx.by('blur')[0];
+      const before = blur ? ctx.keys.filter(k => k.t < blur.t) : ctx.keys, after = blur ? ctx.keys.filter(k => k.t >= blur.t) : [];
+      const leaked = before.filter(k => /^Key[ABCXYZ]$/.test(k.code) || /Enter$/.test(k.code));
+      if (leaked.length) { status = 'fail'; f.push(bad(`Typed keys reached the page before you left Que: ${E.keyList(leaked, ctx.t0)}.`)); }
+      else f.push(ok('No letters or Enter reached the page while typing in Que.'));
+      const need = [['F2', 'F2'], ['AudioVolumeUp', 'Volume Up'], ['CapsLock', 'Caps Lock']];
+      for (const [code, name] of need) {
+        if (before.some(k => k.code === code && k.phase === 'down')) f.push(ok(`${name} reached Windows/the page (correct pass-through).`));
+        else { if (status === 'pass') status = 'review'; f.push(warn(`${name} was not seen. It should pass through while typing; either Que swallowed it or you skipped the step.`)); }
+      }
+      const q = after.filter(k => k.phase === 'down' && k.code === 'KeyQ').length;
+      if (q >= 2) f.push(ok(`${q} \`q\` key-downs reached the page after Alt+Tab (typing mode ended).`));
+      else { if (status === 'pass') status = 'review'; f.push(warn('The final `qq` was not seen on the page. Did Alt+Tab return to this page and end typing mode?')); }
+      return { status, findings: f };
+    } },
+];
+
+/* ───────────────────────── focus & pointer tests ───────────────────────── */
+function noFocusTest(id, title, why, steps, seconds, confirmText, group) {
+  return { id, tab: 'focus', group, title, why, steps, seconds, confirmText, countdown: 4,
+    evaluate(ctx) {
+      const fl = E.noFocusLoss(ctx), k = E.noKeys(ctx, 'the run');
+      return { status: fl.fail || k.status === 'fail' ? 'fail' : 'pass', findings: [...fl.findings, ...k.findings] };
+    } };
+}
+const FOCUS_TESTS = [
+  noFocusTest('focus.click-input', 'Clicking Que never takes focus (FOCUS-001)',
+    'Normally clicking another window blurs the page, a signal proctoring pages watch. Que is non-activating so this must stay silent.',
+    ['Click an empty part of the Stage first (away from Que) so the page is focused.', 'Click Que\'s input box and type `hello`.', 'Click Que\'s header and chat area too.'], 25,
+    '`hello` appeared in Que?', 'Focus'),
+  noFocusTest('focus.popups', 'Menus, popups and dialogs keep focus',
+    'Every Que surface (combo popups, context menu, tooltip, settings, history) must leave page focus alone.',
+    ['Open Que\'s Settings; open the model and effort combos, Esc.', 'Right-click in Que\'s input, Esc.', 'Hover the History icon for 3 s.', 'Open and close History with [[Right Ctrl]]+[[H]].'], 45,
+    'You opened the popups/menus described and they showed in Que?', 'Focus'),
+  { id: 'pointer.lane', tab: 'focus', group: 'Pointer', title: 'The pointer never "leaves" the page over Que (POINTER-001)',
+    why: 'If Que covered the page like a normal window, the page would see pointerleave at an interior point, clicks would not arrive and wheel events would stop. The Stage shows your path; gaps in it are blind areas.',
+    steps: ['Click-through must be **off** (default). Put Que over the Stage.', 'Click the page title once for focus, then move the mouse slowly across Que and out the far side, 3 times.', 'Click once on Que\'s chat area. Scroll the wheel over Que\'s chat.'], seconds: 30, stage: 'lane', allowBlur: true, needsFocus: false, countdown: 4,
+    confirmText: 'You moved across Que 3 times, clicked its chat once and scrolled over it?',
+    evaluate(ctx) {
+      const f = [], leaves = ctx.by('pleave').filter(e => e.interior), clicks = [...ctx.by('pdown'), ...ctx.by('click'), ...ctx.by('wheel')].filter(e => e.where !== 'panel');
+      let status = 'pass', maxJump = 0, jumps = 0;
+      for (let i = 1; i < ctx.moves.length; i++) { const d = Math.hypot(ctx.moves[i].x - ctx.moves[i - 1].x, ctx.moves[i].y - ctx.moves[i - 1].y); maxJump = Math.max(maxJump, d); if (d > 150) jumps++; }
+      if (leaves.length) { status = 'fail'; f.push(bad(`${leaves.length} document-level pointerleave event(s) at interior points (${leaves.slice(0, 4).map(e => `${Math.round(e.x)},${Math.round(e.y)}`).join(' ')}): the page can tell a window covers it there.`)); }
+      else f.push(ok('No pointerleave/pointerenter at interior points.'));
+      if (clicks.length) { status = 'fail'; f.push(bad(`${clicks.length} click/pointerdown/wheel event(s) reached the page on the Stage (${clicks.slice(0, 4).map(e => `${e.type}@${Math.round(e.x)},${Math.round(e.y)}`).join(' ')}). If you clicked the Stage yourself, repeat the run.`)); }
+      else f.push(ok('No clicks or wheel events from Que\'s area reached the page.'));
+      if (ctx.moves.length < 150) { if (status === 'pass') status = 'void'; f.push(warn(`Only ${ctx.moves.length} pointer moves recorded; move across the whole Stage slowly.`)); }
+      else f.push(info(`${ctx.moves.length} pointer moves; largest jump ${Math.round(maxJump)} px${jumps ? ` (${jumps} jump(s) over 150 px: look for gaps in the Stage trail)` : ''}.`));
+      return { status, findings: f };
+    } },
+  { id: 'pointer.clickthrough-on', tab: 'focus', group: 'Pointer', title: 'Click-through ON passes clicks to the page',
+    why: 'With click-through on, clicks over Que must reach the page beneath as if Que were not there (the documented behaviour of the setting).',
+    steps: ['Press [[Right Ctrl]]+[[Shift]]+[[X]] to turn click-through **on**.', 'Click once over Que on the Stage.', 'Press [[Right Ctrl]]+[[Shift]]+[[X]] again to turn it **off**.'], seconds: 25, stage: 'lane', guard: true, needsFocus: false, countdown: 4,
+    confirmText: 'Que did NOT react to your click?',
+    evaluate(ctx) {
+      const d = ctx.by('pdown').filter(e => e.where === 'stage');
+      return d.length ? { status: 'pass', findings: [ok(`${d.length} click(s) passed through Que to the page.`)] }
+        : { status: 'fail', findings: [bad('The click never reached the page; with click-through on it should have.')] };
+    } },
+  { id: 'fs.fullscreen', tab: 'focus', group: 'Fullscreen & locks', title: 'Fullscreen and pointer lock are not interrupted',
+    why: 'Pages in fullscreen or pointer lock notice if they are exited without a request. Que must not cause that, and must stay visible on top.',
+    steps: ['Start, then click **Enter fullscreen** (and **Lock pointer** if you like).', 'Show/hide Que with [[Right Ctrl]]+[[E]], move it, open Settings.', 'Click **Exit fullscreen** / **Unlock** yourself at the end.'], seconds: 40, allowBlur: true, countdown: 3, needsFocus: false,
+    controls: () => h('div', { class: 'row' },
+      h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'enter-fullscreen' }); document.documentElement.requestFullscreen?.().catch(e => toast(String(e.message))); } }, 'Enter fullscreen'),
+      h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'exit-fullscreen' }); document.fullscreenElement && document.exitFullscreen(); } }, 'Exit fullscreen'),
+      h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'lock-pointer' }); Stage.el.requestPointerLock?.(); } }, 'Lock pointer'),
+      h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'unlock-pointer' }); document.exitPointerLock?.(); } }, 'Unlock')),
+    questions: [{ text: 'Que stayed visible on top of the fullscreen page the whole time?', failOnNo: true, noMeans: 'Que was hidden behind the fullscreen page' }],
+    evaluate(ctx) {
+      const f = []; let status = 'pass';
+      const unrequested = (type, reqAction) => ctx.by(type).filter(e => !e.on && !ctx.by('ui').some(u => u.action === reqAction && e.t - u.t >= 0 && e.t - u.t < 1500) && !ctx.keys.some(k => k.code === 'Escape' && e.t - k.t >= 0 && e.t - k.t < 1500));
+      const fsBad = unrequested('fs', 'exit-fullscreen'), plBad = unrequested('plock', 'unlock-pointer');
+      const entered = ctx.by('fs').some(e => e.on), locked = ctx.by('plock').some(e => e.on);
+      if (!entered && !locked) return { status: 'void', findings: [warn('Neither fullscreen nor pointer lock was entered. Use the buttons in this card.')] };
+      if (fsBad.length) { status = 'fail'; f.push(bad(`Fullscreen was exited ${fsBad.length}× without you asking.`)); } else if (entered) f.push(ok('Fullscreen stayed on until you exited it.'));
+      if (plBad.length) { status = 'fail'; f.push(bad(`Pointer lock was released ${plBad.length}× without you asking.`)); } else if (locked) f.push(ok('Pointer lock stayed until you released it.'));
+      return { status, findings: f };
+    } },
+];
+
+/* ───────────────────────── capture lab ───────────────────────── */
+const Cap = (() => {
+  const S = { stream: null, track: null, video: null, fw: 0, fh: 0, scale: 0, roi: null, mask: null, base: null, baseU32: null, baseCanvas: null,
+    sig: '', calib: { located: false, baseline: false, positive: false, negative: false }, handler: null, lastPresented: 0, missed: 0, popup: null, mon: null, frames: 0 };
+  const work = document.createElement('canvas'), wctx = work.getContext('2d', { willReadFrequently: true });
+  const listeners = new Set();
+  const changed = () => listeners.forEach(fn => fn());
+  let once = null;
+
+  function nextFrame(timeout = 6000) {
+    return new Promise((res, rej) => {
+      const to = setTimeout(() => { once = null; rej(new Error('No video frames arrived. Is the shared screen visible (not minimised)?')); }, timeout);
+      once = () => { clearTimeout(to); once = null; res(); };
+    });
+  }
+  function onFrame(_now, meta) {
+    if (meta && typeof meta.presentedFrames === 'number') {
+      if (S.lastPresented && meta.presentedFrames > S.lastPresented + 1) S.missed += meta.presentedFrames - S.lastPresented - 1;
+      S.lastPresented = meta.presentedFrames;
+    }
+    S.frames++;
+    const o = once; if (o) o();
+    if (S.handler) S.handler();
+  }
+  function startLoop() {
+    const v = S.video;
+    if (v.requestVideoFrameCallback) { const loop = (n, m) => { if (!S.stream || S.video !== v) return; onFrame(n, m); v.requestVideoFrameCallback(loop); }; v.requestVideoFrameCallback(loop); }
+    else { let last = -1; const loop = () => { if (!S.stream || S.video !== v) return; if (v.currentTime !== last) { last = v.currentTime; onFrame(performance.now()); } requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+  }
+  const rectStr = r => `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`;
+  const sig = () => `${innerWidth}x${innerHeight}@${devicePixelRatio}|${screenX},${screenY}|${rectStr(Stage.el.getBoundingClientRect())}|${Stage.mode}|${S.fw}x${S.fh}`;
+  const valid = () => {
+    if (!S.stream) return { ok: false, reason: 'Screen not shared yet.' };
+    const c = S.calib;
+    if (!(c.located && c.baseline && c.positive && c.negative)) return { ok: false, reason: 'Calibration incomplete (finish all five steps).' };
+    if (S.sig !== sig()) return { ok: false, reason: 'NOT CALIBRATED: the window, zoom, stage or position changed since calibration. Recalibrate (steps 2–5).' };
+    return { ok: true };
+  };
+  function grab(r) {
+    work.width = r.w; work.height = r.h;
+    wctx.drawImage(S.video, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+    return wctx.getImageData(0, 0, r.w, r.h);
+  }
+  function diff(cur, base, w, hh, m) {
+    let px = 0, minx = w, miny = hh, maxx = -1, maxy = -1;
+    for (let y = 0; y < hh; y++) {
+      const row = y * w, inRow = y >= m.y0 && y < m.y1;
+      for (let x = 0; x < w; x++) {
+        if (cur[row + x] === base[row + x]) continue;
+        if (inRow && x >= m.x0 && x < m.x1) continue;
+        px++; if (x < minx) minx = x; if (x > maxx) maxx = x; if (y < miny) miny = y; if (y > maxy) maxy = y;
+      }
+    }
+    return { px, minx, miny, maxx, maxy };
+  }
+  const u32 = img => new Uint32Array(img.data.buffer);
+
+  async function share() {
+    if (!navigator.mediaDevices?.getDisplayMedia) throw new Error('getDisplayMedia is not available (needs http://localhost or https).');
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'never', frameRate: { ideal: 60 } }, audio: false });
+    stop(true);
+    S.stream = stream; S.track = stream.getVideoTracks()[0];
+    S.video = h('video', { class: 'preview', autoplay: '', muted: '', playsinline: '' }); S.video.muted = true; S.video.srcObject = stream;
+    await S.video.play();
+    S.track.addEventListener('ended', () => { bus.anomaly('warn', 'Screen sharing ended: every capture result after this is void until you share again.'); stop(true); changed(); });
+    S.calib = { located: false, baseline: false, positive: false, negative: false };
+    S.lastPresented = 0; S.missed = 0; S.frames = 0; startLoop();
+    await nextFrame(); S.fw = S.video.videoWidth; S.fh = S.video.videoHeight; changed();
+    return { settings: S.track.getSettings(), video: S.video };
+  }
+  function stop(silent) {
+    try { S.stream && S.stream.getTracks().forEach(t => t.stop()); } catch { /* already stopped */ }
+    try { S.popup && !S.popup.closed && S.popup.close(); } catch { /* popup gone */ }
+    S.stream = null; S.handler = null; S.calib = { located: false, baseline: false, positive: false, negative: false };
+    if (!silent) changed();
+  }
+  function largestBlob(mask, w, hh) {
+    const seen = new Uint8Array(mask.length); let best = { cells: 0, minx: 0, miny: 0, maxx: -1, maxy: -1 };
+    for (let s = 0; s < mask.length; s++) {
+      if (!mask[s] || seen[s]) continue;
+      const st = [s]; seen[s] = 1; const b = { cells: 0, minx: w, miny: hh, maxx: -1, maxy: -1 };
+      while (st.length) {
+        const i = st.pop(), x = i % w, y = (i / w) | 0; b.cells++; b.minx = Math.min(b.minx, x); b.maxx = Math.max(b.maxx, x); b.miny = Math.min(b.miny, y); b.maxy = Math.max(b.maxy, y);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= w || ny >= hh) continue; const j = ny * w + nx; if (mask[j] && !seen[j]) { seen[j] = 1; st.push(j); } }
+      }
+      if (b.cells > best.cells) best = b;
+    }
+    return best;
+  }
+  async function locate() {
+    const DS = 4, cw = Math.floor(S.fw / DS), ch = Math.floor(S.fh / DS);
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch; const x = c.getContext('2d', { willReadFrequently: true });
+    const sm = new Uint8Array(cw * ch), sg = new Uint8Array(cw * ch);
+    let last = -1e9, got = 0;
+    while (got < 22) {
+      await nextFrame(); const now = performance.now(); if (now - last < 70) continue; last = now; got++;
+      x.drawImage(S.video, 0, 0, cw, ch); const d = x.getImageData(0, 0, cw, ch).data;
+      for (let i = 0, p = 0; i < sm.length; i++, p += 4) { const r = d[p], g = d[p + 1]; if (r - g > 140) sm[i] = 1; else if (g - r > 140) sg[i] = 1; }
+    }
+    const both = new Uint8Array(sm.length); for (let i = 0; i < both.length; i++) both[i] = sm[i] && sg[i] ? 1 : 0;
+    const { minx, miny, maxx, maxy, cells } = largestBlob(both, cw, ch); // largest blob only: the page's own preview video mirrors a tiny second beacon
+    if (cells < 4) throw new Error('Could not find the blinking beacon in the shared screen. Share the ENTIRE screen that shows this page, keep this window visible and unobscured, then retry.');
+    const rx = Math.max(0, minx * DS - 16), ry = Math.max(0, miny * DS - 16), rw = Math.min(S.fw - rx, (maxx - minx + 1) * DS + 32), rh = Math.min(S.fh - ry, (maxy - miny + 1) * DS + 32);
+    const fm = new Uint8Array(rw * rh), fg = new Uint8Array(rw * rh); got = 0; last = -1e9;
+    while (got < 16) {
+      await nextFrame(); const now = performance.now(); if (now - last < 70) continue; last = now; got++;
+      const d = grab({ x: rx, y: ry, w: rw, h: rh }).data;
+      for (let i = 0, p = 0; i < fm.length; i++, p += 4) { const r = d[p], g = d[p + 1]; if (r - g > 140) fm[i] = 1; else if (g - r > 140) fg[i] = 1; }
+    }
+    let bx0 = rw, by0 = rh, bx1 = -1, by1 = -1;
+    for (let i = 0; i < fm.length; i++) if (fm[i] && fg[i]) { const cx = i % rw, cy = (i / rw) | 0; bx0 = Math.min(bx0, cx); bx1 = Math.max(bx1, cx); by0 = Math.min(by0, cy); by1 = Math.max(by1, cy); }
+    if (bx1 < 0) throw new Error('Beacon located only roughly; retry with nothing moving over it.');
+    const beacon = { x: rx + bx0, y: ry + by0, w: bx1 - bx0 + 1, h: by1 - by0 + 1 };
+    const bEl = $('#beacon').getBoundingClientRect(), sEl = Stage.el.getBoundingClientRect();
+    const scale = beacon.w / bEl.width;
+    if (Math.abs(beacon.h / bEl.height - scale) > 0.06 * scale) throw new Error('Beacon shape does not match the page (is the share scaled or cropped?). Share the entire screen at native size.');
+    const raw = { x: Math.round(beacon.x + (sEl.left - bEl.left) * scale), y: Math.round(beacon.y + (sEl.top - bEl.top) * scale), w: Math.round(sEl.width * scale), h: Math.round(sEl.height * scale) };
+    const x0 = Math.max(0, raw.x), y0 = Math.max(0, raw.y), x1 = Math.min(S.fw, raw.x + raw.w), y1 = Math.min(S.fh, raw.y + raw.h);
+    if (x1 - x0 < 200 || y1 - y0 < 200) throw new Error('The Stage lies (mostly) outside the shared screen. Move the browser window onto the shared monitor.');
+    S.roi = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; S.scale = scale;
+    const pad = 6; S.mask = { x0: Math.max(0, beacon.x - x0 - pad), y0: Math.max(0, beacon.y - y0 - pad), x1: beacon.x - x0 + beacon.w + pad, y1: beacon.y - y0 + beacon.h + pad };
+    S.calib.located = true; S.calib.baseline = S.calib.positive = S.calib.negative = false; S.sig = sig(); changed();
+    return { beacon, roi: S.roi, scale, clipped: x0 !== raw.x || y0 !== raw.y || x1 !== raw.x + raw.w || y1 !== raw.y + raw.h };
+  }
+  async function baseline() {
+    if (!S.calib.located) throw new Error('Locate the stage first.');
+    let prev = null, stable = 0, noise = 0;
+    for (let i = 0; i < 8; i++) {
+      await nextFrame(); const img = grab(S.roi);
+      if (prev) { const d = diff(u32(img), u32(prev), S.roi.w, S.roi.h, S.mask); if (d.px) { stable = 0; noise = Math.max(noise, d.px); } else stable++; }
+      prev = img;
+    }
+    if (stable < 5) throw new Error(`The stage is not static (${noise} pixels still changing between frames). Move the mouse off the stage, hide Que, close overlays, then retry.`);
+    S.base = prev; S.baseU32 = u32(prev);
+    S.baseCanvas = document.createElement('canvas'); S.baseCanvas.width = S.roi.w; S.baseCanvas.height = S.roi.h; S.baseCanvas.getContext('2d').putImageData(prev, 0, 0);
+    S.calib.baseline = true; S.calib.positive = S.calib.negative = false; S.sig = sig(); changed();
+  }
+  function openPopup() {
+    const w = window.open('', 'que-positive-control', 'popup=yes,width=460,height=320');
+    if (!w) throw new Error('The browser blocked the control window. Allow pop-ups for this page and retry.');
+    w.document.title = 'Positive control';
+    w.document.body.setAttribute('style', 'margin:0;background:#ff00ff;color:#fff;font:700 20px system-ui;display:grid;place-items:center;height:100vh;text-align:center');
+    w.document.body.textContent = 'Drag me over the Stage where Que sits. Leave me there.';
+    S.popup = w; return w;
+  }
+  function positive() {
+    if (!S.calib.baseline) throw new Error('Save the baseline first.');
+    openPopup();
+    return new Promise((res, rej) => {
+      let hits = 0, best = 0;
+      const to = setTimeout(() => { S.handler = null; rej(new Error(`The control window never covered enough of the stage (best ${best} px changed, need 20,000). Drag it onto the Stage and retry.`)); }, 40000);
+      S.handler = () => {
+        const d = diff(u32(grab(S.roi)), S.baseU32, S.roi.w, S.roi.h, S.mask); best = Math.max(best, d.px);
+        if (d.px >= 20000) { if (++hits >= 3) { clearTimeout(to); S.handler = null; S.calib.positive = true; changed(); res(d.px); } } else hits = 0;
+      };
+    });
+  }
+  function negative() {
+    if (!S.calib.positive) throw new Error('Measure the positive control first.');
+    try { S.popup && !S.popup.closed && S.popup.close(); } catch { /* ignore */ }
+    return new Promise((res, rej) => {
+      let clean = 0, worst = 0;
+      const to = setTimeout(() => { S.handler = null; rej(new Error(`The stage did not return to the baseline (${worst} px still differ). Make sure the control window is closed and the mouse is outside the stage.`)); }, 15000);
+      S.handler = () => {
+        const d = diff(u32(grab(S.roi)), S.baseU32, S.roi.w, S.roi.h, S.mask); worst = Math.max(worst, d.px);
+        if (d.px === 0) { if (++clean >= 8) { clearTimeout(to); S.handler = null; S.calib.negative = true; S.sig = sig(); changed(); res(clean); } } else clean = 0;
+      };
+    });
+  }
+  function thumb(cur, d) {
+    const R = S.roi, padx = 28, pad = Math.max(0, Math.round(120 - (d.maxx - d.minx) / 2));
+    const x0 = Math.max(0, d.minx - padx - pad), y0 = Math.max(0, d.miny - padx - pad), x1 = Math.min(R.w, d.maxx + padx + pad), y1 = Math.min(R.h, d.maxy + padx + pad);
+    const w = x1 - x0, hh = y1 - y0, curC = document.createElement('canvas'); curC.width = R.w; curC.height = R.h; curC.getContext('2d').putImageData(cur, 0, 0);
+    const out = document.createElement('canvas'); out.width = w * 2 + 8; out.height = hh; const o = out.getContext('2d');
+    o.fillStyle = '#ff00ff'; o.fillRect(0, 0, out.width, out.height);
+    o.drawImage(S.baseCanvas, x0, y0, w, hh, 0, 0, w, hh); o.drawImage(curC, x0, y0, w, hh, w + 8, 0, w, hh);
+    const max = 760, k = Math.min(1, max / out.width), fin = document.createElement('canvas'); fin.width = Math.round(out.width * k); fin.height = Math.round(out.height * k);
+    fin.getContext('2d').drawImage(out, 0, 0, fin.width, fin.height); return fin.toDataURL('image/png');
+  }
+  function begin(label) {
+    const v = valid(); if (!v.ok) throw new Error(v.reason);
+    const m = { label, t0: performance.now(), frames: 0, changed: 0, maxPx: 0, totalPx: 0, bbox: null, thumbs: [], missed0: S.missed, maxImg: null };
+    S.mon = m;
+    S.handler = () => {
+      const img = grab(S.roi), d = diff(u32(img), S.baseU32, S.roi.w, S.roi.h, S.mask); m.frames++;
+      if (d.px === 0) return;
+      m.changed++; m.totalPx += d.px;
+      m.bbox = m.bbox ? { minx: Math.min(m.bbox.minx, d.minx), miny: Math.min(m.bbox.miny, d.miny), maxx: Math.max(m.bbox.maxx, d.maxx), maxy: Math.max(m.bbox.maxy, d.maxy) } : { minx: d.minx, miny: d.miny, maxx: d.maxx, maxy: d.maxy };
+      const isMax = d.px > m.maxPx; if (isMax) m.maxPx = d.px;
+      if (m.thumbs.length < 4 || isMax) { const url = thumb(img, d), item = { url, px: d.px, at: performance.now() - m.t0 }; if (isMax && m.thumbs.length >= 4) m.thumbs[3] = item; else m.thumbs.push(item); }
+    };
+    return m;
+  }
+  function end() {
+    const m = S.mon; S.handler = null; S.mon = null; if (!m) return null;
+    m.durationMs = performance.now() - m.t0; m.missed = S.missed - m.missed0; return m;
+  }
+  setInterval(() => { if (S.calib.negative && S.sig !== sig()) { S.calib.negative = false; bus.anomaly('warn', 'Capture calibration lost: window geometry, zoom or stage changed.'); changed(); } }, 500);
+  return { S, share, stop, locate, baseline, positive, negative, begin, end, valid, listeners, diff, u32 };
+})();
+
+function captureResult(extraRule) {
+  return ctx => {
+    const m = ctx.extra, f = [];
+    if (!m) return { status: 'void', findings: [warn('No capture data was recorded.')] };
+    const fps = m.frames / (m.durationMs / 1000);
+    f.push(info(`${m.frames} frames analysed over ${(m.durationMs / 1000).toFixed(1)} s (${fps.toFixed(1)}/s)${m.missed ? `; ${m.missed} frame(s) arrived while busy and were NOT analysed (coverage gap)` : ''}.`));
+    if (m.frames < 8) return { status: 'void', findings: [warn('Too few frames arrived (the share may be frozen or minimised). Recalibrate and retry.'), ...f] };
+    const r = extraRule ? extraRule(m, f) : null; if (r) return r;
+    const area = m.bbox ? `${m.bbox.maxx - m.bbox.minx + 1}×${m.bbox.maxy - m.bbox.miny + 1} px` : '';
+    if (m.maxPx === 0) { f.unshift(ok('0 changed pixels in any frame: the capture never saw Que.')); return { status: 'pass', findings: f }; }
+    const small = m.maxPx < 1500 && m.bbox && (m.bbox.maxx - m.bbox.minx) < 90 && (m.bbox.maxy - m.bbox.miny) < 90;
+    f.unshift(small ? warn(`Up to ${m.maxPx} pixels changed in ${m.changed} frame(s) (${area}). This size looks like the mouse cursor or video noise: open the crops below before deciding.`)
+      : bad(`Up to ${m.maxPx} pixels changed in ${m.changed} frame(s) (changed area ${area}): something appeared in the capture.`));
+    const gallery = h('div', { class: 'thumbs' }, m.thumbs.map(t => h('figure', {}, h('img', { src: t.url, alt: 'Baseline (left) next to the changed frame (right)' }), h('figcaption', {}, `+${(t.at / 1000).toFixed(2)} s · ${t.px} px · baseline | frame`))));
+    return { status: small ? 'review' : 'fail', findings: f, extra: gallery };
+  };
+}
+const SURFACES = [
+  ['main-showhide', 'Overlay show / hide', 'Press [[Right Ctrl]]+[[E]] three times, 2 s apart.', 20],
+  ['move', 'Moving the overlay', 'Hold [[Right Ctrl]]+[[Alt]]+arrow keys for a few seconds in each direction.', 20],
+  ['settings-combos', 'Settings combo popups (CAP-001)', 'Open Que\'s Settings first. Open the model combo ~2 s, Esc; effort combo, Esc; Voice tab: transcription-model combo, Esc.', 45],
+  ['context-menu', 'Text context menu (CAP-002)', 'Right-click in Que\'s input, wait 3 s, Esc.', 20],
+  ['tooltip', 'Tooltip (CAP-002)', 'Hover the History icon ~3 s without clicking.', 15],
+  ['history-chat', 'History, new chat, chat bubbles', 'Open History ([[Right Ctrl]]+[[H]]), pick an old chat, start a new one ([[Right Ctrl]]+[[N]]).', 30],
+  ['screenshot', 'Screenshot capture', 'Press [[Right Ctrl]]+[[Shift]]+[[S]] twice.', 20],
+  ['ai-answer', 'AI request and streamed answer', 'Press [[Right Ctrl]]+[[M]] and wait until the answer finishes streaming.', 60],
+  ['recording', 'Recording and transcript panel', 'Press [[Right Ctrl]]+[[Shift]]+[[R]], speak, then stop it.', 45],
+  ['startup', 'Startup (first paint)', 'Quit Que first. Start the measurement, then launch Que (`python src/Que.py`) and let it appear.', 40],
+].map(([id, title, how, seconds]) => ({ id: 'cap.' + id, tab: 'capture', group: 'Surfaces: nothing may appear in the capture', compact: true, title, steps: [how], seconds, startLabel: 'Test',
+  countdown: 0, needsFocus: false, allowBlur: true, stage: 'board',
+  precheck: () => { Stage.setMode('board'); const v = Cap.valid(); return v.ok ? null : v.reason; },
+  onStart() { Cap.begin(title); }, onStop: () => Cap.end(),
+  confirmText: `Did you perform the action and see it happen in Que (${title.toLowerCase()})?`, evaluate: captureResult() }));
+SURFACES.push({ id: 'cap.control-exclusion-off', tab: 'capture', group: 'Sensitivity control (must show Que)', compact: true, title: 'Control: exclusion OFF shows Que',
+  steps: ['In Que: Settings → Window → untick "Hide from screen recording". Que **must** appear here with its red border. Tick it again afterwards.'], seconds: 20, startLabel: 'Test',
+  countdown: 0, needsFocus: false, allowBlur: true, stage: 'board', precheck: () => { Stage.setMode('board'); const v = Cap.valid(); return v.ok ? null : v.reason; },
+  onStart() { Cap.begin('exclusion off'); }, onStop: () => Cap.end(), confirmText: 'You unticked "Hide from screen recording" and Que was visible on your screen?',
+  evaluate: captureResult((m, f) => {
+    if (m.maxPx >= 5000) return { status: 'pass', findings: [ok(`Que appeared in the capture (${m.maxPx} px changed) with exclusion off: this detector is sensitive enough to catch Que.`), ...f] };
+    return { status: 'fail', findings: [bad(`Only ${m.maxPx} px changed with exclusion off, so this detector could not see Que even when it is visible: every "no leak" capture result is meaningless. Check the Que footprint lies over the Stage.`), ...f] };
+  }) });
+
+/* ───────────────────────── audio ───────────────────────── */
+const AudioLab = {
+  ctx: null, stream: null, analyser: null, node: null, tone_: null, samples: 0, gaps: 0, maxGap: 0, glitches: 0, lag0: 0, lagPrev: null, lastMsg: 0, timers: [], active: false, rms: 0, peak: 0,
+  async acquire() {
+    if (!this.ctx) this.ctx = new AudioContext();
+    await this.ctx.resume();
+    if (!this.stream) {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const track = this.stream.getAudioTracks()[0];
+      for (const k of ['mute', 'unmute', 'ended']) track.addEventListener(k, () => bus.emit('audio', { kind: 'track-' + k }));
+      const src = this.ctx.createMediaStreamSource(this.stream); this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 1024; src.connect(this.analyser);
+      const code = 'class C extends AudioWorkletProcessor{constructor(){super();this.n=0}process(i){this.n++;if(this.n%16===0)this.port.postMessage(this.n);return true}}registerProcessor("qsl-count",C)';
+      await this.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+      this.node = new AudioWorkletNode(this.ctx, 'qsl-count', { numberOfOutputs: 0 }); src.connect(this.node);
+      this.node.port.onmessage = () => { const now = performance.now(); if (this.active && this.lastMsg) { const g = now - this.lastMsg; this.maxGap = Math.max(this.maxGap, g); if (g > 200) { this.gaps++; bus.emit('audio', { kind: 'gap', detail: fmtMs(g) }); } } this.lastMsg = now; };
+    }
+    return this.stream.getAudioTracks()[0].getSettings();
+  },
+  tone(on) {
+    if (on && !this.tone_) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); g.gain.value = 0.02; o.frequency.value = 440; o.connect(g).connect(this.ctx.destination); o.start(); this.tone_ = o; }
+    if (!on && this.tone_) { this.tone_.stop(); this.tone_ = null; }
+  },
+  start() {
+    if (this.ctx && this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+    this.samples = 0; this.gaps = 0; this.maxGap = 0; this.glitches = 0; this.lagPrev = null; this.active = true; this.peak = 0; this.lastMsg = 0;
+    const buf = this.analyser ? new Float32Array(this.analyser.fftSize) : null, t0 = performance.now(), c0 = this.ctx ? this.ctx.currentTime * 1000 : 0;
+    this.timers.push(setInterval(() => {
+      if (buf) { this.analyser.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; this.rms = Math.sqrt(s / buf.length); this.peak = Math.max(this.peak, this.rms); this.samples++; const m = $('#audio-meter'); if (m) m.style.width = Math.min(100, this.rms * 400) + '%'; }
+      if (this.ctx && this.ctx.state !== 'running') this.lagPrev = null;
+      else if (this.ctx) { const lag = (performance.now() - t0) - (this.ctx.currentTime * 1000 - c0); if (this.lagPrev != null && Math.abs(lag - this.lagPrev) > 40) { this.glitches++; bus.emit('audio', { kind: 'clock-jump', detail: fmtMs(lag - this.lagPrev) }); } this.lagPrev = lag; }
+    }, 50));
+  },
+  stop() { this.active = false; this.timers.forEach(clearInterval); this.timers = []; const tr = this.stream && this.stream.getAudioTracks()[0]; return { samples: this.samples, gaps: this.gaps, maxGap: this.maxGap, glitches: this.glitches, peak: this.peak, state: tr ? tr.readyState : 'none', micOn: !!tr }; },
+};
+const AUDIO_TESTS = [
+  { id: 'audio.continuity', tab: 'audio', group: 'Microphone and speakers', title: 'Page audio is undisturbed while Que records',
+    why: 'Que records your microphone and the speaker loopback. A page using the same devices must see no mute, ended or device-change event, no gaps in microphone data and no output glitches. Try both orders: Que first, or the page first.',
+    steps: ['Click **Acquire microphone** (allow the prompt) and tick the quiet tone.', 'During the measurement press [[Right Ctrl]]+[[Shift]]+[[R]] to start Que recording (or already have it recording for the other order).', 'Say "The blue robot counts seven stars." and click **Say phrase** (the page says "The green robot counts nine moons.").', 'Stop Que\'s recording with [[Right Ctrl]]+[[Shift]]+[[R]] before the end.'], seconds: 50, allowBlur: true, needsFocus: false, countdown: 3,
+    controls: () => h('div', {},
+      h('div', { class: 'row' },
+        h('button', { class: 'btn small', onclick: async e => { try { const s = await AudioLab.acquire(); e.target.textContent = `Microphone on (${s.sampleRate || '?'} Hz)`; } catch (err) { toast('Microphone: ' + err.message); } } }, 'Acquire microphone'),
+        h('label', { class: 'chk' }, h('input', { type: 'checkbox', onchange: async e => { try { if (!AudioLab.ctx) { AudioLab.ctx = new AudioContext(); } await AudioLab.ctx.resume(); AudioLab.tone(e.target.checked); } catch (err) { toast(err.message); } } }), 'quiet tone (output continuity)'),
+        h('button', { class: 'btn small', onclick: () => { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('The green robot counts nine moons.')); } }, 'Say phrase')),
+      h('div', { class: 'meter', style: 'margin:8px 0', 'aria-hidden': 'true' }, h('i', { id: 'audio-meter' }))),
+    onStart: () => { if (!AudioLab.ctx) AudioLab.ctx = new AudioContext(); AudioLab.start(); }, onStop: () => AudioLab.stop(),
+    questions: [{ text: 'Que\'s transcript shows a **You** line with what you said?', soft: true }, { text: 'Que\'s transcript shows a **Them** line with the page\'s phrase?', soft: true }],
+    evaluate(ctx) {
+      const a = ctx.extra, f = [], ev = ctx.by('audio'); let status = 'pass';
+      if (!a || (!a.micOn && !AudioLab.ctx)) return { status: 'void', findings: [warn('Acquire the microphone (and/or the tone) before measuring.')] };
+      f.push(info(`Microphone samples: ${a.samples}, peak level ${a.peak.toFixed(3)}, track ${a.state}; worklet max gap ${fmtMs(a.maxGap)}.`));
+      const tr = ev.filter(e => /^track-(mute|ended)$/.test(e.kind)), dev = ctx.by('devchange');
+      if (tr.length) { status = 'fail'; f.push(bad(`The microphone track reported ${tr.map(e => e.kind.slice(6)).join(', ')}: Que disturbed the device.`)); }
+      if (dev.length) { status = 'fail'; f.push(bad(`${dev.length} device-change event(s): the set of audio devices changed.`)); }
+      if (a.gaps) { status = 'fail'; f.push(bad(`${a.gaps} gap(s) over 200 ms in microphone data (max ${fmtMs(a.maxGap)}).`)); }
+      if (a.glitches) { status = 'fail'; f.push(bad(`${a.glitches} audio-clock discontinuity(ies) over 40 ms (output glitch).`)); }
+      if (status === 'pass') f.push(ok('No mute/ended/device-change events, no microphone data gaps and a steady audio clock.'));
+      return { status, findings: f };
+    } },
+];
+
+/* ───────────────────────── system signals ───────────────────────── */
+const sysState = { idle: null, pressure: null, clip: null };
+const SYSTEM_TESTS = [
+  { id: 'sys.clipboard', tab: 'system', group: 'Permissioned APIs', title: 'Clipboard is left alone',
+    why: 'A page with clipboard-read permission can watch for changes. Que\'s screenshot, send and recording actions must not touch the clipboard.',
+    steps: ['Click **Write sentinel** (allow the clipboard prompt).', 'Start the measurement, keep the page focused and use Que normally: screenshot, ask a question, record. Do not copy anything yourself.'], seconds: 40, countdown: 3,
+    controls: () => h('div', { class: 'row' }, h('button', { class: 'btn small', onclick: async () => { try { sysState.clip = 'QUE-SENTINEL-' + Math.random().toString(36).slice(2, 10); await navigator.clipboard.writeText(sysState.clip); await navigator.clipboard.readText(); toast('Sentinel written.'); } catch (e) { toast('Clipboard: ' + e.message); } } }, 'Write sentinel')),
+    onStart() { const c = { reads: 0, blocked: 0, changes: [], timer: 0 }; sysState.clipRun = c; c.timer = setInterval(async () => { try { const t = await navigator.clipboard.readText(); c.reads++; if (t !== sysState.clip) c.changes.push(t.slice(0, 40)); } catch { c.blocked++; } }, 700); },
+    onStop() { const c = sysState.clipRun; clearInterval(c.timer); return c; },
+    confirmText: 'You used Que (screenshot / question / recording) during the run?',
+    evaluate(ctx) {
+      const c = ctx.extra;
+      if (!sysState.clip) return { status: 'void', findings: [warn('Write the sentinel first.')] };
+      if (!c.reads) return { status: 'void', findings: [warn(`The clipboard could not be read (${c.blocked} blocked polls). Allow clipboard access and keep the page focused.`)] };
+      if (c.changes.length) return { status: 'fail', findings: [bad(`The clipboard changed during the run (${c.changes.length} change(s), e.g. "${c.changes[0]}").`)] };
+      return { status: 'pass', findings: [ok(`Clipboard unchanged across ${c.reads} reads (${c.blocked} unreadable polls).`)] };
+    } },
+  { id: 'sys.idle', tab: 'system', group: 'Permissioned APIs', title: 'Idle detection: hotkeys count as input (known limitation)',
+    why: 'Windows treats any physical key as user activity even when Que swallows it. A page with idle-detection permission sees idle → active with no key event. Any hotkey utility behaves the same; this cannot be hidden from page JavaScript, so this test only documents it.',
+    steps: ['Click **Grant permission**.', 'Start. Do not touch the mouse or keyboard for 65 s.', 'Then press [[Right Ctrl]]+[[E]] once.'], seconds: 85, needsFocus: false, countdown: 2, allowBlur: true,
+    controls: () => h('div', { class: 'row' }, h('button', { class: 'btn small', onclick: async () => { try { if (!('IdleDetector' in window)) throw new Error('IdleDetector is not supported in this browser.'); const p = await IdleDetector.requestPermission(); toast('Idle permission: ' + p); } catch (e) { toast(e.message); } } }, 'Grant permission')),
+    onStart() { const r = { events: [], det: null, ctl: new AbortController() }; sysState.idle = r; if ('IdleDetector' in window) { r.det = new IdleDetector(); r.det.addEventListener('change', () => r.events.push({ t: performance.now(), u: r.det.userState, s: r.det.screenState })); r.det.start({ threshold: 60000, signal: r.ctl.signal }).catch(e => { r.err = e.message; }); } else r.err = 'IdleDetector unsupported'; },
+    onStop() { sysState.idle.ctl.abort(); return sysState.idle; },
+    confirmText: 'You stayed idle for 65 s and then pressed Right Ctrl+E?',
+    evaluate(ctx) {
+      const r = ctx.extra;
+      if (r.err) return { status: 'void', findings: [warn('Idle detection unavailable: ' + r.err)] };
+      const tl = r.events.map(e => `${fmtT(e.t - ctx.t0)} ${e.u}/${e.s}`).join(', ') || 'no state change';
+      const toActive = r.events.find(e => e.u === 'active' && e.t - ctx.t0 > 60000);
+      return { status: 'info', findings: [info(`Idle states: ${tl}. Key events seen by the page: ${ctx.keys.length}.`), toActive && !ctx.keys.length ? warn('Idle → active with zero key events: activity the page cannot attribute. Shared by every hotkey tool; not specific to Que.') : info('No idle → active transition without key events was observed.')] };
+    } },
+  { id: 'sys.pressure', tab: 'system', group: 'Permissioned APIs', title: 'Compute Pressure while Que works',
+    why: 'Compute Pressure reports coarse CPU load states. Compare a quiet run with one while Que transcribes or streams; a state change is a potential load side channel, not proof of identification.',
+    steps: ['Run once with Que idle.', 'Run again while Que is recording/transcribing or streaming an answer.'], seconds: 30, needsFocus: false, countdown: 1, allowBlur: true,
+    onStart() { const r = { records: [], obs: null }; sysState.pressure = r; if ('PressureObserver' in window) { r.obs = new PressureObserver(rs => rs.forEach(x => r.records.push({ t: performance.now(), s: x.state }))); r.obs.observe('cpu', { sampleInterval: 1000 }).catch(e => { r.err = e.message; }); } else r.err = 'PressureObserver unsupported'; },
+    onStop() { try { sysState.pressure.obs && sysState.pressure.obs.disconnect(); } catch { /* ignore */ } return sysState.pressure; },
+    confirmText: 'Que was doing what you intended (idle, or transcribing/streaming)?',
+    evaluate(ctx) {
+      const r = ctx.extra; if (r.err) return { status: 'void', findings: [warn('Compute Pressure unavailable: ' + r.err)] };
+      const states = [...new Set(r.records.map(x => x.s))];
+      return { status: 'info', findings: [info(`${r.records.length} pressure sample(s); states seen: ${states.join(', ') || 'none'}.`), info('Compare the states between the idle run and the busy run.')] };
+    } },
+];
+
+/* ───────────────────────── timing lab (A/B comparison) ───────────────────────── */
+const TIMING_LABELS = [['baseline', 'Baseline: Que not running'], ['que-idle', 'Que idle (visible)'], ['que-hidden', 'Que hidden'], ['que-moving', 'Que being moved'],
+  ['que-screenshot', 'Que screenshotting'], ['que-streaming', 'Que streaming an answer'], ['que-recording', 'Que recording / transcribing'], ['control-cpu', 'CONTROL: unrelated CPU load (must differ)']];
+const PROBES = [['raf', 'Animation frame interval'], ['timer', 'Timer overshoot'], ['worker', 'Worker CPU spin time'], ['ping', 'Local HTTP round trip'], ['ticks', 'Streamed-tick latency']];
+const timing = store.get('timing', {});
+async function runProbes(label, seconds, onProgress, signal) {
+  const data = { raf: [], timer: [], worker: [], ping: [], ticks: [] };
+  let alive = true; const stopAt = performance.now() + seconds * 1000;
+  const cleanups = [];
+  let last = 0; const raf = t => { if (!alive) return; if (last) data.raf.push(t - last); last = t; requestAnimationFrame(raf); }; requestAnimationFrame(raf);
+  const timer = () => { const s = performance.now(); setTimeout(() => { data.timer.push(performance.now() - s - 4); if (alive) timer(); }, 4); }; timer();
+  const mk = src => { const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' }))); cleanups.push(() => w.terminate()); return w; };
+  const wk = mk('function spin(){const t=performance.now();let x=0;for(let i=0;i<300000;i++){x+=Math.sqrt(i)}postMessage(performance.now()-t+(x<0?1:0));setTimeout(spin,5)}spin()');
+  wk.onmessage = e => data.worker.push(e.data);
+  if (label === 'control-cpu') for (let i = 0; i < Math.max(2, (navigator.hardwareConcurrency || 4) >> 1); i++) mk('for(;;){Math.sqrt(Math.random())}');
+  const pingLoop = (async () => { while (alive) { const s = performance.now(); try { await fetch('/ping?' + Math.random(), { cache: 'no-store' }); data.ping.push(performance.now() - s); } catch { break; } await sleep(40); } })();
+  const ctl = new AbortController(); cleanups.push(() => ctl.abort());
+  const ticks = (async () => {
+    try {
+      const res = await fetch('/ticks?ms=50', { cache: 'no-store', signal: ctl.signal }); const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+      while (alive) { const { value, done } = await rd.read(); if (done) break; const arr = performance.timeOrigin + performance.now(); buf += dec.decode(value, { stream: true }); const parts = buf.split('\n'); buf = parts.pop(); for (const p of parts) { const s = parseFloat(p); if (s) data.ticks.push(arr - s * 1000); } }
+    } catch { /* aborted at the end of the run */ }
+  })();
+  while (performance.now() < stopAt && !(signal && signal.aborted)) { onProgress(1 - (stopAt - performance.now()) / (seconds * 1000)); await sleep(200); }
+  alive = false; cleanups.forEach(fn => fn()); await Promise.allSettled([pingLoop, ticks]);
+  const out = {}; for (const [k] of PROBES) out[k] = stats(k === 'ticks' ? data[k].slice(10) : data[k]);
+  return out;
+}
+function timingVerdict() {
+  const base = timing.baseline; if (!base) return { status: 'info', findings: [info('Run the baseline first (Que not running), then runs with Que active.')] };
+  const f = []; let worst = 0, worstName = '', n = 0;
+  for (const [label] of TIMING_LABELS) {
+    if (label === 'baseline' || label === 'control-cpu' || !timing[label]) continue; n++;
+    for (const [k, name] of PROBES) { const a = base[k], b = timing[label][k]; if (!a || !b) continue; const d = Math.max(Math.abs(b.mean - a.mean), Math.abs(b.p95 - a.p95)); if (d > worst) { worst = d; worstName = `${name}, ${label}`; } }
+  }
+  if (!n) return { status: 'info', findings: [info('Baseline saved. Now run labels with Que active.')] };
+  const ctl = timing['control-cpu']; let sens = '';
+  if (ctl) { const d = Math.max(...PROBES.map(([k]) => (base[k] && ctl[k]) ? Math.abs(ctl[k].mean - base[k].mean) : 0)); sens = d > 1 ? ok(`Control CPU load moved a probe by ${fmtMs(d)}: the probes are sensitive.`) : warn('The CPU-load control did not move any probe by 1 ms: the probes may be too insensitive here.'); }
+  if (worst <= 1) f.push(ok(`Every probe is within ±1 ms of baseline for every Que state (largest: ${fmtMs(worst)}).`));
+  else f.push(warn(`Largest mean/p95 difference from baseline: ${fmtMs(worst)} (${worstName}). Repeat in A-B-A-B order before concluding: OS noise often exceeds 1 ms. A reproducible difference is a potential side channel, not proof of identification.`));
+  if (sens) f.push(sens);
+  return { status: worst <= 1 ? 'pass' : 'review', findings: f };
+}
+ALL.push({ id: 'sys.timing', tab: 'system', title: 'Timing side channels (A/B)' });
+function timingCard() {
+  const sel = h('select', { 'aria-label': 'Que state being measured' }, TIMING_LABELS.map(([v, t]) => h('option', { value: v }, t)));
+  const secs = h('input', { type: 'number', min: 10, max: 170, value: 20, 'aria-label': 'Seconds', style: 'width:70px' });
+  const bar = h('i'), prog = h('div', { class: 'bar', hidden: true }, bar), tableBox = h('div'), verdict = h('div');
+  const chipSlot = h('span'); let running = false;
+  const btn = h('button', { class: 'btn primary small', onclick: async () => {
+    if (running) return; if (Runner.active) { toast(`Finish "${Runner.active}" first.`); return; }
+    running = true; btn.disabled = true; prog.hidden = false; Runner.active = 'timing run'; document.body.classList.add('armed');
+    try {
+      const label = sel.value, res = await runProbes(label, Math.max(10, +secs.value || 20), p => { bar.style.width = p * 100 + '%'; });
+      timing[label] = res; timing[label].at = Date.now(); store.set('timing', timing); render();
+    } catch (e) { toast('Timing run failed: ' + e.message); }
+    running = false; btn.disabled = false; prog.hidden = true; Runner.active = null; document.body.classList.remove('armed');
+  } }, 'Measure');
+  const clr = h('button', { class: 'btn small', onclick: () => { for (const k of Object.keys(timing)) delete timing[k]; store.set('timing', timing); render(); } }, 'Clear');
+  function render() {
+    const base = timing.baseline;
+    tableBox.replaceChildren(h('table', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Que state'), PROBES.map(([, n]) => h('th', {}, n)))),
+      h('tbody', {}, TIMING_LABELS.filter(([l]) => timing[l]).map(([l, t]) => h('tr', {}, h('td', {}, t),
+        PROBES.map(([k]) => { const s = timing[l][k]; if (!s) return h('td', {}, '—'); const b = base && base[k] && l !== 'baseline' ? base[k] : null; const dm = b ? s.mean - b.mean : 0, dp = b ? s.p95 - b.p95 : 0, hot = b && (Math.abs(dm) > 1 || Math.abs(dp) > 1);
+          return h('td', { class: hot ? 'delta-warn' : '' }, `${s.mean.toFixed(2)} / ${s.p95.toFixed(2)} / ${s.max.toFixed(1)}`, b ? h('div', { class: 'msg' }, `Δ ${dm >= 0 ? '+' : ''}${dm.toFixed(2)} / ${dp >= 0 ? '+' : ''}${dp.toFixed(2)}`) : null); }))))));
+    const v = timingVerdict(); chipSlot.replaceChildren(chip(v.status));
+    verdict.replaceChildren(h('ul', { class: 'findings' }, v.findings.map(x => h('li', { class: x.lvl }, h('span', { class: 'g' }, GLYPH[x.lvl]), h('span', {}, x.text)))));
+    if (Object.keys(timing).length) setResult('sys.timing', v);
+  }
+  const card = h('article', { class: 'card', id: 't-sys.timing' },
+    h('div', { class: 'card-head' }, h('div', { class: 'title' }, 'Timing side channels (A/B)'), chipSlot),
+    h('p', { class: 'why' }, rich('Pages can sense CPU/network contention. Probes: animation frames, timers, a worker CPU spin, HTTP round trips and a streamed tick feed. Each cell shows mean / p95 / max in ms; Δ is the change from baseline (flagged beyond ±1 ms). Run a baseline with Que **quit**, then each Que state, ideally A-B-A-B.')),
+    h('div', { class: 'row' }, sel, secs, 's', btn, clr), prog, tableBox, verdict);
+  render(); return card;
+}
+
+/* ───────────────────────── EyeDropper ───────────────────────── */
+function eyedropperCard() {
+  const id = 'sys.eyedropper'; ALL.push({ id, tab: 'system', title: 'EyeDropper pixel read' });
+  const picks = []; const chipSlot = h('span'), out = h('div');
+  const hexToRgb = s => { const m = /^#?([0-9a-f]{6})/i.exec(s); return m ? [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16)) : null; };
+  const stageRgb = () => { const m = /rgba?\((\d+), (\d+), (\d+)/.exec(getComputedStyle(Stage.el).backgroundColor); return m ? [+m[1], +m[2], +m[3]] : null; };
+  const near = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 2);
+  async function pick(exclusionOn) {
+    if (!('EyeDropper' in window)) { toast('EyeDropper is not supported in this browser.'); return; }
+    Stage.setMode('solid'); await sleep(150);
+    try { const r = await new EyeDropper().open(), want = stageRgb(), got = hexToRgb(r.sRGBHex); picks.push({ exclusionOn, got: r.sRGBHex, same: !!(want && got && near(want, got)) }); render(); }
+    catch (e) { toast('Pick cancelled: ' + e.message); }
+  }
+  function render() {
+    out.replaceChildren(h('ul', { class: 'findings' }, picks.map(p => h('li', { class: p.exclusionOn ? (p.same ? 'ok' : 'bad') : (p.same ? 'bad' : 'ok') },
+      h('span', { class: 'g' }, p.exclusionOn ? (p.same ? '✓' : '✗') : (p.same ? '✗' : '✓')), h('span', {}, p.exclusionOn ? `Exclusion ON: picked ${p.got}, ${p.same ? 'the Stage colour (Que not visible to the picker)' : 'NOT the Stage colour: the picker saw something else (Que? or you missed the Stage)'}.` : `Control, exclusion OFF: picked ${p.got}, ${p.same ? 'still the Stage colour: control failed (missed Que?)' : 'differs from the Stage colour, as it must'}.`)))));
+    const on = picks.filter(p => p.exclusionOn), off = picks.filter(p => !p.exclusionOn);
+    let status = 'info';
+    if (on.length >= 3 && off.length >= 1) status = on.every(p => p.same) && off.some(p => !p.same) ? 'pass' : on.some(p => !p.same) ? 'fail' : 'void';
+    chipSlot.replaceChildren(chip(status));
+    if (picks.length) setResult(id, { status, findings: [info(`${on.length} pick(s) with exclusion on (${on.filter(p => p.same).length} matched the Stage colour), ${off.length} control pick(s).`)] });
+  }
+  const card = h('article', { class: 'card', id: 't-' + id },
+    h('div', { class: 'card-head' }, h('div', { class: 'title' }, 'EyeDropper cannot see Que'), chipSlot),
+    h('p', { class: 'why' }, rich('The EyeDropper API lets a page read one screen pixel after a user gesture. If it samples the real screen instead of a capture-excluded one, it could read Que\'s pixels. The Stage turns a solid colour; point at Que\'s **text** or red border.')),
+    h('ol', {}, ['Que visible, exclusion **on** (default). Click **Pick (exclusion ON)** and click directly on Que\'s brightest text. Do it **3 times** in different places.', 'Control: Que Settings → Window → untick "Hide from screen recording", click **Pick (control)** on the same spot, then tick it again.'].map(s => h('li', {}, rich(s)))),
+    h('div', { class: 'row' }, h('button', { class: 'btn primary small', onclick: () => pick(true) }, 'Pick (exclusion ON)'), h('button', { class: 'btn small', onclick: () => pick(false) }, 'Pick (control)'),
+      h('button', { class: 'btn small', onclick: () => { picks.length = 0; render(); } }, 'Reset'), h('button', { class: 'btn small', onclick: () => Stage.setMode('board') }, 'Restore stage')), out);
+  const s = results[id]; chipSlot.replaceChildren(chip(s ? s.status : 'idle'));
+  return card;
+}
+
+/* ───────────────────────── capture lab card ───────────────────────── */
+function captureCard() {
+  const steps = [
+    ['Share your entire screen', 'Click **Share screen**, choose **Entire screen**, and use **Hide** (never "Stop sharing") on the browser\'s sharing bar. Que should appear in no "Window" tab of that picker either.'],
+    ['Locate the Stage', 'The page finds its blinking beacon in the shared frames and maps the Stage to capture pixels. Keep this window unobscured and on the shared monitor.'],
+    ['Baseline with Que hidden', 'Hide Que ([[Right Ctrl]]+[[E]]), move the mouse off the Stage, then save the baseline.'],
+    ['Positive control', 'A plain magenta window opens. Drag it over where Que will sit. This proves the capture really sees windows there.'],
+    ['Negative control', 'The control window closes and the Stage must return to the exact baseline. Show Que again ([[Right Ctrl]]+[[E]]) when done.'],
+  ];
+  const state = steps.map(() => ({ s: '', msg: '' })), icons = steps.map(() => h('span', { class: 'si' }, '')), msgs = steps.map(() => h('div', { class: 'msg' }));
+  const status = h('div'), prevBox = h('div'); let busy = false;
+  const mk = (i, label, fn) => h('button', { class: 'btn small', onclick: async e => {
+    if (busy) return; busy = true; const b = e.currentTarget; b.disabled = true; set(i, 'busy', 'Working…');
+    try { const m = await fn(); set(i, 'ok', m || 'Done.'); } catch (err) { set(i, 'err', err.message || String(err)); }
+    busy = false; b.disabled = false; refresh();
+  } }, label);
+  function set(i, s, msg) { state[i] = { s, msg }; icons[i].className = 'si ' + (s === 'busy' ? 'busy' : s); icons[i].textContent = s === 'ok' ? '✓' : s === 'err' ? '!' : s === 'busy' ? '…' : String(i + 1); msgs[i].className = 'msg ' + (s === 'err' ? 'err' : s === 'ok' ? 'ok' : ''); msgs[i].textContent = msg; }
+  steps.forEach((_, i) => set(i, '', ''));
+  icons.forEach((el, i) => { el.textContent = String(i + 1); });
+  const shareBtn = mk(0, 'Share screen', async () => {
+    const r = await Cap.share(); prevBox.replaceChildren(r.video, h('div', { class: 'row' }, h('button', { class: 'btn small', onclick: () => r.video.classList.toggle('big') }, 'Enlarge / shrink "what viewers see"'), h('button', { class: 'btn small', onclick: () => { Cap.stop(); prevBox.replaceChildren(); steps.forEach((_, j) => set(j, '', '')); refresh(); } }, 'Stop sharing')));
+    const st = r.settings, warns = [];
+    if (st.displaySurface && st.displaySurface !== 'monitor') warns.push(`You shared a ${st.displaySurface}, not the entire screen; it cannot show other windows.`);
+    if (st.cursor && st.cursor !== 'never') warns.push(`The browser ignored cursor:"never" (cursor=${st.cursor}); expect small cursor-sized differences.`);
+    return `${Cap.S.fw}×${Cap.S.fh} ${st.displaySurface || ''} @ ${Math.round(st.frameRate || 0)} fps.${warns.length ? ' ⚠ ' + warns.join(' ') : ''}`;
+  });
+  const locateBtn = mk(1, 'Locate', async () => { const r = await Cap.locate(); return `Stage = ${r.roi.w}×${r.roi.h} capture px at (${r.roi.x}, ${r.roi.y}), scale ${r.scale.toFixed(2)}×${r.clipped ? ' (partly outside the shared screen)' : ''}.`; });
+  const baseBtn = mk(2, 'Save baseline', async () => { await Cap.baseline(); return 'Baseline saved (stable for 5+ frames).'; });
+  const posBtn = mk(3, 'Open control window', async () => { const px = await Cap.positive(); return `Positive control seen: ${px.toLocaleString()} px changed.`; });
+  const negBtn = mk(4, 'Confirm clean', async () => { const n = await Cap.negative(); return `Stage back to baseline for ${n} consecutive frames. Calibrated.`; });
+  const buttons = [shareBtn, locateBtn, baseBtn, posBtn, negBtn];
+  const list = h('ul', { class: 'steps-list' }, steps.map(([t, d], i) => h('li', {}, icons[i], h('div', {}, h('div', {}, h('strong', {}, t)), h('div', { class: 'msg' }, rich(d)), msgs[i]), buttons[i])));
+  function refresh() {
+    const c = Cap.S.calib, v = Cap.valid();
+    buttons.forEach((b, i) => { b.disabled = busy || (i > 0 && !Cap.S.stream) || (i === 2 && !c.located) || (i === 3 && !c.baseline) || (i === 4 && !c.positive); });
+    status.replaceChildren(v.ok ? h('div', { class: 'banner ok' }, rich('**Calibrated.** Capture tests below are meaningful. Moving or zooming this window, or moving it to another monitor, invalidates this.'))
+      : h('div', { class: 'banner ' + (Cap.S.stream && c.negative ? 'bad' : 'warn') }, v.reason));
+  }
+  Cap.listeners.add(() => { if (!Cap.S.stream) steps.forEach((_, j) => set(j, '', '')); refresh(); });
+  refresh();
+  return h('article', { class: 'card', id: 't-cap-calibration' },
+    h('div', { class: 'card-head' }, h('div', { class: 'title' }, 'Screen-capture calibration')),
+    h('p', { class: 'why' }, rich('Websites can screen-share you. This lab does what a proctoring page would: shares the screen, then compares every delivered frame of the Stage against a clean baseline, down to a single changed pixel. A calibration proves the detector can see real windows, so "no change" means something. For best results use F11 / a maximised window and do not scroll, resize or zoom afterwards.')),
+    list, status, prevBox);
+}
+
+/* ───────────────────────── manual checklist ───────────────────────── */
+const MANUAL = [
+  ['Visible to the viewer', [
+    ['m.picker', 'Share picker: Que is not listed', 'Open the share dialog (button below). On its **Window** tab Que must not be listed. Cancel the dialog.'],
+    ['m.tray', 'Tray icon and taskbar', 'Share the entire screen with the taskbar visible (not F11). Que\'s tray icon is blank and its menu does not show in the preview. (The shell draws the tray icon; hide it in Settings if it shows.)'],
+    ['m.taskbar', 'No taskbar button, Alt+Tab or Task View entry', 'Que must not appear in the taskbar, in Alt+Tab or in Win+Tab.'],
+    ['m.mic-indicator', 'Microphone-in-use indicator', 'While Que records, Windows shows a microphone icon in the tray that a screen share exposes. Known limitation; note whether it appears in the viewer preview.'],
+    ['m.snip', 'Windows screenshot tools', 'Win+Shift+S, Print Screen and Xbox Game Bar (Win+Alt+R) must not show Que in their images/recordings.'],
+    ['m.meeting', 'A real meeting app', 'Share your screen in Teams / Zoom / Meet with a second device viewing; Que must not appear.'],
+  ]],
+  ['Physical behaviour', [
+    ['m.flash', 'No flashing', 'With a click-through overlay (for example dimmer.exe) running, watch Que for 20 s; it must not flicker.'],
+    ['m.ontop', 'Stays on top', 'Que stays above fullscreen pages and other windows without flicker; covers nothing when hidden.'],
+    ['m.focus-visual', 'Typing in Que does not move the caret or highlight in the page', 'While typing in Que, the page\'s own text fields show no focus ring or typing.'],
+  ]],
+];
+function manualSection() {
+  const frag = [];
+  for (const [group, items] of MANUAL) {
+    frag.push(h('div', { class: 'group' }, group));
+    const card = h('article', { class: 'card' });
+    for (const [id, title, desc] of items) {
+      ALL.push({ id, tab: 'manual', title });
+      const cur = results[id]?.status;
+      const seg = h('div', { class: 'seg', role: 'group', 'aria-label': title });
+      const mk = (lbl, cls, st) => h('button', { class: cls, 'aria-pressed': String(cur === st), onclick: () => { seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false')); seg.querySelector('.' + cls).setAttribute('aria-pressed', 'true'); setResult(id, { status: st, findings: [info(`Manual check: ${lbl}.`)] }); } }, lbl);
+      seg.append(mk('OK', 'ok', 'pass'), mk('Problem', 'no', 'fail'), mk('N/A', 'na', 'void'));
+      const extra = id === 'm.picker' ? h('button', { class: 'btn small', style: 'margin-top:6px', onclick: async () => { try { const s = await navigator.mediaDevices.getDisplayMedia({ video: true }); s.getTracks().forEach(t => t.stop()); } catch { /* cancelled */ } } }, 'Open share dialog') : null;
+      card.append(h('div', { class: 'manual-item' }, h('div', {}, h('div', { class: 'title' }, title), h('div', { class: 'msg' }, rich(desc)), extra), seg));
+    }
+    frag.push(card);
+  }
+  return frag;
+}
+
+/* ───────────────────────── overview + report ───────────────────────── */
+function featureRows() {
+  const F = [
+    ['Screen capture', !!navigator.mediaDevices?.getDisplayMedia, 'Capture tests need it'],
+    ['Per-frame callbacks', 'requestVideoFrameCallback' in HTMLVideoElement.prototype, 'Falls back to polling; may miss frames'],
+    ['EyeDropper', 'EyeDropper' in window, 'Pixel-read test skipped (Chrome/Edge only)'],
+    ['Idle detection', 'IdleDetector' in window, 'Idle test skipped'],
+    ['Compute Pressure', 'PressureObserver' in window, 'Pressure test skipped'],
+    ['AudioWorklet', !!window.AudioContext && 'audioWorklet' in AudioContext.prototype, 'Audio continuity test degraded'],
+    ['Clipboard read', !!navigator.clipboard?.readText, 'Clipboard test skipped'],
+    ['Speech synthesis', 'speechSynthesis' in window, 'Phrase button unavailable'],
+  ];
+  return F.map(([n, okk, note]) => h('tr', {}, h('td', {}, n), h('td', {}, okk ? h('span', { class: 'chip pass' }, h('b', {}, '✓'), 'Available') : h('span', { class: 'chip void' }, h('b', {}, '–'), 'Missing')), h('td', { class: 'msg' }, okk ? '' : note)));
+}
+function overview() {
+  const srv = h('span', { class: 'chip idle' }, 'checking…');
+  fetch('/ping', { cache: 'no-store' }).then(r => r.json()).then(() => srv.replaceWith(h('span', { class: 'chip pass' }, h('b', {}, '✓'), 'Local server reachable'))).catch(() => srv.replaceWith(h('span', { class: 'chip fail' }, h('b', {}, '✗'), 'No local server (open via serve.py)')));
+  const wide = innerWidth >= 1100;
+  return [
+    h('div', { class: 'sec' }, h('h2', {}, 'Start here'),
+      h('p', { class: 'lead' }, rich('This page behaves like a hostile website: it watches keys, focus, the pointer, screen capture, audio and timing while you use Que. Each test tells you what to do, records what the page could see, and gives a verdict. **No leak seen is evidence for this run, not proof Que is invisible.**')),
+      h('div', { class: 'card' }, h('div', { class: 'title' }, 'Before testing'),
+        h('ol', {}, [
+          'Run Que (`python src/Que.py`), visible, and drag/position it over the **Stage** (the big right-hand area).',
+          'Use a fresh browser window, maximised, at normal zoom. Keep DevTools closed (clicking it causes focus-loss false alarms).',
+          'Work tab by tab. For every test: press **Start**, click the page title for focus, act during **MEASURING**, answer the operator question.',
+          'Do not scroll, resize or zoom during capture tests; the calibration would be lost.',
+          'Hold the Right Ctrl key for every Que shortcut (it is Que\'s dedicated key).',
+        ].map(s => h('li', {}, rich(s)))),
+        h('div', { class: 'row' }, srv, h('span', { class: 'chip ' + (isSecureContext ? 'pass' : 'fail') }, h('b', {}, isSecureContext ? '✓' : '✗'), isSecureContext ? 'Secure context' : 'Not a secure context'),
+          h('span', { class: 'chip ' + (wide ? 'pass' : 'review') }, h('b', {}, wide ? '✓' : '!'), wide ? 'Window wide enough' : 'Widen the window (≥ 1100 px)'))),
+      h('div', { class: 'card' }, h('div', { class: 'title' }, 'How to read a verdict'),
+        h('div', { class: 'kv' }, [['pass', 'Nothing seen: the page observed no sign of Que while Que demonstrably acted.'], ['fail', 'A leak: the page saw something it must not (details listed).'], ['review', 'Ambiguous: could be you (clicked DevTools) or Que. Repeat, or inspect the evidence.'], ['info', 'Measurement, or a known limitation recorded for the report.'], ['void', 'Invalid run (page unfocused, Que action did not happen): repeat it.']].flatMap(([s, t]) => [h('dt', {}, chip(s)), h('dd', {}, t)]))),
+      h('div', { class: 'card' }, h('div', { class: 'title' }, 'Browser support'), h('table', {}, h('tbody', {}, featureRows())), h('dl', { class: 'kv' }, h('dt', {}, 'Browser'), h('dd', {}, navigator.userAgent), h('dt', {}, 'Display'), h('dd', {}, `${screen.width}×${screen.height} CSS px, devicePixelRatio ${devicePixelRatio}, viewport ${innerWidth}×${innerHeight}`))),
+      h('div', { class: 'card' }, h('div', { class: 'title' }, 'What a web page cannot see (not tested here)'),
+        h('p', { class: 'msg' }, rich('Que\'s own network traffic to the AI provider is invisible to page JavaScript; the **Timing** card looks only for indirect effects. Process lists, the Windows tray/taskbar, Task Manager and files on disk are outside a page\'s reach (tray and microphone-indicator exposures appear in the **Manual** checks because screen shares include them).')))),
+  ];
+}
+function reportSection() {
+  const sum = h('div'), tbl = h('div'), area = h('textarea', { readonly: '', 'aria-label': 'Markdown report' });
+  const label = { pass: 'No leak', fail: 'LEAK', review: 'Review', info: 'Info', void: 'Void', idle: 'Not run' };
+  function build() {
+    const counts = {}; ALL.forEach(t => { const s = results[t.id]?.status || 'idle'; counts[s] = (counts[s] || 0) + 1; });
+    sum.replaceChildren(h('div', { class: 'row' }, ['fail', 'review', 'pass', 'info', 'void', 'idle'].map(s => h('span', { class: 'chip ' + s }, `${counts[s] || 0} ${label[s]}`))));
+    tbl.replaceChildren(h('table', {}, h('thead', {}, h('tr', {}, h('th', {}, 'Test'), h('th', {}, 'Result'))), h('tbody', {}, ALL.map(t => h('tr', {}, h('td', {}, h('div', {}, t.title), h('div', { class: 'msg' }, (results[t.id]?.findings || []).slice(0, 2).map(f => f.text).join(' '))), h('td', {}, chip(results[t.id]?.status || 'idle')))))));
+    const md = [`# Que Stealth Lab report`, `Generated ${new Date().toLocaleString()}`, `Browser: ${navigator.userAgent}`, `Display: ${screen.width}x${screen.height}, DPR ${devicePixelRatio}, viewport ${innerWidth}x${innerHeight}`, '', 'Reminder: "no leak" is evidence for this run only.', '',
+      '| Tab | Test | Result | Notes |', '|---|---|---|---|', ...ALL.map(t => `| ${t.tab} | ${t.title} | ${label[results[t.id]?.status || 'idle']} | ${(results[t.id]?.findings || []).slice(0, 2).map(f => f.text.replace(/[|\n[\]*`]/g, ' ')).join(' ')} |`)].join('\n');
+    area.value = md; return md;
+  }
+  resultListeners.add(build); setTimeout(build, 0);
+  const dl = (name, text, type) => { const a = h('a', { href: URL.createObjectURL(new Blob([text], { type })), download: name }); document.body.append(a); a.click(); a.remove(); };
+  return h('div', { class: 'sec' }, h('h2', {}, 'Report'), h('p', { class: 'lead' }, 'Results are saved in this browser automatically. Export them to keep a record or paste into STEALTH_FIX_LIST.md.'),
+    h('div', { class: 'card' }, sum, tbl, h('div', { class: 'row', style: 'margin-top:8px' },
+      h('button', { class: 'btn primary small', onclick: () => navigator.clipboard.writeText(build()).then(() => toast('Markdown copied.'), () => toast('Copy blocked; select the text below.')) }, 'Copy Markdown'),
+      h('button', { class: 'btn small', onclick: () => dl('que-stealth-report.json', JSON.stringify({ at: new Date().toISOString(), ua: navigator.userAgent, results }, null, 2), 'application/json') }, 'Download JSON'),
+      h('button', { class: 'btn small danger', onclick: e => { const b = e.currentTarget; if (b.dataset.armed) { for (const k of Object.keys(results)) delete results[k]; store.set('results', results); location.reload(); } else { b.dataset.armed = '1'; b.textContent = 'Click again to delete all results'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Clear all results'; }, 4000); } } }, 'Clear all results')), area));
+}
+
+/* ───────────────────────── assembly ───────────────────────── */
+const TABS = [['overview', 'Overview'], ['keyboard', 'Keyboard'], ['focus', 'Focus & pointer'], ['capture', 'Capture'], ['audio', 'Audio'], ['system', 'Timing & system'], ['manual', 'Manual'], ['report', 'Report']];
+function groups(list) {
+  const out = []; let cur = null;
+  for (const d of list) { if (d.group !== cur) { cur = d.group; out.push(h('div', { class: 'group' }, cur)); } out.push(windowTest(d)); }
+  return out;
+}
+function build() {
+  const sections = {
+    overview: overview(),
+    keyboard: [h('div', { class: 'sec' }, h('h2', {}, 'Keyboard & shortcuts'), h('p', { class: 'lead' }, rich('Every Que shortcut starts with **Right Ctrl** and must be completely invisible: zero key events on the page. Ordinary keys must look natural.')))],
+    focus: [h('div', { class: 'sec' }, h('h2', {}, 'Focus, pointer & window'), h('p', { class: 'lead' }, 'Pages notice blur events, pointer-leave at odd places, swallowed clicks and exited fullscreen. Que must cause none of them.'))],
+    capture: [h('div', { class: 'sec' }, h('h2', {}, 'Screen capture & recording'), h('p', { class: 'lead' }, 'Calibrate once, then run each surface. Que\'s windows are excluded from capture; the page compares every frame to a clean baseline.'))],
+    audio: [h('div', { class: 'sec' }, h('h2', {}, 'Audio'), h('p', { class: 'lead' }, 'Que records the microphone and speaker loopback. A page using the same devices must not notice.'))],
+    system: [h('div', { class: 'sec' }, h('h2', {}, 'Timing & system signals'), h('p', { class: 'lead' }, 'Indirect channels: CPU/network timing, clipboard, idle and load APIs.'))],
+    manual: [h('div', { class: 'sec' }, h('h2', {}, 'Manual checks'), h('p', { class: 'lead' }, 'Things only your eyes can judge. Your answers are saved.'))],
+    report: [reportSection()],
+  };
+  sections.keyboard.push(...groups([...SHORTCUTS, ...KEY_TESTS.filter(t => t.group === 'Edge cases'), ...KEY_TESTS.filter(t => t.group === 'Typing in Que')]));
+  sections.focus.push(...groups(FOCUS_TESTS));
+  sections.capture.push(captureCard(), h('div', { class: 'group' }, 'Surfaces: nothing may appear in the capture'), ...SURFACES.filter(s => s.group.startsWith('Surfaces')).map(windowTest),
+    h('div', { class: 'group' }, 'Sensitivity control (must show Que)'), ...SURFACES.filter(s => !s.group.startsWith('Surfaces')).map(windowTest));
+  sections.audio.push(...groups(AUDIO_TESTS));
+  sections.system.push(h('div', { class: 'group' }, 'Timing'), timingCard(), eyedropperCard(), ...groups(SYSTEM_TESTS));
+  sections.manual.push(...manualSection());
+
+  const content = $('#content'), tabs = $('#tabs'); const btns = {};
+  for (const [id, name] of TABS) {
+    const sec = h('section', { id: 'sec-' + id, hidden: id !== 'overview', role: 'tabpanel', 'aria-labelledby': 'tab-' + id }, sections[id]);
+    content.append(sec);
+    const b = h('button', { class: 'tab', role: 'tab', id: 'tab-' + id, 'aria-selected': String(id === 'overview'), 'aria-controls': 'sec-' + id, onclick: () => select(id) }, name, h('span', { class: 'n' }), h('span', { class: 'dot', hidden: true }));
+    btns[id] = b; tabs.append(b);
+  }
+  function select(id) {
+    for (const [t] of TABS) { $('#sec-' + t).hidden = t !== id; btns[t].setAttribute('aria-selected', String(t === id)); }
+    Stage.setMode('board'); store.set('tab', id); content.scrollTop = 0;
+  }
+  const refreshBadges = () => {
+    for (const [id] of TABS) {
+      const list = ALL.filter(t => t.tab === id); if (!list.length) continue;
+      const done = list.filter(t => results[t.id] && results[t.id].status !== 'idle').length, fails = list.some(t => results[t.id]?.status === 'fail');
+      btns[id].querySelector('.n').textContent = `${done}/${list.length}`; btns[id].querySelector('.dot').hidden = !fails;
+    }
+  };
+  resultListeners.add(refreshBadges); refreshBadges();
+  const saved = store.get('tab', 'overview'); if (TABS.some(([t]) => t === saved)) select(saved);
+}
+
+function init() {
+  const themeBtn = $('#theme'), root = document.documentElement, t = store.get('theme', null);
+  if (t) root.dataset.theme = t;
+  themeBtn.onclick = () => { const dark = (root.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'dark'; root.dataset.theme = dark ? 'light' : 'dark'; store.set('theme', root.dataset.theme); };
+  $('#title').addEventListener('click', () => $('#title').focus());
+  installMonitors(); installMonitorUi(); installStage(); build();
+  window.StealthLab = { bus, E, Cap, stats, tests: { KEY_TESTS, SHORTCUTS, FOCUS_TESTS, SURFACES, AUDIO_TESTS, SYSTEM_TESTS }, results, makeCtx, timingVerdict, captureResult };
+}
+init();
+})();
+</script>
+</body>
+</html>

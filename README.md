@@ -25,6 +25,12 @@ python -m unittest discover -s test -p "test_*.py" -v
 
 Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. For hands-on checks with a real keyboard, screen and browser, follow the [manual stealth testing walkthrough](test/STEALTH_MANUAL_TESTING.md). See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
 
+**Manual stealth test site:** to check by hand that a web page cannot tell Que is running, start the local test site and open it in the browser you want to test:
+```powershell
+python test/manual_site/serve.py
+```
+Open <http://localhost:8765/> (use `--port` to change it), launch Que, and drag it over the **Stage** (the checkered area on the right). Work through the tabs (Keyboard, Focus & pointer, Capture, Audio, Timing & system, Manual). For each test: press **Start**, click the page title so the page has focus, do the listed steps while it shows **MEASURING**, then answer the question about whether Que acted. Every Que shortcut starts with **Right Ctrl**. Keep DevTools closed, and do not scroll, resize or zoom during capture tests; calibrate once in the Capture tab first (share the entire screen, then follow its five steps). The **Report** tab exports results as Markdown or JSON. A "No leak seen" verdict is evidence for that run only, not proof of invisibility. See the [manual stealth testing walkthrough](test/STEALTH_MANUAL_TESTING.md) for the runner-based procedure.
+
 Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_hook.dll`, built from `native/que_hook.c` and committed with it, so running Que needs no compiler. After changing `native/que_hook.c`, rebuild it with MSVC (Visual Studio Build Tools, C++) or gcc and commit both files. Nuitka skips DLLs in data directories, so the build command below names it explicitly.
 ```bash
 python native/build.py
