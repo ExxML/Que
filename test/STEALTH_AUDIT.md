@@ -93,12 +93,16 @@ python test/stealth/regressions.py
 ruff check src test native
 ruff format --check src test native
 mypy --strict src test native
-node --check test/stealth/observer.js
-python test/stealth/browser_smoke.py --browser chrome --output .stealth-runs/chrome-smoke
-python test/stealth/browser_smoke.py --browser edge --output .stealth-runs/edge-smoke
+Get-ChildItem test/stealth/*.js | ForEach-Object { node --check $_.FullName }
+node test/stealth/detector_test.js
+foreach ($browser in "chrome", "edge") {
+    python test/stealth/browser_smoke.py --browser $browser --output .stealth-runs/$browser-smoke
+    python test/stealth/browser_smoke.py --browser $browser --cross-origin-isolated --output .stealth-runs/$browser-isolated-smoke
+    python test/stealth/resource_smoke.py --browser $browser --output .stealth-runs/$browser-resource-smoke
+}
 ```
 
-Headless smoke checks verify observer startup/HTTP delivery only. They never count as physical keyboard, capture, audio or topmost validation. `.github/workflows/stealth-audit.yml` publishes deterministic compliance failures without `continue-on-error` and leaves the existing static-analysis workflow intact. Interactive validation belongs on an unlocked workstation, not headless CI.
+Headless smoke checks verify observer startup/HTTP delivery only. They never count as physical keyboard, capture, audio or topmost validation. `.github/workflows/stealth-audit.yml` runs every automated check above plus the offline compliance run on every push, and publishes deterministic compliance failures without `continue-on-error` and leaves the existing static-analysis workflow intact. Interactive validation belongs on an unlocked workstation, not headless CI.
 
 
 ## Evidence receipts

@@ -2,10 +2,12 @@ name: Browser observability audit
 
 on:
   workflow_dispatch:
+  push:
   pull_request:
     paths:
       - "src/**"
       - "test/**"
+      - "native/**"
       - "requirements.txt"
       - ".github/workflows/stealth-audit.yml"
 
@@ -24,11 +26,18 @@ jobs:
           cache: pip
       - run: python -m pip install -r requirements.txt
       - run: python test/stealth/regressions.py
-      - run: node --check test/stealth/observer.js
-      - run: node --check test/stealth/research.js
-      - run: node --check test/stealth/audio-worklet.js
-      - run: node --check test/stealth/storage-worker.js
+      - name: Check JavaScript syntax
+        shell: bash
+        run: for file in test/stealth/*.js; do node --check "$file"; done
       - run: node test/stealth/detector_test.js
+      - name: Headless browser smoke checks
+        shell: bash
+        run: |
+          for browser in chrome edge; do
+            python test/stealth/browser_smoke.py --browser $browser --output .stealth-runs/$browser-smoke
+            python test/stealth/browser_smoke.py --browser $browser --cross-origin-isolated --output .stealth-runs/$browser-isolated-smoke
+            python test/stealth/resource_smoke.py --browser $browser --output .stealth-runs/$browser-resource-smoke
+          done
 
   compliance:
     name: Deterministic compliance (known failures remain failures)
