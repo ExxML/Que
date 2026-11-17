@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.document_text import extract_text
 from core.model_catalog import ModelOption
@@ -28,7 +29,7 @@ from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
 from ui.directory_picker import choose_directory, choose_file
-from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
+from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, qss
 
 WHISPER_LABELS: dict[str, str] = {
     "tiny.en": "Tiny · fastest · 75 MB",
@@ -53,10 +54,13 @@ class SettingsPage(QWidget):
         settings_store: SettingsStore,
         claude_bridge: ClaudeBridge,
         transcriber: Transcriber,
+        chat_history: ChatHistory,
         parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self.settings_store = settings_store
+        self.chat_history = chat_history
+        self.screenshots_armed = False
         self.transcriber = transcriber
         transcriber.download_finished.connect(self._on_whisper_downloaded)
         self.catalog = ProviderCatalog(claude_bridge)
@@ -99,6 +103,7 @@ class SettingsPage(QWidget):
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
         self._show_documents()
+        self._show_screenshots_size()
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
@@ -121,6 +126,9 @@ class SettingsPage(QWidget):
             QComboBox::down-arrow {{ image: url({arrow_path}); width: 8px; height: 5px; }}
             QPushButton:focus, QLineEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
+            QPushButton[armed="true"] {{
+                color: {qss(DANGER_COLOR)}; background: {qss(DANGER_COLOR, 40)}; border-color: {qss(DANGER_COLOR, 160)};
+            }}
             QComboBox QAbstractItemView {{ background: {qss(BG_COLOR)}; color: {qss(PRIMARY_COLOR)};
                 selection-background-color: {qss(PRIMARY_COLOR, 50)}; }}
             QScrollArea, QScrollArea > QWidget > QWidget {{ background: transparent; }}
@@ -394,6 +402,28 @@ class SettingsPage(QWidget):
             "Que asks for administrator permission when it starts, so its shortcuts work and keys stay hidden in apps running as administrator, such as Task Manager. The permission prompt takes focus from the active app, so start Que before opening other apps. Takes effect the next time Que starts.",
         )
         window_layout.addStretch(1)
+        storage_layout = self._add_tab("Storage")
+        self.screenshots_size_label = QLabel()
+        self.screenshots_size_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.screenshots_size_label.setAccessibleName("Screenshot storage used")
+        storage_layout.addWidget(self.screenshots_size_label)
+        self.delete_screenshots_button = QPushButton()
+        self.delete_screenshots_button.clicked.connect(self._delete_screenshots)
+        delete_row = QHBoxLayout()
+        delete_row.addWidget(self.delete_screenshots_button)
+        delete_row.addStretch()
+        storage_layout.addLayout(delete_row)
+        storage_hint = QLabel(
+            "Screenshots you send are saved so saved chats can show them. Deleting them frees storage. Saved chats keep their messages but show their screenshots as missing."
+        )
+        storage_hint.setWordWrap(True)
+        storage_layout.addWidget(storage_hint)
+        storage_layout.addStretch(1)
+        # Connected after the tabs exist; switching tabs cancels a pending delete and remeasures
+        self.tab_bar.currentChanged.connect(
+            lambda _index: self._show_screenshots_size()
+        )
+        self._show_screenshots_size()
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
         self.save_status.setContentsMargins(22, 0, 22, 0)
@@ -559,6 +589,47 @@ class SettingsPage(QWidget):
                 f"{name} · {len(text.split()):,} words" if text else ""
             )
             self.document_remove_buttons[kind].setEnabled(bool(text))
+
+    def _show_screenshots_size(self) -> None:
+        """Display the storage used by stored screenshots and reset the delete button."""
+        size = self.chat_history.screenshots_size()
+        self.screenshots_size_label.setText(f"Screenshots use {_format_size(size)}.")
+        self._set_screenshots_armed(False)
+        self.delete_screenshots_button.setEnabled(size > 0)
+
+    def _delete_screenshots(self) -> None:
+        """Ask for confirmation on the first click and delete every stored screenshot on the second."""
+        if not self.screenshots_armed:
+            self._set_screenshots_armed(True)
+            return
+        if self.chat_history.delete_screenshots():
+            self.save_status.setText("Deleted all screenshots.")
+        else:
+            self.save_status.setText(
+                "Some screenshots could not be deleted. Check that Que's data folder is writable."
+            )
+        self._show_screenshots_size()
+
+    def _set_screenshots_armed(self, armed: bool) -> None:
+        """Show the delete button in its confirming or normal state.
+
+        Args:
+            armed (bool): Whether the next click deletes every stored screenshot.
+        """
+        self.screenshots_armed = armed
+        button = self.delete_screenshots_button
+        button.setText(
+            "Click again to delete permanently" if armed else "Delete all screenshots"
+        )
+        button.setToolTip(
+            "This can't be undone. Switch tabs to cancel." if armed else ""
+        )
+        # A page rule keyed on this property restyles reliably; clearing a widget's own sheet left it red
+        button.setProperty("armed", armed)
+        style = button.style()
+        assert style is not None
+        style.unpolish(button)
+        style.polish(button)
 
     def _select_whisper(self, model: str) -> None:
         """Show a transcription model as selected without saving it.
@@ -874,3 +945,20 @@ class _SettingsComboBox(QComboBox):
         """
         if event is not None:
             event.ignore()
+
+
+def _format_size(size: int) -> str:
+    """Describe a file size in bytes with the largest fitting unit.
+
+    Args:
+        size (int): The size in bytes.
+
+    Returns:
+        str: The size, such as "12.3 MB".
+    """
+    value = float(size)
+    for unit in ("B", "KB", "MB"):
+        if value < 1024:
+            return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
+        value /= 1024
+    return f"{value:.1f} GB"

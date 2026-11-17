@@ -10,6 +10,7 @@ from pypdf import PdfWriter
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from core.ai_sender import AISender, InteractionRequest
+from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.document_text import MAX_CHARACTERS, extract_text
 from core.model_catalog import ModelOption
@@ -180,7 +181,13 @@ class SettingsDocumentsTests(unittest.TestCase):
         self.store = SettingsStore(Path(self.directory.name) / "config.json")
         self.window = QWidget()
         self.addCleanup(self.window.deleteLater)
-        self.page = SettingsPage(self.store, ClaudeBridge(), MagicMock(), self.window)
+        self.page = SettingsPage(
+            self.store,
+            ClaudeBridge(),
+            MagicMock(),
+            ChatHistory(Path(self.directory.name) / "chat_history.json"),
+            self.window,
+        )
         self.addCleanup(self.page.key_timer.stop)
 
     def test_upload_show_and_remove(self) -> None:

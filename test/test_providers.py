@@ -16,6 +16,7 @@ from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from core.ai_sender import AISender
+from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.gemini_efforts import load_efforts, parse_efforts
 from core.model_catalog import EFFORT_WARNING, ModelOption, compatible_model
@@ -405,7 +406,11 @@ class SettingsPageTests(unittest.TestCase):
         self.transcriber = Transcriber(self.store)
         self.transcriber.cache_dir = Path(self.directory.name) / "whisper"
         self.page = SettingsPage(
-            self.store, ClaudeBridge(), self.transcriber, self.window
+            self.store,
+            ClaudeBridge(),
+            self.transcriber,
+            ChatHistory(Path(self.directory.name) / "chat_history.json"),
+            self.window,
         )
         self.addCleanup(self.page.key_timer.stop)
         refresh = patch.object(self.page.catalog, "refresh", side_effect=range(1, 100))

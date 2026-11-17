@@ -152,6 +152,35 @@ class ChatHistory:
             if isinstance(name, str) and SCREENSHOT_NAME.fullmatch(name)
         )
 
+    def screenshots_size(self) -> int:
+        """Measure the storage used by stored screenshots.
+
+        Returns:
+            int: The total size of the stored screenshot files in bytes.
+        """
+        total = 0
+        for file in self.screenshots_dir.glob("*.png"):
+            try:
+                total += file.stat().st_size
+            except OSError:
+                pass  # Deleted while measuring
+        return total
+
+    def delete_screenshots(self) -> bool:
+        """Delete every stored screenshot; saved chats then show them as missing.
+
+        Returns:
+            bool: True when every screenshot was deleted.
+        """
+        deleted = True
+        for file in self.screenshots_dir.glob("*.png"):
+            try:
+                file.unlink(missing_ok=True)
+            except OSError as e:
+                print(f"Error deleting screenshot: {e!s}")
+                deleted = False
+        return deleted
+
     def _prune_screenshots(self) -> None:
         """Delete old stored screenshots that no saved conversation references, e.g. from failed sends."""
         referenced = {

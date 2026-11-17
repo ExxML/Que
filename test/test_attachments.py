@@ -5,15 +5,20 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock
 
 from PyQt6.QtCore import QEvent, QPointF, Qt
 from PyQt6.QtGui import QColor, QImage, QKeyEvent, QMouseEvent
 from PyQt6.QtWidgets import QAbstractButton, QApplication, QPushButton, QWidget
 
 from core.chat_history import ChatHistory, Conversation
+from core.claude_bridge import ClaudeBridge
+from core.settings import SettingsStore
 from ui.chat.chat_area import ChatArea
 from ui.chat.chat_bubble import ChatBubble
+from ui.theme import DANGER_COLOR, qcolor
 from ui.window.screenshot_viewer import ScreenshotViewer
+from ui.window.settings_page import SettingsPage
 
 
 def _image(path: Path) -> str:
@@ -134,6 +139,42 @@ class ScreenshotHistoryTests(unittest.TestCase):
         self.path.write_text("{not json", encoding="utf-8")
         ChatHistory(self.path)
         self.assertTrue(Path(stored).exists())
+
+    def test_settings_measure_and_delete_all_after_confirmation(self) -> None:
+        """Show the stored size and delete every screenshot only on the confirming click."""
+        history = ChatHistory(self.path)
+        stored = history.keep_screenshots(
+            [_image(self.cache / "a.png"), _image(self.cache / "b.png")]
+        )
+        size = sum(Path(path).stat().st_size for path in stored)
+        window = QWidget()
+        self.addCleanup(window.deleteLater)
+        page = SettingsPage(
+            SettingsStore(self.root / "config.json"),
+            ClaudeBridge(),
+            MagicMock(),
+            history,
+            window,
+        )
+        self.addCleanup(page.key_timer.stop)
+        self.assertEqual(history.screenshots_size(), size)
+        self.assertEqual(
+            page.screenshots_size_label.text(), f"Screenshots use {size} B."
+        )
+        page.delete_screenshots_button.click()
+        self.assertTrue(all(Path(path).exists() for path in stored))
+        page.tab_bar.setCurrentIndex(1)  # Switching tabs cancels the pending delete
+        page.delete_screenshots_button.click()
+        self.assertTrue(all(Path(path).exists() for path in stored))
+        page.delete_screenshots_button.click()
+        self.assertFalse(any(Path(path).exists() for path in stored))
+        self.assertEqual(page.screenshots_size_label.text(), "Screenshots use 0 B.")
+        self.assertFalse(page.delete_screenshots_button.isEnabled())
+        # The confirming red style must not outlive the deletion
+        self.assertNotEqual(
+            page.delete_screenshots_button.palette().buttonText().color(),
+            qcolor(DANGER_COLOR),
+        )
 
 
 class ScreenshotDisplayTests(unittest.TestCase):

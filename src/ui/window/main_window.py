@@ -302,6 +302,7 @@ class MainWindow(QWidget):
             self.ai_sender.settings_store,
             self.ai_sender.claude_bridge,
             self.transcriber,
+            self.chat_history,
             self,
         )
         self.pages.addWidget(self.settings_page)
