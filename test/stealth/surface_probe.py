@@ -55,14 +55,29 @@ def run() -> dict[str, object]:
     """Exercise native visibility transitions without physical input or live services."""
     app = QApplication([])
     if app.platformName() != "windows":
-        raise RuntimeError("A Windows Qt platform is required; offscreen is not native coverage.")
+        raise RuntimeError(
+            "A Windows Qt platform is required; offscreen is not native coverage."
+        )
     enum_proc = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     native.EnumWindows.argtypes = [enum_proc, wintypes.LPARAM]
     native.EnumWindows.restype = wintypes.BOOL
     native.IsWindow.argtypes = [wintypes.HWND]
     native.IsWindow.restype = wintypes.BOOL
     native.GetCapture.restype = wintypes.HWND
-    native.CreateWindowExW.argtypes = [wintypes.DWORD, wintypes.LPCWSTR, wintypes.LPCWSTR, wintypes.DWORD, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.HWND, wintypes.HMENU, wintypes.HINSTANCE, ctypes.c_void_p]
+    native.CreateWindowExW.argtypes = [
+        wintypes.DWORD,
+        wintypes.LPCWSTR,
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        wintypes.HWND,
+        wintypes.HMENU,
+        wintypes.HINSTANCE,
+        ctypes.c_void_p,
+    ]
     native.CreateWindowExW.restype = wintypes.HWND
     native.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
     native.DestroyWindow.argtypes = [wintypes.HWND]
@@ -80,7 +95,13 @@ def run() -> dict[str, object]:
             ok = native.GetWindowDisplayAffinity(hwnd, ctypes.byref(affinity))
             if not ok and not native.IsWindow(hwnd):
                 return True
-            sample = {"surface": surface, "hwnd": hwnd, "affinity": affinity.value, "query_ok": bool(ok), "time": time.monotonic()}
+            sample = {
+                "surface": surface,
+                "hwnd": hwnd,
+                "affinity": affinity.value,
+                "query_ok": bool(ok),
+                "time": time.monotonic(),
+            }
             samples.append(sample)
             if not ok or affinity.value != 0x11:
                 name = ctypes.create_unicode_buffer(256)
@@ -120,7 +141,14 @@ def run() -> dict[str, object]:
             screenshot.screenshots_dir = root / "screenshots"
             screenshot.screenshots_dir.mkdir()
             surface = "main-startup"
-            with patch("core.provider_catalog.ProviderCatalog.refresh", return_value=1), patch("ui.window.main_window.ChatHistory", return_value=ChatHistory(root / "history.json")), patch.object(HookClient, "start"):
+            with (
+                patch("core.provider_catalog.ProviderCatalog.refresh", return_value=1),
+                patch(
+                    "ui.window.main_window.ChatHistory",
+                    return_value=ChatHistory(root / "history.json"),
+                ),
+                patch.object(HookClient, "start"),
+            ):
                 window = MainWindow(sender, screenshot, transcriber)
                 shortcuts = ShortcutManager(window, screenshot)
                 # The helper process's engine, looped back in-process: commands in, events out
@@ -148,13 +176,19 @@ def run() -> dict[str, object]:
             before_focus = native.GetForegroundWindow()
             router.on_pointer(0x201, x, y, 0, hwnd)
             router.on_pointer(0x202, x, y, 0, hwnd)
-            assert engine.input_armed and router.target is edit, "Clicking input did not arm local editing."
+            assert engine.input_armed and router.target is edit, (
+                "Clicking input did not arm local editing."
+            )
 
             def key(vk: int, down: bool = True) -> None:
                 """Deliver one physical-key fixture to the production callback."""
                 event = KBDLLHOOKSTRUCT(vkCode=vk, scanCode=vk)
-                result = engine._low_level_keyboard_proc(0, WM_KEYDOWN if down else WM_KEYUP, ctypes.addressof(event))
-                assert result == 1, f"Armed key {vk} was not consumed; target={router.target}, armed={engine.input_armed}."
+                result = engine._low_level_keyboard_proc(
+                    0, WM_KEYDOWN if down else WM_KEYUP, ctypes.addressof(event)
+                )
+                assert result == 1, (
+                    f"Armed key {vk} was not consumed; target={router.target}, armed={engine.input_armed}."
+                )
 
             with patch("core.hook_engine.user32") as api:
                 api.CallNextHookEx.return_value = 0
@@ -168,7 +202,9 @@ def run() -> dict[str, object]:
                 previous = clipboard.mimeData()
                 if previous is not None:
                     for content_type in previous.formats():
-                        saved_clipboard.setData(content_type, previous.data(content_type))
+                        saved_clipboard.setData(
+                            content_type, previous.data(content_type)
+                        )
                 try:
                     key(0x11)
                     key(ord("A"))
@@ -198,7 +234,9 @@ def run() -> dict[str, object]:
                 key(0x08, False)
                 assert edit.toPlainText() == ""
                 interactions.append("type-replace-backspace")
-            assert native.GetForegroundWindow() == before_focus, "Local editing changed native foreground focus."
+            assert native.GetForegroundWindow() == before_focus, (
+                "Local editing changed native foreground focus."
+            )
             assert not native.GetCapture(), "Local editing grabbed the pointer."
             router.disarm()
 
@@ -209,21 +247,39 @@ def run() -> dict[str, object]:
                 top = widget.window()
                 assert top is not None
                 point_in_top = widget.mapTo(top, point)
-                native_point = wintypes.POINT(round(point_in_top.x() * top.devicePixelRatioF()), round(point_in_top.y() * top.devicePixelRatioF()))
-                native.ClientToScreen(wintypes.HWND(int(top.winId())), ctypes.byref(native_point))
-                router.on_pointer(0x201, native_point.x, native_point.y, 0, int(top.winId()))
-                router.on_pointer(0x202, native_point.x, native_point.y, 0, int(top.winId()))
+                native_point = wintypes.POINT(
+                    round(point_in_top.x() * top.devicePixelRatioF()),
+                    round(point_in_top.y() * top.devicePixelRatioF()),
+                )
+                native.ClientToScreen(
+                    wintypes.HWND(int(top.winId())), ctypes.byref(native_point)
+                )
+                router.on_pointer(
+                    0x201, native_point.x, native_point.y, 0, int(top.winId())
+                )
+                router.on_pointer(
+                    0x202, native_point.x, native_point.y, 0, int(top.winId())
+                )
 
-            def pointer(widget: QWidget | None, point: QPoint, message: int, data: int = 0) -> None:
+            def pointer(
+                widget: QWidget | None, point: QPoint, message: int, data: int = 0
+            ) -> None:
                 """Route a motion, wheel, or held-button event at a widget-relative point."""
                 router.refresh_regions()
                 assert widget is not None
                 top = widget.window()
                 assert top is not None
                 local = widget.mapTo(top, point)
-                native_point = wintypes.POINT(round(local.x() * top.devicePixelRatioF()), round(local.y() * top.devicePixelRatioF()))
-                native.ClientToScreen(wintypes.HWND(int(top.winId())), ctypes.byref(native_point))
-                router.on_pointer(message, native_point.x, native_point.y, data, int(top.winId()))
+                native_point = wintypes.POINT(
+                    round(local.x() * top.devicePixelRatioF()),
+                    round(local.y() * top.devicePixelRatioF()),
+                )
+                native.ClientToScreen(
+                    wintypes.HWND(int(top.winId())), ctypes.byref(native_point)
+                )
+                router.on_pointer(
+                    message, native_point.x, native_point.y, data, int(top.winId())
+                )
 
             edit.setPlainText("select this text")
             cursor = edit.textCursor()
@@ -234,21 +290,28 @@ def run() -> dict[str, object]:
             pointer(edit.viewport(), start_point, 0x201)
             pointer(edit.viewport(), end_point, 0x200)
             pointer(edit.viewport(), end_point, 0x202)
-            assert edit.textCursor().selectedText() == "select", "Routed drag did not select the expected text."
+            assert edit.textCursor().selectedText() == "select", (
+                "Routed drag did not select the expected text."
+            )
             interactions.append("text-selection-drag")
             original = window.geometry()
             header_point = QPoint(window.width() // 2, 16)
             pointer(window, header_point, 0x201)
             pointer(window, header_point + QPoint(30, 20), 0x200)
             pointer(window, header_point, 0x202)
-            assert window.pos() != original.topLeft(), "Header dragging did not move the window."
+            assert window.pos() != original.topLeft(), (
+                "Header dragging did not move the window."
+            )
             assert not native.GetCapture()
             window.setGeometry(original)
             corner = QPoint(window.width() - 2, window.height() - 2)
             pointer(window, corner, 0x201)
             pointer(window, corner + QPoint(40, 30), 0x200)
             pointer(window, corner, 0x202)
-            assert window.width() > original.width() and window.height() > original.height(), "Edge dragging did not resize the window."
+            assert (
+                window.width() > original.width()
+                and window.height() > original.height()
+            ), "Edge dragging did not resize the window."
             interactions.append("move-and-resize")
             window.setGeometry(original)
             for index in range(25):
@@ -262,7 +325,9 @@ def run() -> dict[str, object]:
             assert chat_viewport is not None
             pointer(chat_viewport, chat_viewport.rect().center(), 0x20A, 120 << 16)
             wait(250)
-            assert scrollbar.value() < before_scroll, "Routed wheel did not scroll the chat."
+            assert scrollbar.value() < before_scroll, (
+                "Routed wheel did not scroll the chat."
+            )
             interactions.append("chat-wheel")
             pointer(window.history_button, window.history_button.rect().center(), 0x200)
             wait(750)
@@ -288,20 +353,30 @@ def run() -> dict[str, object]:
                 wait(40)
                 completed.append(surface)
             window.show_settings()
-            for name, combo in (("model", window.settings_page.model_combo), ("effort", window.settings_page.effort_combo), ("transcription", window.settings_page.whisper_combo)):
-                window.settings_page.tab_bar.setCurrentIndex(2 if name == "transcription" else 0)
+            for name, combo in (
+                ("model", window.settings_page.model_combo),
+                ("effort", window.settings_page.effort_combo),
+                ("transcription", window.settings_page.whisper_combo),
+            ):
+                window.settings_page.tab_bar.setCurrentIndex(
+                    2 if name == "transcription" else 0
+                )
                 wait(20)
                 combo.setEnabled(True)
                 combo.addItems(["Fixture one", "Fixture two"])
                 for repeat in range(3):
                     surface = f"combo-{name}-{repeat}"
                     combo.showPopup()
-                    assert not native.GetCapture(), f"{surface} grabbed the native pointer."
+                    assert not native.GetCapture(), (
+                        f"{surface} grabbed the native pointer."
+                    )
                     wait(200)
                     opened = combo.view()
                     assert opened is not None
                     opened_window = opened.window()
-                    assert opened_window is not None and opened_window.isVisible(), f"{surface} did not open."
+                    assert opened_window is not None and opened_window.isVisible(), (
+                        f"{surface} did not open."
+                    )
                     completed.append(surface)
                     combo.hidePopup()
                 combo.showPopup()
@@ -318,8 +393,12 @@ def run() -> dict[str, object]:
                 viewport = view.viewport()
                 assert viewport is not None
                 click(viewport, view.visualRect(model_index).center())
-                assert combo.currentIndex() == row, f"{name} routed selection did not change the value."
-                assert not popup_window.isVisible(), f"{name} did not close after selection."
+                assert combo.currentIndex() == row, (
+                    f"{name} routed selection did not change the value."
+                )
+                assert not popup_window.isVisible(), (
+                    f"{name} did not close after selection."
+                )
                 interactions.append(f"combo-{name}-selection")
                 combo.setCurrentIndex(0)
                 assert combo.isVisible(), f"{name} fixture is not on the visible tab."
@@ -333,10 +412,17 @@ def run() -> dict[str, object]:
                     key(0x28, False)
                     key(0x0D)
                     key(0x0D, False)
-                assert combo.currentIndex() == 1, f"{name} keyboard selection did not change the value."
-                assert not popup_window.isVisible(), f"{name} keyboard selection did not dismiss the popup."
+                assert combo.currentIndex() == 1, (
+                    f"{name} keyboard selection did not change the value."
+                )
+                assert not popup_window.isVisible(), (
+                    f"{name} keyboard selection did not dismiss the popup."
+                )
                 interactions.append(f"combo-{name}-keyboard")
-            for name, field in (("input", window.input_field.input_field), ("settings", window.settings_page.key_input)):
+            for name, field in (
+                ("input", window.input_field.input_field),
+                ("settings", window.settings_page.key_input),
+            ):
                 surface = f"context-{name}"
                 context_menu = field.createStandardContextMenu()
                 assert context_menu is not None
@@ -361,7 +447,10 @@ def run() -> dict[str, object]:
             assert QToolTip.isVisible()
             completed.append(surface)
             QToolTip.hideText()
-            for mode in (QFileDialog.FileMode.Directory, QFileDialog.FileMode.ExistingFile):
+            for mode in (
+                QFileDialog.FileMode.Directory,
+                QFileDialog.FileMode.ExistingFile,
+            ):
                 surface = f"dialog-{mode.name}"
                 dialog = QFileDialog(window, "Fixture picker", str(root))
                 dialog.setOption(QFileDialog.Option.DontUseNativeDialog)
@@ -393,25 +482,49 @@ def run() -> dict[str, object]:
             with patch.object(native, "SetWindowDisplayAffinity", return_value=0):
                 blocked.show()
                 wait(40)
-                assert not native.IsWindowVisible(int(blocked.winId())), "A failed protection call exposed a window."
+                assert not native.IsWindowVisible(int(blocked.winId())), (
+                    "A failed protection call exposed a window."
+                )
             blocked.hide()
             blocked.show()
             wait(40)
-            assert native.IsWindowVisible(int(blocked.winId())), "Protected retry must recover."
+            assert native.IsWindowVisible(int(blocked.winId())), (
+                "Protected retry must recover."
+            )
             blocked.close()
             completed.append(surface)
             surface = "native-window-guard"
-            raw = native.CreateWindowExW(0, "STATIC", "Fixture native surface", 0x80000000, 20, 20, 100, 100, None, None, None, None)
+            raw = native.CreateWindowExW(
+                0,
+                "STATIC",
+                "Fixture native surface",
+                0x80000000,
+                20,
+                20,
+                100,
+                100,
+                None,
+                None,
+                None,
+                None,
+            )
             assert raw, "Could not create a native control window."
             try:
                 with patch.object(native, "SetWindowDisplayAffinity", return_value=0):
                     native.ShowWindow(raw, 4)
-                    assert not native.IsWindowVisible(raw), "Native protection failure did not block visibility."
+                    assert not native.IsWindowVisible(raw), (
+                        "Native protection failure did not block visibility."
+                    )
                 native.ShowWindow(raw, 4)
                 wait(50)
-                assert native.IsWindowVisible(raw), "Native protection retry did not recover."
+                assert native.IsWindowVisible(raw), (
+                    "Native protection retry did not recover."
+                )
                 affinity = wintypes.DWORD()
-                assert native.GetWindowDisplayAffinity(raw, ctypes.byref(affinity)) and affinity.value == 0x11
+                assert (
+                    native.GetWindowDisplayAffinity(raw, ctypes.byref(affinity))
+                    and affinity.value == 0x11
+                )
             finally:
                 native.DestroyWindow(raw)
             completed.append(surface)
@@ -419,14 +532,38 @@ def run() -> dict[str, object]:
             tray.hide()
             for widget in app.topLevelWidgets():
                 widget.close()
-            assert all(any(row["surface"] == name for row in samples) for name in completed), "Every surface must have native observations."
+            assert all(
+                any(row["surface"] == name for row in samples) for name in completed
+            ), "Every surface must have native observations."
     finally:
         stop.set()
         thread.join(2)
         policy.close()
-    report = {"scope": "Synthetic opening and routed callback input; no browser pixels or physical input.", "completed": completed, "interactions": interactions, "foreground_hwnd": before_focus, "foreground_check": "unavailable" if not before_focus else "unchanged during routed editing", "samples": len(samples), "failures": failures, "policy_errors": policy.errors}
-    Path(".stealth-runs/repair-native-surfaces-report.json").write_text(json.dumps(report, indent=2))
-    assert not failures, json.dumps({"failures": list({(str(row["surface"]), str(row.get("class", "")), row["hwnd"]) for row in failures})})
+    report = {
+        "scope": "Synthetic opening and routed callback input; no browser pixels or physical input.",
+        "completed": completed,
+        "interactions": interactions,
+        "foreground_hwnd": before_focus,
+        "foreground_check": "unavailable"
+        if not before_focus
+        else "unchanged during routed editing",
+        "samples": len(samples),
+        "failures": failures,
+        "policy_errors": policy.errors,
+    }
+    Path(".stealth-runs/repair-native-surfaces-report.json").write_text(
+        json.dumps(report, indent=2)
+    )
+    assert not failures, json.dumps(
+        {
+            "failures": list(
+                {
+                    (str(row["surface"]), str(row.get("class", "")), row["hwnd"])
+                    for row in failures
+                }
+            )
+        }
+    )
     return report
 
 

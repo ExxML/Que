@@ -24,14 +24,12 @@ class ModelCatalogTests(unittest.TestCase):
         effort_patch.start()
         self.addCleanup(effort_patch.stop)
         self.requests: list[httpx.Request] = []
-        self.fail = False
+        self.fail_requests = False
         self.client = genai.Client(
             api_key="test",
-            http_options={
-                "httpx_client": httpx.Client(
-                    transport=httpx.MockTransport(self._respond)
-                )
-            },
+            http_options=types.HttpOptions(
+                httpx_client=httpx.Client(transport=httpx.MockTransport(self._respond))
+            ),
         )
         self.addCleanup(self.client.close)
 
@@ -97,12 +95,13 @@ class ModelCatalogTests(unittest.TestCase):
         catalog = ModelCatalog(self.client)
         results: list[Any] = []
         threads: list[threading.Thread] = []
-        catalog.loaded.connect(
-            lambda models: (
-                results.append(models),
-                threads.append(threading.current_thread()),
-            )
-        )
+
+        def record(models: object) -> None:
+            """Record delivered models and the thread that delivered them."""
+            results.append(models)
+            threads.append(threading.current_thread())
+
+        catalog.loaded.connect(record)
         catalog.refresh()
         assert catalog.worker_thread is not None
         self.assertTrue(catalog.worker_thread.daemon)
@@ -125,14 +124,14 @@ class ModelCatalogTests(unittest.TestCase):
         results: list[Any] = []
         catalog.failed.connect(errors.append)
         catalog.loaded.connect(results.append)
-        self.fail = True
+        self.fail_requests = True
         catalog.refresh()
         assert catalog.worker_thread is not None
         catalog.worker_thread.join(timeout=5)
         self.app.processEvents()
         self.assertEqual(results, [])
         self.assertIn("Could not load Gemini models", errors[0])
-        self.fail = False
+        self.fail_requests = False
         catalog.refresh()
         catalog.worker_thread.join(timeout=5)
         self.app.processEvents()
@@ -158,7 +157,7 @@ class ModelCatalogTests(unittest.TestCase):
             httpx.Response: A model page or simulated authentication failure.
         """
         self.requests.append(request)
-        if self.fail:
+        if self.fail_requests:
             return httpx.Response(
                 403,
                 json={

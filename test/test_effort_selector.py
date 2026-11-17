@@ -1,6 +1,8 @@
 """Check effort selection and shared popup behavior through Qt mouse events."""
 
 import unittest
+from collections.abc import Callable
+from typing import cast
 from unittest.mock import MagicMock
 
 from PyQt6.QtCore import Qt
@@ -12,6 +14,9 @@ from core.model_catalog import ModelOption
 from ui.input.input_field import InputField
 from ui.input.selection_dropdown import SelectionDropdown
 
+# PyQt6's stubs type QTest's C++ namespace functions as instance methods.
+mouse_click = cast(Callable[[QWidget, Qt.MouseButton], None], QTest.mouseClick)
+key_click = cast(Callable[[QWidget, Qt.Key], None], QTest.keyClick)
 
 TEST_MODELS = (
     ModelOption(
@@ -67,22 +72,22 @@ class EffortSelectorTests(unittest.TestCase):
     def test_popup_dismissal_and_reposition(self) -> None:
         """Close on Escape, outside click, and send while following input resize."""
         dropdown = self.settings.effort_dropdown
-        QTest.mouseClick(dropdown, Qt.MouseButton.LeftButton)
+        mouse_click(dropdown, Qt.MouseButton.LeftButton)
         assert dropdown.popup is not None
         before = dropdown.popup.y()
         self.settings.reposition_popups(15)
         self.assertEqual(dropdown.popup.y(), before + 15)
-        QTest.keyClick(self.field.input_field, Qt.Key.Key_Escape)
+        key_click(self.field.input_field, Qt.Key.Key_Escape)
         self.assertIsNone(dropdown.popup)
-        QTest.mouseClick(dropdown, Qt.MouseButton.LeftButton)
-        QTest.mouseClick(self.window, Qt.MouseButton.LeftButton)
+        mouse_click(dropdown, Qt.MouseButton.LeftButton)
+        mouse_click(self.window, Qt.MouseButton.LeftButton)
         self.assertIsNone(dropdown.popup)
-        QTest.mouseClick(dropdown, Qt.MouseButton.LeftButton)
-        QTest.mouseClick(self.settings.model_dropdown, Qt.MouseButton.LeftButton)
+        mouse_click(dropdown, Qt.MouseButton.LeftButton)
+        mouse_click(self.settings.model_dropdown, Qt.MouseButton.LeftButton)
         self.assertIsNone(dropdown.popup)
         self.assertIsNotNone(self.settings.model_dropdown.popup)
         self.field.input_field.setPlainText("hello")
-        QTest.keyClick(self.field.input_field, Qt.Key.Key_Return)
+        key_click(self.field.input_field, Qt.Key.Key_Return)
         self.assertIsNone(self.settings.model_dropdown.popup)
         self.assertIsNone(dropdown.popup)
 
@@ -93,7 +98,7 @@ class EffortSelectorTests(unittest.TestCase):
             selection_dropdown (SelectionDropdown): The selector to operate.
             value (str): The desired option value.
         """
-        QTest.mouseClick(selection_dropdown, Qt.MouseButton.LeftButton)
+        mouse_click(selection_dropdown, Qt.MouseButton.LeftButton)
         popup = selection_dropdown.popup
         assert popup is not None
         items = popup.scroll_area.widget()
@@ -106,7 +111,7 @@ class EffortSelectorTests(unittest.TestCase):
         widget = item.widget()
         assert widget is not None
         popup.scroll_area.ensureWidgetVisible(widget)
-        QTest.mouseClick(widget, Qt.MouseButton.LeftButton)
+        mouse_click(widget, Qt.MouseButton.LeftButton)
         self.assertIsNone(selection_dropdown.popup)
 
 

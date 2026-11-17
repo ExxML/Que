@@ -15,6 +15,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+from numpy.typing import NDArray
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 from stealth.hooks import HookDriver
 
@@ -23,7 +25,8 @@ from core.hook_engine import HookEngine, InputMonitor, _MouseData, key_identity
 from core.hook_host import HookHost
 from core.settings import SettingsStore
 from core.transcriber import Transcriber
-from ui.input.input_router import KeyTranslator, native
+from core.window_policy import native
+from ui.input.input_router import KeyTranslator
 from ui.window.main_window import MainWindow
 
 
@@ -35,7 +38,10 @@ class OwnershipTests(unittest.TestCase):
         for order in itertools.permutations((0xA2, 0xA4, 0xA0, ord("Q"))):
             with self.subTest(order=order):
                 driver = HookDriver()
-                driver.manager.always_active_hotkeys[(7, ord("Q"))] = (driver.manager.request_quit, False)
+                driver.manager.always_active_hotkeys[(7, ord("Q"))] = (
+                    driver.manager.request_quit,
+                    False,
+                )
                 for vk in (0xA2, 0xA4, 0xA0, ord("Q")):
                     driver.event(vk)
                 self.assertEqual(self._quits(driver), 0)
@@ -56,11 +62,16 @@ class OwnershipTests(unittest.TestCase):
         driver.event(ord("A"))
         driver.event(ord("A"), False)
         self.assertFalse(driver.delivered)
-        self.assertEqual(len([event for event in driver.events if event["type"] == "key"]), 3)
+        self.assertEqual(
+            len([event for event in driver.events if event["type"] == "key"]), 3
+        )
         self.assertTrue(driver.clear())
         driver.event(ord("B"))
         driver.event(ord("B"), False)
-        self.assertEqual([(vk, down) for vk, down, _ in driver.delivered], [(ord("B"), True), (ord("B"), False)])
+        self.assertEqual(
+            [(vk, down) for vk, down, _ in driver.delivered],
+            [(ord("B"), True), (ord("B"), False)],
+        )
 
     def test_already_delivered_key_cannot_be_claimed_mid_press(self) -> None:
         """Preserve the recipient's release if a shortcut or arming begins during a hold."""
@@ -78,12 +89,17 @@ class OwnershipTests(unittest.TestCase):
     def test_callback_baseexception_is_reported_and_release_is_owned(self) -> None:
         """Contain even SystemExit from callbacks and retain subsequent hook operation."""
         driver = HookDriver()
-        driver.manager.always_active_hotkeys[(1, ord("E"))] = (MagicMock(side_effect=SystemExit("fixture")), False)
+        driver.manager.always_active_hotkeys[(1, ord("E"))] = (
+            MagicMock(side_effect=SystemExit("fixture")),
+            False,
+        )
         driver.event(0x11)
         driver.event(ord("E"))
         driver.event(0x11, False)
         driver.event(ord("E"), False)
-        self.assertEqual(len([event for event in driver.events if event["type"] == "error"]), 1)
+        self.assertEqual(
+            len([event for event in driver.events if event["type"] == "error"]), 1
+        )
         self.assertFalse(driver.delivered)
         self.assertTrue(driver.clear())
 
@@ -96,14 +112,30 @@ class OwnershipTests(unittest.TestCase):
             driver.event(vk, False)
         self.assertFalse(driver.actions)
         self.assertTrue(driver.clear())
-        self.assertEqual([(vk, down) for vk, down, _ in driver.delivered], [(0x5B, True), (0x11, True), (ord("E"), True), (ord("E"), False), (0x11, False), (0x5B, False)])
+        self.assertEqual(
+            [(vk, down) for vk, down, _ in driver.delivered],
+            [
+                (0x5B, True),
+                (0x11, True),
+                (ord("E"), True),
+                (ord("E"), False),
+                (0x11, False),
+                (0x5B, False),
+            ],
+        )
 
     def test_failed_install_reports_and_never_enters_message_loop(self) -> None:
         """Verify the reported error and early return before the helper's message loop."""
         commands, events = MagicMock(), MagicMock()
         commands.recv_bytes.side_effect = EOFError
         host = HookHost(commands, events, library=None)  # The Python fallback path
-        with patch("core.hook_host.user32") as api, patch("core.hook_host.kernel32") as kernel, patch("core.hook_host.system"), patch("core.hook_host.native") as native_api, patch.object(HookHost, "_create_monitor_window", return_value=True):
+        with (
+            patch("core.hook_host.user32") as api,
+            patch("core.hook_host.kernel32") as kernel,
+            patch("core.hook_host.system"),
+            patch("core.hook_host.native") as native_api,
+            patch.object(HookHost, "_create_monitor_window", return_value=True),
+        ):
             api.SetWindowsHookExW.return_value = None
             kernel.GetLastError.return_value = 5
             self.assertEqual(host.run(), 1)
@@ -117,8 +149,21 @@ class OwnershipTests(unittest.TestCase):
         commands.recv_bytes.side_effect = EOFError
         host = HookHost(commands, events)
         assert host.native is not None
-        stats = {"status": 0, "keyboard_error": 5, "mouse_error": 0, "late_events": 0, "max_late_ms": 0, "dropped_events": 0}
-        with patch.object(host.native, "start", return_value=0), patch.object(host.native, "stats", return_value=stats), patch("core.hook_host.system"), patch("core.hook_host.native") as native_api, patch.object(HookHost, "_create_monitor_window", return_value=True):
+        stats = {
+            "status": 0,
+            "keyboard_error": 5,
+            "mouse_error": 0,
+            "late_events": 0,
+            "max_late_ms": 0,
+            "dropped_events": 0,
+        }
+        with (
+            patch.object(host.native, "start", return_value=0),
+            patch.object(host.native, "stats", return_value=stats),
+            patch("core.hook_host.system"),
+            patch("core.hook_host.native") as native_api,
+            patch.object(HookHost, "_create_monitor_window", return_value=True),
+        ):
             self.assertEqual(host.run(), 1)
         self.assertFalse(native_api.GetMessageW.called)
         sent = [json.loads(call.args[0]) for call in events.send_bytes.call_args_list]
@@ -168,7 +213,6 @@ class OwnershipTests(unittest.TestCase):
         self.assertIsNone(MainWindow._is_topmost_window(window))
         window.chat_area.show_stream_error.assert_called_once()
 
-
     @staticmethod
     def _quits(driver: HookDriver) -> int:
         """Count the quit confirmations the engine sent to Que."""
@@ -193,7 +237,20 @@ class TypingModeTests(unittest.TestCase):
 
     def test_ordinary_typing_and_editing_keys_are_swallowed(self) -> None:
         """Keep characters, editing keys and ordinary chords inside Que."""
-        for keys in ((ord("A"),), (0x0D,), (0x09,), (0x1B,), (0x08,), (0x25,), (0x24,), (0x21,), (0xA2, ord("W")), (0xA2, ord("V")), (0xA0, ord("A")), (0xA4, ord("D"))):
+        for keys in (
+            (ord("A"),),
+            (0x0D,),
+            (0x09,),
+            (0x1B,),
+            (0x08,),
+            (0x25,),
+            (0x24,),
+            (0x21,),
+            (0xA2, ord("W")),
+            (0xA2, ord("V")),
+            (0xA0, ord("A")),
+            (0xA4, ord("D")),
+        ):
             with self.subTest(keys=keys):
                 driver = self.armed()
                 self.press(driver, *keys)
@@ -203,14 +260,26 @@ class TypingModeTests(unittest.TestCase):
 
     def test_navigation_chords_reach_windows_and_leave_typing_mode(self) -> None:
         """Deliver Alt+Tab, Alt+Esc, Ctrl+Esc, Ctrl+Shift+Esc and Alt+F4 intact, then stop typing."""
-        for keys in ((0xA4, 0x09), (0xA4, 0xA0, 0x09), (0xA4, 0x1B), (0xA2, 0x1B), (0xA2, 0xA0, 0x1B), (0xA4, 0x73)):
+        for keys in (
+            (0xA4, 0x09),
+            (0xA4, 0xA0, 0x09),
+            (0xA4, 0x1B),
+            (0xA2, 0x1B),
+            (0xA2, 0xA0, 0x1B),
+            (0xA4, 0x73),
+        ):
             with self.subTest(keys=keys):
                 driver = self.armed()
                 self.press(driver, *keys)
                 delivered = [(vk, down) for vk, down, _ in driver.delivered]
-                self.assertEqual(sorted(delivered), sorted([(vk, True) for vk in keys] + [(vk, False) for vk in keys]))
+                self.assertEqual(
+                    sorted(delivered),
+                    sorted([(vk, True) for vk in keys] + [(vk, False) for vk in keys]),
+                )
                 self.assertFalse(driver.manager.input_armed)
-                self.assertIn({"type": "armed", "value": False, "seq": 0}, driver.events)
+                self.assertIn(
+                    {"type": "armed", "value": False, "seq": 0}, driver.events
+                )
                 self.assertTrue(driver.clear())
 
     def test_alt_tab_cycles_while_alt_stays_held(self) -> None:
@@ -221,12 +290,20 @@ class TypingModeTests(unittest.TestCase):
             driver.event(0x09)
             driver.event(0x09, False)
         driver.event(0xA4, False)
-        self.assertEqual([(vk, down) for vk, down, _ in driver.delivered], [(0xA4, True)] + [(0x09, True), (0x09, False)] * 3 + [(0xA4, False)])
+        self.assertEqual(
+            [(vk, down) for vk, down, _ in driver.delivered],
+            [(0xA4, True)] + [(0x09, True), (0x09, False)] * 3 + [(0xA4, False)],
+        )
         self.assertTrue(driver.clear())
 
     def test_windows_key_combinations_reach_windows(self) -> None:
         """Pass the Windows key alone and with other keys, then stop typing."""
-        for keys in ((0x5B,), (0x5B, ord("D")), (0x5C, ord("E")), (0x5B, 0xA0, ord("S"))):
+        for keys in (
+            (0x5B,),
+            (0x5B, ord("D")),
+            (0x5C, ord("E")),
+            (0x5B, 0xA0, ord("S")),
+        ):
             with self.subTest(keys=keys):
                 driver = self.armed()
                 self.press(driver, *keys)
@@ -236,7 +313,17 @@ class TypingModeTests(unittest.TestCase):
 
     def test_function_device_and_lock_keys_keep_working_while_typing(self) -> None:
         """Pass F1-F12, Print Screen, media, volume and lock keys without leaving typing mode."""
-        for keys in ((0x74,), (0x7A,), (0xA2, 0x74), (0x2C,), (0xAF,), (0xAD,), (0xB3,), (0x14,), (0x90,)):
+        for keys in (
+            (0x74,),
+            (0x7A,),
+            (0xA2, 0x74),
+            (0x2C,),
+            (0xAF,),
+            (0xAD,),
+            (0xB3,),
+            (0x14,),
+            (0x90,),
+        ):
             with self.subTest(keys=keys):
                 driver = self.armed()
                 self.press(driver, *keys)
@@ -254,8 +341,13 @@ class TypingModeTests(unittest.TestCase):
                 driver.event(0x14)
                 driver.event(0x14)  # Autorepeat must not toggle again
                 driver.event(0x14, False)
-                self.assertEqual([event for event in driver.events if event["type"] == "lock"], [{"type": "lock", "vk": 0x14}] * 2)
-                self.assertFalse([event for event in driver.events if event["type"] == "key"])
+                self.assertEqual(
+                    [event for event in driver.events if event["type"] == "lock"],
+                    [{"type": "lock", "vk": 0x14}] * 2,
+                )
+                self.assertFalse(
+                    [event for event in driver.events if event["type"] == "key"]
+                )
                 self.assertEqual(len(driver.delivered), 5)
 
     def test_que_shortcuts_still_win_while_typing(self) -> None:
@@ -298,7 +390,9 @@ class InputMonitorTests(unittest.TestCase):
     def test_tick_count_wraparound(self) -> None:
         """Measure ages across the 49.7-day tick-count wrap."""
         monitor = InputMonitor(grace_ms=300)
-        monitor.record_raw(frozenset({("button", 1, True)}), 0xFFFFFFF0, "left mouse button press")
+        monitor.record_raw(
+            frozenset({("button", 1, True)}), 0xFFFFFFF0, "left mouse button press"
+        )
         self.assertEqual(monitor.expire(0x100), [])
         self.assertEqual(monitor.expire(0x200), ["left mouse button press"])
 
@@ -375,24 +469,38 @@ class AudioHealthTests(unittest.TestCase):
         self.app = QApplication.instance() or QApplication([])
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-        self.transcriber = Transcriber(SettingsStore(Path(self.directory.name) / "settings.json"))
+        self.transcriber = Transcriber(
+            SettingsStore(Path(self.directory.name) / "settings.json")
+        )
 
     def test_portaudio_host_and_streams_share_one_owner_thread(self) -> None:
         """Initialize, open and close both sources on the same thread with one host."""
         stop = threading.Event()
         threads = []
         audio = MagicMock()
-        audio.get_default_wasapi_loopback.return_value = {"maxInputChannels": 1, "defaultSampleRate": 16000, "index": 1}
-        audio.get_device_info_by_index.return_value = {"maxInputChannels": 1, "defaultSampleRate": 16000, "index": 2}
-        def open_stream(**_kwargs):
+        audio.get_default_wasapi_loopback.return_value = {
+            "maxInputChannels": 1,
+            "defaultSampleRate": 16000,
+            "index": 1,
+        }
+        audio.get_device_info_by_index.return_value = {
+            "maxInputChannels": 1,
+            "defaultSampleRate": 16000,
+            "index": 2,
+        }
+
+        def open_stream(**_kwargs: object) -> MagicMock:
             """Record the owner thread and stop after opening the second stream."""
             threads.append(threading.get_ident())
             if len(threads) == 2:
                 stop.set()
             return MagicMock()
+
         audio.open.side_effect = open_stream
-        with patch("core.transcriber.pyaudiowpatch.PyAudio", return_value=audio) as create:
-            items = queue.Queue()
+        with patch(
+            "core.transcriber.pyaudiowpatch.PyAudio", return_value=audio
+        ) as create:
+            items: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
             self.transcriber._capture_sources(("you", "them"), stop, items)
         create.assert_called_once()
         self.assertEqual(threads, [threading.get_ident()] * 2)
@@ -401,12 +509,16 @@ class AudioHealthTests(unittest.TestCase):
 
     def test_only_a_microphone_without_data_is_reported(self) -> None:
         """Warn when the microphone stops delivering audio, never for silence or a quiet loopback."""
-        for source, silence in itertools.product(("you", "them"), (None, np.zeros(1600, np.float32).tobytes())):
+        for source, silence in itertools.product(
+            ("you", "them"), (None, np.zeros(1600, np.float32).tobytes())
+        ):
             with self.subTest(source=source, callbacks=silence is not None):
                 transcriber = self.transcriber
                 stop = threading.Event()
-                statuses: list[tuple[object, ...]] = []
-                transcriber.source_status.connect(lambda *args, statuses=statuses: statuses.append(args))
+                statuses: list[tuple[str, str, object]] = []
+                transcriber.source_status.connect(
+                    lambda *args, statuses=statuses: statuses.append(args)
+                )
                 utterances: queue.Queue[object] = queue.Queue()
                 stream = MagicMock()
                 stream.is_active.return_value = True
@@ -418,7 +530,12 @@ class AudioHealthTests(unittest.TestCase):
                 audio.get_device_info_by_index.return_value = device
                 count = 0
 
-                def receive(*_args: object, stop: threading.Event = stop, silence: bytes | None = silence, **_kwargs: object) -> bytes:
+                def receive(
+                    *_args: object,
+                    stop: threading.Event = stop,
+                    silence: bytes | None = silence,
+                    **_kwargs: object,
+                ) -> bytes:
                     """Return synthetic source data and end after observing recovery."""
                     nonlocal count
                     count += 1
@@ -429,7 +546,11 @@ class AudioHealthTests(unittest.TestCase):
                         raise queue.Empty
                     return silence
 
-                with patch("core.transcriber.pyaudiowpatch.PyAudio", return_value=audio), patch("core.transcriber.time.monotonic", side_effect=(0, 6, 7, 8)), patch("core.transcriber.queue.Queue") as queue_type:
+                with (
+                    patch("core.transcriber.pyaudiowpatch.PyAudio", return_value=audio),
+                    patch("core.transcriber.time.monotonic", side_effect=(0, 6, 7, 8)),
+                    patch("core.transcriber.queue.Queue") as queue_type,
+                ):
                     queue_type.return_value.get.side_effect = receive
                     transcriber._capture(source, stop, utterances)  # type: ignore[arg-type]
                 messages = [row[1] for row in statuses]
@@ -460,7 +581,9 @@ class AudioHealthTests(unittest.TestCase):
         utterances: queue.Queue[tuple[str, object] | None] = queue.Queue()
         original_poll = self.transcriber._poll_source
 
-        def poll(capture: object, stop_event: threading.Event, timeout: float) -> object:
+        def poll(
+            capture: object, stop_event: threading.Event, timeout: float
+        ) -> object:
             """Stop once the microphone backlog is gone."""
             result = original_poll(capture, stop_event, timeout)  # type: ignore[arg-type]
             if captures["you"].chunks.empty():
@@ -468,7 +591,15 @@ class AudioHealthTests(unittest.TestCase):
             return result
 
         started = time.monotonic()
-        with patch("core.transcriber.pyaudiowpatch.PyAudio"), patch.object(self.transcriber, "_open_source", side_effect=lambda _audio, source: captures[source]), patch.object(self.transcriber, "_poll_source", side_effect=poll):
+        with (
+            patch("core.transcriber.pyaudiowpatch.PyAudio"),
+            patch.object(
+                self.transcriber,
+                "_open_source",
+                side_effect=lambda _audio, source: captures[source],
+            ),
+            patch.object(self.transcriber, "_poll_source", side_effect=poll),
+        ):
             self.transcriber._capture_sources(("you", "them"), stop, utterances)  # type: ignore[arg-type]
         # Pacing by the silent source would take 30 x 0.1 s; draining must take far less
         self.assertLess(time.monotonic() - started, 1.0)
@@ -488,11 +619,15 @@ class AudioHealthTests(unittest.TestCase):
     def test_inactive_stream_reports_and_finishes(self) -> None:
         """Surface an audio device that stopped after opening instead of feeding silence forever."""
         audio = MagicMock()
-        audio.get_default_wasapi_loopback.return_value = {"maxInputChannels": 1, "defaultSampleRate": 16000, "index": 1}
+        audio.get_default_wasapi_loopback.return_value = {
+            "maxInputChannels": 1,
+            "defaultSampleRate": 16000,
+            "index": 1,
+        }
         audio.open.return_value.is_active.return_value = False
         failed = MagicMock()
         self.transcriber.failed.connect(failed)
-        utterances = queue.Queue()
+        utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
         with patch("core.transcriber.pyaudiowpatch.PyAudio", return_value=audio):
             self.transcriber._capture("them", threading.Event(), utterances)
         self.assertIn("stopped delivering", failed.call_args.args[0])
@@ -511,7 +646,9 @@ class AudioHealthTests(unittest.TestCase):
         health: list[tuple[object, ...]] = []
         lines: list[tuple[str, str]] = []
         self.transcriber.source_status.connect(lambda *args: health.append(args))
-        self.transcriber.transcribed.connect(lambda source, text: lines.append((source, text)))
+        self.transcriber.transcribed.connect(
+            lambda source, text: lines.append((source, text))
+        )
         with patch.object(self.transcriber, "_load_model", return_value=model):
             self.transcriber._transcribe_loop(queue_items, "tiny.en")  # type: ignore[arg-type]
         self.assertEqual(health, [])
@@ -526,7 +663,15 @@ class NativeSurfaceTests(unittest.TestCase):
         repository = Path(__file__).resolve().parents[1]
         environment = dict(os.environ, QT_QPA_PLATFORM="windows")
         environment.pop("QUE_AUDIT_COVERAGE", None)
-        result = subprocess.run([sys.executable, str(repository / "test/stealth/surface_probe.py")], cwd=repository, env=environment, capture_output=True, text=True, timeout=60, check=False)
+        result = subprocess.run(
+            [sys.executable, str(repository / "test/stealth/surface_probe.py")],
+            cwd=repository,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         report = json.loads(result.stdout)
         self.assertGreater(report["samples"], 0)
@@ -535,7 +680,10 @@ class NativeSurfaceTests(unittest.TestCase):
 
     def test_layout_dead_keys_space_and_altgr(self) -> None:
         """Translate real Windows layouts without changing the foreground keyboard layout."""
-        native.GetKeyboardLayoutList.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_void_p)]
+        native.GetKeyboardLayoutList.argtypes = [
+            ctypes.c_int,
+            ctypes.POINTER(ctypes.c_void_p),
+        ]
         native.GetKeyboardLayoutList.restype = ctypes.c_int
         native.LoadKeyboardLayoutW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint]
         native.LoadKeyboardLayoutW.restype = ctypes.c_void_p
@@ -548,24 +696,40 @@ class NativeSurfaceTests(unittest.TestCase):
         try:
             international = native.LoadKeyboardLayoutW("00020409", 0)
             german = native.LoadKeyboardLayoutW("00000407", 0)
-            self.assertTrue(international and german, "The native layout test cannot pass without both test layouts.")
+            self.assertTrue(
+                international and german,
+                "The native layout test cannot pass without both test layouts.",
+            )
             loaded.extend([international, german])
             with patch.object(native, "GetKeyState", return_value=0):
                 translator = KeyTranslator()
             with patch.object(native, "GetKeyboardLayout", return_value=international):
                 self.assertIsNone(translator.translate(0xDE, 0x28, 0, True, False, ()))
                 event = translator.translate(ord("E"), 0x12, 0, True, False, ())
-                self.assertIsNotNone(event)
+                assert event is not None
                 self.assertEqual(event.text(), "é")
                 self.assertIsNone(translator.translate(0xDE, 0x28, 0, True, False, ()))
-                self.assertEqual(translator.translate(0x20, 0x39, 0, True, False, ()).text(), "'")
+                event = translator.translate(0x20, 0x39, 0, True, False, ())
+                assert event is not None
+                self.assertEqual(event.text(), "'")
                 self.assertIsNone(translator.translate(0xDE, 0x28, 0, True, False, ()))
                 self.assertIsNone(translator.translate(0x08, 0x0E, 0, True, False, ()))
-                self.assertEqual(translator.translate(ord("E"), 0x12, 0, True, False, ()).text(), "e")
+                event = translator.translate(ord("E"), 0x12, 0, True, False, ())
+                assert event is not None
+                self.assertEqual(event.text(), "e")
             with patch.object(native, "GetKeyboardLayout", return_value=german):
-                event = translator.translate(ord("Q"), 0x10, 0, True, False, (0xA2, 0xA5))
+                event = translator.translate(
+                    ord("Q"), 0x10, 0, True, False, (0xA2, 0xA5)
+                )
+                assert event is not None
                 self.assertEqual(event.text(), "@")
-                self.assertFalse(event.modifiers().value & 0x0C000000)
+                self.assertFalse(
+                    event.modifiers()
+                    & (
+                        Qt.KeyboardModifier.ControlModifier
+                        | Qt.KeyboardModifier.AltModifier
+                    )
+                )
             translator.reset()
         finally:
             for layout in loaded:

@@ -16,7 +16,6 @@ from core.model_catalog import ModelOption
 from core.settings import SettingsStore
 from ui.window.settings_page import SettingsPage
 
-
 WORD = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
 
 
@@ -33,8 +32,10 @@ def text_pdf(text: str) -> bytes:
     objects = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
         b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
-        b"/Resources << /Font << /F1 5 0 R >> >> >>",
+        (
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+            b"/Resources << /Font << /F1 5 0 R >> >> >>"
+        ),
         b"<< /Length "
         + str(len(stream)).encode()
         + b" >>\nstream\n"

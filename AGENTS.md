@@ -17,9 +17,9 @@ Que is a Windows-only stealth AI programming assistant — a frameless, transluc
 python src/que.py
 
 # Static analysis (must all pass before merging)
-ruff check src
-ruff format --check src
-mypy --strict src
+ruff check src test native
+ruff format --check src test native
+mypy --strict src test native
 ```
 
 ## Architecture

@@ -15,7 +15,6 @@ from core.transcriber import (
 )
 from ui.window.transcript_panel import TranscriptPanel
 
-
 CHUNK = int(SAMPLE_RATE * CHUNK_SECONDS)
 
 
@@ -110,7 +109,9 @@ class TranscriptDeliveryTests(unittest.TestCase):
         panel = TranscriptPanel(self.transcriber, window)
         self.transcriber._on_transcribed("you", "From an earlier recording")
         with (
-            patch.object(self.transcriber, "downloaded_models", return_value=["tiny.en"]),
+            patch.object(
+                self.transcriber, "downloaded_models", return_value=["tiny.en"]
+            ),
             patch.object(self.transcriber, "_transcribe_loop"),
             patch.object(self.transcriber, "_capture_sources"),
         ):

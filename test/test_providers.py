@@ -26,7 +26,6 @@ from core.transcriber import Transcriber
 from ui.window.main_window import MainWindow
 from ui.window.settings_page import SettingsPage
 
-
 GEMINI = (
     ModelOption("gemini-3-flash-preview", "Gemini Flash", ("default", "low", "high")),
 )
@@ -107,9 +106,11 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(
             SettingsStore(self.store.path).claude_directory(), self.directory.name
         )
-        with patch("core.settings.os.replace", side_effect=OSError):
-            with self.assertRaises(OSError):
-                restored.save("gemini", "other", "default", "changed")
+        with (
+            patch("core.settings.os.replace", side_effect=OSError),
+            self.assertRaises(OSError),
+        ):
+            restored.save("gemini", "other", "default", "changed")
         self.assertEqual(SettingsStore(self.store.path).gemini_key(), "test-secret")
 
     def test_corrupt_settings_do_not_prevent_startup(self) -> None:
@@ -332,23 +333,25 @@ for e in events: print(json.dumps(e),flush=True)
             {"type": "system"},
         ):
             script = f"import sys; sys.stdin.readline(); print({json.dumps(json.dumps(event))}, flush=True)"
-            with patch.object(
-                self.bridge,
-                "_command",
-                return_value=[sys.executable, "-u", "-c", script],
+            with (
+                patch.object(
+                    self.bridge,
+                    "_command",
+                    return_value=[sys.executable, "-u", "-c", script],
+                ),
+                self.assertRaises(RuntimeError),
             ):
-                with self.assertRaises(RuntimeError):
-                    self.bridge.send_message(
-                        "test",
-                        (),
-                        "sonnet",
-                        "default",
-                        str(uuid4()),
-                        None,
-                        Path(self.directory.name),
-                        lambda _: None,
-                        threading.Event(),
-                    )
+                self.bridge.send_message(
+                    "test",
+                    (),
+                    "sonnet",
+                    "default",
+                    str(uuid4()),
+                    None,
+                    Path(self.directory.name),
+                    lambda _: None,
+                    threading.Event(),
+                )
             self.assertFalse(self.bridge.lock.locked())
 
     def test_shutdown_terminates_owned_process(self) -> None:
@@ -437,7 +440,7 @@ class SettingsPageTests(unittest.TestCase):
         self.page._on_loaded(1, ProviderResult("gemini", GEMINI, "Late"))
         self.assertEqual(results, [])
         self.assertEqual(SettingsStore(self.store.path).gemini_key(), "test-key")
-        QTest.qWait(650)
+        QTest.qWait(650)  # type: ignore[call-arg, arg-type]  # PyQt6 stubs omit @staticmethod
         self.assertEqual(self.page.revision, 2)
         self.page._on_loaded(2, ProviderResult("gemini", GEMINI, "Connected"))
         self.assertEqual(len(results), 1)

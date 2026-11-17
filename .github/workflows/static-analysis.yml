@@ -31,15 +31,15 @@ jobs:
 
       - name: Run Ruff Linter
         run: |
-          ruff check src
+          ruff check src test native
 
       - name: Run Ruff Formatter Check
         run: |
-          ruff format --check src
+          ruff format --check src test native
 
       - name: Run Mypy Type Checker
         run: |
-          mypy --strict src
+          mypy --strict src test native
 
       - name: Check for Circular Imports
         run: |

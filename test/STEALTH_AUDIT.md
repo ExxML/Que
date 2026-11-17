@@ -90,10 +90,9 @@ The matrix is intentionally large (over 190,000 declared desktop cells before st
 
 ```powershell
 python test/stealth/regressions.py
-ruff check src test/stealth test/run_stealth.py test/test_stealth.py test/test_stealth_failures.py test/test_stealth_adversarial.py
-ruff format --check src test/stealth test/run_stealth.py test/test_stealth.py test/test_stealth_failures.py test/test_stealth_adversarial.py
-$env:MYPYPATH = "src;test"
-mypy --strict src test/stealth test/run_stealth.py test/test_stealth.py test/test_stealth_failures.py test/test_stealth_adversarial.py
+ruff check src test native
+ruff format --check src test native
+mypy --strict src test native
 node --check test/stealth/observer.js
 python test/stealth/browser_smoke.py --browser chrome --output .stealth-runs/chrome-smoke
 python test/stealth/browser_smoke.py --browser edge --output .stealth-runs/edge-smoke

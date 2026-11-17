@@ -399,7 +399,9 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
         ):
             native_api.GetMessageW.return_value = 0
             code = host.run()
-        sent = [call.args[0].decode("utf-8") for call in events.send_bytes.call_args_list]
+        sent = [
+            call.args[0].decode("utf-8") for call in events.send_bytes.call_args_list
+        ]
         ok = (
             code == 0 and driver.api.UnhookWindowsHookEx.call_count == 2
             if installed

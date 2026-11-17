@@ -39,41 +39,78 @@ def run() -> list[dict[str, object]]:
         for order in (("you", "them"), ("them", "you")) * 2:
             stop = threading.Event()
             utterances: queue.Queue[tuple[str, Any] | None] = queue.Queue()
-            counters: Counters = {source: {"chunks": 0, "bytes": 0, "nonzero_chunks": 0} for source in order}
+            counters: Counters = {
+                source: {"chunks": 0, "bytes": 0, "nonzero_chunks": 0}
+                for source in order
+            }
             current_source = [""]
             original_poll = transcriber._poll_source
             errors: list[dict[str, object]] = []
             statuses: list[dict[str, object]] = []
 
-            def failed(message: str, fatal: bool, errors: list[dict[str, object]] = errors) -> None:
+            def failed(
+                message: str, fatal: bool, errors: list[dict[str, object]] = errors
+            ) -> None:
                 """Retain errors without treating unavailable hardware as healthy capture."""
                 errors.append({"message": message, "fatal": fatal})
 
-            def status(source: str, message: str, _session: object, statuses: list[dict[str, object]] = statuses) -> None:
+            def status(
+                source: str,
+                message: str,
+                _session: object,
+                statuses: list[dict[str, object]] = statuses,
+            ) -> None:
                 """Retain source-health transitions only."""
                 statuses.append({"source": source, "message": message})
 
-            def measure(data: bytes, channels: int, rate: int, counters: Counters = counters, current_source: list[str] = current_source) -> Any:
+            def measure(
+                data: bytes,
+                channels: int,
+                rate: int,
+                counters: Counters = counters,
+                current_source: list[str] = current_source,
+            ) -> Any:
                 """Count received samples without preserving their content."""
                 source = current_source[0]
                 samples = _to_mono_16k(data, channels, rate)
                 counters[source]["chunks"] += 1
                 counters[source]["bytes"] += len(data)
-                counters[source]["nonzero_chunks"] += int(bool(samples.size) and bool(np.any(samples)))
+                counters[source]["nonzero_chunks"] += int(
+                    bool(samples.size) and bool(np.any(samples))
+                )
                 return samples
 
-            def poll(capture: Any, stop_event: threading.Event, current_source: list[str] = current_source, original_poll: Any = original_poll) -> Any:
+            def poll(
+                capture: Any,
+                stop_event: threading.Event,
+                current_source: list[str] = current_source,
+                original_poll: Any = original_poll,
+            ) -> Any:
                 """Attribute processing counters to the actual source being polled."""
                 current_source[0] = capture.source
                 return original_poll(capture, stop_event)
 
             transcriber.failed.connect(failed)
             transcriber.source_status.connect(status)
-            threads = [threading.Thread(target=transcriber._capture_sources, args=(order, stop, utterances), daemon=True)]
-            with patch("core.transcriber._to_mono_16k", side_effect=measure), patch.object(transcriber, "_poll_source", side_effect=poll):
+            threads = [
+                threading.Thread(
+                    target=transcriber._capture_sources,
+                    args=(order, stop, utterances),
+                    daemon=True,
+                )
+            ]
+            with (
+                patch("core.transcriber._to_mono_16k", side_effect=measure),
+                patch.object(transcriber, "_poll_source", side_effect=poll),
+            ):
                 start = time.monotonic()
                 if playback:
-                    winsound.PlaySound(str(silence), winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT)
+                    winsound.PlaySound(
+                        str(silence),
+                        winsound.SND_FILENAME
+                        | winsound.SND_ASYNC
+                        | winsound.SND_NODEFAULT,
+                    )
                 threads[0].start()
                 while time.monotonic() - start < 6:
                     app.processEvents()
@@ -87,7 +124,18 @@ def run() -> list[dict[str, object]]:
             items = []
             while not utterances.empty():
                 items.append(utterances.get_nowait())
-            results.append({"order": order, "counts": counters, "errors": errors, "statuses": statuses, "silent_playback": playback, "completed_sources": sum(item is None for item in items), "threads_stopped": all(not thread.is_alive() for thread in threads), "scope": "Live devices; optional zero-valued playback control, no browser co-capture, no speech recognition, no retained audio."})
+            results.append(
+                {
+                    "order": order,
+                    "counts": counters,
+                    "errors": errors,
+                    "statuses": statuses,
+                    "silent_playback": playback,
+                    "completed_sources": sum(item is None for item in items),
+                    "threads_stopped": all(not thread.is_alive() for thread in threads),
+                    "scope": "Live devices; optional zero-valued playback control, no browser co-capture, no speech recognition, no retained audio.",
+                }
+            )
             items.clear()
             transcriber.failed.disconnect(failed)
             transcriber.source_status.disconnect(status)

@@ -39,9 +39,9 @@ src/assets/ — Icons and images
 All code must pass the following checks before merging:
 
 ```
-ruff check src          # Linter
-ruff format --check src # Formatter
-mypy --strict src       # Type checker (strict mode)
+ruff check src test native          # Linter
+ruff format --check src test native # Formatter
+mypy --strict src test native       # Type checker (strict mode)
 ```
 
 The CI workflow (`.github/workflows/static-analysis.yml`) runs these automatically on every push and pull request. Write code that satisfies all three from the start.

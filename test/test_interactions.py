@@ -11,12 +11,12 @@ from unittest.mock import MagicMock
 
 import httpx
 from google import genai
+from google.genai import types
 from PyQt6.QtWidgets import QApplication
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
 from core.model_catalog import ModelOption
-
 
 TEST_MODELS = (
     ModelOption(
@@ -54,11 +54,9 @@ class InteractionsTests(unittest.TestCase):
         self.responses: list[httpx.Response] = []
         client = genai.Client(
             api_key="test",
-            http_options={
-                "httpx_client": httpx.Client(
-                    transport=httpx.MockTransport(self._respond)
-                )
-            },
+            http_options=types.HttpOptions(
+                httpx_client=httpx.Client(transport=httpx.MockTransport(self._respond))
+            ),
         )
         settings = MagicMock(
             **{"gemini_key.return_value": "", "provider.return_value": "gemini"}
@@ -124,7 +122,11 @@ class InteractionsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             attachment = Path(directory) / "fixture.txt"
             attachment.write_text("Fixture café", encoding="utf-8")
-            self.sender.send_message(self.sender.prepare_request("read", [str(attachment)]), lambda _: None, threading.Event())
+            self.sender.send_message(
+                self.sender.prepare_request("read", [str(attachment)]),
+                lambda _: None,
+                threading.Event(),
+            )
         content = self.bodies[-1]["input"][0]["content"]
         self.assertEqual(content[0], {"type": "text", "text": "Fixture café"})
 
@@ -133,8 +135,12 @@ class InteractionsTests(unittest.TestCase):
         self.sender.previous_interaction_id = "saved"
         self.status = 400
         with self.assertRaises(RuntimeError) as raised:
-            self.sender.send_message(self.sender.prepare_request("turn"), lambda _: None, threading.Event())
-        self.assertNotIn("saved interaction is expired or unavailable", str(raised.exception))
+            self.sender.send_message(
+                self.sender.prepare_request("turn"), lambda _: None, threading.Event()
+            )
+        self.assertNotIn(
+            "saved interaction is expired or unavailable", str(raised.exception)
+        )
         self.assertIn("Context has not been reset", str(raised.exception))
         self.assertEqual(self.sender.previous_interaction_id, "saved")
 
@@ -221,7 +227,7 @@ class InteractionsTests(unittest.TestCase):
                 receiver = AIReceiver(self.sender, chat)
                 turns: list[tuple[str, str, str]] = []
                 receiver.turn_committed.connect(
-                    lambda request, interaction_id, text: turns.append(
+                    lambda request, interaction_id, text, turns=turns: turns.append(
                         (request.message, interaction_id, text)
                     )
                 )
