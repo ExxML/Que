@@ -16,19 +16,19 @@ from typing import Any
 
 from core.hook_engine import (
     ACTION_NAMES,
+    CHORD_BITS,
     DEVICE_KEYS,
     HOTKEYS,
     LOCK_KEYS,
+    QUE_KEY,
     SYSTEM_CHORDS,
     WINDOWS_KEYS,
     InputMonitor,
     key_identity,
 )
-from core.win32_hook import VK_TO_MOD_BIT
 
 LIBRARY_PATH = Path(__file__).resolve().parents[1] / "assets" / "que_hook.dll"
 MAX_REGIONS = 32
-MAX_REPLAYS = 32
 STATUS_KEYBOARD = 0x01
 STATUS_MOUSE = 0x02
 STATUS_MEMORY_LOCKED = 0x04
@@ -75,7 +75,7 @@ class NativeHookEngine:
             raise OSError("Could not allocate the native hook engine.")
         self.started = False
         self.dropped = 0
-        self.modifiers = sorted(VK_TO_MOD_BIT)
+        self.modifiers = sorted(CHORD_BITS)
         self._monitor: InputMonitor | None = None
         self._configure()
 
@@ -237,15 +237,32 @@ class NativeHookEngine:
         self.drain()
         return result
 
-    def replays(self) -> list[tuple[int, int, int]]:
-        """Return the key events the last decision replayed (only before `start`).
+    def replace_sender(
+        self, sender: Callable[[list[tuple[int, int, int]]], None]
+    ) -> None:
+        """Send replayed keys to `sender` instead of SendInput (tests, only before `start`).
 
-        Returns:
-            list[tuple[int, int, int]]: (virtual key, scan code, keybd_event flags) in order.
+        Windows re-enters the hook callback for each injected key before SendInput
+        returns, so a test sender should feed the replays back in as injected events.
+
+        Args:
+            sender (Callable[[list[tuple[int, int, int]]], None]): Receives
+                (virtual key, scan code, keybd_event flags) per replayed key, in order.
         """
-        buffer = (_Replay * MAX_REPLAYS)()
-        count = int(self.library.que_test_replays(self.handle, buffer, MAX_REPLAYS))
-        return [(item.vk, item.scan, item.flags) for item in buffer[:count]]
+
+        def send(replays: Any, count: int) -> None:
+            """Convert the native replay array and pass it to the sender."""
+            sender(
+                [
+                    (replays[i].vk, replays[i].scan, replays[i].flags)
+                    for i in range(count)
+                ]
+            )
+
+        self.sender = _SENDER(
+            send
+        )  # Referenced here so ctypes keeps the callback alive
+        self.library.que_test_set_sender(self.handle, self.sender)
 
     def state(self) -> dict[str, Any]:
         """Return the engine's held and owned input for comparison in tests.
@@ -285,7 +302,8 @@ class NativeHookEngine:
                 self.handle, mask, vk, ACTION_NAMES.index(name), repeat, always
             )
         for vk in self.modifiers:
-            self.library.que_add_modifier(self.handle, vk, VK_TO_MOD_BIT[vk])
+            self.library.que_add_modifier(self.handle, vk, CHORD_BITS[vk])
+        self.library.que_set_que_key(self.handle, QUE_KEY)
         for vk in DEVICE_KEYS | LOCK_KEYS | WINDOWS_KEYS:
             self.library.que_set_key_class(
                 self.handle,
@@ -384,6 +402,7 @@ def _declare(library: ctypes.CDLL) -> None:
         "que_set_key_class": (None, [handle, ctypes.c_int, ctypes.c_int]),
         "que_add_system_chord": (ctypes.c_int, [handle, ctypes.c_int, ctypes.c_int]),
         "que_set_observe": (None, [handle, ctypes.c_int]),
+        "que_set_que_key": (None, [handle, ctypes.c_int]),
         "que_command": (ctypes.c_int, [handle, ctypes.POINTER(_Command)]),
         "que_start": (
             ctypes.c_int,
@@ -400,10 +419,7 @@ def _declare(library: ctypes.CDLL) -> None:
             ctypes.c_int,
             [handle, *[ctypes.c_int] * 4, ctypes.c_uint32, ctypes.c_int],
         ),
-        "que_test_replays": (
-            ctypes.c_int,
-            [handle, ctypes.POINTER(_Replay), ctypes.c_int],
-        ),
+        "que_test_set_sender": (None, [handle, _SENDER]),
         "que_test_state": (
             None,
             [
@@ -482,3 +498,6 @@ class _Stats(ctypes.Structure):
         ("max_late_ms", ctypes.c_uint32),
         ("dropped_events", ctypes.c_uint32),
     ]
+
+
+_SENDER = ctypes.CFUNCTYPE(None, ctypes.POINTER(_Replay), ctypes.c_int)

@@ -21,7 +21,14 @@ from PyQt6.QtWidgets import QApplication
 from stealth.hooks import HookDriver
 
 from core.hook_client import HookClient
-from core.hook_engine import HookEngine, InputMonitor, _MouseData, key_identity
+from core.hook_engine import (
+    MOD_QUE,
+    QUE_KEY,
+    HookEngine,
+    InputMonitor,
+    _MouseData,
+    key_identity,
+)
 from core.hook_host import HookHost
 from core.settings import SettingsStore
 from core.transcriber import Transcriber
@@ -35,14 +42,14 @@ class OwnershipTests(unittest.TestCase):
 
     def test_quit_waits_for_every_chord_release_order(self) -> None:
         """Require zero downstream events and one quit after the last physical release."""
-        for order in itertools.permutations((0xA2, 0xA4, 0xA0, ord("Q"))):
+        for order in itertools.permutations((QUE_KEY, 0xA4, 0xA0, ord("Q"))):
             with self.subTest(order=order):
                 driver = HookDriver()
-                driver.manager.always_active_hotkeys[(7, ord("Q"))] = (
+                driver.manager.always_active_hotkeys[(MOD_QUE | 6, ord("Q"))] = (
                     driver.manager.request_quit,
                     False,
                 )
-                for vk in (0xA2, 0xA4, 0xA0, ord("Q")):
+                for vk in (QUE_KEY, 0xA4, 0xA0, ord("Q")):
                     driver.event(vk)
                 self.assertEqual(self._quits(driver), 0)
                 for index, vk in enumerate(order):
@@ -77,11 +84,11 @@ class OwnershipTests(unittest.TestCase):
         """Preserve the recipient's release if a shortcut or arming begins during a hold."""
         driver = HookDriver()
         driver.event(ord("E"))
-        driver.event(0x11)
+        driver.event(QUE_KEY)
         driver.manager.input_armed = True
         driver.event(ord("E"))
         driver.event(ord("E"), False)
-        driver.event(0x11, False)
+        driver.event(QUE_KEY, False)
         self.assertFalse(driver.actions)
         self.assertIn((ord("E"), False, False), driver.delivered)
         self.assertTrue(driver.clear())
@@ -89,13 +96,13 @@ class OwnershipTests(unittest.TestCase):
     def test_callback_baseexception_is_reported_and_release_is_owned(self) -> None:
         """Contain even SystemExit from callbacks and retain subsequent hook operation."""
         driver = HookDriver()
-        driver.manager.always_active_hotkeys[(1, ord("E"))] = (
+        driver.manager.always_active_hotkeys[(MOD_QUE, ord("E"))] = (
             MagicMock(side_effect=SystemExit("fixture")),
             False,
         )
-        driver.event(0x11)
+        driver.event(QUE_KEY)
         driver.event(ord("E"))
-        driver.event(0x11, False)
+        driver.event(QUE_KEY, False)
         driver.event(ord("E"), False)
         self.assertEqual(
             len([event for event in driver.events if event["type"] == "error"]), 1
@@ -104,11 +111,11 @@ class OwnershipTests(unittest.TestCase):
         self.assertTrue(driver.clear())
 
     def test_windows_modifier_does_not_trigger_a_shorter_que_chord(self) -> None:
-        """Leave Win+Ctrl+E intact instead of matching the Ctrl+E subset."""
+        """Leave Win+Right Ctrl+E intact instead of matching the Right Ctrl+E subset."""
         driver = HookDriver()
-        for vk in (0x5B, 0x11, ord("E")):
+        for vk in (0x5B, QUE_KEY, ord("E")):
             driver.event(vk)
-        for vk in (ord("E"), 0x11, 0x5B):
+        for vk in (ord("E"), QUE_KEY, 0x5B):
             driver.event(vk, False)
         self.assertFalse(driver.actions)
         self.assertTrue(driver.clear())
@@ -116,10 +123,10 @@ class OwnershipTests(unittest.TestCase):
             [(vk, down) for vk, down, _ in driver.delivered],
             [
                 (0x5B, True),
-                (0x11, True),
+                (QUE_KEY, True),
                 (ord("E"), True),
                 (ord("E"), False),
-                (0x11, False),
+                (QUE_KEY, False),
                 (0x5B, False),
             ],
         )
@@ -217,6 +224,61 @@ class OwnershipTests(unittest.TestCase):
     def _quits(driver: HookDriver) -> int:
         """Count the quit confirmations the engine sent to Que."""
         return len([event for event in driver.events if event["type"] == "quit_ready"])
+
+
+class QueKeyTests(unittest.TestCase):
+    """Only Right Ctrl starts Que's shortcuts; every other modifier stays natural for the page."""
+
+    def test_ordinary_modifiers_reach_the_app_on_press_with_their_repeats(self) -> None:
+        """Deliver Shift and Left Ctrl at once, repeats included, instead of holding them back."""
+        driver = HookDriver()
+        for vk in (0xA0, 0xA2):
+            self.assertEqual(
+                driver.event(vk), 0
+            )  # Delivered before any other key arrives
+            self.assertEqual(driver.event(vk), 0)  # Auto-repeat delivered too
+        self.assertEqual(
+            driver.delivered,
+            [
+                (0xA0, True, False),
+                (0xA0, True, False),
+                (0xA2, True, False),
+                (0xA2, True, False),
+            ],
+        )
+
+    def test_left_ctrl_shortcut_is_left_to_the_app(self) -> None:
+        """Leave Left Ctrl+E to the active app; only Right Ctrl+E is Que's."""
+        driver = HookDriver()
+        for vk, down in (
+            (0xA2, True),
+            (ord("E"), True),
+            (ord("E"), False),
+            (0xA2, False),
+        ):
+            driver.event(vk, down)
+        self.assertFalse(driver.actions)
+        self.assertEqual(len(driver.delivered), 4)
+
+    def test_right_ctrl_with_another_key_still_acts_as_ctrl(self) -> None:
+        """Replay Right Ctrl+C intact, and hide a lone Right Ctrl tap completely."""
+        driver = HookDriver()
+        driver.event(QUE_KEY)
+        driver.event(QUE_KEY, False)
+        self.assertEqual(driver.delivered, [])
+        for vk, down in (
+            (QUE_KEY, True),
+            (ord("C"), True),
+            (ord("C"), False),
+            (QUE_KEY, False),
+        ):
+            driver.event(vk, down)
+        self.assertEqual(
+            [(vk, down) for vk, down, _ in driver.delivered],
+            [(QUE_KEY, True), (ord("C"), True), (ord("C"), False), (QUE_KEY, False)],
+        )
+        self.assertFalse(driver.actions)
+        self.assertTrue(driver.clear())
 
 
 class TypingModeTests(unittest.TestCase):
@@ -353,7 +415,7 @@ class TypingModeTests(unittest.TestCase):
     def test_que_shortcuts_still_win_while_typing(self) -> None:
         """Run Que's own chords instead of typing them."""
         driver = self.armed()
-        self.press(driver, 0xA2, ord("E"))
+        self.press(driver, QUE_KEY, ord("E"))
         self.assertEqual(driver.actions, ["toggle_window_visibility"])
         self.assertFalse(driver.delivered)
 

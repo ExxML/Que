@@ -7,6 +7,10 @@
  * priority, with its code, state and stack locked in memory. The callback decides with
  * fixed-size tables: no allocation, no locks, no Python and no blocking calls.
  *
+ * Only Que's own shortcut key (Right Ctrl) and modifiers pressed while it is held are held
+ * back; every other modifier reaches the active app at once, so normal typing keeps its
+ * natural timing and auto-repeat.
+ *
  * The decision rules are a line-by-line port of core/hook_engine.py HookEngine, which
  * stays the reference: test/test_native_hook.py feeds both the same input and requires
  * identical decisions, replays and events. The policy tables (hotkeys, modifiers, key
@@ -123,6 +127,9 @@ typedef struct {
     int32_t mask, vk, action, repeat, always;
 } Hotkey;
 
+/* Sends replayed key events; SendInput when live, a recorder that re-enters the engine in tests */
+typedef void (*QueSender)(const QueReplay *replays, int count);
+
 typedef struct {
     int32_t button;
     int64_t hwnd;
@@ -148,6 +155,7 @@ typedef struct {
     int32_t chords[QUE_MAX_CHORDS][2];
     int chord_count;
     int observe;
+    int que_key; /* Que's shortcut key (Right Ctrl): withheld with every modifier pressed after it */
 
     /* Decision state, touched only by the deciding thread */
     int window_visible;
@@ -174,9 +182,10 @@ typedef struct {
     uint32_t delivered_buttons; /* Bit set of buttons another app received */
     int64_t hover_target;
 
-    /* Replays: recorded in test mode, sent with SendInput when hooks are live */
+    /* Key events to replay once the current decision is complete */
     QueReplay replays[QUE_MAX_REPLAYS];
     int replay_count;
+    QueSender send;
 
     /* Shared with other threads */
     volatile LONG drained;
@@ -423,9 +432,13 @@ static int process_key(QueEngine *e, int code, WPARAM message, int vk, int scan,
     if (e->modifier_bit[vk]) {
         if (down) {
             if (e->held_modifier[vk]) {
-                return CONSUME; /* Autorepeat: the recipient already has (or will get) one press */
+                /* Autorepeat follows its press: withheld stays withheld, delivered passes */
+                return buffered_find(e, vk) >= 0 ? CONSUME : PASS;
             }
             set_flag(e->held_modifier, &e->held_modifier_count, vk, 1);
+            if (vk != e->que_key && buffered_find(e, e->que_key) < 0 && !e->input_armed) {
+                return PASS; /* Not part of a Que shortcut or typing: reaches the app at once */
+            }
             if (e->buffered_count < QUE_MAX_MODIFIERS) {
                 QueReplay *press = &e->buffered[e->buffered_count++];
                 press->vk = vk;
@@ -637,19 +650,47 @@ static void note_lateness(QueEngine *e, DWORD event_time) {
     }
 }
 
-static void send_replays(QueEngine *e) {
+static void send_input(const QueReplay *replays, int count) {
     INPUT inputs[QUE_MAX_REPLAYS];
-    for (int i = 0; i < e->replay_count; i++) {
+    for (int i = 0; i < count; i++) {
         memset(&inputs[i], 0, sizeof(INPUT));
         inputs[i].type = INPUT_KEYBOARD;
-        inputs[i].ki.wVk = (WORD)e->replays[i].vk;
-        inputs[i].ki.wScan = (WORD)(e->replays[i].scan & 0xFF);
-        inputs[i].ki.dwFlags = (DWORD)e->replays[i].flags;
+        inputs[i].ki.wVk = (WORD)replays[i].vk;
+        inputs[i].ki.wScan = (WORD)(replays[i].scan & 0xFF);
+        inputs[i].ki.dwFlags = (DWORD)replays[i].flags;
     }
-    if (e->replay_count) {
-        SendInput((UINT)e->replay_count, inputs, sizeof(INPUT));
-    }
+    SendInput((UINT)count, inputs, sizeof(INPUT));
+}
+
+/* Send this decision's replays. SendInput re-enters the hook callback for each injected event
+   before it returns, so the list is taken and cleared first; otherwise every nested callback
+   would send the same chord again and the chord would repeat without end. */
+static void deliver_replays(QueEngine *e) {
+    QueReplay pending[QUE_MAX_REPLAYS];
+    int count = e->replay_count;
+    memcpy(pending, e->replays, sizeof(QueReplay) * (size_t)count);
     e->replay_count = 0;
+    if (count) {
+        e->send(pending, count);
+    }
+}
+
+/* Decide one keyboard event; the live callback and the tests share this path. */
+static int handle_key(QueEngine *e, int code, WPARAM message, int vk, int scan, int flags) {
+    apply_commands(e);
+    int result = process_key(e, code, message, vk, scan, flags, GetTickCount());
+    deliver_replays(e);
+    publish_state(e);
+    return result;
+}
+
+/* Decide one mouse event; the live callback and the tests share this path. */
+static int handle_pointer(QueEngine *e, int code, WPARAM message, int x, int y, uint32_t data,
+                          int flags) {
+    apply_commands(e);
+    int result = process_pointer(e, code, message, x, y, data, flags, GetTickCount());
+    publish_state(e);
+    return result;
 }
 
 static LRESULT CALLBACK keyboard_proc(int code, WPARAM message, LPARAM address) {
@@ -659,11 +700,8 @@ static LRESULT CALLBACK keyboard_proc(int code, WPARAM message, LPARAM address) 
     }
     const KBDLLHOOKSTRUCT *kb = (const KBDLLHOOKSTRUCT *)address;
     note_lateness(e, kb->time);
-    apply_commands(e);
-    int result = process_key(e, code, message, (int)kb->vkCode, (int)kb->scanCode, (int)kb->flags,
-                             GetTickCount());
-    send_replays(e);
-    publish_state(e);
+    int result =
+        handle_key(e, code, message, (int)kb->vkCode, (int)kb->scanCode, (int)kb->flags);
     return result == CONSUME ? 1 : CallNextHookEx(NULL, code, message, address);
 }
 
@@ -676,10 +714,8 @@ static LRESULT CALLBACK mouse_proc(int code, WPARAM message, LPARAM address) {
     if (message != WM_MOUSEMOVE) {
         note_lateness(e, data->time);
     }
-    apply_commands(e);
-    int result = process_pointer(e, code, message, data->pt.x, data->pt.y, data->mouseData,
-                                 (int)data->flags, GetTickCount());
-    publish_state(e);
+    int result =
+        handle_pointer(e, code, message, data->pt.x, data->pt.y, data->mouseData, (int)data->flags);
     return result == CONSUME ? 1 : CallNextHookEx(NULL, code, message, address);
 }
 
@@ -794,6 +830,7 @@ QUE_API QueEngine *que_create(void) {
         return NULL;
     }
     memset(e->modifier_index, -1, sizeof(e->modifier_index));
+    e->send = send_input;
     e->routing_enabled = 1;
     e->drained = 1;
     return e;
@@ -854,6 +891,8 @@ QUE_API int que_add_system_chord(QueEngine *e, int mask, int vk) {
 }
 
 QUE_API void que_set_observe(QueEngine *e, int enabled) { e->observe = enabled != 0; }
+
+QUE_API void que_set_que_key(QueEngine *e, int vk) { e->que_key = vk & 0xFF; }
 
 #ifndef QUE_SOURCE_SHA256
 #define QUE_SOURCE_SHA256 "unknown"
@@ -955,29 +994,18 @@ QUE_API void que_stats(QueEngine *e, QueStats *out) {
     out->dropped_events = (uint32_t)e->dropped_events;
 }
 
-/* Test entry points: decide one event on the caller's thread, recording replays instead of sending them. */
+/* Test entry points: decide one event on the caller's thread through the live path. */
 QUE_API int que_test_key(QueEngine *e, int code, int message, int vk, int scan, int flags) {
-    e->replay_count = 0;
-    apply_commands(e);
-    int result = process_key(e, code, (WPARAM)message, vk, scan, flags, GetTickCount());
-    InterlockedExchange(&e->drained, is_drained(e));
-    return result;
+    return handle_key(e, code, (WPARAM)message, vk, scan, flags);
 }
 
 QUE_API int que_test_pointer(QueEngine *e, int code, int message, int x, int y, uint32_t data,
                              int flags) {
-    e->replay_count = 0;
-    apply_commands(e);
-    int result = process_pointer(e, code, (WPARAM)message, x, y, data, flags, GetTickCount());
-    InterlockedExchange(&e->drained, is_drained(e));
-    return result;
+    return handle_pointer(e, code, (WPARAM)message, x, y, data, flags);
 }
 
-QUE_API int que_test_replays(QueEngine *e, QueReplay *out, int capacity) {
-    int count = e->replay_count < capacity ? e->replay_count : capacity;
-    memcpy(out, e->replays, sizeof(QueReplay) * (size_t)count);
-    return count;
-}
+/* Replace SendInput (tests): the sender records replays and re-enters the engine as Windows does. */
+QUE_API void que_test_set_sender(QueEngine *e, QueSender send) { e->send = send; }
 
 /* Expose internal sets for the differential test's state comparison. */
 QUE_API void que_test_state(QueEngine *e, uint8_t *held_vk, uint8_t *suppressed_vk,

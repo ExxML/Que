@@ -317,7 +317,7 @@ class MainWindow(QWidget):
         self.history_button = HeaderIconButton("menu", self)
         self.history_button.setFixedSize(36, 32)
         self.history_button.setAccessibleName("Conversation history")
-        self.history_button.setToolTip("History (Ctrl+H)")
+        self.history_button.setToolTip("History (Right Ctrl+H)")
         self.history_button.clicked.connect(self.toggle_history)
         self.history_button.setStyleSheet(
             header_button_style
@@ -326,7 +326,7 @@ class MainWindow(QWidget):
         self.new_chat_button = HeaderIconButton("plus", self)
         self.new_chat_button.setFixedSize(36, 32)
         self.new_chat_button.setAccessibleName("New chat")
-        self.new_chat_button.setToolTip("New chat (Ctrl+N)")
+        self.new_chat_button.setToolTip("New chat (Right Ctrl+N)")
         self.new_chat_button.clicked.connect(self._clear_all_chat)
         self.new_chat_button.setStyleSheet(header_button_style)
         header_layout = QHBoxLayout()

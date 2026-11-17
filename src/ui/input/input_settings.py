@@ -94,9 +94,9 @@ class InputSettings(QWidget):
         """
         self.record_button.setChecked(recording)
         self.record_button.setToolTip(
-            "Stop recording audio (Ctrl+Shift+R)"
+            "Stop recording audio (Right Ctrl+Shift+R)"
             if recording
-            else "Record and transcribe your microphone and computer audio (Ctrl+Shift+R)"
+            else "Record and transcribe your microphone and computer audio (Right Ctrl+Shift+R)"
         )
         self.record_button.update()
 

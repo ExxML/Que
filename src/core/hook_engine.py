@@ -28,24 +28,31 @@ from core.win32_hook import (
     user32,
 )
 
+# Right Ctrl is Que's own shortcut key. It (and any modifier pressed while it is held) is
+# withheld from other apps, so a page never sees anything of a Que shortcut; every other
+# modifier reaches the active app untouched, with its natural timing and auto-repeat.
+QUE_KEY = 0xA3  # VK_RCONTROL
+MOD_QUE = 0x08
+CHORD_BITS: dict[int, int] = {**VK_TO_MOD_BIT, QUE_KEY: MOD_QUE}
+
 # (modifier mask, virtual key, action name, repeats while held, active while hidden)
 HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
-    (MOD_CTRL, ord("E"), "toggle_window_visibility", False, True),
-    (MOD_CTRL | MOD_SHIFT, ord("R"), "toggle_recording", False, True),
-    (MOD_CTRL | MOD_ALT | MOD_SHIFT, ord("Q"), "close_app", False, True),
-    (MOD_CTRL | MOD_ALT, VK_LEFT, "move_window_left", True, False),
-    (MOD_CTRL | MOD_ALT, VK_RIGHT, "move_window_right", True, False),
-    (MOD_CTRL | MOD_ALT, VK_UP, "move_window_up", True, False),
-    (MOD_CTRL | MOD_ALT, VK_DOWN, "move_window_down", True, False),
-    (MOD_CTRL | MOD_SHIFT, VK_UP, "scroll_up", True, False),
-    (MOD_CTRL | MOD_SHIFT, VK_DOWN, "scroll_down", True, False),
-    (MOD_CTRL | MOD_SHIFT, ord("S"), "screenshot", False, False),
-    (MOD_CTRL | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
-    (MOD_CTRL, ord("Q"), "minimize", False, False),
-    (MOD_CTRL, ord("N"), "clear_all_chat", False, False),
-    (MOD_CTRL, ord("H"), "toggle_history", False, False),
-    (MOD_CTRL, ord("D"), "generate_with_screenshot", False, False),
-    (MOD_CTRL, ord("G"), "generate_with_screenshot_fix", False, False),
+    (MOD_QUE, ord("E"), "toggle_window_visibility", False, True),
+    (MOD_QUE | MOD_SHIFT, ord("R"), "toggle_recording", False, True),
+    (MOD_QUE | MOD_ALT | MOD_SHIFT, ord("Q"), "close_app", False, True),
+    (MOD_QUE | MOD_ALT, VK_LEFT, "move_window_left", True, False),
+    (MOD_QUE | MOD_ALT, VK_RIGHT, "move_window_right", True, False),
+    (MOD_QUE | MOD_ALT, VK_UP, "move_window_up", True, False),
+    (MOD_QUE | MOD_ALT, VK_DOWN, "move_window_down", True, False),
+    (MOD_QUE | MOD_SHIFT, VK_UP, "scroll_up", True, False),
+    (MOD_QUE | MOD_SHIFT, VK_DOWN, "scroll_down", True, False),
+    (MOD_QUE | MOD_SHIFT, ord("S"), "screenshot", False, False),
+    (MOD_QUE | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
+    (MOD_QUE, ord("Q"), "minimize", False, False),
+    (MOD_QUE, ord("N"), "clear_all_chat", False, False),
+    (MOD_QUE, ord("H"), "toggle_history", False, False),
+    (MOD_QUE, ord("D"), "generate_with_screenshot", False, False),
+    (MOD_QUE, ord("G"), "generate_with_screenshot_fix", False, False),
 )
 ACTION_NAMES = tuple(name for _, _, name, _, _ in HOTKEYS)
 
@@ -63,6 +70,8 @@ SYSTEM_CHORDS = frozenset(
         (MOD_ALT | MOD_SHIFT, VK_ESCAPE),
         (MOD_CTRL, VK_ESCAPE),
         (MOD_CTRL | MOD_SHIFT, VK_ESCAPE),
+        (MOD_QUE, VK_ESCAPE),  # Right Ctrl still acts as Ctrl outside Que's shortcuts
+        (MOD_QUE | MOD_SHIFT, VK_ESCAPE),
         (MOD_ALT, VK_F4),
     }
 )
@@ -92,10 +101,12 @@ SIDE_NEUTRAL = {0xA0: 0x10, 0xA1: 0x10, 0xA2: 0x11, 0xA3: 0x11, 0xA4: 0x12, 0xA5
 class HookEngine:
     """Own consumed keys and clicks from press to physical release, and decide everything else.
 
-    Modifier presses are held back until the next key shows whether the chord belongs to
-    Que. Que's shortcuts are consumed in full, ordinary chords are replayed intact, and
-    while Que's input is in typing mode every ordinary key is consumed for Que except the
-    system, function and device keys the user expects to keep working.
+    Que's shortcuts start with `QUE_KEY`, which is held back with every modifier pressed
+    after it until the next key shows whether the chord belongs to Que: Que's shortcuts
+    are consumed in full and other chords are replayed intact. All other modifiers pass
+    through at once. While Que's input is in typing mode every ordinary key and modifier
+    is consumed for Que except the system, function and device keys the user expects to
+    keep working.
     """
 
     def __init__(self, emit: Callable[[dict[str, Any]], None]) -> None:
@@ -269,10 +280,19 @@ class HookEngine:
         if vk in MODIFIER_VK_CODES:
             if down:
                 if vk in self.held_modifier_vks:
-                    return 1  # Autorepeat: the recipient already has (or will get) one press
+                    # Autorepeat follows its press: withheld stays withheld, delivered passes
+                    if vk in self.suppressed_mod_events:
+                        return 1
+                    return self._next_keyboard(code, message, address)
                 self.held_modifier_vks.add(vk)
-                self.suppressed_mod_events[vk] = (int(kb.scanCode), int(kb.flags))
-                return 1
+                if (
+                    vk == QUE_KEY
+                    or QUE_KEY in self.suppressed_mod_events
+                    or self.input_armed
+                ):
+                    self.suppressed_mod_events[vk] = (int(kb.scanCode), int(kb.flags))
+                    return 1
+                return self._next_keyboard(code, message, address)
             else:
                 self.held_modifier_vks.discard(vk)
                 if vk in self.suppressed_mod_events:
@@ -527,11 +547,11 @@ class HookEngine:
         """Return a bitmask of physically held modifiers from internal tracking.
 
         Returns:
-            int: Bitmask of active modifier keys (MOD_CTRL, MOD_ALT, MOD_SHIFT).
+            int: Bitmask of held modifiers (MOD_QUE, MOD_CTRL, MOD_ALT, MOD_SHIFT).
         """
         mask = 0
         for vk in self.held_modifier_vks:
-            mask |= VK_TO_MOD_BIT.get(vk, 0)
+            mask |= CHORD_BITS.get(vk, 0)
         return mask
 
     def _replay_modifiers_and_key(

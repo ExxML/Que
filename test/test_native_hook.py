@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+from stealth.hooks import EXTENDED_MODIFIERS, chord_groups
+
 from core.hook_engine import HOTKEYS, HookEngine, _MouseData
 from core.native_hook import (
     STATUS_KEYBOARD,
@@ -81,6 +83,11 @@ class DualDriver:
             self.native.monitor = self.native_out  # type: ignore[assignment]
         self.api = MagicMock()
         self.api.CallNextHookEx.return_value = 0
+        # Windows re-enters the hook for each injected key before the send returns; mirror it
+        self.api.keybd_event.side_effect = self._reenter_python
+        self.native.replace_sender(self._reenter_native)
+        self.native_replays: list[tuple[int, int, int]] = []
+        self.reentry_failures: list[str] = []
         self.steps: list[str] = []
 
     def close(self) -> None:
@@ -116,8 +123,12 @@ class DualDriver:
             (call.args[0], call.args[1], call.args[2])
             for call in self.api.keybd_event.call_args_list
         ]
+        self.native_replays = []
         actual = self.native.process_key(code, message, vk, scan, flags)
-        self._compare(expected, actual, python_replays, self.native.replays())
+        self.test.assertEqual(
+            self.reentry_failures, [], "an injected replay was not passed through"
+        )
+        self._compare(expected, actual, python_replays, self.native_replays)
         return actual
 
     def pointer(
@@ -148,6 +159,24 @@ class DualDriver:
         self.python.release_all_state()
         self.native.release_all_state()
         self._compare(0, 0, [], [])
+
+    def _reenter_python(self, vk: int, scan: int, flags: int, _extra: Any) -> None:
+        """Feed a Python replay back in as the injected event Windows would deliver."""
+        event = KBDLLHOOKSTRUCT(vkCode=vk, scanCode=scan, flags=LLKHF_INJECTED | flags)
+        if self.python._low_level_keyboard_proc(0, WM_KEYDOWN, ctypes.addressof(event)):
+            self.reentry_failures.append(f"python consumed injected vk={vk:#x}")
+
+    def _reenter_native(self, replays: list[tuple[int, int, int]]) -> None:
+        """Record native replays and feed each back in, nested, as Windows does inside SendInput."""
+        self.native_replays.extend(replays)
+        if (
+            len(self.native_replays) > 64
+        ):  # A replay that re-sends itself would recurse forever
+            self.reentry_failures.append("native replays repeat without end")
+            return
+        for vk, scan, flags in replays:
+            if self.native.process_key(0, WM_KEYDOWN, vk, scan, LLKHF_INJECTED | flags):
+                self.reentry_failures.append(f"native consumed injected vk={vk:#x}")
 
     def _compare(
         self,
@@ -203,12 +232,9 @@ class NativeHookEquivalenceTests(unittest.TestCase):
 
     def test_every_hotkey_chord_variant_and_release_order(self) -> None:
         """Mirror the audit's chord families: modifier variants, orders, visibility, early release, system keys."""
-        variants = [(0x11, 0x12, 0x10), (0xA2, 0xA4, 0xA0), (0xA3, 0xA5, 0xA1)]
         for mask, vk, _name, _repeat, _always in HOTKEYS:
-            for variant, keys in enumerate(variants):
-                modifiers = [
-                    keys[index] for index, bit in enumerate((1, 2, 4)) if mask & bit
-                ]
+            for variant in range(3):
+                modifiers = [group[variant] for group in chord_groups(mask)]
                 for order in itertools.permutations(modifiers):
                     for visible, early_release, system in itertools.product(
                         (True, False), repeat=3
@@ -218,7 +244,9 @@ class NativeHookEquivalenceTests(unittest.TestCase):
                             driver.key(
                                 mod,
                                 system=system,
-                                flags=LLKHF_EXTENDED if variant == 2 else 0,
+                                flags=LLKHF_EXTENDED
+                                if mod in EXTENDED_MODIFIERS
+                                else 0,
                             )
                         driver.key(vk, system=system)
                         driver.key(vk, system=system)
@@ -234,23 +262,17 @@ class NativeHookEquivalenceTests(unittest.TestCase):
     def test_mixed_modifier_press_and_release_permutations(self) -> None:
         """Mirror the audit's permutation family with repeats after every partial release."""
         for mask, vk, _name, _repeat, _always in HOTKEYS:
-            groups = [
-                group
-                for bit, group in (
-                    (1, (0x11, 0xA2, 0xA3)),
-                    (2, (0x12, 0xA4, 0xA5)),
-                    (4, (0x10, 0xA0, 0xA1)),
-                )
-                if mask & bit
-            ]
-            for mixed in itertools.product(*groups):
+            for mixed in itertools.product(*chord_groups(mask)):
                 for press_order in itertools.permutations(mixed):
                     for release_order in itertools.permutations((*mixed, vk)):
                         for visible in (True, False):
                             driver = self.driver(visible)
                             for mod in press_order:
                                 driver.key(
-                                    mod, flags=LLKHF_EXTENDED if mod == 0xA5 else 0
+                                    mod,
+                                    flags=LLKHF_EXTENDED
+                                    if mod in EXTENDED_MODIFIERS
+                                    else 0,
                                 )
                             driver.key(vk)
                             driver.key(vk)

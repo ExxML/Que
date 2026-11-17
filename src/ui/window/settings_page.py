@@ -375,7 +375,7 @@ class SettingsPage(QWidget):
         self._add_toggle(
             window_layout,
             self.click_through_checkbox,
-            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Ctrl+Shift+X to turn click-through on or off.",
+            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Right Ctrl+Shift+X to turn click-through on or off.",
         )
         window_layout.addStretch(1)
         self.save_status = QLabel("Changes are saved automatically after validation.")

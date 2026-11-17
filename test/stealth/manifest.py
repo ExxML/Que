@@ -5,22 +5,22 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 HOTKEYS = [
-    (1, 69, "toggle_window_visibility", False, True),
-    (5, 82, "toggle_recording", False, True),
-    (7, 81, "close_app", False, True),
-    (3, 37, "move_window_left", True, False),
-    (3, 39, "move_window_right", True, False),
-    (3, 38, "move_window_up", True, False),
-    (3, 40, "move_window_down", True, False),
-    (5, 38, "scroll_up", True, False),
-    (5, 40, "scroll_down", True, False),
-    (5, 83, "screenshot", False, False),
-    (5, 88, "toggle_click_through", False, False),
-    (1, 81, "minimize", False, False),
-    (1, 78, "clear_all_chat", False, False),
-    (1, 72, "toggle_history", False, False),
-    (1, 68, "generate_with_screenshot", False, False),
-    (1, 71, "generate_with_screenshot_fix", False, False),
+    (8, 69, "toggle_window_visibility", False, True),
+    (12, 82, "toggle_recording", False, True),
+    (14, 81, "close_app", False, True),
+    (10, 37, "move_window_left", True, False),
+    (10, 39, "move_window_right", True, False),
+    (10, 38, "move_window_up", True, False),
+    (10, 40, "move_window_down", True, False),
+    (12, 38, "scroll_up", True, False),
+    (12, 40, "scroll_down", True, False),
+    (12, 83, "screenshot", False, False),
+    (12, 88, "toggle_click_through", False, False),
+    (8, 81, "minimize", False, False),
+    (8, 78, "clear_all_chat", False, False),
+    (8, 72, "toggle_history", False, False),
+    (8, 68, "generate_with_screenshot", False, False),
+    (8, 71, "generate_with_screenshot_fix", False, False),
 ]
 SURFACES = [
     "main overlay",
@@ -71,7 +71,7 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
             items.append(
                 Scenario(
                     f"key.{name}.{variant}",
-                    f"Physically press modifiers mask {mask} (Ctrl=1 Alt=2 Shift=4) + VK {vk}; {variant}. "
+                    f"Physically press modifiers mask {mask} (Right Ctrl=8 Alt=2 Shift=4) + VK {vk}; {variant}. "
                     "During measurement use only this chord, hold for repeats, then release. Test ordinary text after the interval in input.integrity. Stress: stream, record and capture simultaneously.",
                     f"Record observed {name} completion; repeat callbacks={repeat}; always active={always}. "
                     "Hidden conditional shortcuts must instead reach the browser intact. Quit requires relaunch.",
