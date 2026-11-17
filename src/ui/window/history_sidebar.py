@@ -230,14 +230,14 @@ class HistorySidebar(QWidget):
 
         heading = QLabel("History", self.panel)
         heading.setStyleSheet(
-            f"color: {qss(PRIMARY_COLOR, 140)}; font-size: 11px; font-weight: bold; padding-left: 4px;"
+            f"color: {qss(PRIMARY_COLOR, 210)}; font-size: 11px; font-weight: bold; padding-left: 4px;"
         )
         layout.addWidget(heading)
 
         self.empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.empty_label.setWordWrap(True)
         self.empty_label.setStyleSheet(
-            f"color: {qss(PRIMARY_COLOR, 120)}; padding: 24px 8px;"
+            f"color: {qss(PRIMARY_COLOR, 190)}; padding: 24px 8px;"
         )
         layout.addWidget(self.empty_label)
 
@@ -377,7 +377,7 @@ class _ConversationRow(QWidget):
             self,
         )
         meta.setStyleSheet(
-            f"color: {qss(PRIMARY_COLOR, 120)}; font-size: 11px; background: transparent;"
+            f"color: {qss(PRIMARY_COLOR, 190)}; font-size: 11px; background: transparent;"
         )
         for label in (title, meta):
             label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -414,7 +414,7 @@ class _ConversationRow(QWidget):
         self.delete_button.setToolTip("Delete conversation")
         self.delete_button.setStyleSheet(f"""
             QPushButton {{
-                color: {qss(PRIMARY_COLOR, 90)}; background: transparent;
+                color: {qss(PRIMARY_COLOR, 170)}; background: transparent;
                 border: none; border-radius: 4px; padding: 0px 6px; font-size: 16px;
             }}
             QPushButton:hover {{ color: {qss(DANGER_COLOR)}; background: {qss(DANGER_COLOR, 40)}; }}

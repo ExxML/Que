@@ -81,11 +81,11 @@ class TranscriptPanel(QWidget):
         frame.setStyleSheet(f"""
             QWidget#transcriptFrame {{
                 background-color: transparent;
-                border: 1px solid {qss(PRIMARY_COLOR, 90)};
+                border: 1px solid {qss(PRIMARY_COLOR, 180)};
                 border-radius: 10px;
             }}
-            QLabel {{ background: transparent; color: {qss(PRIMARY_COLOR, 200)}; }}
-            QPushButton {{ color: {qss(PRIMARY_COLOR, 128)}; background: transparent; border: none; padding: 0 4px; }}
+            QLabel {{ background: transparent; color: {qss(PRIMARY_COLOR, 235)}; }}
+            QPushButton {{ color: {qss(PRIMARY_COLOR, 200)}; background: transparent; border: none; padding: 0 4px; }}
             QPushButton:hover {{ color: {qss(PRIMARY_COLOR)}; }}
         """)
         outer.addWidget(frame)
@@ -185,7 +185,7 @@ class TranscriptPanel(QWidget):
             1 for segment in segments if segment.seq > self.transcriber.sent_seq
         )
         lines = [
-            f"<p style='margin: 0 0 4px 0; color: {qss(PRIMARY_COLOR, 235 if segment.seq > self.transcriber.sent_seq else 110)};'>"
+            f"<p style='margin: 0 0 4px 0; color: {qss(PRIMARY_COLOR, 255 if segment.seq > self.transcriber.sent_seq else 190)};'>"
             f"<b>{SOURCE_LABELS[segment.source]}</b>&nbsp; {html.escape(segment.text)}</p>"
             for segment in segments
         ]
@@ -196,13 +196,13 @@ class TranscriptPanel(QWidget):
             else ""
         )
         hint = (
-            f"<p style='margin: 2px 0 0 0; color: {qss(PRIMARY_COLOR, 110)};'>"
+            f"<p style='margin: 2px 0 0 0; color: {qss(PRIMARY_COLOR, 190)};'>"
             f"Bright lines are sent with your next message. Dimmed lines were already sent. {model_note}</p>"
         )
         self.text.setText(
             "".join(lines) + hint
             if lines
-            else f"<p style='color: {qss(PRIMARY_COLOR, 110)};'>Speech from your microphone (You) and computer audio (Them) appears here. {model_note}</p>"
+            else f"<p style='color: {qss(PRIMARY_COLOR, 190)};'>Speech from your microphone (You) and computer audio (Them) appears here. {model_note}</p>"
         )
         label = f"{unsent} new" if unsent else "Transcript"
         self.toggle_button.setText(f"{label} {'▾' if self.expanded else '▴'}")
@@ -228,7 +228,7 @@ class TranscriptPanel(QWidget):
         """Draw each source's dot lit while it is speaking."""
         for source, indicator in self.indicators.items():
             speaking = self.speaking[source]
-            color = qss(SPEAKING_COLOR) if speaking else qss(PRIMARY_COLOR, 70)
+            color = qss(SPEAKING_COLOR) if speaking else qss(PRIMARY_COLOR, 150)
             indicator.setText(
                 f"<span style='color: {color};'>●</span> {SOURCE_LABELS[source]}"
             )

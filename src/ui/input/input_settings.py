@@ -150,7 +150,7 @@ class InputSettings(QWidget):
         )  # Line up with the text edit's left padding
         directory_layout.setSpacing(4)
         self.directory_widget.setStyleSheet(f"""
-            QPushButton {{ color: {qss(PRIMARY_COLOR, 128)}; background: transparent; border: none; padding: 0; }}
+            QPushButton {{ color: {qss(PRIMARY_COLOR, 200)}; background: transparent; border: none; padding: 0; }}
             QPushButton:hover {{ color: {qss(PRIMARY_COLOR)}; }}
         """)
         for button in (self.directory_button, self.clear_directory_button):
@@ -209,7 +209,7 @@ class _RecordButton(QPushButton):
         if self.isChecked():
             color = qcolor(DANGER_COLOR)
         else:
-            color = qcolor(PRIMARY_COLOR, 255 if self.underMouse() else 128)
+            color = qcolor(PRIMARY_COLOR, 255 if self.underMouse() else 200)
         center = self.width() / 2
         pen = QPen(color, 1.4)
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)

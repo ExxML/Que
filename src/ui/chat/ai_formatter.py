@@ -86,7 +86,7 @@ def _format_code_block(match: re.Match[str]) -> str:
     # Colour comments in green
     code = re.sub(
         r"(#.*?)(?=\n|$)",
-        r"<span style='color: #749852;'>\1</span>",
+        r"<span style='color: #9fd07a;'>\1</span>",
         code,
         flags=re.MULTILINE,
     )

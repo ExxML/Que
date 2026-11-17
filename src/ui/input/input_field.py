@@ -34,7 +34,7 @@ class InputField(QWidget):
         self.input_container.setStyleSheet(f"""
             QWidget#inputContainer {{
                 background-color: transparent;
-                border: 1px solid {qss(PRIMARY_COLOR, 128)};
+                border: 1px solid {qss(PRIMARY_COLOR, 200)};
                 border-radius: 14px;
             }}
         """)

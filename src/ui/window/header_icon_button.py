@@ -33,7 +33,9 @@ class HeaderIconButton(QPushButton):
         center_y = round(origin_y + self.height() * dpr / 2)
         thickness = max(1, round(1.25 * dpr))
         # Match the hover and idle glyph colors of the other title bar buttons
-        color = QColor(0, 0, 0, 153) if self.underMouse() else qcolor(PRIMARY_COLOR, 77)
+        color = (
+            QColor(0, 0, 0, 153) if self.underMouse() else qcolor(PRIMARY_COLOR, 200)
+        )
 
         # Strokes as (x, y, width, height) in window device pixels; none may overlap
         # because a translucent color painted twice would look brighter

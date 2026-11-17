@@ -109,10 +109,10 @@ class SettingsPage(QWidget):
             Path(__file__).resolve().parents[2] / "assets" / "dropdown_arrow.svg"
         ).as_posix()
         self.setStyleSheet(f"""
-            QLabel, QCheckBox {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; }}
+            QLabel, QCheckBox {{ color: {qss(PRIMARY_COLOR, 235)}; background: transparent; }}
             QLineEdit, QComboBox, QPushButton {{
                 color: {qss(PRIMARY_COLOR)}; background: transparent;
-                border: 1px solid {qss(PRIMARY_COLOR, 65)}; border-radius: 6px;
+                border: 1px solid {qss(PRIMARY_COLOR, 140)}; border-radius: 6px;
                 padding: 7px 10px; min-height: 20px;
             }}
             QPushButton:hover, QPushButton:checked {{ background: {qss(PRIMARY_COLOR, 40)}; }}
@@ -125,7 +125,7 @@ class SettingsPage(QWidget):
             QScrollArea, QScrollArea > QWidget > QWidget {{ background: transparent; }}
             QFrame#tab_row {{ background: transparent; border-bottom: 1px solid {qss(PRIMARY_COLOR, 40)}; }}
             QTabBar::tab {{
-                color: {qss(PRIMARY_COLOR, 150)}; background: transparent; border: none;
+                color: {qss(PRIMARY_COLOR, 210)}; background: transparent; border: none;
                 border-bottom: 2px solid transparent; padding: 6px 2px; margin-right: 20px;
             }}
             QTabBar::tab:hover {{ color: {qss(PRIMARY_COLOR, 220)}; }}

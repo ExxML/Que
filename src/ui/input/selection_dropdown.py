@@ -407,7 +407,7 @@ class _SelectionItem(QWidget):
             painter.setPen(qcolor(PRIMARY_COLOR, 255))
         else:
             # Set text colour to lower opacity
-            painter.setPen(qcolor(PRIMARY_COLOR, 255 if self.is_selected else 128))
+            painter.setPen(qcolor(PRIMARY_COLOR, 255 if self.is_selected else 190))
 
         painter.setFont(self.font())
         text_rect = QRect(

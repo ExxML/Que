@@ -131,7 +131,7 @@ class ChatBubble(QWidget):
         transcript_label.setMaximumWidth(max_width)
         transcript_label.setFont(QFont("Helvetica", 9))
         transcript_label.setStyleSheet(
-            f"QLabel {{ color: {qss(PRIMARY_COLOR, 150)}; background: transparent; padding: 2px 5px; }}"
+            f"QLabel {{ color: {qss(PRIMARY_COLOR, 210)}; background: transparent; padding: 2px 5px; }}"
         )
         transcript_label.hide()
         toggle = QPushButton("Audio transcript ▾")
@@ -139,7 +139,7 @@ class ChatBubble(QWidget):
         toggle.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         toggle.setFont(QFont("Helvetica", 8))
         toggle.setStyleSheet(f"""
-            QPushButton {{ color: {qss(PRIMARY_COLOR, 110)}; background: transparent; border: none; padding: 0 2px; }}
+            QPushButton {{ color: {qss(PRIMARY_COLOR, 190)}; background: transparent; border: none; padding: 0 2px; }}
             QPushButton:hover {{ color: {qss(PRIMARY_COLOR)}; }}
         """)
 

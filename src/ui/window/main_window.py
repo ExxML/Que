@@ -336,7 +336,7 @@ class MainWindow(QWidget):
         self.settings_button = QPushButton("Settings", self)
         self.settings_button.setAccessibleName("AI settings")
         self.settings_button.setStyleSheet(
-            f"QPushButton {{ color: {qss(PRIMARY_COLOR, 180)}; background: transparent; border: none; padding: 6px; }}"
+            f"QPushButton {{ color: {qss(PRIMARY_COLOR, 230)}; background: transparent; border: none; padding: 6px; }}"
         )
         self.settings_button.clicked.connect(self.show_settings)
         header_layout.addWidget(self.settings_button)
@@ -345,7 +345,7 @@ class MainWindow(QWidget):
         self.min_btn.clicked.connect(self.hide)
         self.min_btn.setStyleSheet(f"""
             QPushButton {{
-                color: {qss(PRIMARY_COLOR, 77)};
+                color: {qss(PRIMARY_COLOR, 200)};
                 border: none;
                 font-size: 24px;
                 font-weight: bold;
@@ -364,7 +364,7 @@ class MainWindow(QWidget):
         self.close_btn.clicked.connect(self.quit_app)
         self.close_btn.setStyleSheet(f"""
             QPushButton {{
-            color: {qss(PRIMARY_COLOR, 77)};
+            color: {qss(PRIMARY_COLOR, 200)};
                 border: none;
                 font-size: 24px;
                 font-weight: bold;
