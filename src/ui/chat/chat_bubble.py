@@ -137,7 +137,7 @@ class ChatBubble(QWidget):
         layout.setSpacing(0)
 
     def _attachment_column(self, max_width: int) -> QVBoxLayout:
-        """Stack the message above its screenshots and a collapsed audio transcript disclosure.
+        """Stack the message between its screenshots above and a collapsed audio transcript disclosure below.
 
         Args:
             max_width (int): The widest the attachments may grow.
@@ -147,9 +147,11 @@ class ChatBubble(QWidget):
         """
         column = QVBoxLayout()
         column.setSpacing(2)
-        column.addWidget(self.message_label, alignment=Qt.AlignmentFlag.AlignRight)
         if self.screenshots:
             column.addLayout(self._screenshot_row(max_width))
+            # Match the gap between previews
+            column.addSpacing(PREVIEW_SPACING - column.spacing())
+        column.addWidget(self.message_label, alignment=Qt.AlignmentFlag.AlignRight)
         if self.transcript:
             self._add_transcript(column, max_width)
         return column
