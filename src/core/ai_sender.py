@@ -35,7 +35,7 @@ class InteractionRequest:
 
     @property
     def prompt(self) -> str:
-        """Return the message with any documents and new audio transcript prepended as context.
+        """Return the message with any instruction, documents, and new audio transcript prepended as context.
 
         Returns:
             str: The text sent to the provider.
@@ -195,7 +195,7 @@ class AISender:
             self.claude_directory,
             transcript,
             transcript_seq,
-            # Providers keep earlier turns, so documents are sent once per conversation
+            # Providers keep earlier turns, so the instruction and documents are sent once per conversation
             "" if self.previous_interaction_id else self._context(),
         )
 
@@ -349,19 +349,30 @@ class AISender:
             raise
 
     def _context(self) -> str:
-        """Wrap the user's saved documents as background for a new conversation.
+        """Wrap the user's saved instruction and documents as background for a new conversation.
 
         Returns:
-            str: The documents with usage instructions, or an empty string when none are saved.
+            str: The instruction and documents, or an empty string when neither is saved.
         """
+        parts: list[str] = []
+        instruction = self.settings_store.instruction()
+        if instruction:
+            parts.append(
+                f"""Follow my instructions for this whole conversation.
+<instructions>
+{instruction}
+</instructions>"""
+            )
         documents = self.settings_store.context_documents()
         sections = [
             f"<{kind}>\n{documents[kind][1]}\n</{kind}>"
             for kind in CONTEXT_DOCUMENTS
             if kind in documents
         ]
-        if not sections:
-            return ""
-        joined = "\n".join(sections)
-        return f"""Background documents about me. Tailor your answers to my real experience. When I'm asked an interview question, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
+        if sections:
+            joined = "\n".join(sections)
+            parts.append(
+                f"""Background documents about me. Tailor your answers to my real experience. When I'm asked an interview question, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
 {joined}"""
+            )
+        return "\n\n".join(parts)

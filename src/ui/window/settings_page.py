@@ -2,7 +2,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer, pyqtBoundSignal, pyqtSignal
-from PyQt6.QtGui import QWheelEvent
+from PyQt6.QtGui import QHideEvent, QWheelEvent
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QPlainTextEdit,
     QPushButton,
     QScrollArea,
     QStackedWidget,
@@ -75,6 +76,10 @@ class SettingsPage(QWidget):
         self.key_timer.setSingleShot(True)
         self.key_timer.setInterval(500)
         self.key_timer.timeout.connect(lambda: self._refresh(False))
+        self.instruction_timer = QTimer(self)
+        self.instruction_timer.setSingleShot(True)
+        self.instruction_timer.setInterval(500)
+        self.instruction_timer.timeout.connect(self._save_instruction)
         self._init_UI()
 
     def open_settings(self) -> None:
@@ -102,11 +107,25 @@ class SettingsPage(QWidget):
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
+        self.instruction_input.blockSignals(True)
+        self.instruction_input.setPlainText(self.settings_store.instruction())
+        self.instruction_input.blockSignals(False)
         self._show_documents()
         self._show_screenshots_size()
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
+
+    def hideEvent(self, event: QHideEvent | None) -> None:
+        """Save a pending instruction edit when leaving settings or hiding Que.
+
+        Args:
+            event (QHideEvent | None): The hide event.
+        """
+        if self.instruction_timer.isActive():
+            self.instruction_timer.stop()
+            self._save_instruction()
+        super().hideEvent(event)
 
     def _init_UI(self) -> None:
         """Build accessible, tabbed forms that apply verified settings automatically."""
@@ -116,7 +135,7 @@ class SettingsPage(QWidget):
         ).as_posix()
         self.setStyleSheet(f"""
             QLabel, QCheckBox {{ color: {qss(PRIMARY_COLOR, 235)}; background: transparent; }}
-            QLineEdit, QComboBox, QPushButton {{
+            QLineEdit, QPlainTextEdit, QComboBox, QPushButton {{
                 color: {qss(PRIMARY_COLOR)}; background: transparent;
                 border: 1px solid {qss(PRIMARY_COLOR, 140)}; border-radius: 6px;
                 padding: 7px 10px; min-height: 20px;
@@ -124,7 +143,7 @@ class SettingsPage(QWidget):
             QPushButton:hover, QPushButton:checked {{ background: {qss(PRIMARY_COLOR, 40)}; }}
             QComboBox::drop-down {{ background: transparent; border: none; width: 24px; }}
             QComboBox::down-arrow {{ image: url({arrow_path}); width: 8px; height: 5px; }}
-            QPushButton:focus, QLineEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
+            QPushButton:focus, QLineEdit:focus, QPlainTextEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
             QPushButton[armed="true"] {{
                 color: {qss(DANGER_COLOR)}; background: {qss(DANGER_COLOR, 40)}; border-color: {qss(DANGER_COLOR, 160)};
@@ -271,7 +290,31 @@ class SettingsPage(QWidget):
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
         layout.addStretch(1)
-        documents_layout = self._add_tab("Documents")
+        documents_layout = self._add_tab("Context")
+        instruction_label = QLabel("Instruction")
+        self.instruction_input = QPlainTextEdit()
+        self.instruction_input.setPlaceholderText(
+            "e.g., This is a practice online technical assessment for a job. Answer the questions concisely."
+        )
+        self.instruction_input.setAccessibleName("Instruction")
+        self.instruction_input.setTabChangesFocus(True)
+        self.instruction_input.setFixedHeight(96)
+        instruction_scrollbar = self.instruction_input.verticalScrollBar()
+        assert instruction_scrollbar is not None
+        instruction_scrollbar.setStyleSheet(SCROLLBAR_STYLE)
+        self.instruction_input.textChanged.connect(self.instruction_timer.start)
+        instruction_label.setBuddy(self.instruction_input)
+        instruction_hint = QLabel(
+            "Sent once at the start of each new chat to tell the AI what the conversation is for, so changes apply to your next new chat."
+        )
+        instruction_hint.setWordWrap(True)
+        self.instruction_input.setAccessibleDescription(instruction_hint.text())
+        instruction_group = QVBoxLayout()
+        instruction_group.setSpacing(4)
+        instruction_group.addWidget(instruction_label)
+        instruction_group.addWidget(self.instruction_input)
+        instruction_group.addWidget(instruction_hint)
+        documents_layout.addLayout(instruction_group)
         documents_description = QLabel(
             "Add your resume, cover letter, and interview script so answers fit your experience, like during an interview."
         )
@@ -576,6 +619,22 @@ class SettingsPage(QWidget):
             )
             return
         self._show_documents()
+        self.save_status.setText(
+            "Changes saved automatically. They apply to new chats."
+        )
+
+    def _save_instruction(self) -> None:
+        """Save the typed instruction when it differs from the saved one."""
+        instruction = self.instruction_input.toPlainText().strip()
+        if instruction == self.settings_store.instruction():
+            return
+        try:
+            self.settings_store.save_instruction(instruction)
+        except OSError:
+            self.save_status.setText(
+                "The instruction could not be saved. Check that Que's data folder is writable."
+            )
+            return
         self.save_status.setText(
             "Changes saved automatically. They apply to new chats."
         )

@@ -164,6 +164,24 @@ class ContextDocumentTests(unittest.TestCase):
         self.sender.reset_chat()
         self.assertIn("<resume>", self.sender.prepare_request("New").prompt)
 
+    def test_instruction_leads_documents_on_new_chats(self) -> None:
+        """Send the saved instruction before documents once per conversation."""
+        self.store.save_instruction("Answer concisely.")
+        self.assertEqual(
+            SettingsStore(self.store.path).instruction(), "Answer concisely."
+        )
+        self.assertEqual(
+            self.sender.prepare_request("Hi").prompt,
+            "Follow my instructions for this whole conversation.\n<instructions>\nAnswer concisely.\n</instructions>\n\nHi",
+        )
+        self.store.save_context_document("resume", "cv.pdf", "Built Que")
+        first = self.sender.prepare_request("Hi")
+        self.assertLess(
+            first.prompt.index("</instructions>"), first.prompt.index("<resume>")
+        )
+        self.assertTrue(self.sender.commit_interaction(first, "first-id"))
+        self.assertEqual(self.sender.prepare_request("Next").prompt, "Next")
+
     def test_context_prompt_without_transcript(self) -> None:
         """Separate documents from the message when no transcript is pending."""
         request = InteractionRequest("Go", (), "m", "default", None, 0, context="Docs")
@@ -210,6 +228,20 @@ class SettingsDocumentsTests(unittest.TestCase):
         self.assertEqual(self.store.context_documents(), {})
         self.assertEqual(self.page.document_names["resume"].text(), "")
         self.assertFalse(self.page.document_remove_buttons["resume"].isEnabled())
+
+    def test_instruction_saves_after_typing(self) -> None:
+        """Save the trimmed instruction on hide, and reload it when settings reopen."""
+        self.page.instruction_input.setPlainText("  Be brief.\n")
+        self.assertTrue(self.page.instruction_timer.isActive())
+        self.page.hideEvent(None)
+        self.assertFalse(self.page.instruction_timer.isActive())
+        self.assertEqual(SettingsStore(self.store.path).instruction(), "Be brief.")
+        self.page.instruction_input.setPlainText("")
+        self.page.instruction_timer.stop()
+        self.page.open_settings()
+        self.assertEqual(self.page.instruction_input.toPlainText(), "Be brief.")
+        # Loading the saved instruction is not an edit
+        self.assertFalse(self.page.instruction_timer.isActive())
 
 
 if __name__ == "__main__":

@@ -103,6 +103,14 @@ class SettingsStore:
         """
         return self.data.get("elevate_helper") is True
 
+    def instruction(self) -> str:
+        """Return the saved instruction that starts every new conversation.
+
+        Returns:
+            str: The instruction, or an empty string when unset.
+        """
+        return str(self.data.get("instruction", ""))
+
     def context_documents(self) -> dict[str, tuple[str, str]]:
         """Return the saved documents that give the AI context about the user.
 
@@ -210,6 +218,14 @@ class SettingsStore:
             enabled (bool): Whether Que should ask for administrator permission at startup.
         """
         self._write({**self.data, "elevate_helper": enabled})
+
+    def save_instruction(self, instruction: str) -> None:
+        """Atomically save the instruction that starts every new conversation.
+
+        Args:
+            instruction (str): The instruction, or an empty string to remove it.
+        """
+        self._write({**self.data, "instruction": instruction})
 
     def save_context_document(self, kind: str, name: str, text: str) -> None:
         """Atomically save a context document, or remove it when the text is empty.
