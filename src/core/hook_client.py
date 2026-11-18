@@ -52,8 +52,9 @@ def hook_host_command(address: str) -> list[str]:
 class HookClient(QObject):
     """Own the input helper's lifetime and the state it needs to make decisions.
 
-    Every protection failure is reported through `failed`, and failures that mean
-    input may already have reached another application through `alert`.
+    Reduced protection is reported through `failed`. Protection that is off, so input
+    may reach another application, is reported through `alert` until `resolved` names
+    it again, and input that already reached one through `leaked`.
     """
 
     action = pyqtSignal(str)
@@ -63,6 +64,8 @@ class HookClient(QObject):
     quit_ready = pyqtSignal()
     failed = pyqtSignal(str)
     alert = pyqtSignal(str)
+    resolved = pyqtSignal(str)
+    leaked = pyqtSignal(str)
     received = pyqtSignal(object)
 
     def __init__(self, elevate: bool = False) -> None:
@@ -74,6 +77,7 @@ class HookClient(QObject):
         )  # Explain the limit once a helper runs unelevated
         self.outbox: Callable[[dict[str, Any]], None] = self._send_to_host
         self.state: dict[str, dict[str, Any]] = {}
+        self.outages: list[str] = []  # Alerts a connected helper resolves
         self.held_modifiers: tuple[int, ...] = ()
         self.last_press_seq = 0
         self.connected = False
@@ -190,6 +194,8 @@ class HookClient(QObject):
             self.action.emit(str(message["name"]))
         elif kind == "quit_ready":
             self.quit_ready.emit()
+        elif kind == "error" and message.get("critical"):
+            self._alert(str(message["text"]))
         elif kind == "error":
             self.failed.emit(str(message["text"]))
         elif kind == "leak":
@@ -199,12 +205,15 @@ class HookClient(QObject):
                 if message["restored"]
                 else "Protection could NOT be restored; keys and clicks are not hidden."
             )
-            self.alert.emit(
+            self.leaked.emit(
                 f"Windows let input past Que's hooks, so it reached the active app: {events}. "
                 f"{restored}"
             )
         elif kind == "ready":
             self.connected = True
+            for text in self.outages:
+                self.resolved.emit(text)
+            self.outages.clear()
         elif (
             kind == "elevation_declined"
             and int(message["generation"]) == self.generation
@@ -217,10 +226,20 @@ class HookClient(QObject):
             and not self.stopping
         ):
             self.connected = False
-            self.alert.emit(
+            self._alert(
                 "Que's input helper stopped, so keys and clicks are not hidden. Restarting it."
             )
             self._spawn()
+
+    def _alert(self, text: str) -> None:
+        """Report that protection is off until the next helper connects.
+
+        Args:
+            text (str): The warning.
+        """
+        if text not in self.outages:
+            self.outages.append(text)
+        self.alert.emit(text)
 
     def _set_state(self, message: dict[str, Any]) -> None:
         """Remember and send the latest value of one kind of state.
@@ -283,7 +302,7 @@ class HookClient(QObject):
                 creationflags=CREATE_NO_WINDOW,
             )
         except OSError as error:
-            self.failed.emit(f"Que's input helper could not start: {error}")
+            self._alert(f"Que's input helper could not start: {error}")
             self.deadline = time.monotonic() + STARTUP_SECONDS
             return
         self.deadline = time.monotonic() + STARTUP_SECONDS
@@ -362,7 +381,7 @@ class HookClient(QObject):
             else now > self.deadline
         )
         if silent:
-            self.alert.emit(
+            self._alert(
                 "Que's input helper stopped responding, so keys and clicks may not be "
                 "hidden. Restarting it."
             )

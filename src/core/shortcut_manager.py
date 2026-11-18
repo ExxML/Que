@@ -57,7 +57,7 @@ class ShortcutManager(QObject):
         self.scroll_signal.connect(self.main_window.chat_area.shortcut_scroll)
         self.quit_signal.connect(self.main_window.finish_quit)
         self.main_window.quit_requested.connect(self.request_quit)
-        self.hook_failed.connect(self.main_window.chat_area.show_stream_error)
+        self.hook_failed.connect(self.main_window.status_banner.show_warning)
         self.move_direction.connect(self._move_by_direction)
         self.screenshot_signal.connect(self.screenshot_manager.take_screenshot)
         self.clear_all_chat_signal.connect(self.main_window._new_chat)
@@ -74,6 +74,10 @@ class ShortcutManager(QObject):
         self.hook_client.quit_ready.connect(self.quit_signal)
         self.hook_client.failed.connect(self.hook_failed)
         self.hook_client.alert.connect(self._on_input_alert)
+        self.hook_client.leaked.connect(
+            lambda message: self._on_input_alert(message, lasting=False)
+        )
+        self.hook_client.resolved.connect(self.main_window.status_banner.clear_warning)
 
         # Initialize animation
         self.animation_timer = QTimer()
@@ -125,15 +129,18 @@ class ShortcutManager(QObject):
         if action is not None:
             action()
 
-    def _on_input_alert(self, message: str) -> None:
+    def _on_input_alert(self, message: str, lasting: bool = True) -> None:
         """Make sure the user sees that input may have reached another application.
 
         Args:
             message (str): The warning.
+            lasting (bool): Whether protection stays off until resolved, rather than a one-off leak.
         """
         if not self.main_window.isVisible():
             self.main_window.toggle_window_visibility()
-        self.main_window.chat_area.show_stream_error(message)
+        self.main_window.status_banner.show_warning(
+            message, critical=True, lasting=lasting
+        )
 
     # Hotkey Callback Functions
 

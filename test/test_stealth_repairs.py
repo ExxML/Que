@@ -211,7 +211,7 @@ class OwnershipTests(unittest.TestCase):
         window = MagicMock()
         window.frameGeometry.side_effect = RuntimeError("fixture")
         self.assertIsNone(MainWindow._is_topmost_window(window))
-        window.chat_area.show_stream_error.assert_called_once()
+        window.status_banner.show_warning.assert_called_once()
 
     @staticmethod
     def _quits(driver: HookDriver) -> int:

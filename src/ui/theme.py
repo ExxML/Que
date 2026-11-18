@@ -4,6 +4,7 @@ PRIMARY_COLOR: tuple[int, int, int] = (255, 255, 255)
 BG_COLOR: tuple[int, int, int] = (20, 20, 20)
 WINDOW_ALPHA: int = 153
 DANGER_COLOR: tuple[int, int, int] = (255, 77, 69)
+WARNING_COLOR: tuple[int, int, int] = (255, 184, 77)
 SPEAKING_COLOR: tuple[int, int, int] = (52, 199, 89)
 PROVIDER_COLORS: dict[str, tuple[int, int, int]] = {
     "gemini": (138, 180, 248),

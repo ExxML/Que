@@ -37,6 +37,7 @@ from ui.window.history_sidebar import HistorySidebar
 from ui.window.screenshot_tray import ScreenshotTray
 from ui.window.screenshot_viewer import ScreenshotViewer
 from ui.window.settings_page import SettingsPage
+from ui.window.status_banner import StatusBanner
 from ui.window.transcript_panel import TranscriptPanel
 
 
@@ -72,7 +73,7 @@ class MainWindow(QWidget):
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.window_policy.failed.connect(self.on_window_policy_failed)
         for error in self.window_policy.errors:
-            self.chat_area.show_stream_error(error)
+            self.status_banner.show_warning(error, critical=True)
         self.worker.turn_committed.connect(self._on_turn_committed)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
@@ -119,7 +120,9 @@ class MainWindow(QWidget):
         Args:
             message (str): The window protection failure.
         """
-        QTimer.singleShot(0, lambda: self.chat_area.show_stream_error(message))
+        QTimer.singleShot(
+            0, lambda: self.status_banner.show_warning(message, critical=True)
+        )
 
     def hide(self) -> None:
         """Close settings popups and flush the backing store before hiding."""
@@ -227,6 +230,7 @@ class MainWindow(QWidget):
             event (QResizeEvent): The resize event passed to the base widget.
         """
         super().resizeEvent(event)
+        self._sync_status_banner()  # Wrapped warnings change height with the width
         self._position_screenshot_tray()
         self._position_history_sidebar()
         self._position_screenshot_viewer()
@@ -314,6 +318,10 @@ class MainWindow(QWidget):
         self.transcript_panel = TranscriptPanel(self.transcriber, self)
         self.transcript_panel_height = 0  # Height currently added to the window
 
+        # Protection warnings are docked below the title bar; the window grows by their height
+        self.status_banner = StatusBanner(self)
+        self.status_banner_height = 0  # Height currently added to the window
+
         # Create and add title bar buttons
         header_button_style = f"""
             QPushButton {{
@@ -344,6 +352,7 @@ class MainWindow(QWidget):
         header_layout.addWidget(self.history_button)
         header_layout.addWidget(self.new_chat_button)
         header_layout.addStretch(1)
+        header_layout.addWidget(self.status_banner.badge)
         self.settings_button = QPushButton("Settings", self)
         self.settings_button.setAccessibleName("AI settings")
         self.settings_button.setStyleSheet(
@@ -394,6 +403,8 @@ class MainWindow(QWidget):
         header_layout.addWidget(self.min_btn)
         header_layout.addWidget(self.close_btn)
         main_layout.addLayout(header_layout)
+        main_layout.addWidget(self.status_banner)
+        self.status_banner.size_changed.connect(self._sync_status_banner)
 
         # Add chat area
         main_layout.addWidget(self.pages, stretch=1)
@@ -597,6 +608,17 @@ class MainWindow(QWidget):
         if delta:
             self.resize(self.width(), self.height() + delta)
         self._position_screenshot_tray()
+
+    def _sync_status_banner(self) -> None:
+        """Fit the status banner to its warnings and grow the window by its height change."""
+        banner = self.status_banner
+        height = banner.heightForWidth(self.width()) if banner.wanted() else 0
+        delta = height - self.status_banner_height
+        self.status_banner_height = height
+        banner.setFixedHeight(height)
+        banner.setVisible(height > 0)
+        if delta:
+            self.resize(self.width(), self.height() + delta)
 
     def _paint_frame(self, painter: QPainter) -> None:
         """Paint the rounded window background and border in window coordinates.
@@ -826,11 +848,13 @@ class MainWindow(QWidget):
                     )
                     if int(target_root) in windows_above:
                         return False
+            if self.topmost_error:
+                self.status_banner.clear_warning(self.topmost_error)
             self.topmost_error = ""
             return True
         except Exception as error:  # noqa: BLE001
             message = f"Could not verify Que's window visibility: {error}"
             if self.topmost_error != message:
                 self.topmost_error = message
-                self.chat_area.show_stream_error(message)
+                self.status_banner.show_warning(message)
             return None

@@ -184,6 +184,7 @@ class HookHost:
             self._send(
                 {
                     "type": "error",
+                    "critical": True,  # Keys and clicks are not hidden
                     "text": "Keyboard hook unavailable "
                     f"(Windows error {kernel32.GetLastError()}).",
                 }
@@ -196,6 +197,7 @@ class HookHost:
             self._send(
                 {
                     "type": "error",
+                    "critical": True,  # Keys and clicks are not hidden
                     "text": "Mouse hook unavailable "
                     f"(Windows error {kernel32.GetLastError()}).",
                 }
@@ -281,6 +283,7 @@ class HookHost:
             self._send(
                 {
                     "type": "error",
+                    "critical": True,  # Keys and clicks are not hidden
                     "text": "Que's input helper could not start "
                     f"(Windows error {ctypes.get_last_error()}).",
                 }
@@ -468,7 +471,7 @@ class HookHost:
             text = (
                 f"Keyboard hook unavailable (Windows error {stats['keyboard_error']})."
             )
-        self._send({"type": "error", "text": text})
+        self._send({"type": "error", "text": text, "critical": True})
         return False
 
 
