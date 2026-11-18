@@ -23,7 +23,7 @@ from multiprocessing.connection import Client, Connection, PipeConnection
 from pathlib import Path
 from typing import Any
 
-from core.hook_engine import HookEngine, InputMonitor, key_identity
+from core.hook_engine import QUE_KEY, HookEngine, InputMonitor, key_identity
 from core.native_hook import (
     LIBRARY_PATH,
     STATUS_KEYBOARD,
@@ -31,7 +31,14 @@ from core.native_hook import (
     STATUS_PRIORITY,
     NativeHookEngine,
 )
-from core.win32_hook import HOOKPROC, WH_KEYBOARD_LL, WH_MOUSE_LL, kernel32, user32
+from core.win32_hook import (
+    HOOKPROC,
+    KEYEVENTF_KEYUP,
+    WH_KEYBOARD_LL,
+    WH_MOUSE_LL,
+    kernel32,
+    user32,
+)
 
 # Private handles so these signatures never change the shared ctypes.windll functions
 native = ctypes.WinDLL("user32", use_last_error=True)
@@ -219,6 +226,7 @@ class HookHost:
             self.outbox.put(None)
             writer.join(timeout=2)
             return 1
+        _turn_off_caps_lock()
         if not self._register_raw_input():
             self.engine.monitor = None
             self._send(
@@ -488,6 +496,14 @@ def _raise_hook_timeout() -> None:
             )
     except OSError:
         pass  # Only margin; the hooks work without it
+
+
+def _turn_off_caps_lock() -> None:
+    """Turn Caps Lock off, since Que's key is Caps Lock and never toggles it while Que runs."""
+    if user32.GetKeyState(QUE_KEY) & 1:
+        # Injected presses pass the hooks, so this toggle reaches Windows
+        for flags in (0, KEYEVENTF_KEYUP):
+            user32.keybd_event(QUE_KEY, 0x3A, flags, None)
 
 
 def _key_name(scan: int, extended: bool) -> str:

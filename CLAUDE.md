@@ -73,7 +73,7 @@ The helper sends the action name to Que, and `ShortcutManager` runs its `_<actio
 
 All matched key events are suppressed (return 1 from hook proc).
 
-Every Que shortcut starts with **Right Ctrl** (`QUE_KEY`, chord bit `MOD_QUE`), Que's dedicated key: it and any modifier pressed while it is held are withheld from other apps, so a page sees nothing of a Que shortcut. Right Ctrl + a non-Que key is replayed and still works as Ctrl. All other modifiers (Left Ctrl, Shift, Alt, Win) pass through at once with natural timing and auto-repeat; holding them back made Que detectable from ordinary typing. While typing in Que, all keys including modifiers go to Que.
+Every Que shortcut starts with **Caps Lock** (`QUE_KEY`, chord bit `MOD_QUE`), Que's dedicated key: it never toggles while Que runs (the helper turns Caps Lock off at startup if it is on), and it, any modifier pressed while it is held and any key pressed with it are withheld from other apps, so a page sees nothing of a Que shortcut. Caps Lock + a non-Que key is swallowed, never replayed. All other modifiers (Left and Right Ctrl, Shift, Alt, Win) pass through at once with natural timing and auto-repeat; holding them back made Que detectable from ordinary typing. While typing in Que, all keys including modifiers go to Que.
 
 ## Coding Style Conventions
 

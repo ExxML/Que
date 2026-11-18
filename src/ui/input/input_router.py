@@ -36,8 +36,6 @@ native.GetWindowRect.restype = wintypes.BOOL
 native.GetForegroundWindow.restype = wintypes.HWND
 native.GetKeyboardLayout.argtypes = [wintypes.DWORD]
 native.GetKeyboardLayout.restype = wintypes.HANDLE
-native.GetKeyState.argtypes = [ctypes.c_int]
-native.GetKeyState.restype = ctypes.c_short
 native.ToUnicodeEx.argtypes = [
     wintypes.UINT,
     wintypes.UINT,
@@ -121,7 +119,6 @@ class InputRouter(QObject):
         self.hook_client.pointer_input.connect(self.on_pointer)
         self.hook_client.key_input.connect(self.on_key)
         self.hook_client.armed_changed.connect(self.on_armed_changed)
-        self.hook_client.lock_toggled.connect(self.translator.toggle_lock)
         self.shortcut_manager.main_window.mouse_routing_changed.connect(
             self.set_enabled
         )
@@ -756,7 +753,6 @@ class KeyTranslator:
 
     def __init__(self) -> None:
         self.layout = 0
-        self.caps = bool(native.GetKeyState(0x14) & 1)
         self.dead_pending = False
 
     @staticmethod
@@ -781,15 +777,6 @@ class KeyTranslator:
             if mask & bit:
                 result |= flag
         return result
-
-    def toggle_lock(self, vk: int) -> None:
-        """Follow a physical lock-key press, which Windows never reports to this thread.
-
-        Args:
-            vk (int): The lock key's virtual key code.
-        """
-        if vk == 0x14:
-            self.caps = not self.caps
 
     def reset(self) -> None:
         """Clear only this thread's pending dead key when local input is disarmed."""
@@ -837,7 +824,6 @@ class KeyTranslator:
             self.reset()
             return None
         state = (ctypes.c_ubyte * 256)()
-        state[0x14] = int(self.caps)
         for modifier in held:
             state[modifier] = 0x80
             generic = {1: 0x11, 2: 0x12, 4: 0x10}.get(VK_TO_MOD_BIT.get(modifier, 0))

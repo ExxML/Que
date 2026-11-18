@@ -29,7 +29,7 @@ from core.hook_engine import (
     _MouseData,
     key_identity,
 )
-from core.hook_host import HookHost
+from core.hook_host import HookHost, _turn_off_caps_lock
 from core.settings import SettingsStore
 from core.transcriber import Transcriber
 from core.window_policy import native
@@ -111,7 +111,7 @@ class OwnershipTests(unittest.TestCase):
         self.assertTrue(driver.clear())
 
     def test_windows_modifier_does_not_trigger_a_shorter_que_chord(self) -> None:
-        """Leave Win+Right Ctrl+E intact instead of matching the Right Ctrl+E subset."""
+        """Run no action for Win+Caps Lock+E, and keep Caps Lock and E from the app."""
         driver = HookDriver()
         for vk in (0x5B, QUE_KEY, ord("E")):
             driver.event(vk)
@@ -121,14 +121,7 @@ class OwnershipTests(unittest.TestCase):
         self.assertTrue(driver.clear())
         self.assertEqual(
             [(vk, down) for vk, down, _ in driver.delivered],
-            [
-                (0x5B, True),
-                (QUE_KEY, True),
-                (ord("E"), True),
-                (ord("E"), False),
-                (QUE_KEY, False),
-                (0x5B, False),
-            ],
+            [(0x5B, True), (0x5B, False)],
         )
 
     def test_failed_install_reports_and_never_enters_message_loop(self) -> None:
@@ -227,7 +220,7 @@ class OwnershipTests(unittest.TestCase):
 
 
 class QueKeyTests(unittest.TestCase):
-    """Only Right Ctrl starts Que's shortcuts; every other modifier stays natural for the page."""
+    """Only Caps Lock starts Que's shortcuts; every other modifier stays natural for the page."""
 
     def test_ordinary_modifiers_reach_the_app_on_press_with_their_repeats(self) -> None:
         """Deliver Shift and Left Ctrl at once, repeats included, instead of holding them back."""
@@ -247,38 +240,75 @@ class QueKeyTests(unittest.TestCase):
             ],
         )
 
-    def test_left_ctrl_shortcut_is_left_to_the_app(self) -> None:
-        """Leave Left Ctrl+E to the active app; only Right Ctrl+E is Que's."""
-        driver = HookDriver()
-        for vk, down in (
-            (0xA2, True),
-            (ord("E"), True),
-            (ord("E"), False),
-            (0xA2, False),
-        ):
-            driver.event(vk, down)
-        self.assertFalse(driver.actions)
-        self.assertEqual(len(driver.delivered), 4)
+    def test_ctrl_shortcut_is_left_to_the_app(self) -> None:
+        """Leave Left and Right Ctrl+E to the active app; only Caps Lock+E is Que's."""
+        for ctrl in (0xA2, 0xA3):
+            with self.subTest(ctrl=ctrl):
+                driver = HookDriver()
+                for vk, down in (
+                    (ctrl, True),
+                    (ord("E"), True),
+                    (ord("E"), False),
+                    (ctrl, False),
+                ):
+                    driver.event(vk, down)
+                self.assertFalse(driver.actions)
+                self.assertEqual(len(driver.delivered), 4)
 
-    def test_right_ctrl_with_another_key_still_acts_as_ctrl(self) -> None:
-        """Replay Right Ctrl+C intact, and hide a lone Right Ctrl tap completely."""
+    def test_caps_lock_and_keys_pressed_with_it_never_reach_the_app(self) -> None:
+        """Hide a lone Caps Lock tap with its auto-repeat, and swallow Caps Lock+C entirely."""
         driver = HookDriver()
         driver.event(QUE_KEY)
+        driver.event(QUE_KEY)  # Auto-repeat
         driver.event(QUE_KEY, False)
-        self.assertEqual(driver.delivered, [])
         for vk, down in (
             (QUE_KEY, True),
+            (0xA0, True),
+            (ord("C"), True),
             (ord("C"), True),
             (ord("C"), False),
+            (0xA0, False),
+            (QUE_KEY, False),
+        ):
+            driver.event(vk, down)
+        self.assertEqual(driver.delivered, [])
+        self.assertFalse(driver.actions)
+        self.assertTrue(driver.clear())
+
+    def test_key_pressed_before_caps_lock_keeps_its_natural_repeat_and_release(
+        self,
+    ) -> None:
+        """Pass a delivered key's repeat and release through while Caps Lock is held."""
+        driver = HookDriver()
+        for vk, down in (
+            (ord("A"), True),
+            (QUE_KEY, True),
+            (ord("A"), True),
+            (ord("A"), False),
             (QUE_KEY, False),
         ):
             driver.event(vk, down)
         self.assertEqual(
             [(vk, down) for vk, down, _ in driver.delivered],
-            [(QUE_KEY, True), (ord("C"), True), (ord("C"), False), (QUE_KEY, False)],
+            [(ord("A"), True), (ord("A"), True), (ord("A"), False)],
         )
-        self.assertFalse(driver.actions)
         self.assertTrue(driver.clear())
+
+    def test_caps_lock_found_on_is_turned_off_once(self) -> None:
+        """Tap Caps Lock off at startup only when it is on."""
+        for state, taps in ((1, [0, 2]), (0, [])):
+            with self.subTest(state=state), patch("core.hook_host.user32") as api:
+                api.GetKeyState.return_value = state
+                _turn_off_caps_lock()
+                self.assertEqual(
+                    [call.args[2] for call in api.keybd_event.call_args_list], taps
+                )
+                self.assertTrue(
+                    all(
+                        call.args[0] == QUE_KEY
+                        for call in api.keybd_event.call_args_list
+                    )
+                )
 
 
 class TypingModeTests(unittest.TestCase):
@@ -383,7 +413,6 @@ class TypingModeTests(unittest.TestCase):
             (0xAF,),
             (0xAD,),
             (0xB3,),
-            (0x14,),
             (0x90,),
         ):
             with self.subTest(keys=keys):
@@ -393,24 +422,18 @@ class TypingModeTests(unittest.TestCase):
                 self.assertTrue(driver.manager.input_armed)
                 self.assertTrue(driver.clear())
 
-    def test_lock_keys_are_reported_to_que_in_and_out_of_typing_mode(self) -> None:
-        """Let Que track Caps Lock pressed anywhere, since it never has native focus."""
+    def test_caps_lock_never_reaches_windows_in_or_out_of_typing_mode(self) -> None:
+        """Keep Caps Lock and keys typed with it from Windows and from Que's input."""
         for armed in (True, False):
             with self.subTest(armed=armed):
                 driver = HookDriver()
                 driver.manager.input_armed = armed
-                self.press(driver, 0x14)
-                driver.event(0x14)
-                driver.event(0x14)  # Autorepeat must not toggle again
-                driver.event(0x14, False)
-                self.assertEqual(
-                    [event for event in driver.events if event["type"] == "lock"],
-                    [{"type": "lock", "vk": 0x14}] * 2,
-                )
-                self.assertFalse(
-                    [event for event in driver.events if event["type"] == "key"]
-                )
-                self.assertEqual(len(driver.delivered), 5)
+                self.press(driver, QUE_KEY)
+                self.press(driver, QUE_KEY, ord("Z"))
+                self.assertFalse(driver.delivered)
+                self.assertFalse(driver.events)
+                self.assertEqual(driver.manager.input_armed, armed)
+                self.assertTrue(driver.clear())
 
     def test_que_shortcuts_still_win_while_typing(self) -> None:
         """Run Que's own chords instead of typing them."""

@@ -33,21 +33,21 @@ For a self-judging, click-through version of most of these tests, run `python te
 - Windows 11, unlocked, one session. Close any other Que instance.
 - The repository's virtual environment with `requirements.txt` installed (commands below use `.venv/Scripts/python.exe`; on PowerShell use `.venv\Scripts\python.exe`).
 - The browser under test (the guided runs so far used Edge stable only). The runner opens it with a fresh dedicated profile.
-- Know Que's shortcuts. **Every Que shortcut starts with Right Ctrl**; press Right Ctrl first, then the rest. Right Ctrl and anything pressed while it is held never reach other apps.
+- Know Que's shortcuts. **Every Que shortcut starts with Caps Lock**; press Caps Lock first, then the rest. Caps Lock and anything pressed while it is held never reach other apps, and Caps Lock never toggles while Que runs (Que turns it off at launch).
 
   | Shortcut | Action | Works while hidden |
   |---|---|---|
-  | Right Ctrl+E | Show/hide Que | yes |
-  | Right Ctrl+Shift+R | Start/stop recording | yes |
-  | Right Ctrl+Alt+Shift+Q | Quit Que | yes |
-  | Right Ctrl+Alt+Arrows | Move Que (hold to repeat) | no |
-  | Right Ctrl+Shift+Up/Down | Scroll the chat (hold to repeat) | no |
-  | Right Ctrl+Shift+S | Screenshot | no |
-  | Right Ctrl+Shift+X | Toggle click-through | no |
-  | Right Ctrl+Q | Minimise | no |
-  | Right Ctrl+N | New chat | no |
-  | Right Ctrl+H | History | no |
-  | Right Ctrl+D / Right Ctrl+G / Right Ctrl+M | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
+  | Caps Lock+E | Show/hide Que | yes |
+  | Caps Lock+Shift+R | Start/stop recording | yes |
+  | Caps Lock+Alt+Shift+Q | Quit Que | yes |
+  | Caps Lock+Alt+Arrows | Move Que (hold to repeat) | no |
+  | Caps Lock+Shift+Up/Down | Scroll the chat (hold to repeat) | no |
+  | Caps Lock+Shift+S | Screenshot | no |
+  | Caps Lock+Shift+X | Toggle click-through | no |
+  | Caps Lock+Q | Minimise | no |
+  | Caps Lock+N | New chat | no |
+  | Caps Lock+H | History | no |
+  | Caps Lock+D / Caps Lock+G / Caps Lock+M | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
 - For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.
@@ -102,10 +102,10 @@ Calibration proves the page's capture can see a real window at Que's position, s
 
    It prints `FOOTPRINT x,y,w,h` (Que's rectangle plus 24 px) and the screen regions that change. The beacon is the blinking green square on the board; use its region as the beacon ROI (for example `129,132,192,192`). Look at `OUTDIR/screen.png` to confirm the footprint lies on the board. Que itself never appears in it (mss honours capture exclusion).
 2. In the console: `setroi("FOOTPRINT", "BEACON")`. Keep the beacon ROI the same size for the whole session.
-3. Hide Que with **Right Ctrl+E**, then `cal("baseline")`.
+3. Hide Que with **Caps Lock+E**, then `cal("baseline")`.
 4. Send `calibration` to the runner. Drag the magenta window over Que's area, then `cal("positive")`. The timeline's `capture-positive` must report changed pixels.
 5. Close the magenta window. Run `setTimeout(()=>cal("negative"),3000)` and immediately move the mouse in circles **outside the footprint and the beacon** (for example at the far right) for about 6 seconds. Edge only delivers frames when the screen changes, and the negative control needs 10 identical frames within 1.5 seconds.
-6. `chk()` must return `{calibrated: true, same: true}`. Show Que again with **Right Ctrl+E**.
+6. `chk()` must return `{calibrated: true, same: true}`. Show Que again with **Caps Lock+E**.
 
 The calibration is silently lost when the page's geometry changes: scrolling, resizing, leaving F11, **Alt+Tab while in F11** (Edge resizes the viewport by 1 px), or a status message changing the page height (pinned by the helpers). Check `chk()` before each capture attempt and recalibrate when it is false. Moving Que also invalidates the footprint; take a new `calibrate` reading and redo steps 2–6.
 
@@ -128,12 +128,12 @@ Scenario IDs are those offered by the page (`ids("part")` lists matches). `input
 
 | Test | Steps during MEASURING | Expect on the page | Analyse with |
 |---|---|---|---|
-| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Right Ctrl+E twice; hold Right Ctrl+Alt+Right ~1 s, then Right Ctrl+Alt+Left ~1 s; Right Ctrl+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
+| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Alt+Right ~1 s, then Caps Lock+Alt+Left ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
 | Normal keys are natural | `go("input.integrity.stage-1",45,false)`. Hold Shift ~1.5 s, type `ab`, release; hold **Left** Ctrl ~1 s, press A, release; then 3× (Alt+Tab away, Alt+Tab back, wait 2 s). | Shift and Ctrl key-downs arrive when pressed (hundreds of ms before the letter, not 0–1 ms); held modifiers auto-repeat (`repeat=true` key-downs); each Alt+Tab shows `keydown Alt` ~100–160 ms before the `blur`. Compare with the baseline below. | `timeline` |
-| Baseline without Que | Quit Que (Right Ctrl+Alt+Shift+Q), wait 5 s, then repeat the "normal keys" steps in a new attempt. | The reference pattern for the row above. | `timeline` |
-| Right Ctrl with a non-Que key | Press Right Ctrl+C. | `ControlRight` and `c` key-downs 0 ms apart (Right Ctrl is held back and replayed; accepted trade-off). | `timeline` |
-| Released modifier keeps owning the key (KEY-001) | `go("key.toggle_window_visibility.release-modifier-first",15,false)`. Hold Right Ctrl, hold E until Que hides and ~1.5 s more, release Right Ctrl, release E ~1 s later. Afterwards Right Ctrl+E to show Que. | **Zero key events**; Que hid exactly once. | `analyze` |
-| Quit leaves no orphan key-ups (KEY-006) | `go("capture.main overlay.stage-2",15,false)`. Press Right Ctrl+Alt+Shift+Q once. Then `launch` again. | **Zero key events**; Que's window and processes gone. | `analyze`, process list |
+| Baseline without Que | Quit Que (Caps Lock+Alt+Shift+Q), wait 5 s, then repeat the "normal keys" steps in a new attempt. | The reference pattern for the row above. | `timeline` |
+| Caps Lock with a non-Que key | Press Caps Lock+C. | **Zero key events** (the key is swallowed); the Caps Lock light stays off. | `analyze` |
+| Released modifier keeps owning the key (KEY-001) | `go("key.toggle_window_visibility.release-modifier-first",15,false)`. Hold Caps Lock, hold E until Que hides and ~1.5 s more, release Caps Lock, release E ~1 s later. Afterwards Caps Lock+E to show Que. | **Zero key events**; Que hid exactly once. | `analyze` |
+| Quit leaves no orphan key-ups (KEY-006) | `go("capture.main overlay.stage-2",15,false)`. Press Caps Lock+Alt+Shift+Q once. Then `launch` again. | **Zero key events**; Que's window and processes gone. | `analyze`, process list |
 
 ### 7.2 Typing in Que
 
@@ -142,7 +142,7 @@ Scenario IDs are those offered by the page (`ids("part")` lists matches). `input
 | Click Que's input; type `abc`, Enter | Nothing on the page; text in Que (operator). |
 | F2 | `keydown`/`keyup F2` on the page (function keys pass through). |
 | Volume up | `AudioVolumeUp` on the page; the volume OSD appears (operator). |
-| Caps Lock, `xyz`, Caps Lock | Caps Lock events on the page; `XYZ` in Que's input in the right case, nothing else on the page. |
+| Caps Lock, `xyz`, Caps Lock | Nothing on the page; `xyz` in lowercase in Que's input (Caps Lock never toggles). |
 | Left Ctrl+A | Selects the text in Que (operator); nothing on the page. |
 | Alt+Tab, Alt+Tab back to Edge | Switches exactly once each way and leaves typing mode. While typing, Alt belongs to Que and is replayed with Tab, so the page may see the blur without an Alt key-down. |
 | Type `qq` | Now reaches the page (`q` events), because typing mode ended. |
@@ -166,7 +166,7 @@ For each attempt the expectation is the same: Que's windows never appear in the 
 | Text context menu | `go("capture.text context menu.stage-1",20)`. Right-click in Que's input, wait 3 s, Esc. |
 | Tooltip | `go("capture.tooltip.stage-1",15)`. Hover the History icon ~3 s without clicking. |
 | Tray menu | The taskbar is hidden in F11, so this needs a windowed layout and its own calibration. Right-click Que's tray icon (its icon is intentionally blank), wait 3 s, Esc. |
-| Main overlay show/hide | `go("capture.main overlay.stage-3",20)`. Right Ctrl+E three times. |
+| Main overlay show/hide | `go("capture.main overlay.stage-3",20)`. Caps Lock+E three times. |
 | Startup | Board under Que's default position (867,3)–(1692,903) on the reference display. `go("capture.startup.stage-1",30)`, then send `launch` during MEASURING. |
 
 Also check by eye, without an attempt:
@@ -176,9 +176,9 @@ Also check by eye, without an attempt:
 ### 7.5 Audio
 
 1. Download the smallest model first (Settings → Voice).
-2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Right Ctrl+Shift+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Right Ctrl+Shift+R to stop.
+2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+Shift+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+Shift+R to stop.
 3. Expect in Que's transcript (operator reads it): a **You** line with the spoken phrase and a **Them** line with the page's phrase; no "silent" or "no speech" warnings; the caption shows the latest line. On the page: continuous audio samples, no mute/ended events.
-4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Right Ctrl+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
+4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
 
 ## 8. Analyse
 

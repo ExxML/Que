@@ -14,7 +14,6 @@ from core.win32_hook import (
     MOD_ALT,
     MOD_CTRL,
     MOD_SHIFT,
-    MODIFIER_VK_CODES,
     VK_DOWN,
     VK_LEFT,
     VK_RIGHT,
@@ -28,10 +27,11 @@ from core.win32_hook import (
     user32,
 )
 
-# Right Ctrl is Que's own shortcut key. It (and any modifier pressed while it is held) is
-# withheld from other apps, so a page never sees anything of a Que shortcut; every other
-# modifier reaches the active app untouched, with its natural timing and auto-repeat.
-QUE_KEY = 0xA3  # VK_RCONTROL
+# Caps Lock is Que's own shortcut key and never toggles while Que runs. It, any modifier
+# pressed while it is held and any key pressed with it are withheld from other apps, so a
+# page never sees anything of a Que shortcut; every other modifier reaches the active app
+# untouched, with its natural timing and auto-repeat.
+QUE_KEY = 0x14  # VK_CAPITAL
 MOD_QUE = 0x08
 CHORD_BITS: dict[int, int] = {**VK_TO_MOD_BIT, QUE_KEY: MOD_QUE}
 
@@ -61,7 +61,6 @@ VK_TAB = 0x09
 VK_ESCAPE = 0x1B
 VK_F4 = 0x73
 WINDOWS_KEYS = frozenset({0x5B, 0x5C})
-LOCK_KEYS = frozenset({0x14, 0x90, 0x91})  # Caps, Num and Scroll Lock
 # Chords Windows uses to switch, close or open system UI; they leave Que's typing mode
 SYSTEM_CHORDS = frozenset(
     {
@@ -71,14 +70,13 @@ SYSTEM_CHORDS = frozenset(
         (MOD_ALT | MOD_SHIFT, VK_ESCAPE),
         (MOD_CTRL, VK_ESCAPE),
         (MOD_CTRL | MOD_SHIFT, VK_ESCAPE),
-        (MOD_QUE, VK_ESCAPE),  # Right Ctrl still acts as Ctrl outside Que's shortcuts
-        (MOD_QUE | MOD_SHIFT, VK_ESCAPE),
         (MOD_ALT, VK_F4),
     }
 )
-# Function, Print Screen, sleep, browser, volume, media and launch keys keep working while typing in Que
+# Function, Print Screen, sleep, Num and Scroll Lock, browser, volume, media and launch keys keep
+# working while typing in Que
 DEVICE_KEYS = frozenset(
-    {*range(0x70, 0x88), 0x2C, 0x5F, *range(0xA6, 0xB8)} | LOCK_KEYS
+    {*range(0x70, 0x88), 0x2C, 0x5F, 0x90, 0x91, *range(0xA6, 0xB8)}
 )
 
 WM_MOUSEMOVE = 0x200
@@ -102,9 +100,10 @@ SIDE_NEUTRAL = {0xA0: 0x10, 0xA1: 0x10, 0xA2: 0x11, 0xA3: 0x11, 0xA4: 0x12, 0xA5
 class HookEngine:
     """Own consumed keys and clicks from press to physical release, and decide everything else.
 
-    Que's shortcuts start with `QUE_KEY`, which is held back with every modifier pressed
-    after it until the next key shows whether the chord belongs to Que: Que's shortcuts
-    are consumed in full and other chords are replayed intact. All other modifiers pass
+    Que's shortcuts start with `QUE_KEY`, which never reaches other apps: every modifier
+    pressed after it is held back, and every key pressed while it is held is consumed,
+    whether or not it is one of Que's shortcuts. Modifiers still held back when another key
+    arrives without `QUE_KEY` are replayed with it intact. All other modifiers pass
     through at once. While Que's input is in typing mode every ordinary key and modifier
     is consumed for Que except the system, function and device keys the user expects to
     keep working.
@@ -278,7 +277,7 @@ class HookEngine:
                     vk, int(kb.scanCode), bool(kb.flags & LLKHF_EXTENDED), down
                 )
             )
-        if vk in MODIFIER_VK_CODES:
+        if vk in CHORD_BITS:
             if down:
                 if vk in self.held_modifier_vks:
                     # Autorepeat follows its press: withheld stays withheld, delivered passes
@@ -326,9 +325,6 @@ class HookEngine:
             return 1
         self.held_vk_codes.add(vk)
         if not repeated:
-            if vk in LOCK_KEYS:
-                # Que never has native focus, so it tracks every lock toggle itself
-                self.emit({"type": "lock", "vk": vk})
             windows_held = bool(self.held_vk_codes & WINDOWS_KEYS)
             entry = None
             if not windows_held:
@@ -341,6 +337,10 @@ class HookEngine:
                 if repeat_callbacks:
                     self.repeat_hotkeys[vk] = (modifiers, callback)
                 self._invoke(callback)
+                return 1
+            if QUE_KEY in self.suppressed_mod_events:
+                # Que's key never reaches other apps, so neither does a key pressed with it
+                self.suppressed_vk_codes.add(vk)
                 return 1
             if self.input_armed:
                 system = (
@@ -355,7 +355,7 @@ class HookEngine:
                     self.input_vk_codes.add(vk)
                     self._emit_key(kb, True, False)
                     return 1
-        if self.suppressed_mod_events:
+        if self.suppressed_mod_events and QUE_KEY not in self.suppressed_mod_events:
             self._replay_modifiers_and_key(vk, int(kb.scanCode), int(kb.flags))
             return 1
         return self._next_keyboard(code, message, address)

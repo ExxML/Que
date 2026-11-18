@@ -24,21 +24,6 @@ MOD_CTRL = 0x01
 MOD_ALT = 0x02
 MOD_SHIFT = 0x04
 
-# All modifier virtual key codes (generic + left/right variants)
-MODIFIER_VK_CODES = frozenset(
-    {
-        VK_SHIFT,
-        VK_CONTROL,
-        VK_MENU,
-        0xA0,
-        0xA1,  # VK_LSHIFT, VK_RSHIFT
-        0xA2,
-        0xA3,  # VK_LCONTROL, VK_RCONTROL
-        0xA4,
-        0xA5,  # VK_LMENU, VK_RMENU
-    }
-)
-
 # Mapping from modifier VK codes to bitmask values
 VK_TO_MOD_BIT: dict[int, int] = {
     VK_SHIFT: MOD_SHIFT,
@@ -58,6 +43,7 @@ LLKHF_INJECTED = 0x10
 
 # keybd_event flag constants
 KEYEVENTF_EXTENDEDKEY = 0x01
+KEYEVENTF_KEYUP = 0x02
 
 
 # Win32 structure for low-level keyboard hook data
@@ -117,6 +103,8 @@ user32.PostThreadMessageW.argtypes = [
 user32.PostThreadMessageW.restype = ctypes.wintypes.BOOL
 user32.GetAsyncKeyState.argtypes = [ctypes.c_int]
 user32.GetAsyncKeyState.restype = ctypes.c_short
+user32.GetKeyState.argtypes = [ctypes.c_int]
+user32.GetKeyState.restype = ctypes.c_short
 kernel32.GetModuleHandleW.argtypes = [ctypes.wintypes.LPCWSTR]
 kernel32.GetModuleHandleW.restype = ctypes.wintypes.HMODULE
 kernel32.GetTickCount.argtypes = []

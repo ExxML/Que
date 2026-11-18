@@ -22,10 +22,10 @@ from core.win32_hook import (
 from stealth.manifest import HOTKEYS
 from stealth.results import Result
 
-# Physical keys per chord bit: Que's own key (Left and generic Ctrl as non-Que substitutes),
+# Physical keys per chord bit: Que's own key (Right and Left Ctrl as non-Que substitutes),
 # Alt and Shift. Variant n of a chord presses the nth key of every group.
 CHORD_GROUPS = (
-    (MOD_QUE, (QUE_KEY, 0xA2, 0x11)),
+    (MOD_QUE, (QUE_KEY, 0xA3, 0xA2)),
     (MOD_ALT, (0x12, 0xA4, 0xA5)),
     (MOD_SHIFT, (0x10, 0xA0, 0xA1)),
 )
@@ -195,8 +195,13 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
                         for mod in reversed(order):
                             driver.event(mod, False, system)
                     active = QUE_KEY in modifiers and (always or visible)
-                    if active:
-                        expected = (2 if early_release else 3) if repeat else 1
+                    if QUE_KEY in modifiers:
+                        # With Que's key held the chord is Que's even when inactive
+                        expected = (
+                            ((2 if early_release else 3) if repeat else 1)
+                            if active
+                            else 0
+                        )
                         ok = (
                             delivered_only_before_que(driver, order)
                             and len(driver.actions) == expected
@@ -257,11 +262,12 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
                             else:
                                 held.remove(key)
                         ok = not held and not orphan_up and driver.clear()
-                        if active:
+                        if QUE_KEY in mixed_modifiers:
                             ok = (
                                 ok
                                 and delivered_only_before_que(driver, press_order)
-                                and driver.actions == [name] * (2 if repeat else 1)
+                                and driver.actions
+                                == ([name] * (2 if repeat else 1) if active else [])
                             )
                         else:
                             ok = (
@@ -289,7 +295,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
         "hook.ctrl-e-release-ctrl-repeat-e",
         driver,
         not driver.delivered,
-        "Right Ctrl+E → release Right Ctrl → hold E: repeated E key-down must remain suppressed until E release.",
+        "Caps Lock+E → release Caps Lock → hold E: repeated E key-down must remain suppressed until E release.",
     )
     for seed in range(20):
         rng = random.Random(seed)
@@ -302,14 +308,14 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
             driver.event(ctrl)
             key = ord("A") if ordinary else ord("E")
             driver.event(key)
-            if ordinary or ctrl != QUE_KEY:
+            if ctrl != QUE_KEY:
                 expected_delivery += [
                     (ctrl, True),
                     (key, True),
                     (key, False),
                     (ctrl, False),
                 ]
-            else:
+            elif not ordinary:
                 expected_actions += 1
             driver.event(key, False)
             driver.event(ctrl, False)
@@ -319,7 +325,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
             [(vk, down) for vk, down, _ in driver.delivered] == expected_delivery
             and len(driver.actions) == expected_actions
             and driver.clear(),
-            "Seeded ordinary/hotkey sequences with Que's key and Left Ctrl: independently compare complete delivered stream, callback count and released state.",
+            "Seeded ordinary/hotkey sequences with Que's key and Right/Left Ctrl: independently compare complete delivered stream, callback count and released state.",
         )
     for case in (
         "visibility",
@@ -363,11 +369,13 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
                 and driver.clear()
             )
         elif case == "extended":
+            # Right Ctrl withheld after Que's key is replayed with the next key, both extended
+            driver.event(QUE_KEY)
             driver.event(0xA3, flags=LLKHF_EXTENDED)
+            driver.event(QUE_KEY, False)
             driver.event(0x27, flags=LLKHF_EXTENDED)
-            ok = all(
-                call.args[2] == 1 for call in driver.api.keybd_event.call_args_list
-            )
+            calls = driver.api.keybd_event.call_args_list
+            ok = len(calls) == 2 and all(call.args[2] == 1 for call in calls)
         elif case == "natural-modifiers":
             # Without Que's key, modifiers reach the app at once with their auto-repeat
             presses = [
@@ -412,29 +420,8 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
                     driver.event(69)
                     driver.event(69, False)
             driver.event(QUE_KEY, False)
-            if case in ("visibility", "overlap"):
-                ok = not driver.delivered and driver.clear()
-            elif case == "modifier-repeat":
-                # Right Ctrl+A is replayed; afterwards Right Ctrl is delivered, so its repeat passes
-                ok = (
-                    driver.delivered
-                    == [
-                        (QUE_KEY, True, True),
-                        (65, True, True),
-                        (65, False, False),
-                        (QUE_KEY, True, False),
-                        (QUE_KEY, False, False),
-                    ]
-                    and driver.clear()
-                )
-            else:
-                ctrl_down = sum(
-                    vk == QUE_KEY and down for vk, down, _ in driver.delivered
-                )
-                ctrl_up = sum(
-                    vk == QUE_KEY and not down for vk, down, _ in driver.delivered
-                )
-                ok = ctrl_down == ctrl_up == 1 and driver.clear()
+            # Que's key, its repeat and every key pressed with it stay hidden
+            ok = not driver.delivered and driver.clear()
         record(
             f"hook.{case}",
             driver,

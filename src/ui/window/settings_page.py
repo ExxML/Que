@@ -384,7 +384,7 @@ class SettingsPage(QWidget):
         self._add_toggle(
             window_layout,
             self.click_through_checkbox,
-            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Right Ctrl+Shift+X to turn click-through on or off.",
+            "Mouse clicks pass through Que to the windows behind it, so you can't click Que itself. Press Caps Lock+Shift+X to turn click-through on or off.",
         )
         self.elevation_checkbox = QCheckBox("Allow shortcuts in admin apps")
         self.elevation_checkbox.setChecked(self.settings_store.elevate_helper())

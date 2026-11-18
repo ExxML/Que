@@ -60,7 +60,6 @@ class HookClient(QObject):
     key_input = pyqtSignal(int, int, int, bool, bool, object)
     pointer_input = pyqtSignal(int, int, int, int, int)
     armed_changed = pyqtSignal(bool)
-    lock_toggled = pyqtSignal(int)
     quit_ready = pyqtSignal()
     failed = pyqtSignal(str)
     alert = pyqtSignal(str)
@@ -184,8 +183,6 @@ class HookClient(QObject):
                 message["data"],
                 message["hwnd"],
             )
-        elif kind == "lock":
-            self.lock_toggled.emit(int(message["vk"]))
         elif kind == "armed":
             self.last_press_seq = max(self.last_press_seq, int(message["seq"]))
             self.armed_changed.emit(bool(message["value"]))

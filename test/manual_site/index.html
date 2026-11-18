@@ -595,22 +595,22 @@ function windowTest(def) {
 
 /* ───────────────────────── keyboard tests ───────────────────────── */
 const SHORTCUTS = [
-  ['toggle_window_visibility', 'Show / hide Que', '[[Right Ctrl]]+[[E]]', 'Press it twice: Que hides, then shows. Works while Que is hidden.', 14],
-  ['toggle_recording', 'Start / stop recording', '[[Right Ctrl]]+[[Shift]]+[[R]]', 'Press once to start, again to stop (download a Whisper model in Settings → Voice first). Works while hidden.', 18],
-  ['move_window_left', 'Move Que left', '[[Right Ctrl]]+[[Alt]]+[[←]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
-  ['move_window_right', 'Move Que right', '[[Right Ctrl]]+[[Alt]]+[[→]]', 'Hold for about 1 s, then release.', 12],
-  ['move_window_up', 'Move Que up', '[[Right Ctrl]]+[[Alt]]+[[↑]]', 'Hold for about 1 s, then release.', 12],
-  ['move_window_down', 'Move Que down', '[[Right Ctrl]]+[[Alt]]+[[↓]]', 'Hold for about 1 s, then release.', 12],
-  ['scroll_up', 'Scroll chat up', '[[Right Ctrl]]+[[Shift]]+[[↑]]', 'Hold for about 1 s with a long chat open.', 12],
-  ['scroll_down', 'Scroll chat down', '[[Right Ctrl]]+[[Shift]]+[[↓]]', 'Hold for about 1 s with a long chat open.', 12],
-  ['screenshot', 'Screenshot', '[[Right Ctrl]]+[[Shift]]+[[S]]', 'Press once; a thumbnail appears in Que.', 12],
-  ['toggle_click_through', 'Toggle click-through', '[[Right Ctrl]]+[[Shift]]+[[X]]', 'Press twice (on, then off again).', 12],
-  ['minimize', 'Minimise Que', '[[Right Ctrl]]+[[Q]]', 'Press once, then [[Right Ctrl]]+[[E]] outside the measurement to bring Que back.', 12],
-  ['clear_all_chat', 'New chat', '[[Right Ctrl]]+[[N]]', 'Press once; the chat clears.', 12],
-  ['toggle_history', 'History sidebar', '[[Right Ctrl]]+[[H]]', 'Press twice (open, close).', 12],
-  ['solve_coding_problem', 'Solve coding problem', '[[Right Ctrl]]+[[D]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
-  ['fix_code', 'Fix code', '[[Right Ctrl]]+[[G]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
-  ['solve_question', 'Solve any question', '[[Right Ctrl]]+[[M]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['toggle_window_visibility', 'Show / hide Que', '[[Caps Lock]]+[[E]]', 'Press it twice: Que hides, then shows. Works while Que is hidden.', 14],
+  ['toggle_recording', 'Start / stop recording', '[[Caps Lock]]+[[Shift]]+[[R]]', 'Press once to start, again to stop (download a Whisper model in Settings → Voice first). Works while hidden.', 18],
+  ['move_window_left', 'Move Que left', '[[Caps Lock]]+[[Alt]]+[[←]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
+  ['move_window_right', 'Move Que right', '[[Caps Lock]]+[[Alt]]+[[→]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_up', 'Move Que up', '[[Caps Lock]]+[[Alt]]+[[↑]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_down', 'Move Que down', '[[Caps Lock]]+[[Alt]]+[[↓]]', 'Hold for about 1 s, then release.', 12],
+  ['scroll_up', 'Scroll chat up', '[[Caps Lock]]+[[Shift]]+[[↑]]', 'Hold for about 1 s with a long chat open.', 12],
+  ['scroll_down', 'Scroll chat down', '[[Caps Lock]]+[[Shift]]+[[↓]]', 'Hold for about 1 s with a long chat open.', 12],
+  ['screenshot', 'Screenshot', '[[Caps Lock]]+[[Shift]]+[[S]]', 'Press once; a thumbnail appears in Que.', 12],
+  ['toggle_click_through', 'Toggle click-through', '[[Caps Lock]]+[[Shift]]+[[X]]', 'Press twice (on, then off again).', 12],
+  ['minimize', 'Minimise Que', '[[Caps Lock]]+[[Q]]', 'Press once, then [[Caps Lock]]+[[E]] outside the measurement to bring Que back.', 12],
+  ['clear_all_chat', 'New chat', '[[Caps Lock]]+[[N]]', 'Press once; the chat clears.', 12],
+  ['toggle_history', 'History sidebar', '[[Caps Lock]]+[[H]]', 'Press twice (open, close).', 12],
+  ['solve_coding_problem', 'Solve coding problem', '[[Caps Lock]]+[[D]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
+  ['fix_code', 'Fix code', '[[Caps Lock]]+[[G]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['solve_question', 'Solve any question', '[[Caps Lock]]+[[M]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
 ].map(([id, title, keys, how, seconds]) => ({ id: 'kbd.sc.' + id, tab: 'keyboard', group: 'Every shortcut', compact: true, title, keys, steps: [how], seconds, guard: true, startLabel: 'Test',
   confirmText: `Did the shortcut work in Que (${title.toLowerCase()})?`,
   evaluate(ctx) {
@@ -619,14 +619,14 @@ const SHORTCUTS = [
     if (odd.length) { if (r.status === 'pass') r.status = 'review'; r.findings.push(warn(`Window geometry/fullscreen events appeared: ${odd.map(describe).join('; ')}.`)); }
     return r;
   } }));
-SHORTCUTS.push({ id: 'kbd.sc.close_app', tab: 'keyboard', group: 'Every shortcut', compact: true, title: 'Quit Que', keys: '[[Right Ctrl]]+[[Alt]]+[[Shift]]+[[Q]]',
+SHORTCUTS.push({ id: 'kbd.sc.close_app', tab: 'keyboard', group: 'Every shortcut', compact: true, title: 'Quit Que', keys: '[[Caps Lock]]+[[Alt]]+[[Shift]]+[[Q]]',
   steps: ['Press once. **This quits Que**; relaunch it with `python src/Que.py` afterwards. Watch for orphan key-ups after Que disappears (KEY-006).'], seconds: 12, guard: true, startLabel: 'Test (quits Que)',
   confirmText: 'Did Que quit (window gone)?', evaluate: ctx => E.noKeys(ctx, 'quitting') });
 
 const KEY_TESTS = [
   { id: 'kbd.release-order', tab: 'keyboard', group: 'Edge cases', title: 'Modifier released before the action key (KEY-001)',
     why: 'If Que stops owning a key when its modifier is released, the still-held key reaches the page as a half key stream (down events with no up).',
-    steps: ['Hold [[Right Ctrl]], then hold [[E]] until Que hides and about 1.5 s more.', 'Release [[Right Ctrl]] first, wait 1 s, then release [[E]].', 'Afterwards press [[Right Ctrl]]+[[E]] to show Que again.'],
+    steps: ['Hold [[Caps Lock]], then hold [[E]] until Que hides and about 1.5 s more.', 'Release [[Caps Lock]] first, wait 1 s, then release [[E]].', 'Afterwards press [[Caps Lock]]+[[E]] to show Que again.'],
     seconds: 15, guard: true, confirmText: 'Que hid exactly once and stayed hidden until you showed it?', evaluate: ctx => E.noKeys(ctx, 'the sequence') },
   { id: 'kbd.natural-mods', tab: 'keyboard', group: 'Edge cases', title: 'Ordinary modifiers behave naturally (MODHOLD-001)', baseline: true,
     why: 'A page can fingerprint any app that holds back Shift/Ctrl/Alt: the modifier arrives 0–1 ms before the next key and never auto-repeats. Natural typing shows hundreds of ms and repeats.',
@@ -636,7 +636,7 @@ const KEY_TESTS = [
       const isMod = c => /^(Shift|Control|Alt|Meta)(Left|Right)$/.test(c || '');
       const downs = ctx.keys.filter(k => k.phase === 'down'), gaps = [];
       downs.forEach((k, i) => {
-        if (!isMod(k.code) || k.repeat || k.code === 'ControlRight') return;
+        if (!isMod(k.code) || k.repeat) return;
         const nx = downs.slice(i + 1).find(x => !isMod(x.code));
         if (nx && nx.t - k.t < 5000) gaps.push({ code: k.code, gap: nx.t - k.t });
       });
@@ -674,44 +674,46 @@ const KEY_TESTS = [
       f.unshift(ok('Every switch showed Alt going down well before the blur.'));
       return { status: 'pass', findings: f, metrics };
     } },
-  { id: 'kbd.rctrl-replay', tab: 'keyboard', group: 'Edge cases', title: 'Right Ctrl + a non-Que key still works as Ctrl',
-    why: 'Right Ctrl is Que\'s dedicated key. With a key that is not a Que shortcut it is replayed so it still acts as Ctrl. Known, accepted trade-off: ControlRight and the key arrive ~0 ms apart.',
-    steps: ['Press [[Right Ctrl]]+[[C]] once (not a Que shortcut).'], seconds: 10, confirmText: 'Que did not react to the chord?',
+  { id: 'kbd.quekey-swallow', tab: 'keyboard', group: 'Edge cases', title: 'Caps Lock + a non-Que key is swallowed',
+    why: 'Caps Lock is Que\'s dedicated key and never toggles while Que runs. A key pressed with it that is not a Que shortcut goes nowhere, so a mistyped shortcut never reaches the page.',
+    steps: ['Press [[Caps Lock]]+[[C]] once (not a Que shortcut).'], seconds: 10, confirmText: 'Que did not react to the chord, and the Caps Lock light stayed off?',
     evaluate(ctx) {
-      const d = ctx.keys.filter(k => k.phase === 'down'), rc = d.find(k => k.code === 'ControlRight'), c = d.find(k => k.code === 'KeyC');
-      if (!rc || !c) return { status: 'fail', findings: [bad('Right Ctrl+C did not reach the page; Que swallowed an ordinary Ctrl chord.')] };
-      return { status: 'pass', findings: [ok(`ControlRight and C both arrived (${fmtMs(c.t - rc.t)} apart). Expected replay behaviour.`)] };
+      const d = ctx.keys.filter(k => k.phase === 'down' && (k.code === 'CapsLock' || k.code === 'KeyC'));
+      if (d.length) return { status: 'fail', findings: [bad(`Caps Lock+C reached the page: ${E.keyList(d, ctx.t0)}.`)] };
+      return { status: 'pass', findings: [ok('Neither Caps Lock nor C reached the page.')] };
     } },
-  { id: 'kbd.leftctrl-not-que', tab: 'keyboard', group: 'Edge cases', title: 'Left Ctrl shortcuts are not Que\'s',
-    why: 'Only Right Ctrl starts a Que shortcut. Left Ctrl+E must reach the page untouched.',
-    steps: ['Make sure Que is visible.', 'Press **Left** [[Ctrl]]+[[E]] once.'], seconds: 10, guard: true, confirmText: 'Que did NOT hide or react?',
+  { id: 'kbd.leftctrl-not-que', tab: 'keyboard', group: 'Edge cases', title: 'Ctrl shortcuts are not Que\'s',
+    why: 'Only Caps Lock starts a Que shortcut. Left and Caps Lock+E must reach the page untouched.',
+    steps: ['Make sure Que is visible.', 'Press **Left** [[Ctrl]]+[[E]] once, then **Right** [[Ctrl]]+[[E]] once.'], seconds: 10, guard: true, confirmText: 'Que did NOT hide or react?',
     evaluate(ctx) {
       const d = ctx.keys.filter(k => k.phase === 'down');
-      if (d.some(k => k.code === 'ControlLeft') && d.some(k => k.code === 'KeyE')) return { status: 'pass', findings: [ok('ControlLeft and E reached the page as an ordinary chord.')] };
-      return { status: 'fail', findings: [bad('Left Ctrl+E did not reach the page; Que is intercepting a chord that is not its own.')] };
+      if (d.some(k => k.code === 'ControlLeft') && d.some(k => k.code === 'ControlRight') && d.filter(k => k.code === 'KeyE').length >= 2) return { status: 'pass', findings: [ok('ControlLeft+E and ControlRight+E reached the page as ordinary chords.')] };
+      return { status: 'fail', findings: [bad('Left or Caps Lock+E did not reach the page; Que is intercepting a chord that is not its own.')] };
     } },
   { id: 'kbd.hidden-passthrough', tab: 'keyboard', group: 'Edge cases', title: 'Hidden Que does not steal keys',
-    why: 'While Que is hidden only its three always-on shortcuts may be intercepted. Everything else must reach the page.',
-    steps: ['Hide Que with [[Right Ctrl]]+[[E]] (before starting).', 'Press [[Right Ctrl]]+[[M]] once.', 'Afterwards show Que again with [[Right Ctrl]]+[[E]].'],
+    why: 'While Que is hidden only its three always-on shortcuts may run. Ordinary typing must reach the page; Caps Lock chords that only work while Que is visible run nothing and still reach nothing.',
+    steps: ['Hide Que with [[Caps Lock]]+[[E]] (before starting).', 'Type `abc`.', 'Press [[Caps Lock]]+[[M]] once.', 'Afterwards show Que again with [[Caps Lock]]+[[E]].'],
     seconds: 10, guard: true, confirmText: 'Que was hidden and did not react (no AI request started)?',
     evaluate(ctx) {
       const d = ctx.keys.filter(k => k.phase === 'down');
-      if (d.some(k => k.code === 'ControlRight') && d.some(k => k.code === 'KeyM')) return { status: 'pass', findings: [ok('Right Ctrl+M reached the page while Que was hidden.')] };
-      return { status: 'fail', findings: [bad('Right Ctrl+M did not reach the page while Que was hidden; a non-always-on shortcut was intercepted.')] };
+      const leaked = d.filter(k => k.code === 'CapsLock' || k.code === 'KeyM');
+      if (leaked.length) return { status: 'fail', findings: [bad(`Caps Lock+M reached the page while Que was hidden: ${E.keyList(leaked, ctx.t0)}.`)] };
+      if (['KeyA', 'KeyB', 'KeyC'].every(code => d.some(k => k.code === code))) return { status: 'pass', findings: [ok('`abc` reached the page while Que was hidden, and Caps Lock+M did not.')] };
+      return { status: 'fail', findings: [bad('`abc` did not reach the page while Que was hidden; hidden Que intercepted ordinary typing.')] };
     } },
   { id: 'kbd.typing-passthrough', tab: 'keyboard', group: 'Typing in Que', title: 'Typing in Que stays invisible to the page',
-    why: 'While you type in Que, letters go to Que only. Function keys, media keys, Caps Lock and system chords like Alt+Tab still reach Windows. Pass-through keys appearing here is correct; letters appearing is a leak.',
+    why: 'While you type in Que, letters go to Que only. Function keys, media keys and system chords like Alt+Tab still reach Windows; Caps Lock is Que\'s key and never does. Pass-through keys appearing here is correct; letters or Caps Lock appearing is a leak.',
     steps: ['Click Que\'s input. Type `abc`, then [[Enter]].', 'Press [[F2]], then Volume Up.', 'Press [[Caps Lock]], type `xyz`, press [[Caps Lock]] again.', '[[Alt]]+[[Tab]] away and [[Alt]]+[[Tab]] back to this page.', 'Type `qq` (typing mode has ended; these must reach the page).'],
     seconds: 60, allowBlur: true, countdown: 5,
-    questions: [{ text: 'Your typing appeared in Que (`abc`, then `XYZ` in the right case)?' }],
+    questions: [{ text: 'Your typing appeared in Que (`abc`, then `xyz` in lowercase, since Caps Lock never toggles while Que runs)?' }],
     evaluate(ctx) {
       const f = []; let status = 'pass';
       const blur = ctx.by('blur')[0];
       const before = blur ? ctx.keys.filter(k => k.t < blur.t) : ctx.keys, after = blur ? ctx.keys.filter(k => k.t >= blur.t) : [];
-      const leaked = before.filter(k => /^Key[ABCXYZ]$/.test(k.code) || /Enter$/.test(k.code));
+      const leaked = before.filter(k => /^Key[ABCXYZ]$/.test(k.code) || /Enter$/.test(k.code) || k.code === 'CapsLock');
       if (leaked.length) { status = 'fail'; f.push(bad(`Typed keys reached the page before you left Que: ${E.keyList(leaked, ctx.t0)}.`)); }
-      else f.push(ok('No letters or Enter reached the page while typing in Que.'));
-      const need = [['F2', 'F2'], ['AudioVolumeUp', 'Volume Up'], ['CapsLock', 'Caps Lock']];
+      else f.push(ok('No letters, Enter or Caps Lock reached the page while typing in Que.'));
+      const need = [['F2', 'F2'], ['AudioVolumeUp', 'Volume Up']];
       for (const [code, name] of need) {
         if (before.some(k => k.code === code && k.phase === 'down')) f.push(ok(`${name} reached Windows/the page (correct pass-through).`));
         else { if (status === 'pass') status = 'review'; f.push(warn(`${name} was not seen. It should pass through while typing; either Que swallowed it or you skipped the step.`)); }
@@ -738,7 +740,7 @@ const FOCUS_TESTS = [
     '`hello` appeared in Que?', 'Focus'),
   noFocusTest('focus.popups', 'Menus, popups and dialogs keep focus',
     'Every Que surface (combo popups, context menu, tooltip, settings, history) must leave page focus alone.',
-    ['Open Que\'s Settings; open the model and effort combos, Esc.', 'Right-click in Que\'s input, Esc.', 'Hover the History icon for 3 s.', 'Open and close History with [[Right Ctrl]]+[[H]].'], 45,
+    ['Open Que\'s Settings; open the model and effort combos, Esc.', 'Right-click in Que\'s input, Esc.', 'Hover the History icon for 3 s.', 'Open and close History with [[Caps Lock]]+[[H]].'], 45,
     'You opened the popups/menus described and they showed in Que?', 'Focus'),
   { id: 'pointer.lane', tab: 'focus', group: 'Pointer', title: 'The pointer never "leaves" the page over Que (POINTER-001)',
     why: 'If Que covered the page like a normal window, the page would see pointerleave at an interior point, clicks would not arrive and wheel events would stop. The Stage shows your path; gaps in it are blind areas.',
@@ -758,7 +760,7 @@ const FOCUS_TESTS = [
     } },
   { id: 'pointer.clickthrough-on', tab: 'focus', group: 'Pointer', title: 'Click-through ON passes clicks to the page',
     why: 'With click-through on, clicks over Que must reach the page beneath as if Que were not there (the documented behaviour of the setting).',
-    steps: ['Press [[Right Ctrl]]+[[Shift]]+[[X]] to turn click-through **on**.', 'Click once over Que on the Stage.', 'Press [[Right Ctrl]]+[[Shift]]+[[X]] again to turn it **off**.'], seconds: 25, stage: 'lane', guard: true, needsFocus: false, countdown: 4,
+    steps: ['Press [[Caps Lock]]+[[Shift]]+[[X]] to turn click-through **on**.', 'Click once over Que on the Stage.', 'Press [[Caps Lock]]+[[Shift]]+[[X]] again to turn it **off**.'], seconds: 25, stage: 'lane', guard: true, needsFocus: false, countdown: 4,
     confirmText: 'Que did NOT react to your click?',
     evaluate(ctx) {
       const d = ctx.by('pdown').filter(e => e.where === 'stage');
@@ -767,7 +769,7 @@ const FOCUS_TESTS = [
     } },
   { id: 'fs.fullscreen', tab: 'focus', group: 'Fullscreen & locks', title: 'Fullscreen and pointer lock are not interrupted',
     why: 'Pages in fullscreen or pointer lock notice if they are exited without a request. Que must not cause that, and must stay visible on top.',
-    steps: ['Start, then click **Enter fullscreen** (and **Lock pointer** if you like).', 'Show/hide Que with [[Right Ctrl]]+[[E]], move it, open Settings.', 'Click **Exit fullscreen** / **Unlock** yourself at the end.'], seconds: 40, allowBlur: true, countdown: 3, needsFocus: false,
+    steps: ['Start, then click **Enter fullscreen** (and **Lock pointer** if you like).', 'Show/hide Que with [[Caps Lock]]+[[E]], move it, open Settings.', 'Click **Exit fullscreen** / **Unlock** yourself at the end.'], seconds: 40, allowBlur: true, countdown: 3, needsFocus: false,
     controls: () => h('div', { class: 'row' },
       h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'enter-fullscreen' }); document.documentElement.requestFullscreen?.().catch(e => toast(String(e.message))); } }, 'Enter fullscreen'),
       h('button', { class: 'btn small', onclick: () => { bus.emit('ui', { action: 'exit-fullscreen' }); document.fullscreenElement && document.exitFullscreen(); } }, 'Exit fullscreen'),
@@ -1005,15 +1007,15 @@ function captureResult(extraRule) {
   };
 }
 const SURFACES = [
-  ['main-showhide', 'Overlay show / hide', 'Press [[Right Ctrl]]+[[E]] three times, 2 s apart.', 20],
-  ['move', 'Moving the overlay', 'Hold [[Right Ctrl]]+[[Alt]]+arrow keys for a few seconds in each direction.', 20],
+  ['main-showhide', 'Overlay show / hide', 'Press [[Caps Lock]]+[[E]] three times, 2 s apart.', 20],
+  ['move', 'Moving the overlay', 'Hold [[Caps Lock]]+[[Alt]]+arrow keys for a few seconds in each direction.', 20],
   ['settings-combos', 'Settings combo popups (CAP-001)', 'Open Que\'s Settings first. Open the model combo ~2 s, Esc; effort combo, Esc; Voice tab: transcription-model combo, Esc.', 45],
   ['context-menu', 'Text context menu (CAP-002)', 'Right-click in Que\'s input, wait 3 s, Esc.', 20],
   ['tooltip', 'Tooltip (CAP-002)', 'Hover the History icon ~3 s without clicking.', 15],
-  ['history-chat', 'History, new chat, chat bubbles', 'Open History ([[Right Ctrl]]+[[H]]), pick an old chat, start a new one ([[Right Ctrl]]+[[N]]).', 30],
-  ['screenshot', 'Screenshot capture', 'Press [[Right Ctrl]]+[[Shift]]+[[S]] twice.', 20],
-  ['ai-answer', 'AI request and streamed answer', 'Press [[Right Ctrl]]+[[M]] and wait until the answer finishes streaming.', 60],
-  ['recording', 'Recording and transcript panel', 'Press [[Right Ctrl]]+[[Shift]]+[[R]], speak, then stop it.', 45],
+  ['history-chat', 'History, new chat, chat bubbles', 'Open History ([[Caps Lock]]+[[H]]), pick an old chat, start a new one ([[Caps Lock]]+[[N]]).', 30],
+  ['screenshot', 'Screenshot capture', 'Press [[Caps Lock]]+[[Shift]]+[[S]] twice.', 20],
+  ['ai-answer', 'AI request and streamed answer', 'Press [[Caps Lock]]+[[M]] and wait until the answer finishes streaming.', 60],
+  ['recording', 'Recording and transcript panel', 'Press [[Caps Lock]]+[[Shift]]+[[R]], speak, then stop it.', 45],
   ['startup', 'Startup (first paint)', 'Quit Que first. Start the measurement, then launch Que (`python src/Que.py`) and let it appear.', 40],
 ].map(([id, title, how, seconds]) => ({ id: 'cap.' + id, tab: 'capture', group: 'Surfaces: nothing may appear in the capture', compact: true, title, steps: [how], seconds, startLabel: 'Test',
   countdown: 0, needsFocus: false, allowBlur: true, stage: 'board',
@@ -1066,7 +1068,7 @@ const AudioLab = {
 const AUDIO_TESTS = [
   { id: 'audio.continuity', tab: 'audio', group: 'Microphone and speakers', title: 'Page audio is undisturbed while Que records',
     why: 'Que records your microphone and the speaker loopback. A page using the same devices must see no mute, ended or device-change event, no gaps in microphone data and no output glitches. Try both orders: Que first, or the page first.',
-    steps: ['Click **Acquire microphone** (allow the prompt) and tick the quiet tone.', 'During the measurement press [[Right Ctrl]]+[[Shift]]+[[R]] to start Que recording (or already have it recording for the other order).', 'Say "The blue robot counts seven stars." and click **Say phrase** (the page says "The green robot counts nine moons.").', 'Stop Que\'s recording with [[Right Ctrl]]+[[Shift]]+[[R]] before the end.'], seconds: 50, allowBlur: true, needsFocus: false, countdown: 3,
+    steps: ['Click **Acquire microphone** (allow the prompt) and tick the quiet tone.', 'During the measurement press [[Caps Lock]]+[[Shift]]+[[R]] to start Que recording (or already have it recording for the other order).', 'Say "The blue robot counts seven stars." and click **Say phrase** (the page says "The green robot counts nine moons.").', 'Stop Que\'s recording with [[Caps Lock]]+[[Shift]]+[[R]] before the end.'], seconds: 50, allowBlur: true, needsFocus: false, countdown: 3,
     controls: () => h('div', {},
       h('div', { class: 'row' },
         h('button', { class: 'btn small', onclick: async e => { try { const s = await AudioLab.acquire(); e.target.textContent = `Microphone on (${s.sampleRate || '?'} Hz)`; } catch (err) { toast('Microphone: ' + err.message); } } }, 'Acquire microphone'),
@@ -1108,11 +1110,11 @@ const SYSTEM_TESTS = [
     } },
   { id: 'sys.idle', tab: 'system', group: 'Permissioned APIs', title: 'Idle detection: hotkeys count as input (known limitation)',
     why: 'Windows treats any physical key as user activity even when Que swallows it. A page with idle-detection permission sees idle → active with no key event. Any hotkey utility behaves the same; this cannot be hidden from page JavaScript, so this test only documents it.',
-    steps: ['Click **Grant permission**.', 'Start. Do not touch the mouse or keyboard for 65 s.', 'Then press [[Right Ctrl]]+[[E]] once.'], seconds: 85, needsFocus: false, countdown: 2, allowBlur: true,
+    steps: ['Click **Grant permission**.', 'Start. Do not touch the mouse or keyboard for 65 s.', 'Then press [[Caps Lock]]+[[E]] once.'], seconds: 85, needsFocus: false, countdown: 2, allowBlur: true,
     controls: () => h('div', { class: 'row' }, h('button', { class: 'btn small', onclick: async () => { try { if (!('IdleDetector' in window)) throw new Error('IdleDetector is not supported in this browser.'); const p = await IdleDetector.requestPermission(); toast('Idle permission: ' + p); } catch (e) { toast(e.message); } } }, 'Grant permission')),
     onStart() { const r = { events: [], det: null, ctl: new AbortController() }; sysState.idle = r; if ('IdleDetector' in window) { r.det = new IdleDetector(); r.det.addEventListener('change', () => r.events.push({ t: performance.now(), u: r.det.userState, s: r.det.screenState })); r.det.start({ threshold: 60000, signal: r.ctl.signal }).catch(e => { r.err = e.message; }); } else r.err = 'IdleDetector unsupported'; },
     onStop() { sysState.idle.ctl.abort(); return sysState.idle; },
-    confirmText: 'You stayed idle for 65 s and then pressed Right Ctrl+E?',
+    confirmText: 'You stayed idle for 65 s and then pressed Caps Lock+E?',
     evaluate(ctx) {
       const r = ctx.extra;
       if (r.err) return { status: 'void', findings: [warn('Idle detection unavailable: ' + r.err)] };
@@ -1246,9 +1248,9 @@ function captureCard() {
   const steps = [
     ['Share your entire screen', 'Click **Share screen**, choose **Entire screen**, and use **Hide** (never "Stop sharing") on the browser\'s sharing bar. Que should appear in no "Window" tab of that picker either.'],
     ['Locate the Stage', 'The page finds its blinking beacon in the shared frames and maps the Stage to capture pixels. Keep this window unobscured and on the shared monitor.'],
-    ['Baseline with Que hidden', 'Hide Que ([[Right Ctrl]]+[[E]]), move the mouse off the Stage, then save the baseline.'],
+    ['Baseline with Que hidden', 'Hide Que ([[Caps Lock]]+[[E]]), move the mouse off the Stage, then save the baseline.'],
     ['Positive control', 'A plain magenta window opens. Drag it over where Que will sit. This proves the capture really sees windows there.'],
-    ['Negative control', 'The control window closes and the Stage must return to the exact baseline. Show Que again ([[Right Ctrl]]+[[E]]) when done.'],
+    ['Negative control', 'The control window closes and the Stage must return to the exact baseline. Show Que again ([[Caps Lock]]+[[E]]) when done.'],
   ];
   const state = steps.map(() => ({ s: '', msg: '' })), icons = steps.map(() => h('span', { class: 'si' }, '')), msgs = steps.map(() => h('div', { class: 'msg' }));
   const status = h('div'), prevBox = h('div'); let busy = false;
@@ -1349,7 +1351,7 @@ function overview() {
           'Use a fresh browser window, maximised, at normal zoom. Keep DevTools closed (clicking it causes focus-loss false alarms).',
           'Work tab by tab. For every test: press **Start**, click the page title for focus, act during **MEASURING**, answer the operator question.',
           'Do not scroll, resize or zoom during capture tests; the calibration would be lost.',
-          'Hold the Right Ctrl key for every Que shortcut (it is Que\'s dedicated key).',
+          'Hold the Caps Lock key for every Que shortcut (it is Que\'s dedicated key and never toggles while Que runs).',
         ].map(s => h('li', {}, rich(s)))),
         h('div', { class: 'row' }, srv, h('span', { class: 'chip ' + (isSecureContext ? 'pass' : 'fail') }, h('b', {}, isSecureContext ? '✓' : '✗'), isSecureContext ? 'Secure context' : 'Not a secure context'),
           h('span', { class: 'chip ' + (wide ? 'pass' : 'review') }, h('b', {}, wide ? '✓' : '!'), wide ? 'Window wide enough' : 'Widen the window (≥ 1100 px)'))),
@@ -1390,7 +1392,7 @@ function groups(list) {
 function build() {
   const sections = {
     overview: overview(),
-    keyboard: [h('div', { class: 'sec' }, h('h2', {}, 'Keyboard & shortcuts'), h('p', { class: 'lead' }, rich('Every Que shortcut starts with **Right Ctrl** and must be completely invisible: zero key events on the page. Ordinary keys must look natural.')))],
+    keyboard: [h('div', { class: 'sec' }, h('h2', {}, 'Keyboard & shortcuts'), h('p', { class: 'lead' }, rich('Every Que shortcut starts with **Caps Lock** and must be completely invisible: zero key events on the page. Ordinary keys must look natural.')))],
     focus: [h('div', { class: 'sec' }, h('h2', {}, 'Focus, pointer & window'), h('p', { class: 'lead' }, 'Pages notice blur events, pointer-leave at odd places, swallowed clicks and exited fullscreen. Que must cause none of them.'))],
     capture: [h('div', { class: 'sec' }, h('h2', {}, 'Screen capture & recording'), h('p', { class: 'lead' }, 'Calibrate once, then run each surface. Que\'s windows are excluded from capture; the page compares every frame to a clean baseline.'))],
     audio: [h('div', { class: 'sec' }, h('h2', {}, 'Audio'), h('p', { class: 'lead' }, 'Que records the microphone and speaker loopback. A page using the same devices must not notice.'))],

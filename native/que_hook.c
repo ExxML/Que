@@ -7,9 +7,9 @@
  * priority, with its code, state and stack locked in memory. The callback decides with
  * fixed-size tables: no allocation, no locks, no Python and no blocking calls.
  *
- * Only Que's own shortcut key (Right Ctrl) and modifiers pressed while it is held are held
- * back; every other modifier reaches the active app at once, so normal typing keeps its
- * natural timing and auto-repeat.
+ * Only Que's own shortcut key (Caps Lock, which never toggles while Que runs), modifiers
+ * pressed while it is held and keys pressed with it are held back; every other modifier
+ * reaches the active app at once, so normal typing keeps its natural timing and auto-repeat.
  *
  * The decision rules are a line-by-line port of core/hook_engine.py HookEngine, which
  * stays the reference: test/test_native_hook.py feeds both the same input and requires
@@ -50,14 +50,12 @@
 #define CONSUME 1
 
 #define CLASS_DEVICE 0x01
-#define CLASS_LOCK 0x02
 #define CLASS_WINDOWS 0x04
 
 #define LLMHF_INJECTED_FLAG 0x01
 
 enum {
     EVENT_ACTION = 1,
-    EVENT_LOCK = 2,
     EVENT_ARMED = 3,
     EVENT_KEY = 4,
     EVENT_POINTER = 5,
@@ -155,7 +153,7 @@ typedef struct {
     int32_t chords[QUE_MAX_CHORDS][2];
     int chord_count;
     int observe;
-    int que_key; /* Que's shortcut key (Right Ctrl): withheld with every modifier pressed after it */
+    int que_key; /* Que's shortcut key (Caps Lock): withheld with every modifier and key pressed after it */
 
     /* Decision state, touched only by the deciding thread */
     int window_visible;
@@ -485,10 +483,6 @@ static int process_key(QueEngine *e, int code, WPARAM message, int vk, int scan,
     }
     set_flag(e->held_vk, &e->held_vk_count, vk, 1);
     if (!repeated) {
-        if (e->key_class[vk] & CLASS_LOCK) {
-            /* Que never has native focus, so it tracks every lock toggle itself */
-            push_event(e, EVENT_LOCK, vk, 0, 0, 0, 0, 0, 0);
-        }
         int windows_held = windows_key_held(e);
         const Hotkey *entry = NULL;
         if (!windows_held) {
@@ -507,6 +501,11 @@ static int process_key(QueEngine *e, int code, WPARAM message, int vk, int scan,
             invoke(e, entry->action);
             return CONSUME;
         }
+        if (buffered_find(e, e->que_key) >= 0) {
+            /* Que's key never reaches other apps, so neither does a key pressed with it */
+            set_flag(e->suppressed_vk, &e->suppressed_vk_count, vk, 1);
+            return CONSUME;
+        }
         if (e->input_armed) {
             int system = windows_held || (e->key_class[vk] & CLASS_WINDOWS) ||
                          is_system_chord(e, modifiers, vk);
@@ -520,7 +519,7 @@ static int process_key(QueEngine *e, int code, WPARAM message, int vk, int scan,
             }
         }
     }
-    if (e->buffered_count) {
+    if (e->buffered_count && buffered_find(e, e->que_key) < 0) {
         replay_modifiers_and_key(e, vk, scan, flags);
         return CONSUME;
     }

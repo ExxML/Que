@@ -72,7 +72,7 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
             items.append(
                 Scenario(
                     f"key.{name}.{variant}",
-                    f"Physically press modifiers mask {mask} (Right Ctrl=8 Alt=2 Shift=4) + VK {vk}; {variant}. "
+                    f"Physically press modifiers mask {mask} (Caps Lock=8 Alt=2 Shift=4) + VK {vk}; {variant}. "
                     "During measurement use only this chord, hold for repeats, then release. Test ordinary text after the interval in input.integrity. Stress: stream, record and capture simultaneously.",
                     f"Record observed {name} completion; repeat callbacks={repeat}; always active={always}. "
                     "Hidden conditional shortcuts must instead reach the browser intact. Quit requires relaunch.",

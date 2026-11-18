@@ -19,7 +19,6 @@ from core.hook_engine import (
     CHORD_BITS,
     DEVICE_KEYS,
     HOTKEYS,
-    LOCK_KEYS,
     QUE_KEY,
     SYSTEM_CHORDS,
     WINDOWS_KEYS,
@@ -34,7 +33,6 @@ STATUS_MOUSE = 0x02
 STATUS_MEMORY_LOCKED = 0x04
 STATUS_PRIORITY = 0x08
 CLASS_DEVICE = 0x01
-CLASS_LOCK = 0x02
 CLASS_WINDOWS = 0x04
 COMMANDS = {
     "visible": 1,
@@ -45,7 +43,6 @@ COMMANDS = {
     "release_all": 6,
 }
 EVENT_ACTION = 1
-EVENT_LOCK = 2
 EVENT_ARMED = 3
 EVENT_KEY = 4
 EVENT_POINTER = 5
@@ -304,12 +301,11 @@ class NativeHookEngine:
         for vk in self.modifiers:
             self.library.que_add_modifier(self.handle, vk, CHORD_BITS[vk])
         self.library.que_set_que_key(self.handle, QUE_KEY)
-        for vk in DEVICE_KEYS | LOCK_KEYS | WINDOWS_KEYS:
+        for vk in DEVICE_KEYS | WINDOWS_KEYS:
             self.library.que_set_key_class(
                 self.handle,
                 vk,
                 (CLASS_DEVICE if vk in DEVICE_KEYS else 0)
-                | (CLASS_LOCK if vk in LOCK_KEYS else 0)
                 | (CLASS_WINDOWS if vk in WINDOWS_KEYS else 0),
             )
         for mask, vk in SYSTEM_CHORDS:
@@ -346,8 +342,6 @@ class NativeHookEngine:
         ]
         if event.type == EVENT_ACTION:
             self.emit({"type": "action", "name": ACTION_NAMES[event.a]})
-        elif event.type == EVENT_LOCK:
-            self.emit({"type": "lock", "vk": event.a})
         elif event.type == EVENT_ARMED:
             self.emit({"type": "armed", "value": bool(event.a), "seq": event.seq})
         elif event.type == EVENT_KEY:

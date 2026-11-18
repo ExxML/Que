@@ -87,7 +87,6 @@
     "ui/input/input_router.py:InputRouter.__init__/application.aboutToQuit.connect(self.close)",
     "ui/input/input_router.py:InputRouter.__init__/self.hook_client.armed_changed.connect(self.on_armed_changed)",
     "ui/input/input_router.py:InputRouter.__init__/self.hook_client.key_input.connect(self.on_key)",
-    "ui/input/input_router.py:InputRouter.__init__/self.hook_client.lock_toggled.connect(self.translator.toggle_lock)",
     "ui/input/input_router.py:InputRouter.__init__/self.hook_client.pointer_input.connect(self.on_pointer)",
     "ui/input/input_router.py:InputRouter.__init__/self.shortcut_manager.main_window.mouse_routing_changed.connect(self.set_enabled)",
     "ui/input/input_router.py:InputRouter.__init__/self.timer.timeout.connect(self.refresh_regions)",
