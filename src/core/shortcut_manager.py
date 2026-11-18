@@ -26,7 +26,7 @@ class ShortcutManager(QObject):
     scroll_signal = pyqtSignal(int)
     quit_signal = pyqtSignal()
     screenshot_signal = pyqtSignal()
-    clear_all_chat_signal = pyqtSignal()
+    new_chat_signal = pyqtSignal()
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
     send_message_signal = pyqtSignal(str)
@@ -59,7 +59,7 @@ class ShortcutManager(QObject):
         self.hook_failed.connect(self.main_window.status_banner.show_warning)
         self.move_direction.connect(self._move_by_direction)
         self.screenshot_signal.connect(self.screenshot_manager.take_screenshot)
-        self.clear_all_chat_signal.connect(self.main_window._new_chat)
+        self.new_chat_signal.connect(self.main_window._new_chat)
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)
         self.send_message_signal.connect(self.main_window.send_message)
@@ -258,9 +258,9 @@ class ShortcutManager(QObject):
         """Take a screenshot of the primary screen."""
         self.screenshot_signal.emit()
 
-    def _clear_all_chat(self) -> None:
-        """Clear the chat history."""
-        self.clear_all_chat_signal.emit()
+    def _new_chat(self) -> None:
+        """Start a new chat."""
+        self.new_chat_signal.emit()
 
     def _toggle_history(self) -> None:
         """Show or hide the conversation history sidebar."""

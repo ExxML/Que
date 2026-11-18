@@ -49,7 +49,7 @@
     "core/hook_client.py:HookClient.__init__/self.received.connect(self.dispatch)",
     "core/hook_client.py:HookClient.__init__/self.watchdog.timeout.connect(self._check_helper)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.animation_timer.timeout.connect(self._animate_step)",
-    "core/shortcut_manager.py:ShortcutManager.__init__/self.clear_all_chat_signal.connect(self.main_window._clear_all_chat)",
+    "core/shortcut_manager.py:ShortcutManager.__init__/self.new_chat_signal.connect(self.main_window._new_chat)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.hook_client.action.connect(self._run_action)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.hook_client.alert.connect(self._on_input_alert)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.hook_client.failed.connect(self.hook_failed)",
