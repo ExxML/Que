@@ -56,7 +56,6 @@
     "core/shortcut_manager.py:ShortcutManager.__init__/self.hook_client.quit_ready.connect(self.quit_signal)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.hook_failed.connect(self.main_window.chat_area.show_stream_error)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.main_window.quit_requested.connect(self.request_quit)",
-    "core/shortcut_manager.py:ShortcutManager.__init__/self.minimize_signal.connect(self.main_window.hide)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.move_direction.connect(self._move_by_direction)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.move_signal.connect(self._start_animation)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.quit_signal.connect(self.main_window.finish_quit)",

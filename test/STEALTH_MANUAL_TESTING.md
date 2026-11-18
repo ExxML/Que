@@ -44,7 +44,6 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+Shift+Up/Down | Scroll the chat (hold to repeat) | no |
   | Caps Lock+Shift+S | Screenshot | no |
   | Caps Lock+Shift+X | Toggle click-through | no |
-  | Caps Lock+Q | Minimise | no |
   | Caps Lock+N | New chat | no |
   | Caps Lock+H | History | no |
   | Caps Lock+D / Caps Lock+G / Caps Lock+M | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |

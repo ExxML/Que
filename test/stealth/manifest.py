@@ -16,7 +16,6 @@ HOTKEYS = [
     (12, 40, "scroll_down", True, False),
     (12, 83, "screenshot", False, False),
     (12, 88, "toggle_click_through", False, False),
-    (8, 81, "minimize", False, False),
     (8, 78, "clear_all_chat", False, False),
     (8, 72, "toggle_history", False, False),
     (8, 68, "solve_coding_problem", False, False),

@@ -48,7 +48,6 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE | MOD_SHIFT, VK_DOWN, "scroll_down", True, False),
     (MOD_QUE | MOD_SHIFT, ord("S"), "screenshot", False, False),
     (MOD_QUE | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
-    (MOD_QUE, ord("Q"), "minimize", False, False),
     (MOD_QUE, ord("N"), "clear_all_chat", False, False),
     (MOD_QUE, ord("H"), "toggle_history", False, False),
     (MOD_QUE, ord("D"), "solve_coding_problem", False, False),
