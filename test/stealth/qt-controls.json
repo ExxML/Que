@@ -31,6 +31,13 @@
     "class": "QPushButton",
     "name": "",
     "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
     "parent_class": "MainWindow",
     "enabled": true
   },
@@ -147,6 +154,13 @@
     "enabled": true
   },
   {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Close screenshot",
+    "parent_class": "ScreenshotViewer",
+    "enabled": true
+  },
+  {
     "class": "HeaderIconButton",
     "name": "",
     "accessible": "Conversation history",
@@ -182,6 +196,13 @@
     "enabled": true
   },
   {
+    "class": "QPlainTextEdit",
+    "name": "",
+    "accessible": "Instruction",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "QLineEdit",
     "name": "",
     "accessible": "Interview script",
@@ -199,6 +220,27 @@
     "class": "HeaderIconButton",
     "name": "",
     "accessible": "New chat",
+    "parent_class": "MainWindow",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Next screenshot",
+    "parent_class": "ScreenshotViewer",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Previous screenshot",
+    "parent_class": "ScreenshotViewer",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Protection warnings",
     "parent_class": "MainWindow",
     "enabled": true
   },
