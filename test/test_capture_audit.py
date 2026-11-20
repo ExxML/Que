@@ -297,7 +297,9 @@ class LifecycleTests(unittest.TestCase):
         )
         adapter = create_adapter("edge-local", {})
         self.assertIsInstance(adapter, LocalShareAdapter)
-        self.assertEqual(adapter.probe(), [])
+        # Optional capture dependencies may be absent; only configuration needs are under test.
+        with patch("capture.adapters.missing_module", return_value=None):
+            self.assertEqual(adapter.probe(), [])
         from dataclasses import asdict
 
         # Only tab shares carry audio when Chromium auto-selects the source.

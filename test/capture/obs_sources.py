@@ -1,6 +1,7 @@
 """Print the capture config's OBS "sources" block, read from the running OBS instance."""
 
 import argparse
+import importlib
 import json
 import re
 import sys
@@ -10,7 +11,6 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import obsws_python  # type: ignore[import-untyped]
 import win32api  # type: ignore[import-untyped]
 from run_stealth import browser_path
 
@@ -29,7 +29,7 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=4455)
     parser.add_argument("--password-env", default="QUE_CAPTURE_OBS_PASSWORD")
     args = parser.parse_args()
-    client = obsws_python.ReqClient(
+    client = importlib.import_module("obsws_python").ReqClient(
         host="127.0.0.1",
         port=args.port,
         password=secret(args.password_env),
