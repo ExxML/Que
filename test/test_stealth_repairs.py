@@ -429,7 +429,7 @@ class TypingModeTests(unittest.TestCase):
                 driver = HookDriver()
                 driver.manager.input_armed = armed
                 self.press(driver, QUE_KEY)
-                self.press(driver, QUE_KEY, ord("Z"))
+                self.press(driver, QUE_KEY, ord("J"))
                 self.assertFalse(driver.delivered)
                 self.assertFalse(driver.events)
                 self.assertEqual(driver.manager.input_armed, armed)

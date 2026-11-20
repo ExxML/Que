@@ -38,15 +38,15 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Shortcut | Action | Works while hidden |
   |---|---|---|
   | Caps Lock+E | Show/hide Que | yes |
-  | Caps Lock+Shift+R | Start/stop recording | yes |
+  | Caps Lock+R | Start/stop recording | yes |
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
-  | Caps Lock+Alt+Arrows | Move Que (hold to repeat) | no |
-  | Caps Lock+Shift+Up/Down | Scroll the chat (hold to repeat) | no |
-  | Caps Lock+Shift+S | Screenshot | no |
+  | Caps Lock+Alt+W/A/S/D | Move Que (hold to repeat) | no |
+  | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
+  | Caps Lock+C | Screenshot | no |
   | Caps Lock+Shift+X | Toggle click-through | no |
   | Caps Lock+N | New chat | no |
   | Caps Lock+H | History | no |
-  | Caps Lock+D / Caps Lock+G / Caps Lock+M | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
+  | Caps Lock+T / Caps Lock+F / Caps Lock+V | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
 - For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.
@@ -127,7 +127,7 @@ Scenario IDs are those offered by the page (`ids("part")` lists matches). `input
 
 | Test | Steps during MEASURING | Expect on the page | Analyse with |
 |---|---|---|---|
-| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Alt+Right ~1 s, then Caps Lock+Alt+Left ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
+| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Alt+D ~1 s, then Caps Lock+Alt+A ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
 | Normal keys are natural | `go("input.integrity.stage-1",45,false)`. Hold Shift ~1.5 s, type `ab`, release; hold **Left** Ctrl ~1 s, press A, release; then 3× (Alt+Tab away, Alt+Tab back, wait 2 s). | Shift and Ctrl key-downs arrive when pressed (hundreds of ms before the letter, not 0–1 ms); held modifiers auto-repeat (`repeat=true` key-downs); each Alt+Tab shows `keydown Alt` ~100–160 ms before the `blur`. Compare with the baseline below. | `timeline` |
 | Baseline without Que | Quit Que (Caps Lock+Alt+Shift+Q), wait 5 s, then repeat the "normal keys" steps in a new attempt. | The reference pattern for the row above. | `timeline` |
 | Caps Lock with a non-Que key | Press Caps Lock+C. | **Zero key events** (the key is swallowed); the Caps Lock light stays off. | `analyze` |
@@ -175,9 +175,9 @@ Also check by eye, without an attempt:
 ### 7.5 Audio
 
 1. Download the smallest model first (Settings → Voice).
-2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+Shift+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+Shift+R to stop.
+2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+R to stop.
 3. Expect in Que's transcript (operator reads it): a **You** line with the spoken phrase and a **Them** line with the page's phrase; no "silent" or "no speech" warnings; the caption shows the latest line. On the page: continuous audio samples, no mute/ended events.
-4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
+4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
 
 ## 8. Analyse
 
