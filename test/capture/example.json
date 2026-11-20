@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "target": "source",
+  "monitors": [],
+  "repeats": 3,
+  "duration": 3,
+  "ffmpeg": "ffmpeg",
+  "ffprobe": "ffprobe",
+  "apps": {
+    "meet-chrome": {
+      "meeting_url": "",
+      "sender_browser": "chrome",
+      "receiver_browser": "chrome",
+      "sender_profile": ".stealth-runs/capture-profiles/meet-sender",
+      "receiver_profile": ".stealth-runs/capture-profiles/meet-receiver",
+      "sender_join": [{"role": "button", "name": "Join now"}],
+      "receiver_join": [{"role": "button", "name": "Join now"}],
+      "receiver_selector": "video",
+      "receiver_watch": [],
+      "share": {},
+      "picker": {},
+      "inspect": {},
+      "operations": {}
+    },
+    "meet-edge": {},
+    "zoom-desktop": {},
+    "zoom-web": {},
+    "teams-desktop": {},
+    "teams-chrome": {},
+    "teams-edge": {},
+    "discord-desktop": {},
+    "discord-web": {},
+    "webex-desktop": {},
+    "webex-web": {},
+    "obs": {
+      "port": 4455,
+      "password_env": "QUE_CAPTURE_OBS_PASSWORD",
+      "sources": {},
+      "operations": {},
+      "inspect": {}
+    },
+    "snipping-tool": {},
+    "game-bar": {},
+    "chrome-local": {},
+    "edge-local": {}
+  }
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Que capture audit fixture</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#202020}canvas{width:100%;height:100%;display:block}</style></head>
+<body><canvas id="stage" width="960" height="720"></canvas><script>
+"use strict";
+if(new URLSearchParams(location.search).has("tab")) document.title="Que capture audit fixture - tab";
+const canvas = document.querySelector("canvas"), context = canvas.getContext("2d", {alpha:false});
+let state = {nonce:0, phase:0}, tick = 0;
+const audioContext = new AudioContext();
+const oscillator = audioContext.createOscillator(), gain = audioContext.createGain();
+canvas.addEventListener("click",()=>audioContext.resume());
+oscillator.frequency.value=440; gain.gain.value=0; oscillator.connect(gain).connect(audioContext.destination); oscillator.start();
+async function poll() {
+    try { const response = await fetch("/state", {cache:"no-store"}); state = await response.json(); }
+    catch { return; }
+    tick = (tick + 1) & 0xffffff;
+    if(audioContext.state!=="running") audioContext.resume();
+    gain.gain.value = state.phase>=80 && state.phase<=82 ? .05 : 0;
+    for(let y=0;y<720;y+=32) for(let x=0;x<960;x+=32) {
+        context.fillStyle = ((x/32+y/32)%2) ? "#c3c3c3" : "#414141";
+        context.fillRect(x,y,32,32);
+    }
+    context.fillStyle="#202020"; context.fillRect(0,0,960,96);
+    [[8,8,"#f00"],[936,8,"#0f0"],[8,696,"#00f"],[936,696,"#f0f"]].forEach(([x,y,color])=>{
+        context.fillStyle=color; context.fillRect(x,y,16,16);
+    });
+    [[36,state.nonce],[56,((state.phase<<24)|tick)>>>0]].forEach(([y,value])=>{
+        for(let bit=0;bit<32;bit++) {
+            context.fillStyle=((value>>>(31-bit))&1)?"#fff":"#000";
+            context.fillRect(64+bit*12,y,12,12);
+        }
+    });
+    if(state.phase===2) {context.fillStyle="#000";context.fillRect(200,160,500,360);}
+    if(state.phase===3) {context.fillStyle="rgba(0,0,0,.15)";context.fillRect(200,160,500,360);}
+    if(state.phase===4) {context.fillStyle="#fff";context.fillRect(200,160,500,2);}
+    if(state.phase===5) {context.fillStyle="#fff";context.font="24px monospace";context.fillText("EXPOSED CONTROL",300,250);}
+    const painted={nonce:state.nonce,phase:state.phase,client:new URLSearchParams(location.search).has("tab")?"tab":"desktop"};
+    requestAnimationFrame(()=>requestAnimationFrame(()=>fetch("/presented",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(painted)}).catch(()=>{})));
+}
+setInterval(poll,100); poll();
+</script></body></html>

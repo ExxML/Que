@@ -24,8 +24,14 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-      - run: python -m pip install -r requirements.txt
+      - run: python -m pip install -r requirements.txt -r test/requirements-capture.txt
       - run: python test/stealth/regressions.py
+      - name: Check capture receiver JavaScript
+        run: |
+          node --check test/capture/receiver.js
+          node --check test/capture/sender.js
+      - name: Check local capture recorder transport (no meeting coverage)
+        run: python test/capture/browser_smoke.py --output .stealth-runs/capture-transport
       - name: Check JavaScript syntax
         shell: bash
         run: for file in test/stealth/*.js; do node --check "$file"; done

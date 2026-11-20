@@ -25,6 +25,8 @@ python -m unittest discover -s test -p "test_*.py" -v
 
 Run the separate browser-observability audit with `python test/run_stealth.py --mode offline`. For hands-on checks with a real keyboard, screen and browser, follow the [manual stealth testing walkthrough](test/STEALTH_MANUAL_TESTING.md). See the [audit guide](test/STEALTH_AUDIT.md) for guided browser and packaged-build runs, and the [initial findings](test/STEALTH_FINDINGS.md) for reproduced defects and untested coverage. Compliance failures remain failures; this suite does not certify universal invisibility.
 
+For automated meeting and recording checks, see the [capture audit setup](test/CAPTURE_AUDIT.md). The separate runner validates actual participant media and recording files; test accounts, dedicated rooms, and client-specific setup are required. Missing live coverage is reported as incomplete. Local Chrome/Edge screen sharing (`--apps chrome-local,edge-local`) needs no accounts.
+
 **Manual stealth test site:** to check by hand that a web page cannot tell Que is running, start the local test site and open it in the browser you want to test:
 ```powershell
 python test/manual_site/serve.py
