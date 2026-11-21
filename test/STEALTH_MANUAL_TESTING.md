@@ -40,7 +40,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+E | Show/hide Que | yes |
   | Caps Lock+R | Start/stop recording | yes |
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
-  | Caps Lock+Alt+W/A/S/D | Move Que (hold to repeat) | no |
+  | Caps Lock+Arrow keys | Move Que (hold to repeat) | no |
   | Caps Lock+Shift+W/S/D/A | Make Que taller/shorter/wider/narrower (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
   | Caps Lock+G | Screenshot | no |
@@ -130,7 +130,7 @@ Scenario IDs are those offered by the page (`ids("part")` lists matches). `input
 
 | Test | Steps during MEASURING | Expect on the page | Analyse with |
 |---|---|---|---|
-| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Alt+D ~1 s, then Caps Lock+Alt+A ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
+| Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Right ~1 s, then Caps Lock+Left ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
 | Normal keys are natural | `go("input.integrity.stage-1",45,false)`. Hold Shift ~1.5 s, type `ab`, release; hold **Left** Ctrl ~1 s, press A, release; then 3× (Alt+Tab away, Alt+Tab back, wait 2 s). | Shift and Ctrl key-downs arrive when pressed (hundreds of ms before the letter, not 0–1 ms); held modifiers auto-repeat (`repeat=true` key-downs); each Alt+Tab shows `keydown Alt` ~100–160 ms before the `blur`. Compare with the baseline below. | `timeline` |
 | Baseline without Que | Quit Que (Caps Lock+Alt+Shift+Q), wait 5 s, then repeat the "normal keys" steps in a new attempt. | The reference pattern for the row above. | `timeline` |
 | Caps Lock with a non-Que key | Press Caps Lock+J. | **Zero key events** (the key is swallowed); the Caps Lock light stays off. | `analyze` |

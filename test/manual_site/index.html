@@ -597,10 +597,10 @@ function windowTest(def) {
 const SHORTCUTS = [
   ['toggle_window_visibility', 'Show / hide Que', '[[Caps Lock]]+[[E]]', 'Press it twice: Que hides, then shows. Works while Que is hidden.', 14],
   ['toggle_recording', 'Start / stop recording', '[[Caps Lock]]+[[R]]', 'Press once to start, again to stop (download a Whisper model in Settings → Voice first). Works while hidden.', 18],
-  ['move_window_left', 'Move Que left', '[[Caps Lock]]+[[Alt]]+[[A]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
-  ['move_window_right', 'Move Que right', '[[Caps Lock]]+[[Alt]]+[[D]]', 'Hold for about 1 s, then release.', 12],
-  ['move_window_up', 'Move Que up', '[[Caps Lock]]+[[Alt]]+[[W]]', 'Hold for about 1 s, then release.', 12],
-  ['move_window_down', 'Move Que down', '[[Caps Lock]]+[[Alt]]+[[S]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_left', 'Move Que left', '[[Caps Lock]]+[[←]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
+  ['move_window_right', 'Move Que right', '[[Caps Lock]]+[[→]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_up', 'Move Que up', '[[Caps Lock]]+[[↑]]', 'Hold for about 1 s, then release.', 12],
+  ['move_window_down', 'Move Que down', '[[Caps Lock]]+[[↓]]', 'Hold for about 1 s, then release.', 12],
   ['resize_window_narrower', 'Make Que narrower', '[[Caps Lock]]+[[Shift]]+[[A]]', 'Hold for about 1 s, then release. Que must be visible.', 12],
   ['resize_window_wider', 'Make Que wider', '[[Caps Lock]]+[[Shift]]+[[D]]', 'Hold for about 1 s, then release.', 12],
   ['resize_window_taller', 'Make Que taller', '[[Caps Lock]]+[[Shift]]+[[W]]', 'Hold for about 1 s, then release.', 12],
@@ -1011,7 +1011,7 @@ function captureResult(extraRule) {
 }
 const SURFACES = [
   ['main-showhide', 'Overlay show / hide', 'Press [[Caps Lock]]+[[E]] three times, 2 s apart.', 20],
-  ['move', 'Moving the overlay', 'Hold [[Caps Lock]]+[[Alt]]+arrow keys for a few seconds in each direction.', 20],
+  ['move', 'Moving the overlay', 'Hold [[Caps Lock]]+arrow keys for a few seconds in each direction.', 20],
   ['settings-combos', 'Settings combo popups (CAP-001)', 'Open Que\'s Settings first. Open the model combo ~2 s, Esc; effort combo, Esc; Voice tab: transcription-model combo, Esc.', 45],
   ['context-menu', 'Text context menu (CAP-002)', 'Right-click in Que\'s input, wait 3 s, Esc.', 20],
   ['tooltip', 'Tooltip (CAP-002)', 'Hover the History icon ~3 s without clicking.', 15],
