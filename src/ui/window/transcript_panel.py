@@ -272,6 +272,11 @@ class TranscriptPanel(QWidget):
 
     def _scroll_to_end(self) -> None:
         """Scroll the transcript to its newest line once layout settles."""
+        # A bound method, unlike a lambda, is dropped if this panel is deleted before the timer fires
+        QTimer.singleShot(0, self._jump_to_end)
+
+    def _jump_to_end(self) -> None:
+        """Scroll the transcript to its newest line."""
         scrollbar = self.body.verticalScrollBar()
         assert scrollbar is not None
-        QTimer.singleShot(0, lambda: scrollbar.setValue(scrollbar.maximum()))
+        scrollbar.setValue(scrollbar.maximum())

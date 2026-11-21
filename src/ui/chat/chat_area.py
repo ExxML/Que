@@ -88,8 +88,7 @@ class ChatArea(QScrollArea):
 
         # Force scroll to bottom after a delay
         if is_user:
-            sb = self.scrollbar
-            QTimer.singleShot(400, lambda: self._animate_to(sb.maximum(), 100))
+            QTimer.singleShot(400, self._animate_to_bottom)
 
     def start_assistant_stream(self) -> None:
         """Create an assistant bubble to stream content into (not saved until finalized)."""
@@ -165,7 +164,8 @@ class ChatArea(QScrollArea):
             if not is_user:
                 bubble.set_bot_message(message)
             self.chat_layout.insertWidget(self.chat_layout.count() - 1, bubble)
-        QTimer.singleShot(0, lambda: self.scrollbar.setValue(self.scrollbar.maximum()))
+        # Bound methods, unlike lambdas, are dropped if this widget is deleted before the timer fires
+        QTimer.singleShot(0, self._jump_to_bottom)
 
     def shortcut_scroll(self, amount: int) -> None:
         """Scroll the chat area by a specified amount.
@@ -256,6 +256,14 @@ class ChatArea(QScrollArea):
         self.fade_effect.top_strength = min(1.0, max(0.0, top_dist / fade_start))
         self.fade_effect.bottom_strength = min(1.0, max(0.0, bottom_dist / fade_start))
         self.fade_effect.update()
+
+    def _animate_to_bottom(self) -> None:
+        """Smoothly scroll to the newest message."""
+        self._animate_to(self.scrollbar.maximum(), 100)
+
+    def _jump_to_bottom(self) -> None:
+        """Scroll to the newest message at once."""
+        self.scrollbar.setValue(self.scrollbar.maximum())
 
     def _reset_stream(self) -> None:
         """Reset the streaming bubble and accumulated text to a blank state."""

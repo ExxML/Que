@@ -4603,49 +4603,49 @@
     "source": "ui/chat/chat_area.py",
     "line": 57,
     "expression": "def add_message(self, message: str, is_user: bool, transcript: str='', screenshots: tuple[str, ...]=()) -> None:",
-    "sha256": "7804f54c25a4515b7e9dd64e045b436e3b2ffb82a021dcab2b587e95cc483fb2"
+    "sha256": "dd1bca71b2cde92fe785fc6e858e5ad64454e1e2aca6378a62d07bd20fcd74ce"
   },
-  "ui/chat/chat_area.py:94:routine": {
+  "ui/chat/chat_area.py:93:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 94,
+    "line": 93,
     "expression": "def start_assistant_stream(self) -> None:",
     "sha256": "c76d8699cc75bb163bcd45f58fe28747693c0eed8664b77ebb527da65933be77"
   },
-  "ui/chat/chat_area.py:105:routine": {
+  "ui/chat/chat_area.py:104:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 105,
+    "line": 104,
     "expression": "def append_to_stream(self, chunk_text: str) -> None:",
     "sha256": "557910578f90b16be4de0cab27c4ffb2030e6d1ae276447cc5f91401bdfa226f"
   },
-  "ui/chat/chat_area.py:118:routine": {
+  "ui/chat/chat_area.py:117:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 118,
+    "line": 117,
     "expression": "def finalize_assistant_stream(self) -> None:",
     "sha256": "f79c0ffbb64295ac750a54a869d6e829d1719bb95592181de5ec6976d001d72b"
   },
-  "ui/chat/chat_area.py:125:routine": {
+  "ui/chat/chat_area.py:124:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 125,
+    "line": 124,
     "expression": "def show_stream_error(self, error_msg: str) -> None:",
     "sha256": "5ca297819fba813ce9c86df8ce66a2b373b0c655cae4d8b1639c944b7de752b9"
   },
-  "ui/chat/chat_area.py:140:routine": {
+  "ui/chat/chat_area.py:139:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 140,
+    "line": 139,
     "expression": "def clear_chat_messages(self) -> None:",
     "sha256": "a40f7b2dd090df1355bdc483098a17d0a07ad4ad14603067c6b1d9dbc5d65e6f"
   },
-  "ui/chat/chat_area.py:153:routine": {
+  "ui/chat/chat_area.py:152:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 153,
+    "line": 152,
     "expression": "def load_messages(self, messages: list[tuple[str, bool, str, tuple[str, ...]]]) -> None:",
-    "sha256": "4017c26281db2f2b12f5923dd57a0dfc390425d95925a642fd618aad3f95fcfe"
+    "sha256": "2863a42c3484cb4672b7bc5247a39ee3a77af991c95de6f3566c55f3a8a40e09"
   },
   "ui/chat/chat_area.py:170:routine": {
     "category": "routine",
@@ -4679,48 +4679,62 @@
     "category": "routine",
     "source": "ui/chat/chat_area.py",
     "line": 260,
+    "expression": "def _animate_to_bottom(self) -> None:",
+    "sha256": "855890547f2fdaaa13a0745837b6f69f24edfb634c61c0fef8e62721cf5bfd38"
+  },
+  "ui/chat/chat_area.py:264:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_area.py",
+    "line": 264,
+    "expression": "def _jump_to_bottom(self) -> None:",
+    "sha256": "b1d21fb041197412447db5fd88f22fb7c62a1224f2d79e23426aa058c1bff072"
+  },
+  "ui/chat/chat_area.py:268:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_area.py",
+    "line": 268,
     "expression": "def _reset_stream(self) -> None:",
     "sha256": "562ccd689a44e2127aaffbb2318f4fa6744a45c780c771af64c11330d536cfbd"
   },
-  "ui/chat/chat_area.py:265:routine": {
+  "ui/chat/chat_area.py:273:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 265,
+    "line": 273,
     "expression": "def _init_scroll_animation(self) -> None:",
     "sha256": "629c18b4e015598f171c8a3d550755ba2cd3628be873822f078f8e50aec91a65"
   },
-  "ui/chat/chat_area.py:271:routine": {
+  "ui/chat/chat_area.py:279:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 271,
+    "line": 279,
     "expression": "def wheelEvent(self, event: QWheelEvent | None) -> None:",
     "sha256": "a42c0dc2670fe607188f2d4527e9544e38852978566a31c319e6068401c6d7e8"
   },
-  "ui/chat/chat_area.py:302:routine": {
+  "ui/chat/chat_area.py:310:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 302,
+    "line": 310,
     "expression": "def _animate_to(self, target: int, duration: int) -> None:",
     "sha256": "985414465e487eb421f29c0cd0cdde677c2ee62fe27eea018bf5ca064b30534f"
   },
-  "ui/chat/chat_area.py:329:routine": {
+  "ui/chat/chat_area.py:337:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 329,
+    "line": 337,
     "expression": "def __init__(self, parent: QObject | None=None) -> None:",
     "sha256": "5a6565c191b4c3a9ce6e664a5e5d8b6cc16b694d62cffb7374fee254a72d7bbf"
   },
-  "ui/chat/chat_area.py:334:routine": {
+  "ui/chat/chat_area.py:342:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 334,
+    "line": 342,
     "expression": "def _set_exponential_stops(self, gradient: QLinearGradient, *, edge_at_start: bool, strength: float) -> None:",
     "sha256": "d13d0f94546b9865ebf575ee1c9aaadbe8f8941cca6ee6a47e73011a5e27dc08"
   },
-  "ui/chat/chat_area.py:349:routine": {
+  "ui/chat/chat_area.py:357:routine": {
     "category": "routine",
     "source": "ui/chat/chat_area.py",
-    "line": 349,
+    "line": 357,
     "expression": "def draw(self, painter: QPainter | None) -> None:",
     "sha256": "51214eb18f982832e483b85ed38e0e51eb85322da9e89599440882f44c4473e6"
   },
@@ -4736,103 +4750,103 @@
     "source": "ui/chat/chat_area.py",
     "line": 90,
     "expression": "if is_user:",
-    "sha256": "890a871eb67b500f151144b232e9b2ac3b8e681f5200d9070562d679fd87fb4d"
+    "sha256": "9e8554b890b3b21c4de65e98aafc2252d83d3e8e0b5c2c2d73f6cceda6df84af"
   },
-  "ui/chat/chat_area.py:96:branch": {
+  "ui/chat/chat_area.py:95:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 96,
+    "line": 95,
     "expression": "if self.streaming_bubble is not None:",
     "sha256": "821ea185aadee0229fdfd918348d2a2f76083a4ddbeb4f612c4f16635f3e9b01"
   },
-  "ui/chat/chat_area.py:111:branch": {
+  "ui/chat/chat_area.py:110:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 111,
+    "line": 110,
     "expression": "if self.streaming_bubble is None:",
     "sha256": "8398831272f5d88d59313b249c23410caed64d6d726aa94d9f6df41bf17e808e"
   },
-  "ui/chat/chat_area.py:113:branch": {
+  "ui/chat/chat_area.py:112:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 113,
+    "line": 112,
     "expression": "if not self.streaming_text:",
     "sha256": "c84236ad73fb9a98a627b489249538974adcbe6f66b207231de23efa2be6b607"
   },
-  "ui/chat/chat_area.py:120:branch": {
+  "ui/chat/chat_area.py:119:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 120,
+    "line": 119,
     "expression": "if self.streaming_bubble is None:",
     "sha256": "8398831272f5d88d59313b249c23410caed64d6d726aa94d9f6df41bf17e808e"
   },
-  "ui/chat/chat_area.py:133:branch": {
+  "ui/chat/chat_area.py:132:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 133,
+    "line": 132,
     "expression": "if self.streaming_bubble is None:",
     "sha256": "dba7c61f07ba7761cfe1cb870e3becc1cd13db2e4b231a9824269e62f52b8614"
-  },
-  "ui/chat/chat_area.py:280:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_area.py",
-    "line": 280,
-    "expression": "if event is None:",
-    "sha256": "6e0635e1f832534424b9656e9e25888b1c010a2d0ab856a88f90273d0a3e25f9"
-  },
-  "ui/chat/chat_area.py:283:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_area.py",
-    "line": 283,
-    "expression": "if delta == 0:",
-    "sha256": "c81ef476a9227f31568a93f039bfcf2c0590d026832ba2ca67ad5b0e575d448b"
   },
   "ui/chat/chat_area.py:288:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
     "line": 288,
+    "expression": "if event is None:",
+    "sha256": "6e0635e1f832534424b9656e9e25888b1c010a2d0ab856a88f90273d0a3e25f9"
+  },
+  "ui/chat/chat_area.py:291:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_area.py",
+    "line": 291,
+    "expression": "if delta == 0:",
+    "sha256": "c81ef476a9227f31568a93f039bfcf2c0590d026832ba2ca67ad5b0e575d448b"
+  },
+  "ui/chat/chat_area.py:296:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_area.py",
+    "line": 296,
     "expression": "if step == 0:",
     "sha256": "c4c2f67fa14ce925b1f14235c1c2decf0bb5661625327cb2a7c414d7b2abd919"
   },
-  "ui/chat/chat_area.py:310:branch": {
+  "ui/chat/chat_area.py:318:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 310,
+    "line": 318,
     "expression": "if anim.state() == QAbstractAnimation.State.Running:",
     "sha256": "946d6bf338e120a351820649b7f46619030db402074c5ec1364fb6f54360bf1d"
-  },
-  "ui/chat/chat_area.py:355:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_area.py",
-    "line": 355,
-    "expression": "if painter is None:",
-    "sha256": "1cb090e9218dbd64d959b4b2b3b34aefc716393ac6c982dc6a4a90e65fb6169f"
   },
   "ui/chat/chat_area.py:363:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
     "line": 363,
+    "expression": "if painter is None:",
+    "sha256": "1cb090e9218dbd64d959b4b2b3b34aefc716393ac6c982dc6a4a90e65fb6169f"
+  },
+  "ui/chat/chat_area.py:371:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_area.py",
+    "line": 371,
     "expression": "if pixmap.isNull() or offset is None:",
     "sha256": "792ac7fe81c70df53c0e83ea8463ba48c7783244baf9ad76a1182327efd867a4"
   },
-  "ui/chat/chat_area.py:373:branch": {
+  "ui/chat/chat_area.py:381:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 373,
+    "line": 381,
     "expression": "if height > 2 * fade_px:",
     "sha256": "67a81de28e358b4346cde5223eac7660d08b175d25f1ff232772b9757b79f04b"
   },
-  "ui/chat/chat_area.py:148:branch": {
+  "ui/chat/chat_area.py:147:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 148,
+    "line": 147,
     "expression": "if item is not None:",
     "sha256": "4ad2dbc0c69d0248e7cb90e2c2ea2bbc4dc8398f58fcf7d6f68dcc9e138fdd94"
   },
-  "ui/chat/chat_area.py:165:branch": {
+  "ui/chat/chat_area.py:164:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 165,
+    "line": 164,
     "expression": "if not is_user:",
     "sha256": "7942ff298ce05b599fa8a155f68bb63e11e62c50fcba3b2ef32a0de6976a6db3"
   },
@@ -4840,34 +4854,34 @@
     "category": "background",
     "source": "ui/chat/chat_area.py",
     "line": 168,
-    "expression": "QTimer.singleShot(0, lambda: self.scrollbar.setValue(self.scrollbar.maximum()))",
-    "sha256": "83d2fe1d99e65557b266d56b260a794f5f52cb46240e2e7e8cf07fe33f62d686"
+    "expression": "QTimer.singleShot(0, self._jump_to_bottom)",
+    "sha256": "e0025a761b599bf029b02109d79c5ff4a795209e7547ab36d2b5a0b7e15df988"
   },
-  "ui/chat/chat_area.py:379:branch": {
+  "ui/chat/chat_area.py:387:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 379,
+    "line": 387,
     "expression": "if self.top_strength > 0.0:",
     "sha256": "9fb448b19ec88625c982b51a3cc8a57447a7b09d3c546de7e41ea741ba93311f"
   },
-  "ui/chat/chat_area.py:388:branch": {
+  "ui/chat/chat_area.py:396:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 388,
+    "line": 396,
     "expression": "if self.bottom_strength > 0.0:",
     "sha256": "eeebb7718ffaf1e361d032dcd525d5f4646adebd4887094de759701d3feb1a12"
   },
-  "ui/chat/chat_area.py:92:background": {
+  "ui/chat/chat_area.py:91:background": {
     "category": "background",
     "source": "ui/chat/chat_area.py",
-    "line": 92,
-    "expression": "QTimer.singleShot(400, lambda: self._animate_to(sb.maximum(), 100))",
-    "sha256": "a435f93ae5b10fb1795ee199414967f8b536d51bcb65b45572304b94dc8bcc97"
+    "line": 91,
+    "expression": "QTimer.singleShot(400, self._animate_to_bottom)",
+    "sha256": "0e2e59175ba92c60f78ed24f2e6e121d81aa5b5f3897376a6209694a1f2d1bd1"
   },
-  "ui/chat/chat_area.py:150:branch": {
+  "ui/chat/chat_area.py:149:branch": {
     "category": "branch",
     "source": "ui/chat/chat_area.py",
-    "line": 150,
+    "line": 149,
     "expression": "if widget is not None:",
     "sha256": "af09b91c7d54a4eb994fcd6344966481205e35406cf50efcb63ba1ea7107a3ed"
   },
@@ -5088,117 +5102,131 @@
     "expression": "if dialog.exec() != QFileDialog.DialogCode.Accepted or not dialog.selectedFiles():",
     "sha256": "672665f170bebdb555457a14c6c28f0662e08a8c2ba8832c075e831e23ed3a0b"
   },
-  "ui/input/input_field.py:17:routine": {
+  "ui/input/input_field.py:189:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 17,
+    "line": 189,
+    "expression": "def _emit_later(widget: QWidget, signal: pyqtBoundSignal, value: int) -> None:",
+    "sha256": "18c2ead534598bfe9fb384606eba9293557a990f250689281efe90b4df6f1738"
+  },
+  "ui/input/input_field.py:18:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 18,
     "expression": "def __init__(self, main_window: QWidget) -> None:",
     "sha256": "7ad91cc42ef732f7e21adbf1d99b19bbae2b21f622c9fc6a00ca39b68ff66ffb"
   },
-  "ui/input/input_field.py:21:routine": {
+  "ui/input/input_field.py:22:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 21,
+    "line": 22,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "aa7c951569936b0f51a33ee6d8ad00aaec0ab14cd066ede3cf5d3633f1c8bcfe"
+    "sha256": "4d1a1657c33b066188a71e5e4ebd5cfcef103556d4e9c406339e497c52738535"
   },
-  "ui/input/input_field.py:106:routine": {
+  "ui/input/input_field.py:105:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 106,
+    "line": 105,
     "expression": "def _send_message(self) -> None:",
     "sha256": "97c1ff1fb0eb97a0a194904259f8bf6a5939dcc94ff7be2a09b26877c022dca9"
   },
-  "ui/input/input_field.py:115:routine": {
+  "ui/input/input_field.py:114:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 115,
+    "line": 114,
     "expression": "def _set_enabled(self, enabled: bool) -> None:",
     "sha256": "2fda217759c7432eb97b5f7480c8c1ad245ff60f8d095f82f1a41f6868ef3777"
   },
-  "ui/input/input_field.py:132:routine": {
+  "ui/input/input_field.py:131:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 132,
+    "line": 131,
     "expression": "def __init__(self) -> None:",
     "sha256": "82a784ff0ee69e49e56b720f5563111fcce722851e3728dbc898c920c2fd096b"
   },
-  "ui/input/input_field.py:142:routine": {
+  "ui/input/input_field.py:141:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 142,
+    "line": 141,
     "expression": "def keyPressEvent(self, event: QKeyEvent | None) -> None:",
     "sha256": "e1620fdbaabcc05351273e54bd62d00999419ae3e0d358082b0841553342ab0e"
   },
-  "ui/input/input_field.py:158:routine": {
+  "ui/input/input_field.py:157:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 158,
+    "line": 157,
     "expression": "def insertFromMimeData(self, source: QMimeData | None) -> None:",
     "sha256": "1461d0ca9a24ffe154d25268848aa2ecf3a142e10825166fef4391b27fc9810a"
   },
-  "ui/input/input_field.py:167:routine": {
+  "ui/input/input_field.py:166:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 167,
+    "line": 166,
     "expression": "def _adjust_height(self) -> None:",
-    "sha256": "0517895892ae2d516d51375c74f99842ca452734b895359a8534d73cc7d924c4"
+    "sha256": "e36339b66c96e08627e112b144961f638a4ddd082d868d09cf7720193fd81407"
   },
-  "ui/input/input_field.py:109:branch": {
+  "ui/input/input_field.py:201:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 201,
+    "expression": "def emit() -> None:",
+    "sha256": "5f4a72cb543542011e1f3f76c814a5be32e02e9bffd7d59801484b7f08278337"
+  },
+  "ui/input/input_field.py:108:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 109,
+    "line": 108,
     "expression": "if message and self.input_settings.models:",
     "sha256": "91576083a2b18d5f843b458eaa2bb8c154ea56c1cf1047e7bc5c459f29081657"
   },
-  "ui/input/input_field.py:148:branch": {
+  "ui/input/input_field.py:147:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 148,
+    "line": 147,
     "expression": "if event is not None and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and (not event.modifiers() & Qt.KeyboardModifier.ShiftModifier):",
     "sha256": "8c017110ecffc42a72d83d692477fb980c05a82011d4e92f6690c73caad3d492"
   },
-  "ui/input/input_field.py:164:branch": {
+  "ui/input/input_field.py:163:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 164,
+    "line": 163,
     "expression": "if source is not None and source.hasText():",
     "sha256": "fa4e5064b90fb35913dd330a55b1601552cde694a108482c6a7e6389c8e2e9b5"
   },
-  "ui/input/input_field.py:183:branch": {
+  "ui/input/input_field.py:182:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 183,
+    "line": 182,
     "expression": "if self._prev_height != 0:",
-    "sha256": "2c56e1e85df075b221d0f2d6a157bcfc889e6228ac7a2ee76c1c2a2882399858"
+    "sha256": "2dbed8c96f93734821206ae4dfd04b43a4715591b0db4b80f1bae62a6da9297b"
   },
-  "ui/input/input_field.py:140:background": {
+  "ui/input/input_field.py:203:branch": {
+    "category": "branch",
+    "source": "ui/input/input_field.py",
+    "line": 203,
+    "expression": "if not sip.isdeleted(widget):",
+    "sha256": "798f103b5902ec7cf77de35c1fd3311804f8293143bf5b42124e0523fc0585cf"
+  },
+  "ui/input/input_field.py:206:background": {
     "category": "background",
     "source": "ui/input/input_field.py",
-    "line": 140,
+    "line": 206,
+    "expression": "QTimer.singleShot(0, emit)",
+    "sha256": "e319e1da83fb3ca4310ad4c1a45e2ab29a8a50556899201b544aa0cbea6d624b"
+  },
+  "ui/input/input_field.py:139:background": {
+    "category": "background",
+    "source": "ui/input/input_field.py",
+    "line": 139,
     "expression": "QTimer.singleShot(0, self._adjust_height)",
     "sha256": "248cb3002de8a370ab1d40b83de3fe21a4408a779f2a66683f321b37823cbc51"
   },
-  "ui/input/input_field.py:185:branch": {
+  "ui/input/input_field.py:184:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 185,
+    "line": 184,
     "expression": "if delta != 0:",
-    "sha256": "45f1f2102056575be75cba8e4e5a5308d34454d0985571a764b2585ad646f756"
-  },
-  "ui/input/input_field.py:51:background": {
-    "category": "background",
-    "source": "ui/input/input_field.py",
-    "line": 51,
-    "expression": "QTimer.singleShot(0, lambda d=delta: self.height_changed.emit(d))",
-    "sha256": "a7b852d232f4e4a5e104d518191ecf8b7489ceabc0f344e9d631a7d2bf95431d"
-  },
-  "ui/input/input_field.py:186:background": {
-    "category": "background",
-    "source": "ui/input/input_field.py",
-    "line": 186,
-    "expression": "QTimer.singleShot(0, lambda d=delta: self.height_changed.emit(d))",
-    "sha256": "a7b852d232f4e4a5e104d518191ecf8b7489ceabc0f344e9d631a7d2bf95431d"
+    "sha256": "0aef25e161fe91f0036a112dd8480550ae09efea4fab546151499fc3bc1381e2"
   },
   "ui/input/input_router.py:86:routine": {
     "category": "routine",
@@ -8278,7 +8306,14 @@
     "source": "ui/window/transcript_panel.py",
     "line": 273,
     "expression": "def _scroll_to_end(self) -> None:",
-    "sha256": "555bc6d1aa024ad7a10f69d9a46a8b870aa0f0b9d9a88390f5bef7c5776f1f3c"
+    "sha256": "f20280dd1e7274bbe0bc36301a34070943a2ec35c11dc9b46b1b6d654ffb4934"
+  },
+  "ui/window/transcript_panel.py:278:routine": {
+    "category": "routine",
+    "source": "ui/window/transcript_panel.py",
+    "line": 278,
+    "expression": "def _jump_to_end(self) -> None:",
+    "sha256": "445538f54bc28c94b0f7622c6d63bc3babc800486b8fd53530bc33cfcf6e8eb6"
   },
   "ui/window/transcript_panel.py:145:branch": {
     "category": "branch",
@@ -8322,12 +8357,12 @@
     "expression": "if self.status:",
     "sha256": "da7719158e751c1ad36131e92ad0c59864b17b57d2a44d379518c69a76e4551a"
   },
-  "ui/window/transcript_panel.py:277:background": {
+  "ui/window/transcript_panel.py:276:background": {
     "category": "background",
     "source": "ui/window/transcript_panel.py",
-    "line": 277,
-    "expression": "QTimer.singleShot(0, lambda: scrollbar.setValue(scrollbar.maximum()))",
-    "sha256": "139f4ac74db48d2ad4bbe301558d09e58fc5f931b4204e1d38bd865cee8aca1b"
+    "line": 276,
+    "expression": "QTimer.singleShot(0, self._jump_to_end)",
+    "sha256": "a2084cd55e1d718e48234f346b5c53084f6bd68308b685da536069e7fa4a473e"
   },
   "ui/window/transcript_panel.py:250:branch": {
     "category": "branch",

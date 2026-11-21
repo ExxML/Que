@@ -1,4 +1,5 @@
-from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtSignal
+from PyQt6 import sip
+from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtBoundSignal, pyqtSignal
 from PyQt6.QtGui import QFont, QKeyEvent
 from PyQt6.QtWidgets import QHBoxLayout, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
 
@@ -48,9 +49,7 @@ class InputField(QWidget):
         self.input_field = _AutoResizeTextEdit()
         self.input_field.setPlaceholderText("How can I help you?")
         self.input_field.height_changed.connect(
-            lambda delta: QTimer.singleShot(
-                0, lambda d=delta: self.height_changed.emit(d)
-            )
+            lambda delta: _emit_later(self, self.height_changed, delta)
         )
         self.input_field.send_requested.connect(self._send_message)
 
@@ -183,5 +182,25 @@ class _AutoResizeTextEdit(QTextEdit):
         if self._prev_height != 0:
             delta = new_height - self._prev_height
             if delta != 0:
-                QTimer.singleShot(0, lambda d=delta: self.height_changed.emit(d))
+                _emit_later(self, self.height_changed, delta)
         self._prev_height = new_height
+
+
+def _emit_later(widget: QWidget, signal: pyqtBoundSignal, value: int) -> None:
+    """Emit a signal on the next event-loop pass unless its widget is deleted first.
+
+    A queued lambda outlives the widget it captures, and emitting a deleted widget's
+    signal crashes the process.
+
+    Args:
+        widget (QWidget): The widget that owns the signal.
+        signal (pyqtBoundSignal): The signal to emit.
+        value (int): The value to emit.
+    """
+
+    def emit() -> None:
+        """Emit the signal if the widget still exists."""
+        if not sip.isdeleted(widget):
+            signal.emit(value)
+
+    QTimer.singleShot(0, emit)

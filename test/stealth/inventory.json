@@ -89,7 +89,7 @@
     "ui/chat/chat_bubble.py:ChatBubble._screenshot_row/preview.clicked.connect(lambda _checked=False, index=index: self.screenshot_opened.emit(self.screenshots, index))",
     "ui/chat/chat_bubble.py:ChatBubble.start_loading_animation/self._loading_timer.timeout.connect(self._tick_loading)",
     "ui/input/input_field.py:InputField._init_UI/self.height_changed.connect(self.input_settings.reposition_popups)",
-    "ui/input/input_field.py:InputField._init_UI/self.input_field.height_changed.connect(lambda delta: QTimer.singleShot(0, lambda d=delta: self.height_changed.emit(d)))",
+    "ui/input/input_field.py:InputField._init_UI/self.input_field.height_changed.connect(lambda delta: _emit_later(self, self.height_changed, delta))",
     "ui/input/input_field.py:InputField._init_UI/self.input_field.send_requested.connect(self._send_message)",
     "ui/input/input_field.py:InputField._init_UI/self.input_settings.effort_changed.connect(self.effort_changed)",
     "ui/input/input_field.py:InputField._init_UI/self.input_settings.model_changed.connect(self.model_changed)",
