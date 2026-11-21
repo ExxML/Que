@@ -163,6 +163,7 @@ class ShortcutManager(QObject):
         self.animation_duration = 100  # Animation duration in milliseconds
         self.animation_fps = 120  # Frames per second
         self.animation_frame_time = 1000 // self.animation_fps  # Time per frame in ms
+        self.resize_step = 40  # Pixels per resize shortcut press or repeat
 
     def _start_animation(self, target_x: int, target_y: int) -> None:
         """Begin an animated move to the target position.
@@ -250,6 +251,53 @@ class ShortcutManager(QObject):
     def _move_window_down(self) -> None:
         """Request a move down on the Qt thread."""
         self.move_direction.emit(0, 1)
+
+    def _resize_by(self, dx: int, dy: int) -> None:
+        """Resize the main window by one step, keeping its top-left corner in place.
+
+        Args:
+            dx (int): The width direction.
+            dy (int): The height direction.
+        """
+        geometry = self.main_window.geometry()
+        # Same minimum as edge-drag resizing; never shrink a window already past the screen edge
+        max_width = self.screen_rect.right() - geometry.x() - self.screen_bounds_offset
+        max_height = (
+            self.screen_rect.bottom() - geometry.y() - self.screen_bounds_offset
+        )
+        width = max(
+            200,
+            self.main_window.minimumWidth(),
+            min(
+                max(geometry.width(), max_width),
+                geometry.width() + dx * self.resize_step,
+            ),
+        )
+        height = max(
+            150,
+            self.main_window.minimumHeight(),
+            min(
+                max(geometry.height(), max_height),
+                geometry.height() + dy * self.resize_step,
+            ),
+        )
+        self.main_window.resize(width, height)
+
+    def _resize_window_narrower(self) -> None:
+        """Make the main window narrower."""
+        self._resize_by(-1, 0)
+
+    def _resize_window_wider(self) -> None:
+        """Make the main window wider."""
+        self._resize_by(1, 0)
+
+    def _resize_window_taller(self) -> None:
+        """Make the main window taller."""
+        self._resize_by(0, 1)
+
+    def _resize_window_shorter(self) -> None:
+        """Make the main window shorter."""
+        self._resize_by(0, -1)
 
     def _scroll_up(self) -> None:
         """Scroll up in the chat area."""
