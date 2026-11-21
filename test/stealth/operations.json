@@ -4724,26 +4724,327 @@
     "expression": "if __name__ == '__main__':",
     "sha256": "ab2ba40d73444082ef04246ce2db1bf60b5e7a722ea3037757548b49cb6a5840"
   },
-  "ui/chat/ai_formatter.py:4:routine": {
+  "ui/chat/ai_formatter.py:142:routine": {
     "category": "routine",
     "source": "ui/chat/ai_formatter.py",
-    "line": 4,
+    "line": 142,
     "expression": "def format_message(message: str) -> str:",
-    "sha256": "fe39a389d460137a049dd0dc39a31221761616036a06b5e4214eeb5060010b57"
+    "sha256": "37c013cd94199c5260f70c4055025c81f0bb286c36f1bc5045def0308b6f91f3"
   },
-  "ui/chat/ai_formatter.py:55:routine": {
+  "ui/chat/ai_formatter.py:162:routine": {
     "category": "routine",
     "source": "ui/chat/ai_formatter.py",
-    "line": 55,
-    "expression": "def _format_inline_code(match: re.Match[str]) -> str:",
-    "sha256": "188becdd03dfc259aca8bc98975ce82272a036b59a0b15d5b0ea915d2fda2c9f"
+    "line": 162,
+    "expression": "def _render_blocks(lines: list[str], gap: int, depth: int=0) -> str:",
+    "sha256": "052616fc8b66b010cab7ebebce0a10bfc101445d337e847330ac3bcc2d0ba084"
   },
-  "ui/chat/ai_formatter.py:73:routine": {
+  "ui/chat/ai_formatter.py:255:routine": {
     "category": "routine",
     "source": "ui/chat/ai_formatter.py",
-    "line": 73,
-    "expression": "def _format_code_block(match: re.Match[str]) -> str:",
-    "sha256": "1d620f9933188f2e572d7c362c2740e650d559092ea58bbac6eacedfc8dbcdf8"
+    "line": 255,
+    "expression": "def _starts_block(lines: list[str], i: int) -> bool:",
+    "sha256": "251222651d673c9adc57e0df72f0f2b66477cdb73d1bf74c0f4c8635403beaae"
+  },
+  "ui/chat/ai_formatter.py:277:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 277,
+    "expression": "def _display_math(line: str) -> re.Match[str] | None:",
+    "sha256": "a1902c3bb6342c4c9b17b58395b31c22cef93ec5902400624cffc1337ef43987"
+  },
+  "ui/chat/ai_formatter.py:298:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 298,
+    "expression": "def _is_table_start(lines: list[str], i: int) -> bool:",
+    "sha256": "3b383e9e5694bed669af0776cb62a3deb55ae4b466276f007783ad0780872634"
+  },
+  "ui/chat/ai_formatter.py:316:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 316,
+    "expression": "def _dedent(line: str, width: int) -> str:",
+    "sha256": "5d6a74f5fe3132de9c43379662dbbadc122d833c10bbb93e5260852523252f45"
+  },
+  "ui/chat/ai_formatter.py:329:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 329,
+    "expression": "def _collect_list(lines: list[str], start: int) -> tuple[list[tuple[str, list[str]]], int]:",
+    "sha256": "87c362bc61cc60ad91dde38d57fcd2f83ed9aba9bedbf7f19fcd17361c8f7a34"
+  },
+  "ui/chat/ai_formatter.py:377:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 377,
+    "expression": "def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:",
+    "sha256": "0f3e1e44bb64440b5183f76c49e4f68a6da73953b3bb422d41df969d4d0c6ed7"
+  },
+  "ui/chat/ai_formatter.py:411:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 411,
+    "expression": "def _table(rows: list[str], separator: str, top: int) -> str:",
+    "sha256": "3eb84cec9d98b0357a9201fcbcde7c9ebf4f74c59a7a609546fb24593a470fbb"
+  },
+  "ui/chat/ai_formatter.py:448:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 448,
+    "expression": "def _cells(row: str) -> list[str]:",
+    "sha256": "76511fe90b3f11d96a1a87fbf508fff47bec51af19fbfe2839683a557e2b463f"
+  },
+  "ui/chat/ai_formatter.py:464:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 464,
+    "expression": "def _inline(text: str) -> str:",
+    "sha256": "138387645152b62da170f2a2709dc9ea00eb4d89a3a9d67d98f04c818ea9407a"
+  },
+  "ui/chat/ai_formatter.py:517:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 517,
+    "expression": "def _code_block(code: str, language: str, top: int) -> str:",
+    "sha256": "0ad7aabe84467b827562ec3ceeb748511b5042ee6d789ec893f96022f9b4c7d5"
+  },
+  "ui/chat/ai_formatter.py:544:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 544,
+    "expression": "def _highlight(code: str, language: str) -> str:",
+    "sha256": "f6ad25c08a756c3d056ce1f4b58832b3c85aa58eefb63598da5f46e903eb3f22"
+  },
+  "ui/chat/ai_formatter.py:586:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 586,
+    "expression": "@cache",
+    "sha256": "33331de5476de0f8d2345e1dd7281b0308c981672dabd6f6b49fbec06f7af99a"
+  },
+  "ui/chat/ai_formatter.py:603:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 603,
+    "expression": "def _role(token_type: _TokenType, value: str, tokens: list[tuple[_TokenType, str]], index: int) -> str:",
+    "sha256": "46a83878262a8e26b472da339281e9364e30b19c81c68be30bea5aeb9ead901f"
+  },
+  "ui/chat/ai_formatter.py:648:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 648,
+    "expression": "def _colored(text: str, rgb: tuple[int, int, int]) -> str:",
+    "sha256": "4d286a204dd01d79e51aef0fa3326d509383bcfa3ae8788b5db5ca08dd8373b9"
+  },
+  "ui/chat/ai_formatter.py:287:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 287,
+    "expression": "if math is None:",
+    "sha256": "766a1e2d636dbe8ad4d455ae0a296d8ff8f9159e54855be2f5fe3943b7e37374"
+  },
+  "ui/chat/ai_formatter.py:459:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 459,
+    "expression": "if row.endswith('|') and (not row.endswith('\\\\|')):",
+    "sha256": "e657212247541ea698981ec562e047260d8090c297477d20e53c2943a1ea235a"
+  },
+  "ui/chat/ai_formatter.py:475:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 475,
+    "expression": "def protect(fragment: str) -> str:",
+    "sha256": "e124410eaa659722d50f88bb6892185c2b461cc30809e571173656ba698d8250"
+  },
+  "ui/chat/ai_formatter.py:555:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 555,
+    "expression": "if lexer is None:",
+    "sha256": "af03c8dab6d3dd012d549bd14ae44a72e5c01b97a8b2a4fbfaf10bb1a3191b56"
+  },
+  "ui/chat/ai_formatter.py:595:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 595,
+    "expression": "if not language or language in ('text', 'txt', 'plaintext', 'plain'):",
+    "sha256": "23deffa5ac7d3437f52355db891bc1fb78085115acb07a3559d8692d834089ce"
+  },
+  "ui/chat/ai_formatter.py:620:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 620,
+    "expression": "if is_token_subtype(token_type, Token.Keyword) and value in CONTROL_KEYWORDS:",
+    "sha256": "4fb443ac355dce47ac3dae3aa6ebef51c69a15381dd939af0215d180a2696fa8"
+  },
+  "ui/chat/ai_formatter.py:622:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 622,
+    "expression": "if token_type in (Token.Name, Token.Name.Other, Token.Name.Property, Token.Name.Builtin):",
+    "sha256": "a6f73c0bf0e0ba7286a565a05ece9b4c2cf35cc4f2a7212b3079d7e97fae6261"
+  },
+  "ui/chat/ai_formatter.py:182:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 182,
+    "expression": "if not line.strip():",
+    "sha256": "15aedfc341b351ecba23944faaf7555fa41a5918bce9ee60b27ac2326c23a3ec"
+  },
+  "ui/chat/ai_formatter.py:353:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 353,
+    "expression": "if item and line_indent < indent + 2:",
+    "sha256": "acb1bc1268cade113cb9eb7ca267414561f368f932772c3728db51df1dafe64b"
+  },
+  "ui/chat/ai_formatter.py:395:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 395,
+    "expression": "if (task := TASK_RE.match(content[0])):",
+    "sha256": "a6c98d3dd9f1b336f9914ad5ed84467bb3b5cc73bcb0989ad1f752c68964e325"
+  },
+  "ui/chat/ai_formatter.py:561:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 561,
+    "expression": "if is_token_subtype(token_type, Token.Punctuation):",
+    "sha256": "3875503703d0c1c37274c3cea0ce24b7502404ae37b157348ad92993718d472d"
+  },
+  "ui/chat/ai_formatter.py:599:failure": {
+    "category": "failure",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 599,
+    "expression": "except ClassNotFound:",
+    "sha256": "05dfb8901030075c0848f6e9f8880ed40f0d26acdec25346e8c3e23bae9ddefc"
+  },
+  "ui/chat/ai_formatter.py:636:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 636,
+    "expression": "if token_type is Token.Name.Builtin:",
+    "sha256": "92ab76ae42498896a564419275b6905eee1c53edb9e6d05d954178d46c51f310"
+  },
+  "ui/chat/ai_formatter.py:638:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 638,
+    "expression": "if value.isupper() and len(value) > 1:",
+    "sha256": "d2cc1f48d5fea27d634686942c6fef0e8c1e86fbfc98da8238f58b37c66a29dd"
+  },
+  "ui/chat/ai_formatter.py:640:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 640,
+    "expression": "if value[:1].isupper():",
+    "sha256": "bcd42d41fdd4cdf9accf629b2eda8da4d680951aaaa946d575aecc9349438be6"
+  },
+  "ui/chat/ai_formatter.py:184:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 184,
+    "expression": "if (fence := FENCE_RE.match(line)):",
+    "sha256": "28955c1aec01aeac591c063b5992ae04729c6e31dced2af5f69d5c260db96317"
+  },
+  "ui/chat/ai_formatter.py:354:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 354,
+    "expression": "if item.group(2)[0].isdigit() != ordered:",
+    "sha256": "ef8f1c037b13cb1d287ee274d78d308e58fd3b8d401dbd2bbdef0513130d3788"
+  },
+  "ui/chat/ai_formatter.py:358:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 358,
+    "expression": "if not line.strip():",
+    "sha256": "3d3d65c1e4ef386755cba10311a24458ca9c05e39792042fd7d842319a9f8502"
+  },
+  "ui/chat/ai_formatter.py:398:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 398,
+    "expression": "if ordered:",
+    "sha256": "9e47656b903aa1d6dbc76775a6722bca0e7b44a36a3cd42b16df335ef386274b"
+  },
+  "ui/chat/ai_formatter.py:436:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 436,
+    "expression": "if index == 0:",
+    "sha256": "c5de03fb9b818243a8f12e0366da3c6d661a4b40f83b29f603e389df13aca736"
+  },
+  "ui/chat/ai_formatter.py:194:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 194,
+    "expression": "if (math := _display_math(line)):",
+    "sha256": "499927835b38a9d7f099f73814319616ce1654e06b766bf1d698c6869c3028d2"
+  },
+  "ui/chat/ai_formatter.py:361:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 361,
+    "expression": "if not following or (following_indent < indent + 2 and (not LIST_RE.match(following))):",
+    "sha256": "f692aa16a9ba6a988b67dbfec8bb1a189bca4908d0f9a2ad39d9c90fcaf28da3"
+  },
+  "ui/chat/ai_formatter.py:366:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 366,
+    "expression": "if line_indent >= indent + 2 or (items[-1][1][-1].strip() and (not _starts_block(lines, i))):",
+    "sha256": "b96cdcebd05521d76a0c12f7ec449d5285fefac43f90bc35e3eaf1d07d5b4813"
+  },
+  "ui/chat/ai_formatter.py:563:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 563,
+    "expression": "if char in '([{':",
+    "sha256": "541f26de5d6e91a329bbf5250fa8a6dc4b589906b58279cd15baa6be3602b7cd"
+  },
+  "ui/chat/ai_formatter.py:208:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 208,
+    "expression": "if (heading := HEADING_RE.match(line)):",
+    "sha256": "9b283c7ebbc934bf7b1b07a9d8c03e61f5df07fa2ca2e55ba6114f37f6e57be0"
+  },
+  "ui/chat/ai_formatter.py:568:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 568,
+    "expression": "if char in ')]}':",
+    "sha256": "fdeb15a11166a497174b603defcf98b26fedf30a72d21ab0128cf9733e325d2d"
+  },
+  "ui/chat/ai_formatter.py:216:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 216,
+    "expression": "if RULE_RE.match(line):",
+    "sha256": "33df5c3ee33b955345aacb2331d8970e9c7ff397c2892041b459fdec5d24b939"
+  },
+  "ui/chat/ai_formatter.py:222:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 222,
+    "expression": "if QUOTE_RE.match(line):",
+    "sha256": "c48fb7715077cde75ebc2440723c379e3fead592866e225027929712e258a5fe"
+  },
+  "ui/chat/ai_formatter.py:233:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 233,
+    "expression": "if LIST_RE.match(line):",
+    "sha256": "0950f5f9c280312fff5267a00867002cae11a4d1b3b4b58de7dcea12bbdc77d1"
+  },
+  "ui/chat/ai_formatter.py:236:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 236,
+    "expression": "if _is_table_start(lines, i):",
+    "sha256": "413cc3701cb0edfdb20a0ce9e659a1abc9188caf2a0ef95b902fdbcfd2af773d"
   },
   "ui/chat/chat_area.py:49:routine": {
     "category": "routine",
@@ -5067,187 +5368,789 @@
     "expression": "QTimer.singleShot(0, self._update_fade_visibility)",
     "sha256": "1d1744aa14d298bace064c1e41d5c4762198f6d5695276414c9109d33b0c330c"
   },
-  "ui/chat/chat_bubble.py:35:routine": {
+  "ui/chat/chat_bubble.py:36:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 35,
+    "line": 36,
     "expression": "def __init__(self, message: str, is_user: bool=False, transcript: str='', screenshots: tuple[str, ...]=()) -> None:",
     "sha256": "365d2546e7d78a7d7f54482a9aa91179c5178de0e8e874112794e3de8677637e"
   },
-  "ui/chat/chat_bubble.py:50:routine": {
+  "ui/chat/chat_bubble.py:51:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 50,
+    "line": 51,
     "expression": "def set_bot_message(self, message: str) -> None:",
     "sha256": "4c38a2141443b0ca855a21a435a0ba9545afd038271cab9df2112aa0bc2fb08a"
   },
-  "ui/chat/chat_bubble.py:59:routine": {
+  "ui/chat/chat_bubble.py:60:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 59,
+    "line": 60,
     "expression": "def mark_stopped(self) -> None:",
     "sha256": "bb3c511584e6f652dbf261056ccfc6b05193bfed026abb4669679276a6e1966e"
   },
-  "ui/chat/chat_bubble.py:66:routine": {
+  "ui/chat/chat_bubble.py:67:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 66,
+    "line": 67,
     "expression": "def start_loading_animation(self) -> None:",
     "sha256": "7b6486e99134e9edd6a09369502009e8ebdb03f2228f79dedd2822319cbd0d92"
   },
-  "ui/chat/chat_bubble.py:74:routine": {
+  "ui/chat/chat_bubble.py:75:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 74,
+    "line": 75,
     "expression": "def stop_loading_animation(self) -> None:",
     "sha256": "a35693f90fe4959c62c68084abe0ece3e704702942da23b70aa54123848cfcb8"
   },
-  "ui/chat/chat_bubble.py:81:routine": {
+  "ui/chat/chat_bubble.py:82:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 81,
+    "line": 82,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "acec7962231e6a8c6a77ce8c747a629b5483e148fa38693d6426cd93dd39255e"
+    "sha256": "8cf958b8d526ab7697d2d90937a3d70115de67566296eac7df2b882593427456"
   },
-  "ui/chat/chat_bubble.py:146:routine": {
+  "ui/chat/chat_bubble.py:148:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 146,
+    "line": 148,
     "expression": "def _attachment_column(self, max_width: int) -> QVBoxLayout:",
     "sha256": "d84b99e9767693f4931ffc08299ba568f5c525edbef8cf386b55ab4ed56ec4e9"
   },
-  "ui/chat/chat_bubble.py:166:routine": {
+  "ui/chat/chat_bubble.py:168:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 166,
+    "line": 168,
     "expression": "def _screenshot_row(self, max_width: int) -> QHBoxLayout:",
     "sha256": "63d75aadcb2409cdd67a42b3b0cd536f6ecb73701fcc8d0471945f5365ac7805"
   },
-  "ui/chat/chat_bubble.py:199:routine": {
+  "ui/chat/chat_bubble.py:201:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 199,
+    "line": 201,
     "expression": "def _add_transcript(self, column: QVBoxLayout, max_width: int) -> None:",
     "sha256": "dea1a4943586d6b302cfcb146d92d279049c710132ad41c7e622b5137dc83db4"
   },
-  "ui/chat/chat_bubble.py:238:routine": {
+  "ui/chat/chat_bubble.py:240:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 238,
+    "line": 240,
     "expression": "def _tick_loading(self) -> None:",
     "sha256": "bcceaddc85dbabe6ea5b771b5a414c80ede39920ba6ada42439aff3f46759a75"
   },
-  "ui/chat/chat_bubble.py:271:routine": {
+  "ui/chat/chat_bubble.py:273:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 271,
+    "line": 273,
     "expression": "def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:",
     "sha256": "8fe1c8e0e3f700343fdf8d4d8607be8c526a8232184a8556326252a500d878bf"
   },
-  "ui/chat/chat_bubble.py:286:routine": {
+  "ui/chat/chat_bubble.py:288:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 286,
+    "line": 288,
     "expression": "def enterEvent(self, event: QEnterEvent | None) -> None:",
     "sha256": "7d283bb59a6a23c6ce92b8f14c58147525cf2c18fa5e9346fb3970acb124c6a8"
   },
-  "ui/chat/chat_bubble.py:296:routine": {
+  "ui/chat/chat_bubble.py:298:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 296,
+    "line": 298,
     "expression": "def leaveEvent(self, event: QEvent | None) -> None:",
     "sha256": "fe4d08af88018adbff70f0ffedd85d81a623e1b9ce633bf5196506f69917b824"
   },
-  "ui/chat/chat_bubble.py:306:routine": {
+  "ui/chat/chat_bubble.py:308:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 306,
+    "line": 308,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "3f00ac474232b05bb84eac607cf490aa6871de1e395dcf42c8273fe73bf1c693"
   },
-  "ui/chat/chat_bubble.py:76:branch": {
+  "ui/chat/chat_bubble.py:77:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 76,
+    "line": 77,
     "expression": "if hasattr(self, '_loading_timer') and self._loading_timer is not None:",
     "sha256": "6eb12172ad8743b1266f83e04a47a1365ca872a06ffcbc83e8a57e2f46f9ddb4"
   },
-  "ui/chat/chat_bubble.py:100:branch": {
+  "ui/chat/chat_bubble.py:102:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 100,
+    "line": 102,
     "expression": "if self.is_user:",
-    "sha256": "22aa8d01fde6d4d13e9300f32a60b372f615d0af8d289d2cbcbbd45e5e070604"
+    "sha256": "a184a6d1a1741e75d6b37acd1a6500f400d31ebb636c18a828bed3f4f9faee5c"
   },
-  "ui/chat/chat_bubble.py:157:branch": {
+  "ui/chat/chat_bubble.py:159:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 157,
+    "line": 159,
     "expression": "if self.screenshots:",
     "sha256": "eb61c4a336967e9351f95cb645a7bac8b1cfe13fc4942cb40943f4c384c492fd"
   },
-  "ui/chat/chat_bubble.py:162:branch": {
+  "ui/chat/chat_bubble.py:164:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 162,
+    "line": 164,
     "expression": "if self.transcript:",
     "sha256": "72acb4a19c42d18136f09bafa45017b74eaa8e0723f1bd8803a35bdb9e7bd5f7"
   },
-  "ui/chat/chat_bubble.py:227:routine": {
+  "ui/chat/chat_bubble.py:229:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 227,
+    "line": 229,
     "expression": "def on_toggle() -> None:",
     "sha256": "5836c92a567fd00573f5f45146aa7ba31c9d8cbb98718be5fd5881657a073365"
   },
-  "ui/chat/chat_bubble.py:242:routine": {
+  "ui/chat/chat_bubble.py:244:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 242,
+    "line": 244,
     "expression": "def dot_opacity(phase_offset: float) -> int:",
     "sha256": "53a1fd346bdd44fc8eff098d2e6557b7d66cec0e26c065472ed96c1cc28e5d39"
   },
-  "ui/chat/chat_bubble.py:278:branch": {
+  "ui/chat/chat_bubble.py:280:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 278,
+    "line": 280,
     "expression": "if not self.pixmap.isNull():",
     "sha256": "43ecf76635e7476f59607469619431aa2a2e7fa4d49009694e72d86db43d2654"
   },
-  "ui/chat/chat_bubble.py:314:branch": {
+  "ui/chat/chat_bubble.py:316:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 314,
+    "line": 316,
     "expression": "if self.pixmap.isNull():",
     "sha256": "2d896dd45902f94030f91836a9f490d8f04701df972d250a816724b1f30dc9e0"
   },
-  "ui/chat/chat_bubble.py:324:branch": {
+  "ui/chat/chat_bubble.py:326:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 324,
+    "line": 326,
     "expression": "if self.hidden:",
     "sha256": "0d8b9e7b6f4f7ef5ae34cfc2a6b354a43089f47b6987afecf0ac856629b66f39"
   },
-  "ui/chat/chat_bubble.py:69:background": {
+  "ui/chat/chat_bubble.py:70:background": {
     "category": "background",
     "source": "ui/chat/chat_bubble.py",
-    "line": 69,
+    "line": 70,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
-  "ui/chat/chat_bubble.py:116:branch": {
+  "ui/chat/chat_bubble.py:118:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 116,
+    "line": 118,
     "expression": "if natural_width > max_width:",
     "sha256": "3750bb44f2d07cf797f1a440c10f1222835b68716c7fc7989d1d91d393aa9d59"
   },
-  "ui/chat/chat_bubble.py:123:branch": {
+  "ui/chat/chat_bubble.py:125:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 123,
+    "line": 125,
     "expression": "if self.transcript or self.screenshots:",
     "sha256": "1aabfb05eb5cb4df062bddd315b1ceabb6c95fc55a986b79a0632074410b847a"
+  },
+  "ui/chat/latex.py:105:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 105,
+    "expression": "def render_math(tex: str, display: bool) -> str:",
+    "sha256": "92a16047de8561dbd97a667b8bfecc472faf72c0d3b0af37efab540f4cd948cd"
+  },
+  "ui/chat/latex.py:515:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 515,
+    "expression": "def _character(token: str) -> str:",
+    "sha256": "0660fdf990e037ef57831b53f32df69bbb8d5781b1bf8f4dfe324c4bbe622049"
+  },
+  "ui/chat/latex.py:530:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 530,
+    "expression": "def _follows_atom(items: list[Item]) -> bool:",
+    "sha256": "0545ca7183335edd8ef9bfd10e7953733f3c6bd69aa51adc179b2466d1c34723"
+  },
+  "ui/chat/latex.py:548:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 548,
+    "expression": "def _flatten(items: list[Item]) -> str:",
+    "sha256": "ce00e4b7eae683a2847e080392b2de6354a017a32807c215a1c2612bbe76ee1a"
+  },
+  "ui/chat/latex.py:562:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 562,
+    "expression": "def _layout(items: list[Item], size: float) -> str:",
+    "sha256": "731e661f1ca9b66b9a6a43390b89c0e4cac2ddfcd34a2153cf24cd25368e7cf2"
+  },
+  "ui/chat/latex.py:592:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 592,
+    "expression": "def _stack(parts: list[list[Item]], rule: bool=False) -> str:",
+    "sha256": "9a547c24d17103f67a2f7027a3ab68559005f2e8ea1733ab8adff55fffefe51a"
+  },
+  "ui/chat/latex.py:614:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 614,
+    "expression": "def _alphabet(name: str, text: str) -> str:",
+    "sha256": "f2cf5c96961c1591f64818addd58f1cf26673435923981ce80b0836d053efa7e"
+  },
+  "ui/chat/latex.py:138:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 138,
+    "expression": "def __init__(self, tex: str, display: bool) -> None:",
+    "sha256": "2dd546d8089aeed213f6d2e8ea7736022ad6a6fda1bcb511137c3f6108013c1c"
+  },
+  "ui/chat/latex.py:146:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 146,
+    "expression": "def parse(self, stops: tuple[str, ...]) -> tuple[list[Item], str | None]:",
+    "sha256": "6e012646d8f1a07defdd4a9d5da364dfa979a1eef1b2676b3de9124e75ad42cc"
+  },
+  "ui/chat/latex.py:163:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 163,
+    "expression": "def _next(self) -> str | None:",
+    "sha256": "af2891bdd05a74984f53d0513aa77789ee3235b668f12a9c58bde4eebce4912a"
+  },
+  "ui/chat/latex.py:176:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 176,
+    "expression": "def _peek(self) -> str | None:",
+    "sha256": "c64c4c8b7c8815b81772305ebb97a5d0ed7a66f6675e69377e13fc0e732960a8"
+  },
+  "ui/chat/latex.py:187:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 187,
+    "expression": "def _argument(self, display: bool | None=None) -> tuple[str, list[Item]]:",
+    "sha256": "906a8f3d168136abefeddffd89a15e2f650fe5fdf3fd3e4a076c14e024d1e103"
+  },
+  "ui/chat/latex.py:212:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 212,
+    "expression": "def _script(self) -> str:",
+    "sha256": "1372698a985862992886794e5a18fd46b432add8165994fd8ad2ea6531ad304b"
+  },
+  "ui/chat/latex.py:224:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 224,
+    "expression": "def _raw_group(self) -> str:",
+    "sha256": "d4684ca07d04f26f4f8ed6c00aaa59ebe1118b856ca3d251c54b2a844ef28441"
+  },
+  "ui/chat/latex.py:243:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 243,
+    "expression": "def _optional(self) -> str:",
+    "sha256": "ac694112c2e9220c5d403af6ef2bc55eb43d85647183dd697aeb9ebfe86fc179"
+  },
+  "ui/chat/latex.py:257:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 257,
+    "expression": "def _scripts(self) -> tuple[str, str]:",
+    "sha256": "0fc772f180bf97be2f6fb57afb15b747957498f92b089023eb4b918322af5a9b"
+  },
+  "ui/chat/latex.py:270:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 270,
+    "expression": "def _atom(self, token: str, items: list[Item]) -> None:",
+    "sha256": "9e57c1aed295c4a79128e065be135ad8daeca38a3b59c1c1f609a4d5488b9818"
+  },
+  "ui/chat/latex.py:367:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 367,
+    "expression": "def _symbol(self, symbol: str, items: list[Item]) -> None:",
+    "sha256": "41ee69778e02d2c436315b6cdc4b3f1bb608d2494a3fb10f386c62d78588d7da"
+  },
+  "ui/chat/latex.py:387:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 387,
+    "expression": "def _fraction(self, name: str, items: list[Item]) -> None:",
+    "sha256": "34ecdbb6d178d13e8a0ae0c4234b248fa566a6a31548edeb86a7b9fd0a2a561b"
+  },
+  "ui/chat/latex.py:418:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 418,
+    "expression": "def _operator(self, symbol: str, items: list[Item], limits: bool, big: bool) -> None:",
+    "sha256": "792c8e98883e4392776139c160316bff3a9f358cf0902c3cd9b699c5ce3eb6b7"
+  },
+  "ui/chat/latex.py:455:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 455,
+    "expression": "def _environment(self, name: str, items: list[Item]) -> None:",
+    "sha256": "326adf557e347cc36d122047be6cc8a037d9329acceb21ef00c6e7b9844d05f0"
+  },
+  "ui/chat/latex.py:539:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 539,
+    "expression": "if not items:",
+    "sha256": "d87109362cdd3615b96ea9894f8bcc88b940e1b1362bbb206222f3671928dba6"
+  },
+  "ui/chat/latex.py:542:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 542,
+    "expression": "if isinstance(last, _Stack):",
+    "sha256": "e4114340377a0194837c7b72b7750746cd93cf9461c0959ea3a5ea6ca6ade929"
+  },
+  "ui/chat/latex.py:573:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 573,
+    "expression": "if not any((isinstance(item, _Stack) for item in items)):",
+    "sha256": "a70445eb8505f45e1891c210ebc744c67fdc4b593e3116f62e97188047ba9fca"
+  },
+  "ui/chat/latex.py:197:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 197,
+    "expression": "if display is not None:",
+    "sha256": "abce041355f95e6855452070fec2f04c93e5050fc9d9bd9dacf110eb7b03e097"
+  },
+  "ui/chat/latex.py:202:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 202,
+    "expression": "if token == '{':",
+    "sha256": "c9fc073d251f7c37bdf0dd8f6e181de7b24a570e9368f09e9742979d9f368f62"
+  },
+  "ui/chat/latex.py:208:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 208,
+    "expression": "if raw.startswith('{'):",
+    "sha256": "a323850a8010484dd42db7c9dcc43993d7d4aa7507a317fab127d655c00c4804"
+  },
+  "ui/chat/latex.py:231:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 231,
+    "expression": "if token != '{':",
+    "sha256": "9b1a6238ddca844f65279c5eb31c5700218d0253b55d1233cf89b9b0e880eb2d"
+  },
+  "ui/chat/latex.py:249:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 249,
+    "expression": "if self._peek() != '[':",
+    "sha256": "6c6b1af810b6cc8e67c050331509026f55a32580b01cf59be1e53dcb2bd02f97"
+  },
+  "ui/chat/latex.py:278:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 278,
+    "expression": "if token == '{':",
+    "sha256": "8e251526dae1368fab34c7fc973fbc4d6a94e056bc50eae526d70883e0388c8c"
+  },
+  "ui/chat/latex.py:376:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 376,
+    "expression": "if symbol in RELATIONS and (not self.tight):",
+    "sha256": "5ea853ef24c7766ed58e1e8b95ce5995befb4b7b84f0ef7f87c67a0ed5625b12"
+  },
+  "ui/chat/latex.py:396:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 396,
+    "expression": "if self.display and name != 'tfrac':",
+    "sha256": "90db00b5766cea739df3210b320fde151a6e45d869d743f382ac86345db48a67"
+  },
+  "ui/chat/latex.py:400:routine": {
+    "category": "routine",
+    "source": "ui/chat/latex.py",
+    "line": 400,
+    "expression": "def side(rendered: list[Item]) -> str:",
+    "sha256": "6231aea9db9a48bd0f9dca2f9a4c69c6bd78f2d0a22980efa3f4f598cf8ead90"
+  },
+  "ui/chat/latex.py:431:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 431,
+    "expression": "if _follows_atom(items):",
+    "sha256": "7f6d704425a1da72807d53d01bc82a3bc035ff0c586f2dd0add411fac23b82d8"
+  },
+  "ui/chat/latex.py:434:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 434,
+    "expression": "if self.display and limits and (lower or upper):",
+    "sha256": "4a9afa6358ab0a7b510226513828af7493009bcd45026857859f37711f7a4bac"
+  },
+  "ui/chat/latex.py:452:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 452,
+    "expression": "if self._peek() not in (None, '(', '\\\\left', '^', '_', '}', '&', '\\\\\\\\'):",
+    "sha256": "18f4aaf6cc5ffafd2bbd3b13aae4f0c22bfa01e7c3924fe3fbf7171297dae7e7"
+  },
+  "ui/chat/latex.py:463:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 463,
+    "expression": "if name == 'array':",
+    "sha256": "276bca8fd915e093bc5040c6d3b5de84a2f85d8046d032cb6089632e9c7e975d"
+  },
+  "ui/chat/latex.py:483:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 483,
+    "expression": "if not display:",
+    "sha256": "046634fabe99533531ae6ce3ecdf77715c236883505132e7f9df618b69dc3a5a"
+  },
+  "ui/chat/latex.py:508:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 508,
+    "expression": "if opening:",
+    "sha256": "5615e7432f789218475e2a997e875e4f9504878cd5ed99c054ab6bf2421f020f"
+  },
+  "ui/chat/latex.py:511:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 511,
+    "expression": "if closing:",
+    "sha256": "2dfcaf9428ac634429aa89d87e71f79f1f10133d1505d0358d679497d4ca3a0c"
+  },
+  "ui/chat/latex.py:578:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 578,
+    "expression": "if isinstance(item, _Stack):",
+    "sha256": "d0f3bf54510e15cafce6613fffb697c62fbd5d716a556d7d85241be3913f28e1"
+  },
+  "ui/chat/latex.py:607:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 607,
+    "expression": "if rule and index == 0:",
+    "sha256": "701294dd5ea5844a32506c387c209f4043257941512e7536990d06414ac925aa"
+  },
+  "ui/chat/latex.py:627:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 627,
+    "expression": "if char in exceptions:",
+    "sha256": "6a138aefa2aebd0d3fea6e69b11589e84cc32e20e82043658633f1f94ea43172"
+  },
+  "ui/chat/latex.py:158:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 158,
+    "expression": "if token in stops:",
+    "sha256": "4b9328bfc845f78622526d32f3ac4c0065311d6772f0ec17d64bee102ea78282"
+  },
+  "ui/chat/latex.py:172:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 172,
+    "expression": "if not token.isspace():",
+    "sha256": "b3a81f56c97d31543452f133938e6ab91003768a69213ea6f3287e13d36e042d"
+  },
+  "ui/chat/latex.py:204:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 204,
+    "expression": "if token is not None:",
+    "sha256": "1d0691b863a5d897d8ab7316e96775b7f765fd55feec6577b8768188eb656165"
+  },
+  "ui/chat/latex.py:238:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 238,
+    "expression": "if depth == 0:",
+    "sha256": "cf23b97571b4937bc5ea431b4d245729b0c8f0347e2bd3491e2289923d46acc7"
+  },
+  "ui/chat/latex.py:266:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 266,
+    "expression": "if token in scripts:",
+    "sha256": "f1852b9f480921699776fb08eb703707bd1bfea041cc28814c4c9c6d47531fe5"
+  },
+  "ui/chat/latex.py:281:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 281,
+    "expression": "if token in ('^', '_'):",
+    "sha256": "52984e9eef1e00eda61146a8fcf32c03593290c9038cee8f17d958434ba759e0"
+  },
+  "ui/chat/latex.py:378:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 378,
+    "expression": "if symbol in BINARY and (not self.tight) and _follows_atom(items):",
+    "sha256": "1d3e75c549f5d975d9aa70472ba7ef9615d5984dbd9afd28d31bf523d7cbc78e"
+  },
+  "ui/chat/latex.py:443:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 443,
+    "expression": "if lower:",
+    "sha256": "5a4365b6103025c54f61cf31147415dcf433a82be383a8b39c776704fa0d90fc"
+  },
+  "ui/chat/latex.py:447:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 447,
+    "expression": "if self.display and big:",
+    "sha256": "7e01b36d699454a391d324c9ab838961e283bce6c5926320e81d4cf3ff47d6f8"
+  },
+  "ui/chat/latex.py:473:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 473,
+    "expression": "if stop == '\\\\\\\\':",
+    "sha256": "a0b16ad79668a2cd878c6f30f16bb6a3772e8aede1a91a4f7bbcee2164e0b4ff"
+  },
+  "ui/chat/latex.py:579:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 579,
+    "expression": "if run:",
+    "sha256": "b91c91ea44b8b4082fa7b92edbb83a6c0e4e19bb0519eb5cd3665cc38481e6ad"
+  },
+  "ui/chat/latex.py:582:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 582,
+    "expression": "if item.html:",
+    "sha256": "143320b11a81689b3571c5dd816b6dd022779475e5b3b916593f9eba56048b4e"
+  },
+  "ui/chat/latex.py:629:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 629,
+    "expression": "if 'A' <= char <= 'Z':",
+    "sha256": "bb508c8cdc59d8eb0a5e8d3efd36d606d7e9549654cd6fae6397820f9e467fce"
+  },
+  "ui/chat/latex.py:286:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 286,
+    "expression": "if token == \"'\":",
+    "sha256": "53b55dc46be38b07aa018a2c683cb9ec6743bff408d9bf2bf0c5cc98e7c3ce7f"
+  },
+  "ui/chat/latex.py:380:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 380,
+    "expression": "if symbol == ',' and (not self.tight):",
+    "sha256": "58eae6704122b19f8bc21fe03b2c5d5aa8442b57a70e5f0d534ec893593bd06a"
+  },
+  "ui/chat/latex.py:476:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 476,
+    "expression": "if stop != '&':",
+    "sha256": "962e45e3c9fcdf394387f68c020a9673f8c66ae56da6ad0ef74c4059f86fde42"
+  },
+  "ui/chat/latex.py:631:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 631,
+    "expression": "if 'a' <= char <= 'z':",
+    "sha256": "a9e7a7e679b0cb266c6832e1aee4bb70b9ef616ad0cb5dfabf61ea6cd3913917"
+  },
+  "ui/chat/latex.py:288:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 288,
+    "expression": "if token in ('}', '&'):",
+    "sha256": "50dee056241f0044ce4c8dda56644c0a02b1766e0681507b9e537b53d8aef29c"
+  },
+  "ui/chat/latex.py:382:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 382,
+    "expression": "if symbol.isascii() and symbol.isalpha():",
+    "sha256": "b706e26bb1c842cfac28b5b6f87de182ead32a11eb42f2bbb41776e77f16fed3"
+  },
+  "ui/chat/latex.py:477:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 477,
+    "expression": "if stop == '\\\\end':",
+    "sha256": "6ab4002655f1755063a944a97aa78c0f4ad27d5db057307ac715d03e3000d812"
+  },
+  "ui/chat/latex.py:290:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 290,
+    "expression": "if token == '~':",
+    "sha256": "229360db6057c0b7c81b0d772db3e654e3f053b0e8e512d47984d50374702975"
+  },
+  "ui/chat/latex.py:292:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 292,
+    "expression": "if name in ('frac', 'dfrac', 'tfrac', 'cfrac'):",
+    "sha256": "c1045bf2b9974dc64228f3337f98d38e7b03072e995f5af7acbb010a7d01725e"
+  },
+  "ui/chat/latex.py:294:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 294,
+    "expression": "if name in ('binom', 'dbinom', 'tbinom'):",
+    "sha256": "fb155c022fe6add42d181e6c9c8d7c665e584fe46e0725103f55f52072efb20a"
+  },
+  "ui/chat/latex.py:296:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 296,
+    "expression": "if self.display and name != 'tbinom':",
+    "sha256": "a5546e098ed929db1b12b3f13b0f088f1decbdbb843be369f0b3a4b84fd74a76"
+  },
+  "ui/chat/latex.py:300:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 300,
+    "expression": "if name == 'sqrt':",
+    "sha256": "1fffc259af929f13eb2b26a852cac40153e8dae1efb1d954c0e131a8a8842dd7"
+  },
+  "ui/chat/latex.py:304:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 304,
+    "expression": "if any((isinstance(item, _Stack) for item in radicand)):",
+    "sha256": "8746db06ef7c1ab82c8b2ac805970385e423ec30e2044b17d4ed46f8b5308460"
+  },
+  "ui/chat/latex.py:310:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 310,
+    "expression": "if name in BIG_OPERATORS or name in INTEGRALS:",
+    "sha256": "77507499b37b92c68b4c59ef1e883670dc0b746a6b2fe046c768ceea45ac35c0"
+  },
+  "ui/chat/latex.py:314:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 314,
+    "expression": "if name in FUNCTIONS:",
+    "sha256": "a97db729f2688b5e87d9d75ffafdb6939fb693196a28c8fd9c46e16ea1c89ce0"
+  },
+  "ui/chat/latex.py:316:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 316,
+    "expression": "if name in ('bmod', 'mod'):",
+    "sha256": "ca01ea25ecaa2038cb24eba45dac20687da6c96adb4abb6100f1ab45cc08bc28"
+  },
+  "ui/chat/latex.py:318:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 318,
+    "expression": "if name == 'pmod':",
+    "sha256": "96674c55c787ed19430b29da0f7508be09b58b6050f21afd0bf8d680ca47bd70"
+  },
+  "ui/chat/latex.py:322:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 322,
+    "expression": "if name in TEXT_COMMANDS:",
+    "sha256": "ce6424abd6d6bf2f49a6062d2c2dd7d56816d27e84ce4045ffd25bf10b1476f6"
+  },
+  "ui/chat/latex.py:326:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 326,
+    "expression": "if name in ('mathbf', 'boldsymbol', 'bm', 'pmb'):",
+    "sha256": "b9c23216d7db91f66f9de97447919c7c1fa3c224885bdb6b47897bf9673ae780"
+  },
+  "ui/chat/latex.py:330:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 330,
+    "expression": "if name in ALPHABETS:",
+    "sha256": "b6ee97278385137b50be3d2d5bc5c43c0b7a20c09569d3fce6903646529c9dc8"
+  },
+  "ui/chat/latex.py:332:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 332,
+    "expression": "if name in ACCENTS:",
+    "sha256": "9c6619d9b10283ca4b6e57532e29c99e746b31c06c17d1895e5108b20b19fa7a"
+  },
+  "ui/chat/latex.py:334:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 334,
+    "expression": "if name in ('bar', 'overline'):",
+    "sha256": "08b37eab983b983f6c8b33d0ea566061c51b0eacdb29008f132dfa94e0bb4647"
+  },
+  "ui/chat/latex.py:338:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 338,
+    "expression": "if name == 'underline':",
+    "sha256": "77ee73a86bddc2bfc0c3463d0fe00e27773e3c360595b28e3886c623eae99665"
+  },
+  "ui/chat/latex.py:340:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 340,
+    "expression": "if name == 'not':",
+    "sha256": "e07c8a66ccd787bbebb994d6f3863b76ef1a8dbe2c05e3d660fa12cc68fbcf30"
+  },
+  "ui/chat/latex.py:350:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 350,
+    "expression": "if name == 'begin':",
+    "sha256": "28f1b8c7db0b7c099200bf0e5fe84262a3f78b3a5ed49d6f2d971be6c34e8e77"
+  },
+  "ui/chat/latex.py:352:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 352,
+    "expression": "if name == '\\\\':",
+    "sha256": "8ef07ef6a95fa2ae3fc389b969b7f7fb69d3ecca1a12791ccb2f1bd2bbda7931"
+  },
+  "ui/chat/latex.py:355:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 355,
+    "expression": "if name in SPACES:",
+    "sha256": "f36b29c0e03259af0d2293bba786127971c0330a5e4470976fafc3e94c836214"
+  },
+  "ui/chat/latex.py:357:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 357,
+    "expression": "if name in IGNORED:",
+    "sha256": "3864136031fa12c080d9887f01a02ed61c782382d4fba1513623a8f5180671fc"
+  },
+  "ui/chat/latex.py:359:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 359,
+    "expression": "if name in SIZERS:",
+    "sha256": "93ec9e5be52a150c4aafaeca85d63f6de6c6533620f6364b6f5759b39e3cb711"
+  },
+  "ui/chat/latex.py:361:branch": {
+    "category": "branch",
+    "source": "ui/chat/latex.py",
+    "line": 361,
+    "expression": "if delimiter not in (None, '.'):",
+    "sha256": "f58df779b382080c0d50e9dbf7705a0d0ea596b2e12825a92d473b336a900c42"
   },
   "ui/directory_picker.py:6:routine": {
     "category": "routine",
@@ -6663,31 +7566,31 @@
     "expression": "if event.type() == QEvent.Type.WindowDeactivate:",
     "sha256": "0a647deb11ddb1c50b87c95961659b77f795042a2d5d280dda8cfa2e74a2eab5"
   },
-  "ui/theme.py:15:routine": {
+  "ui/theme.py:40:routine": {
     "category": "routine",
     "source": "ui/theme.py",
-    "line": 15,
+    "line": 40,
     "expression": "def qcolor(rgb: tuple[int, int, int], alpha: int | None=None) -> QColor:",
     "sha256": "12e39bef63ccd977ad15321b369956c435f132803246df39db6d7586323f91fd"
   },
-  "ui/theme.py:32:routine": {
+  "ui/theme.py:57:routine": {
     "category": "routine",
     "source": "ui/theme.py",
-    "line": 32,
+    "line": 57,
     "expression": "def qss(rgb: tuple[int, int, int], alpha: int | None=None) -> str:",
     "sha256": "d2476d26690b6faee2cbcbc03f0b2123fc04498189acfadc6560b5a8d61f717c"
   },
-  "ui/theme.py:27:branch": {
+  "ui/theme.py:52:branch": {
     "category": "branch",
     "source": "ui/theme.py",
-    "line": 27,
+    "line": 52,
     "expression": "if alpha is not None:",
     "sha256": "ec8f4e834322ca91eb7af7d3f3fc0b8d2c25ea240bc4aa6add22679fedb34d2f"
   },
-  "ui/theme.py:43:branch": {
+  "ui/theme.py:68:branch": {
     "category": "branch",
     "source": "ui/theme.py",
-    "line": 43,
+    "line": 68,
     "expression": "if alpha is None:",
     "sha256": "72366e4ccc630dd7cb7179b3fc95d80088dac9270d1cb04d8455753d8e75ef75"
   },
