@@ -1,10 +1,11 @@
 import math
 from collections.abc import Callable
+from functools import partial
 
 from PyQt6.QtCore import QEvent, QObject, QPoint, QTimer, pyqtSignal
 
 from core.hook_client import HookClient
-from core.hook_engine import ACTION_NAMES
+from core.hook_engine import ACTION_NAMES, PRESET_COUNT
 from core.interview_prompts import PROMPTS
 from core.screenshot_manager import ScreenshotManager
 from ui.window.main_window import MainWindow
@@ -31,6 +32,7 @@ class ShortcutManager(QObject):
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
     prompt_signal = pyqtSignal(str, str)
+    preset_signal = pyqtSignal(int)
     toggle_recording_signal = pyqtSignal()
     toggle_click_through_signal = pyqtSignal()
     hook_failed = pyqtSignal(str)
@@ -46,8 +48,13 @@ class ShortcutManager(QObject):
         self.hook_client = HookClient(
             elevate=main_window.ai_sender.settings_store.elevate_helper()
         )
+        presets = {
+            f"preset_{slot}": partial(self.preset_signal.emit, slot)
+            for slot in range(1, PRESET_COUNT + 1)
+        }
         self.actions: dict[str, Callable[[], None]] = {
-            name: getattr(self, f"_{name}") for name in ACTION_NAMES
+            name: presets.get(name) or getattr(self, f"_{name}")
+            for name in ACTION_NAMES
         }
 
         # Connect signals
@@ -64,6 +71,7 @@ class ShortcutManager(QObject):
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)
         self.prompt_signal.connect(self.main_window.send_prompt)
+        self.preset_signal.connect(self.main_window.apply_preset)
         self.toggle_recording_signal.connect(self.main_window.transcriber.toggle)
         # Toggling the settings checkbox saves the change and applies it to the window
         self.toggle_click_through_signal.connect(

@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
 from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.document_text import extract_text
+from core.hook_engine import PRESET_COUNT
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
@@ -298,6 +299,39 @@ class SettingsPage(QWidget):
         )
         context_hint.setWordWrap(True)
         layout.addWidget(context_hint)
+        presets_label = QLabel("Presets")
+        presets_description = QLabel(
+            "Press Caps Lock+1 to Caps Lock+0 to switch this chat to a model and effort, such as a fast model for short answers and a high effort for detailed ones. New chat returns to the defaults above."
+        )
+        presets_description.setWordWrap(True)
+        presets_form = QFormLayout()
+        self.preset_rows: list[tuple[QComboBox, QComboBox]] = []
+        for slot in range(1, PRESET_COUNT + 1):
+            shortcut = f"Caps Lock+{slot % 10}"
+            preset_model = _SettingsComboBox()
+            preset_model.setSizeAdjustPolicy(
+                QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+            )
+            preset_model.setMinimumContentsLength(14)
+            preset_model.setAccessibleName(f"{shortcut} preset model")
+            preset_effort = _SettingsComboBox()
+            preset_effort.setAccessibleName(f"{shortcut} preset effort")
+            row = len(self.preset_rows)
+            preset_model.currentIndexChanged.connect(
+                lambda _index, row=row: self._on_preset_model_changed(row)
+            )
+            preset_effort.currentIndexChanged.connect(self._save_presets)
+            preset_row = QHBoxLayout()
+            preset_row.addWidget(preset_model, 3)
+            preset_row.addWidget(preset_effort, 2)
+            presets_form.addRow(shortcut, preset_row)
+            self.preset_rows.append((preset_model, preset_effort))
+        presets_group = QVBoxLayout()
+        presets_group.setSpacing(4)
+        presets_group.addWidget(presets_label)
+        presets_group.addWidget(presets_description)
+        presets_group.addLayout(presets_form)
+        layout.addLayout(presets_group)
         layout.addStretch(1)
         documents_layout = self._add_tab("Context")
         instruction_label = QLabel("Instruction")
@@ -1049,6 +1083,14 @@ class SettingsPage(QWidget):
         self.effort_combo.setPlaceholderText("Select a model first")
         self.model_combo.setEnabled(False)
         self.effort_combo.setEnabled(False)
+        for preset_model, preset_effort in self.preset_rows:
+            for combo in (preset_model, preset_effort):
+                combo.blockSignals(True)
+                combo.clear()
+                combo.blockSignals(False)
+                combo.setEnabled(False)
+            preset_model.setPlaceholderText("Connect to load models")
+            preset_effort.setPlaceholderText("Select a model first")
 
     def _set_loading(self, loading: bool) -> None:
         """Prevent duplicate checks while leaving provider switching available.
@@ -1081,6 +1123,7 @@ class SettingsPage(QWidget):
         self.model_combo.setCurrentIndex(max(0, index))
         self.model_combo.blockSignals(False)
         self.model_combo.setEnabled(True)
+        self._show_presets()
         self._on_model_changed(self.model_combo.currentIndex())
 
     def _on_failed(self, revision: int, error: str) -> None:
@@ -1155,6 +1198,86 @@ class SettingsPage(QWidget):
         self.drafts[self.provider] = (str(model), str(effort))
         self.save_status.setText("Changes saved automatically.")
         self.saved.emit(ProviderResult(self.provider, self.models, self.status.text()))
+
+    def _show_presets(self) -> None:
+        """Show the provider's saved presets, keeping any whose model is no longer offered."""
+        presets = self.settings_store.presets(self.provider)
+        for (preset_model, preset_effort), (model, effort) in zip(
+            self.preset_rows, presets, strict=True
+        ):
+            preset_model.blockSignals(True)
+            preset_model.clear()
+            preset_model.addItem("Not set", "")
+            for option in self.models:
+                preset_model.addItem(option.display_name, option.model_id)
+            if preset_model.findData(model) < 0:
+                # Kept rather than shown as "Not set", so the shortcut's explanation matches
+                preset_model.addItem(f"{model} · unavailable", model)
+            preset_model.setCurrentIndex(preset_model.findData(model))
+            preset_model.blockSignals(False)
+            preset_model.setEnabled(True)
+            self._show_preset_efforts(preset_model, preset_effort, effort)
+
+    def _show_preset_efforts(
+        self, preset_model: QComboBox, preset_effort: QComboBox, effort: str
+    ) -> None:
+        """Offer the efforts a preset's model supports, selecting the given one when supported.
+
+        Args:
+            preset_model (QComboBox): The preset's model selector.
+            preset_effort (QComboBox): The preset's effort selector.
+            effort (str): The effort to select.
+        """
+        model = preset_model.currentData()
+        levels = next(
+            (
+                option.effort_levels
+                for option in self.models
+                if option.model_id == model
+            ),
+            (effort,) if model else (),
+        )
+        preset_effort.blockSignals(True)
+        preset_effort.clear()
+        for level in levels:
+            preset_effort.addItem(level.title(), level)
+        preset_effort.setCurrentIndex(max(0, preset_effort.findData(effort)))
+        preset_effort.setEnabled(len(levels) > 1)
+        preset_effort.blockSignals(False)
+
+    def _on_preset_model_changed(self, row: int) -> None:
+        """Restrict a preset's effort choices to its new model, then save the presets.
+
+        Args:
+            row (int): The preset's position, from 0 for Caps Lock+1.
+        """
+        preset_model, preset_effort = self.preset_rows[row]
+        self._show_preset_efforts(
+            preset_model, preset_effort, str(preset_effort.currentData() or "default")
+        )
+        self._save_presets()
+
+    def _save_presets(self) -> None:
+        """Persist changed presets for the provider shown."""
+        if not self.models or self.loading:
+            return
+        presets = [
+            (
+                str(preset_model.currentData()),
+                str(preset_effort.currentData() or "default"),
+            )
+            for preset_model, preset_effort in self.preset_rows
+        ]
+        if presets == self.settings_store.presets(self.provider):
+            return
+        try:
+            self.settings_store.save_presets(self.provider, presets)
+        except OSError:
+            self.save_status.setText(
+                "The presets could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self.save_status.setText("Changes saved automatically.")
 
 
 class _SettingsComboBox(QComboBox):

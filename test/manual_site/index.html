@@ -611,6 +611,7 @@ const SHORTCUTS = [
   ['code', 'Coding walkthrough', '[[Caps Lock]]+[[C]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
   ['system_design', 'System design walkthrough', '[[Caps Lock]]+[[D]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
   ['follow_up', 'Follow-up / hint / fix', '[[Caps Lock]]+[[F]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(slot => [`preset_${slot}`, `Model preset ${slot}`, `[[Caps Lock]]+[[${slot % 10}]]`, 'Press once; the model and effort below the input switch to the preset (set it in Settings → AI first), or a hint says it is not set.', 12]),
 ].map(([id, title, keys, how, seconds]) => ({ id: 'kbd.sc.' + id, tab: 'keyboard', group: 'Every shortcut', compact: true, title, keys, steps: [how], seconds, guard: true, startLabel: 'Test',
   confirmText: `Did the shortcut work in Que (${title.toLowerCase()})?`,
   evaluate(ctx) {

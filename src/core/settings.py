@@ -6,6 +6,8 @@ from typing import Any
 
 import win32crypt  # type: ignore[import-untyped]
 
+from core.hook_engine import PRESET_COUNT
+
 WHISPER_MODELS: tuple[str, ...] = ("tiny.en", "base.en", "small.en", "medium.en")
 CONTEXT_DOCUMENTS: dict[str, str] = {
     "resume": "Resume",
@@ -53,6 +55,26 @@ class SettingsStore:
         if not isinstance(values, dict):
             return "", "default"
         return str(values.get("model", "")), str(values.get("effort", "default"))
+
+    def presets(self, provider: str) -> list[tuple[str, str]]:
+        """Return a provider's model presets, one per number key shortcut.
+
+        Args:
+            provider (str): The provider identifier.
+
+        Returns:
+            list[tuple[str, str]]: The model identifier and effort level of each preset, with an empty model when unset.
+        """
+        saved = self.data.get("presets", {})
+        saved = saved.get(provider, []) if isinstance(saved, dict) else []
+        saved = saved if isinstance(saved, list) else []
+        presets = [
+            (str(preset.get("model", "")), str(preset.get("effort", "default")))
+            if isinstance(preset, dict)
+            else ("", "default")
+            for preset in saved[:PRESET_COUNT]
+        ]
+        return presets + [("", "default")] * (PRESET_COUNT - len(presets))
 
     def claude_directory(self) -> str:
         """Return the saved default Claude working directory.
@@ -185,6 +207,26 @@ class SettingsStore:
         )
         self._write(data)
         self.error = ""
+
+    def save_presets(self, provider: str, presets: list[tuple[str, str]]) -> None:
+        """Atomically save a provider's model presets.
+
+        Args:
+            provider (str): The provider identifier.
+            presets (list[tuple[str, str]]): The model identifier and effort level of each preset.
+        """
+        saved = self.data.get("presets")
+        self._write(
+            {
+                **self.data,
+                "presets": {
+                    **(saved if isinstance(saved, dict) else {}),
+                    provider: [
+                        {"model": model, "effort": effort} for model, effort in presets
+                    ],
+                },
+            }
+        )
 
     def save_claude_directory(self, directory: str) -> None:
         """Atomically save the default Claude working directory.

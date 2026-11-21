@@ -69,6 +69,8 @@ class MainWindow(QWidget):
         }
         self.capture_hidden = False
         self.topmost_error = ""  # Last reported visibility-check failure
+        # Last preset shortcut problem shown, cleared on the next press
+        self.preset_hint = ""
         self._init_UI()
         self.worker = AIReceiver(ai_sender, self.chat_area)
         self.window_policy.failed.connect(self.on_window_policy_failed)
@@ -130,6 +132,9 @@ class MainWindow(QWidget):
             self.input_field.input_settings.close_popups()
             self.settings_page.model_combo.hidePopup()
             self.settings_page.effort_combo.hidePopup()
+            for combos in self.settings_page.preset_rows:
+                for combo in combos:
+                    combo.hidePopup()
             self.settings_page.key_input.setEchoMode(
                 self.settings_page.key_input.EchoMode.Password
             )
@@ -197,6 +202,36 @@ class MainWindow(QWidget):
             if self.ai_sender.model:
                 self.input_field.input_field.clear()
         self.send_message(prompt, label)
+
+    def apply_preset(self, slot: int) -> None:
+        """Switch this chat to a saved model preset, or explain why it cannot.
+
+        Args:
+            slot (int): The preset number, from 1 to 10.
+        """
+        self.status_banner.clear_warning(self.preset_hint)
+        self.preset_hint = ""
+        input_settings = self.input_field.input_settings
+        provider = self.ai_sender.provider
+        model, effort = self.ai_sender.settings_store.presets(provider)[slot - 1]
+        shortcut = f"Caps Lock+{slot % 10}"
+        if not model:
+            self.preset_hint = f"{shortcut} has no {provider.title()} preset. Set one in Settings → AI."
+        elif not input_settings.models:
+            self.preset_hint = (
+                f"{shortcut} can't switch models until {provider.title()} models load."
+            )
+        elif (
+            model not in input_settings.models
+            or effort not in input_settings.models[model].effort_levels
+        ):
+            self.preset_hint = f"{shortcut}'s {provider.title()} preset is no longer available. Choose another in Settings → AI."
+        else:
+            # The selectors below the input update the sender, exactly as choosing there would
+            input_settings.model_dropdown.set_value(model)
+            input_settings.effort_dropdown.set_value(effort)
+            return
+        self.status_banner.show_warning(self.preset_hint, lasting=False)
 
     def toggle_history(self) -> None:
         """Open or close the conversation history sidebar."""

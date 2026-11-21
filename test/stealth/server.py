@@ -344,7 +344,7 @@ class EvidenceStore:
                         38: "ArrowUp",
                         39: "ArrowRight",
                         40: "ArrowDown",
-                    }.get(vk, f"Key{chr(vk)}")
+                    }.get(vk, f"{'Digit' if chr(vk).isdigit() else 'Key'}{chr(vk)}")
                     if any(
                         event["type"] in ("keydown", "keyup", "keypress")
                         and event.get("data", {}).get("code")

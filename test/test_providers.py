@@ -501,6 +501,52 @@ class SettingsPageTests(unittest.TestCase):
         self.assertEqual(self.page.model_combo.currentData(), "sonnet")
         self.assertEqual(self.page.effort_combo.currentData(), "high")
 
+    def test_presets_save_per_provider_and_keep_unavailable_models(self) -> None:
+        """Save each provider's presets apart and show a vanished model instead of hiding it."""
+        self.page._on_loaded(1, ProviderResult("gemini", GEMINI, "Connected"))
+        preset_model, preset_effort = self.page.preset_rows[0]
+        self.assertEqual(preset_model.currentData(), "")
+        self.assertFalse(preset_effort.isEnabled())
+        preset_model.setCurrentIndex(preset_model.findData(GEMINI[0].model_id))
+        preset_effort.setCurrentIndex(preset_effort.findData("low"))
+        self.assertEqual(self.store.presets("gemini")[0], (GEMINI[0].model_id, "low"))
+        self.assertEqual(
+            SettingsStore(self.store.path).presets("gemini")[9], ("", "default")
+        )
+        self.assertEqual(self.store.defaults("gemini"), (GEMINI[0].model_id, "high"))
+        self.store.save_presets("claude", [("opus", "high")])
+        self.page._select_provider("claude")
+        self.page._on_loaded(2, ProviderResult("claude", CLAUDE, "Connected"))
+        self.assertEqual(preset_model.currentText(), "opus · unavailable")
+        self.assertEqual(preset_effort.currentData(), "high")
+        self.assertEqual(self.store.presets("claude")[0], ("opus", "high"))
+        self.assertEqual(self.store.presets("gemini")[0], (GEMINI[0].model_id, "low"))
+
+    def test_preset_shortcut_switches_only_this_chat(self) -> None:
+        """Apply a preset like the input selectors, and explain an unset slot in the banner."""
+        self.store.save_presets("gemini", [(GEMINI[0].model_id, "low")])
+        with patch("core.provider_catalog.ProviderCatalog.refresh", return_value=1):
+            sender = AISender(self.store)
+            window = MainWindow(sender, ScreenshotManager())
+            self.addCleanup(window.close)
+            window.visibility_timer.stop()
+            window.apply_preset(1)
+            self.assertIn("until Gemini models load", window.preset_hint)
+            window._on_models_loaded(1, ProviderResult("gemini", GEMINI, "Connected"))
+            self.assertEqual(sender.effort_level, "high")
+            window.apply_preset(1)
+            self.assertEqual(sender.effort_level, "low")
+            self.assertEqual(
+                window.input_field.input_settings.effort_dropdown.current_value, "low"
+            )
+            self.assertEqual(window.preset_hint, "")
+            self.assertEqual(self.store.defaults("gemini")[1], "high")
+            window.apply_preset(10)
+            self.assertIn("Caps Lock+0 has no Gemini preset", window.preset_hint)
+            self.assertIn(window.preset_hint, window.status_banner.entries)
+            window.apply_preset(1)
+            self.assertEqual(window.status_banner.entries, {})
+
     def test_refresh_does_not_reapply_unchanged_settings(self) -> None:
         """Avoid overwriting chat overrides merely by opening settings."""
         results: list[ProviderResult] = []

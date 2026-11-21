@@ -22,6 +22,7 @@ HOTKEYS = [
     (8, 67, "code", False, False),
     (8, 68, "system_design", False, False),
     (8, 70, "follow_up", False, False),
+    *((8, 48 + slot % 10, f"preset_{slot}", False, False) for slot in range(1, 11)),
 ]
 SURFACES = [
     "main overlay",

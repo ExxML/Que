@@ -30,6 +30,7 @@ from core.win32_hook import (
 QUE_KEY = 0x14  # VK_CAPITAL
 MOD_QUE = 0x08
 CHORD_BITS: dict[int, int] = {**VK_TO_MOD_BIT, QUE_KEY: MOD_QUE}
+PRESET_COUNT = 10  # One per number key, 1 to 9 then 0
 
 # (modifier mask, virtual key, action name, repeats while held, active while hidden)
 HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
@@ -50,6 +51,11 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE, ord("C"), "code", False, False),
     (MOD_QUE, ord("D"), "system_design", False, False),
     (MOD_QUE, ord("F"), "follow_up", False, False),
+    # Caps Lock+1 to Caps Lock+0 apply model presets 1 to 10
+    *(
+        (MOD_QUE, ord(str(slot % 10)), f"preset_{slot}", False, False)
+        for slot in range(1, PRESET_COUNT + 1)
+    ),
 )
 ACTION_NAMES = tuple(name for _, _, name, _, _ in HOTKEYS)
 
