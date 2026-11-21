@@ -152,16 +152,40 @@ def compare_inventory(source: Path, approved: Path) -> Result:
     baseline = json.loads(approved.read_text(encoding="utf-8"))
     changes: list[str] = []
     for category in ("controls", "connections"):
-        added = set(current[category]) - set(baseline[category])
-        removed = set(baseline[category]) - set(current[category])
-        changes.extend(f"{category} added: {item}" for item in sorted(added))
-        changes.extend(f"{category} removed: {item}" for item in sorted(removed))
+        actual = {
+            _connection_identity(item) if category == "connections" else item: item
+            for item in current[category]
+        }
+        reviewed = {
+            _connection_identity(item) if category == "connections" else item: item
+            for item in baseline[category]
+        }
+        added = actual.keys() - reviewed.keys()
+        removed = reviewed.keys() - actual.keys()
+        changes.extend(f"{category} added: {actual[item]}" for item in sorted(added))
+        changes.extend(
+            f"{category} removed: {reviewed[item]}" for item in sorted(removed)
+        )
     return Result(
         "inventory.source",
         "FAIL" if changes else "PASS",
         "\n".join(changes)
         or "Every discovered control and connection has a reviewed inventory entry.",
     )
+
+
+def _connection_identity(connection: str) -> str:
+    """Compare a connection's syntax tree while retaining its source and method identity.
+
+    Args:
+        connection (str): The inventoried source path, method and connection expression.
+
+    Returns:
+        str: An identity unaffected by Python-version differences in ast.unparse formatting.
+    """
+    source, _, remainder = connection.partition(":")
+    method, _, expression = remainder.partition("/")
+    return f"{source}:{method}/{_stable_dump(ast.parse(expression, mode='eval'))}"
 
 
 def _stable_dump(node: Any) -> str:
