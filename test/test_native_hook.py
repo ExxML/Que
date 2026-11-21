@@ -373,6 +373,27 @@ class NativeHookEquivalenceTests(unittest.TestCase):
                     else:
                         driver.release_all()
 
+    def test_repeat_repeats_every_key_held_in_the_same_chord(self) -> None:
+        """Windows repeats only the last key, so its repeat also moves every other held direction."""
+        driver = self.driver()
+        for vk in (0x14, 0x12, ord("W"), ord("D")):
+            driver.key(vk)
+        driver.python_out.events.clear()
+        driver.native_out.events.clear()
+        driver.key(ord("D"))
+        self.assertEqual(
+            [event["name"] for event in driver.python_out.events],
+            ["move_window_right", "move_window_up"],
+        )
+        driver.key(ord("W"), False)
+        driver.python_out.events.clear()
+        driver.native_out.events.clear()
+        driver.key(ord("D"))
+        self.assertEqual(
+            [event["name"] for event in driver.python_out.events],
+            ["move_window_right"],
+        )
+
     def test_typing_mode_pass_through_list(self) -> None:
         """Typing mode: characters swallowed; F-keys, media, locks and system chords pass."""
         for keys in (

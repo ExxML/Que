@@ -326,7 +326,14 @@ class HookEngine:
             # repeatable chord may invoke its action again
             repeat = self.repeat_hotkeys.get(vk)
             if repeat is not None and repeat[0] == modifiers and self.window_visible:
-                self._invoke(repeat[1])
+                # Windows repeats only the last key pressed, so its repeat also repeats every
+                # other key held in the same chord, in key order like the native hook
+                for held_modifiers, callback in (
+                    self.repeat_hotkeys[held_vk]
+                    for held_vk in sorted(self.repeat_hotkeys)
+                ):
+                    if held_modifiers == modifiers:
+                        self._invoke(callback)
             elif vk in self.input_vk_codes:
                 self._emit_key(kb, True, True)
             return 1

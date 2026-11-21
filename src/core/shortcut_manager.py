@@ -95,6 +95,8 @@ class ShortcutManager(QObject):
         self.animation_start_pos: QPoint | None = None
         self.animation_target_pos: QPoint | None = None
         self.animation_progress = 0.0
+        self.move_dx = 0  # Summed direction of the move being animated
+        self.move_dy = 0
         self._setup_movement_distances()
 
         self.main_window.installEventFilter(self)
@@ -217,8 +219,13 @@ class ShortcutManager(QObject):
             dx (int): The horizontal direction.
             dy (int): The vertical direction.
         """
-        if self.animation_active and self.animation_progress < 0.5:
+        if self.animation_active and self.animation_progress == 0.0:
+            # Held direction keys repeat together, so moves before the first frame add into one
+            dx += self.move_dx
+            dy += self.move_dy
+        elif self.animation_active and self.animation_progress < 0.5:
             return
+        self.move_dx, self.move_dy = dx, dy
         geometry = self.main_window.geometry()
         x = max(
             self.screen_rect.left() + self.screen_bounds_offset,

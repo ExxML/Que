@@ -475,7 +475,13 @@ static int process_key(QueEngine *e, int code, WPARAM message, int vk, int scan,
         /* Ownership survives visibility and modifier changes; only an unchanged repeatable
            chord may invoke its action again */
         if (e->repeat_present[vk] && e->repeat_mask[vk] == modifiers && e->window_visible) {
-            invoke(e, e->repeat_action[vk]);
+            /* Windows repeats only the last key pressed, so its repeat also repeats every
+               other key held in the same chord, in key order like HookEngine */
+            for (int held = 0; held < 256; held++) {
+                if (e->repeat_present[held] && e->repeat_mask[held] == modifiers) {
+                    invoke(e, e->repeat_action[held]);
+                }
+            }
         } else if (e->input_vk[vk]) {
             emit_key(e, vk, scan, flags, 1, 1);
         }
