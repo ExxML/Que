@@ -340,6 +340,7 @@ class EvidenceStore:
                         key for _, key, callback, _, _ in HOTKEYS if callback == name
                     )
                     code = {
+                        27: "Escape",
                         37: "ArrowLeft",
                         38: "ArrowUp",
                         39: "ArrowRight",

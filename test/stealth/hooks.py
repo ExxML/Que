@@ -306,7 +306,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
             ordinary = rng.choice((True, False))
             ctrl = rng.choice(CHORD_GROUPS[0][1])
             driver.event(ctrl)
-            key = ord("A") if ordinary else ord("E")
+            key = ord("J") if ordinary else ord("E")
             driver.event(key)
             if ctrl != QUE_KEY:
                 expected_delivery += [

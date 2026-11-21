@@ -18,6 +18,146 @@
     "name": "",
     "accessible": "",
     "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": false
+  },
+  {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
     "enabled": true
   },
   {
@@ -147,6 +287,146 @@
     "enabled": true
   },
   {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+0 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+0 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+1 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+1 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+2 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+2 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+3 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+3 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+4 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+4 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+5 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+5 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+6 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+6 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+7 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+7 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+8 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+8 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+9 preset effort",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Caps Lock+9 preset model",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
     "class": "QPushButton",
     "name": "",
     "accessible": "Claude directory",
@@ -206,6 +486,20 @@
     "class": "QLineEdit",
     "name": "",
     "accessible": "Interview script",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Link a file to a resume item",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Link a folder to a resume item",
     "parent_class": "QWidget",
     "enabled": true
   },
@@ -326,6 +620,13 @@
     "name": "",
     "accessible": "Show transcript, 2 lines not yet sent",
     "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "_StopButton",
+    "name": "",
+    "accessible": "Stop generating",
+    "parent_class": "InputSettings",
     "enabled": true
   },
   {
