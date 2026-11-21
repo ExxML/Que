@@ -611,7 +611,7 @@ const SHORTCUTS = [
   ['toggle_click_through', 'Toggle click-through', '[[Caps Lock]]+[[Shift]]+[[X]]', 'Press twice (on, then off again).', 12],
   ['new_chat', 'New chat', '[[Caps Lock]]+[[N]]', 'Press once; the chat clears.', 12],
   ['toggle_history', 'History sidebar', '[[Caps Lock]]+[[H]]', 'Press twice (open, close).', 12],
-  ['answer', 'Answer interview question', '[[Caps Lock]]+[[F]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
+  ['answer', 'Answer interview question', '[[Caps Lock]]+[[C]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
   ['stop_generation', 'Stop generating', '[[Caps Lock]]+[[Esc]]', 'Press while a reply is streaming; the reply stops and shows "Stopped."', 25],
   ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(slot => [`preset_${slot}`, `Model preset ${slot}`, `[[Caps Lock]]+[[${slot % 10}]]`, 'Press once; the model and effort below the input switch to the preset (set it in Settings → AI first), or a hint says it is not set.', 12]),
 ].map(([id, title, keys, how, seconds]) => ({ id: 'kbd.sc.' + id, tab: 'keyboard', group: 'Every shortcut', compact: true, title, keys, steps: [how], seconds, guard: true, startLabel: 'Test',
@@ -695,14 +695,14 @@ const KEY_TESTS = [
     } },
   { id: 'kbd.hidden-passthrough', tab: 'keyboard', group: 'Edge cases', title: 'Hidden Que does not steal keys',
     why: 'While Que is hidden only its three always-on shortcuts may run. Ordinary typing must reach the page; Caps Lock chords that only work while Que is visible run nothing and still reach nothing.',
-    steps: ['Hide Que with [[Caps Lock]]+[[E]] (before starting).', 'Type `abc`.', 'Press [[Caps Lock]]+[[F]] once.', 'Afterwards show Que again with [[Caps Lock]]+[[E]].'],
+    steps: ['Hide Que with [[Caps Lock]]+[[E]] (before starting).', 'Type `abd`.', 'Press [[Caps Lock]]+[[C]] once.', 'Afterwards show Que again with [[Caps Lock]]+[[E]].'],
     seconds: 10, guard: true, confirmText: 'Que was hidden and did not react (no AI request started)?',
     evaluate(ctx) {
       const d = ctx.keys.filter(k => k.phase === 'down');
-      const leaked = d.filter(k => k.code === 'CapsLock' || k.code === 'KeyF');
-      if (leaked.length) return { status: 'fail', findings: [bad(`Caps Lock+F reached the page while Que was hidden: ${E.keyList(leaked, ctx.t0)}.`)] };
-      if (['KeyA', 'KeyB', 'KeyC'].every(code => d.some(k => k.code === code))) return { status: 'pass', findings: [ok('`abc` reached the page while Que was hidden, and Caps Lock+F did not.')] };
-      return { status: 'fail', findings: [bad('`abc` did not reach the page while Que was hidden; hidden Que intercepted ordinary typing.')] };
+      const leaked = d.filter(k => k.code === 'CapsLock' || k.code === 'KeyC');
+      if (leaked.length) return { status: 'fail', findings: [bad(`Caps Lock+C reached the page while Que was hidden: ${E.keyList(leaked, ctx.t0)}.`)] };
+      if (['KeyA', 'KeyB', 'KeyD'].every(code => d.some(k => k.code === code))) return { status: 'pass', findings: [ok('`abd` reached the page while Que was hidden, and Caps Lock+C did not.')] };
+      return { status: 'fail', findings: [bad('`abd` did not reach the page while Que was hidden; hidden Que intercepted ordinary typing.')] };
     } },
   { id: 'kbd.typing-passthrough', tab: 'keyboard', group: 'Typing in Que', title: 'Typing in Que stays invisible to the page',
     why: 'While you type in Que, letters go to Que only. Function keys, media keys and system chords like Alt+Tab still reach Windows; Caps Lock is Que\'s key and never does. Pass-through keys appearing here is correct; letters or Caps Lock appearing is a leak.',
