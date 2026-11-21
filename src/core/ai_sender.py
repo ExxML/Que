@@ -3,6 +3,7 @@ import mimetypes
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 from typing import cast
 from uuid import uuid4
@@ -11,6 +12,7 @@ from google import genai
 from google.genai import interactions
 
 from core.claude_bridge import ClaudeBridge
+from core.document_text import extract_text
 from core.model_catalog import ModelOption
 from core.settings import CONTEXT_DOCUMENTS, SettingsStore
 
@@ -32,10 +34,13 @@ class InteractionRequest:
     transcript: str = ""
     transcript_seq: int = 0
     context: str = ""
+    resume_details: tuple[tuple[str, str], ...] = ()
 
     @property
     def prompt(self) -> str:
         """Return the message with any instruction, documents, and new audio transcript prepended as context.
+
+        A new conversation also reads each linked resume detail from disk, so call this off the Qt thread.
 
         Returns:
             str: The text sent to the provider.
@@ -49,7 +54,24 @@ class InteractionRequest:
 
 {prompt}"""
         # Documents lead so new conversations share a prefix the provider can cache
-        return f"{self.context}\n\n{prompt}" if self.context else prompt
+        context = self.context
+        if self.previous_interaction_id is None and self.resume_details:
+            details = _resume_details_context(
+                self.resume_details, self.provider == "claude"
+            )
+            context = f"{context}\n\n{details}" if context else details
+        return f"{context}\n\n{prompt}" if context else prompt
+
+    @property
+    def folders(self) -> tuple[Path, ...]:
+        """Return the linked resume folders that Claude may read on every turn.
+
+        Returns:
+            tuple[Path, ...]: The linked paths that are existing folders.
+        """
+        return tuple(
+            Path(path) for _name, path in self.resume_details if Path(path).is_dir()
+        )
 
 
 class AISender:
@@ -197,6 +219,8 @@ class AISender:
             transcript_seq,
             # Providers keep earlier turns, so the instruction and documents are sent once per conversation
             "" if self.previous_interaction_id else self._context(),
+            # Snapshotted every turn because Claude needs folder access after the first
+            tuple(self.settings_store.resume_details()),
         )
 
     def commit_interaction(
@@ -250,6 +274,7 @@ class AISender:
                 request.claude_directory,
                 on_chunk,
                 stop_flag,
+                request.folders,
             )
         client = request.client
         if client is None:
@@ -376,3 +401,61 @@ class AISender:
 {joined}"""
             )
         return "\n\n".join(parts)
+
+
+def _resume_details_context(details: tuple[tuple[str, str], ...], browse: bool) -> str:
+    """Read each linked resume detail fresh so edits to its notes apply to the next new chat.
+
+    Args:
+        details (tuple[tuple[str, str], ...]): The item name and file or folder path of each link.
+        browse (bool): Whether the provider can open linked folders with file tools.
+
+    Returns:
+        str: The details wrapped as background for a new conversation.
+    """
+    sections = []
+    for name, path in details:
+        source = Path(path)
+        if not source.exists():
+            body = "Unavailable: this file or folder no longer exists."
+        elif source.is_dir() and browse:
+            body = "A folder you can open with your read-only file tools. When asked about this item, read the files that explain it, starting with any README, before answering."
+        elif source.is_dir():
+            readme = next(
+                (
+                    source / readme_name
+                    for readme_name in ("README.md", "README.txt")
+                    if (source / readme_name).is_file()
+                ),
+                None,
+            )
+            body = (
+                f"The README of this folder:\n{_read_detail(readme)}"
+                if readme
+                else "A folder whose files you cannot open. Answer from my other context."
+            )
+        else:
+            body = _read_detail(source)
+        sections.append(
+            f'<detail name="{escape(name or source.name)}" path="{escape(path)}">\n{body}\n</detail>'
+        )
+    joined = "\n".join(sections)
+    return f"""Sources behind items on my resume. When I'm asked about one of these items, explain it from its source with accurate, specific details.
+<resume_details>
+{joined}
+</resume_details>"""
+
+
+def _read_detail(path: Path) -> str:
+    """Extract a linked file's text, or explain why it cannot be used.
+
+    Args:
+        path (Path): The linked file.
+
+    Returns:
+        str: The file text, or a note that it is unavailable.
+    """
+    try:
+        return extract_text(path)
+    except ValueError as error:
+        return f"Unavailable: {error}"

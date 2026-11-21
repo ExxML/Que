@@ -128,6 +128,21 @@ class SettingsStore:
             and document.get("text")
         }
 
+    def resume_details(self) -> list[tuple[str, str]]:
+        """Return the saved links from resume items to the files or folders that explain them.
+
+        Returns:
+            list[tuple[str, str]]: The item name and file or folder path of each link, in order.
+        """
+        details = self.data.get("resume_details")
+        if not isinstance(details, list):
+            return []
+        return [
+            (str(detail.get("name", "")), str(detail["path"]))
+            for detail in details
+            if isinstance(detail, dict) and detail.get("path")
+        ]
+
     def gemini_key(self) -> str:
         """Decrypt the key for the current Windows user.
 
@@ -243,6 +258,21 @@ class SettingsStore:
         if text:
             documents[kind] = {"name": name, "text": text}
         self._write({**self.data, "context_documents": documents})
+
+    def save_resume_details(self, details: list[tuple[str, str]]) -> None:
+        """Atomically replace the links from resume items to their files or folders.
+
+        Args:
+            details (list[tuple[str, str]]): The item name and file or folder path of each link.
+        """
+        self._write(
+            {
+                **self.data,
+                "resume_details": [
+                    {"name": name, "path": path} for name, path in details
+                ],
+            }
+        )
 
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.

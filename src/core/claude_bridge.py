@@ -154,6 +154,7 @@ class ClaudeBridge:
         directory: Path | None,
         on_chunk: Callable[[str], None],
         stop_flag: threading.Event,
+        folders: tuple[Path, ...] = (),
     ) -> str | None:
         """Resume one Que chat at its last accepted assistant message.
 
@@ -167,6 +168,7 @@ class ClaudeBridge:
             directory (Path | None): The working directory Claude may read, or None for no file access.
             on_chunk (Callable[[str], None]): Deliver visible text.
             stop_flag (threading.Event): Cancel a running or queued turn.
+            folders (tuple[Path, ...]): More folders Claude may read, such as linked resume projects.
 
         Returns:
             str | None: A completed assistant UUID, or None after cancellation.
@@ -197,7 +199,7 @@ class ClaudeBridge:
             streamed = False
             separate = False
             with closing(
-                self._events(arguments, payload, stop_flag, 600, directory)
+                self._events(arguments, payload, stop_flag, 600, directory, folders)
             ) as events:
                 for event in events:
                     kind = event.get("type")
@@ -339,6 +341,7 @@ class ClaudeBridge:
         stop_flag: threading.Event,
         timeout: float,
         directory: Path | None,
+        folders: tuple[Path, ...] = (),
     ) -> Generator[dict[str, Any], None, None]:
         """Drain CLI pipes while supporting cancellation even before the first token.
 
@@ -348,6 +351,7 @@ class ClaudeBridge:
             stop_flag (threading.Event): The request cancellation flag.
             timeout (float): Maximum request duration in seconds.
             directory (Path | None): The directory that confines read-only file tools, or None to run without tools.
+            folders (tuple[Path, ...]): More folders the read-only file tools may open.
 
         Yields:
             dict[str, Any]: Parsed protocol messages.
@@ -364,7 +368,8 @@ class ClaudeBridge:
             "--input-format=stream-json",
             "--output-format=stream-json",
             "--include-partial-messages",
-            f"--tools={'Read,Grep,Glob' if directory else ''}",
+            f"--tools={'Read,Grep,Glob' if directory or folders else ''}",
+            *(f"--add-dir={folder}" for folder in folders),
             "--strict-mcp-config",
             "--setting-sources=",
             "--disable-slash-commands",

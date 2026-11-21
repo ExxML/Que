@@ -80,6 +80,11 @@ class SettingsPage(QWidget):
         self.instruction_timer.setSingleShot(True)
         self.instruction_timer.setInterval(500)
         self.instruction_timer.timeout.connect(self._save_instruction)
+        self.details_timer = QTimer(self)
+        self.details_timer.setSingleShot(True)
+        self.details_timer.setInterval(500)
+        self.details_timer.timeout.connect(self._save_detail_names)
+        self.detail_rows: list[tuple[QLineEdit, str]] = []
         self._init_UI()
 
     def open_settings(self) -> None:
@@ -111,13 +116,14 @@ class SettingsPage(QWidget):
         self.instruction_input.setPlainText(self.settings_store.instruction())
         self.instruction_input.blockSignals(False)
         self._show_documents()
+        self._show_resume_details()
         self._show_screenshots_size()
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
 
     def hideEvent(self, event: QHideEvent | None) -> None:
-        """Save a pending instruction edit when leaving settings or hiding Que.
+        """Save pending instruction and resume detail edits when leaving settings or hiding Que.
 
         Args:
             event (QHideEvent | None): The hide event.
@@ -125,6 +131,8 @@ class SettingsPage(QWidget):
         if self.instruction_timer.isActive():
             self.instruction_timer.stop()
             self._save_instruction()
+        if self.details_timer.isActive():
+            self._save_detail_names()
         super().hideEvent(event)
 
     def _init_UI(self) -> None:
@@ -145,6 +153,7 @@ class SettingsPage(QWidget):
             QComboBox::down-arrow {{ image: url({arrow_path}); width: 8px; height: 5px; }}
             QPushButton:focus, QLineEdit:focus, QPlainTextEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
+            QLineEdit[missing="true"] {{ color: {qss(DANGER_COLOR)}; border-color: {qss(DANGER_COLOR, 160)}; }}
             QPushButton[armed="true"] {{
                 color: {qss(DANGER_COLOR)}; background: {qss(DANGER_COLOR, 40)}; border-color: {qss(DANGER_COLOR, 160)};
             }}
@@ -355,6 +364,38 @@ class SettingsPage(QWidget):
         )
         documents_hint.setWordWrap(True)
         documents_layout.addWidget(documents_hint)
+        details_label = QLabel("Resume details")
+        details_description = QLabel(
+            "Link items on your resume to notes or project folders so the AI can explain them in depth. Name each link as the item appears on your resume."
+        )
+        details_description.setWordWrap(True)
+        # Rows sit in a plain widget so rebuilding them never disturbs the buttons below
+        details_list = QWidget()
+        self.details_list = QVBoxLayout(details_list)
+        self.details_list.setContentsMargins(0, 0, 0, 0)
+        self.details_list.setSpacing(6)
+        link_file_button = QPushButton("Link file…")
+        link_file_button.setAccessibleName("Link a file to a resume item")
+        link_file_button.clicked.connect(lambda: self._link_resume_detail(False))
+        link_folder_button = QPushButton("Link folder…")
+        link_folder_button.setAccessibleName("Link a folder to a resume item")
+        link_folder_button.clicked.connect(lambda: self._link_resume_detail(True))
+        link_row = QHBoxLayout()
+        link_row.addWidget(link_file_button)
+        link_row.addWidget(link_folder_button)
+        link_row.addStretch(1)
+        details_hint = QLabel(
+            "Files (PDF, Word, or text) are read again at the start of each new chat, so edits apply to your next new chat. Claude can browse linked folders; Gemini reads only a folder's README."
+        )
+        details_hint.setWordWrap(True)
+        details_group = QVBoxLayout()
+        details_group.setSpacing(4)
+        details_group.addWidget(details_label)
+        details_group.addWidget(details_description)
+        details_group.addWidget(details_list)
+        details_group.addLayout(link_row)
+        details_group.addWidget(details_hint)
+        documents_layout.addLayout(details_group)
         documents_layout.addStretch(1)
         voice_layout = self._add_tab("Voice")
         transcription_form = QFormLayout()
@@ -648,6 +689,129 @@ class SettingsPage(QWidget):
                 f"{name} · {len(text.split()):,} words" if text else ""
             )
             self.document_remove_buttons[kind].setEnabled(bool(text))
+
+    def _link_resume_detail(self, folder: bool) -> None:
+        """Ask for a file or folder that explains a resume item, then link it and focus its name.
+
+        Args:
+            folder (bool): Whether to link a folder instead of a file.
+        """
+        details = self._resume_details()
+        current = str(Path(details[-1][1]).parent) if details else str(Path.home())
+        if folder:
+            path = choose_directory(
+                self, current, "Choose the folder behind a resume item"
+            )
+        else:
+            path = choose_file(
+                self,
+                "Choose notes about a resume item",
+                current,
+                "Documents (*.pdf *.docx *.txt *.md)",
+            )
+            if path:
+                try:
+                    extract_text(Path(path))
+                except ValueError as error:
+                    self.save_status.setText(str(error))
+                    return
+        if not path:
+            return
+        source = Path(path)
+        name = source.name if folder else source.stem
+        if not self._save_resume_details([*details, (name, path)]):
+            return
+        name_input = self.detail_rows[-1][0]
+        name_input.setFocus()
+        name_input.selectAll()
+
+    def _save_detail_names(self) -> None:
+        """Save typed resume item names when they differ from the saved ones."""
+        self.details_timer.stop()
+        details = self._resume_details()
+        if details != self.settings_store.resume_details():
+            self._save_resume_details(details, False)
+
+    def _save_resume_details(
+        self, details: list[tuple[str, str]], rebuild: bool = True
+    ) -> bool:
+        """Save the resume detail links and show them.
+
+        Args:
+            details (list[tuple[str, str]]): The item name and file or folder path of each link.
+            rebuild (bool): Whether the links were added or removed, so their rows must be rebuilt.
+
+        Returns:
+            bool: Whether the links were saved.
+        """
+        self.details_timer.stop()
+        try:
+            self.settings_store.save_resume_details(details)
+        except OSError:
+            self.save_status.setText(
+                "The resume details could not be saved. Check that Que's data folder is writable."
+            )
+            return False
+        if rebuild:
+            self._show_resume_details()
+        self.save_status.setText(
+            "Changes saved automatically. They apply to new chats."
+        )
+        return True
+
+    def _resume_details(self) -> list[tuple[str, str]]:
+        """Return the resume detail links as currently shown, including unsaved name edits.
+
+        Returns:
+            list[tuple[str, str]]: The item name and file or folder path of each link.
+        """
+        return [
+            (name_input.text().strip(), path) for name_input, path in self.detail_rows
+        ]
+
+    def _show_resume_details(self) -> None:
+        """Rebuild one row per saved link, flagging files and folders that no longer exist."""
+        while (item := self.details_list.takeAt(0)) is not None:
+            if (widget := item.widget()) is not None:
+                widget.deleteLater()
+        self.detail_rows = []
+        for index, (name, path) in enumerate(self.settings_store.resume_details()):
+            source = Path(path)
+            kind = "folder" if source.is_dir() else "file"
+            name_input = QLineEdit(name)
+            name_input.setPlaceholderText("Resume item, e.g., Que overlay")
+            name_input.setAccessibleName(f"Resume item linked to {source.name}")
+            name_input.textChanged.connect(self.details_timer.start)
+            path_input = QLineEdit(path)
+            path_input.setReadOnly(True)
+            path_input.setCursorPosition(0)
+            path_input.setAccessibleName(f"Linked {kind}")
+            path_input.setToolTip(path)
+            if not source.exists():
+                path_input.setProperty("missing", True)
+                path_input.setToolTip(
+                    f"{path} no longer exists. Remove this link, then link the file or folder again."
+                )
+            path_input.setAccessibleDescription(path_input.toolTip())
+            remove_button = QPushButton("Remove")
+            remove_button.setAccessibleName(f"Remove link to {source.name}")
+            remove_button.clicked.connect(
+                lambda _checked, index=index: self._save_resume_details(
+                    [
+                        detail
+                        for position, detail in enumerate(self._resume_details())
+                        if position != index
+                    ]
+                )
+            )
+            row = QWidget()
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.addWidget(name_input, 2)
+            row_layout.addWidget(path_input, 3)
+            row_layout.addWidget(remove_button)
+            self.details_list.addWidget(row)
+            self.detail_rows.append((name_input, path))
 
     def _show_screenshots_size(self) -> None:
         """Display the storage used by stored screenshots and reset the delete button."""

@@ -296,6 +296,41 @@ for e in events: print(json.dumps(e),flush=True)
                 )
         self.assertFalse(self.bridge.lock.locked())
 
+    def test_linked_folders_enable_read_only_tools(self) -> None:
+        """Give Claude read-only access to linked folders even without a working directory."""
+        script = """import json, sys
+p=json.loads(sys.stdin.readline())
+print(json.dumps({'type':'assistant','uuid':'a1','message':{'content':[]}}),flush=True)
+print(json.dumps({'type':'result','subtype':'success','is_error':False,'session_id':p['session_id']}),flush=True)
+"""
+        folder = Path(self.directory.name)
+        with (
+            patch.object(
+                self.bridge,
+                "_command",
+                return_value=[sys.executable, "-u", "-c", script],
+            ),
+            patch(
+                "core.claude_bridge.subprocess.Popen", wraps=subprocess.Popen
+            ) as popen,
+        ):
+            self.bridge.send_message(
+                "test",
+                (),
+                "sonnet",
+                "default",
+                str(uuid4()),
+                None,
+                None,
+                lambda _text: None,
+                threading.Event(),
+                (folder,),
+            )
+        command = popen.call_args.args[0]
+        self.assertIn("--tools=Read,Grep,Glob", command)
+        self.assertIn(f"--add-dir={folder}", command)
+        self.assertEqual(popen.call_args.kwargs["cwd"], self.bridge.directory)
+
     def test_cancel_silent_child_and_release_lock(self) -> None:
         """Terminate a stalled CLI promptly even when no response token arrives."""
         flag = threading.Event()

@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pypdf import PdfWriter
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtCore import QEvent
+from PyQt6.QtWidgets import QLineEdit, QPushButton, QWidget
 from qt_application import application
 
 from core.ai_sender import AISender, InteractionRequest
@@ -189,6 +190,73 @@ class ContextDocumentTests(unittest.TestCase):
         self.assertEqual(request.prompt, "Docs\n\nGo")
 
 
+class ResumeDetailsTests(unittest.TestCase):
+    """Link resume items to files and folders that new conversations explain from."""
+
+    def setUp(self) -> None:
+        """Create an isolated settings store, sender, and linked sources."""
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+        self.store = SettingsStore(self.root / "config.json")
+        self.sender = AISender(self.store, client=MagicMock())
+        self.sender.set_models((ModelOption("m", "M", ("default",)),))
+        self.notes = self.root / "que.md"
+        self.notes.write_text("Built a stealth overlay", encoding="utf-8")
+        self.project = self.root / "Que"
+        self.project.mkdir()
+        (self.project / "README.md").write_text("Que readme", encoding="utf-8")
+
+    def test_save_and_ignore_malformed(self) -> None:
+        """Round-trip links in order and skip saved entries without a path."""
+        self.store.save_resume_details([("Que", str(self.notes)), ("", "C:/x")])
+        self.assertEqual(
+            SettingsStore(self.store.path).resume_details(),
+            [("Que", str(self.notes)), ("", "C:/x")],
+        )
+        self.store.data["resume_details"] = [{"name": "a"}, "bad", {"path": "p"}]
+        self.assertEqual(self.store.resume_details(), [("", "p")])
+        self.store.data["resume_details"] = "bad"
+        self.assertEqual(self.store.resume_details(), [])
+
+    def test_files_are_read_fresh_once_per_conversation(self) -> None:
+        """Send current file text after documents on a new chat only, and flag missing links."""
+        self.store.save_context_document("resume", "cv.pdf", "Built Que")
+        self.store.save_resume_details(
+            [("Que <overlay>", str(self.notes)), ("", str(self.root / "gone.md"))]
+        )
+        first = self.sender.prepare_request("Explain Que")
+        self.notes.write_text("Rewrote the hooks in C", encoding="utf-8")
+        prompt = first.prompt
+        self.assertIn(
+            f'<detail name="Que &lt;overlay&gt;" path="{self.notes}">\nRewrote the hooks in C\n</detail>',
+            prompt,
+        )
+        self.assertIn(
+            f'<detail name="gone.md" path="{self.root / "gone.md"}">\nUnavailable: this file or folder no longer exists.',
+            prompt,
+        )
+        self.assertLess(prompt.index("</resume>"), prompt.index("<resume_details>"))
+        self.assertTrue(prompt.endswith("</resume_details>\n\nExplain Que"))
+        self.assertTrue(self.sender.commit_interaction(first, "first-id"))
+        self.assertEqual(self.sender.prepare_request("Next").prompt, "Next")
+
+    def test_folders_by_provider(self) -> None:
+        """Let Claude browse folders on every turn and give Gemini only the README."""
+        self.store.save_resume_details([("Que", str(self.project))])
+        gemini = self.sender.prepare_request("Hi").prompt
+        self.assertIn("The README of this folder:\nQue readme", gemini)
+        (self.project / "README.md").unlink()
+        self.assertIn("cannot open", self.sender.prepare_request("Hi").prompt)
+        self.sender.provider = "claude"
+        first = self.sender.prepare_request("Hi")
+        self.assertIn("read-only file tools", first.prompt)
+        self.assertEqual(first.folders, (self.project,))
+        self.assertTrue(self.sender.commit_interaction(first, "first-id"))
+        later = self.sender.prepare_request("Next")
+        self.assertEqual((later.prompt, later.folders), ("Next", (self.project,)))
+
+
 class SettingsDocumentsTests(unittest.TestCase):
     """Upload and remove documents from the settings page."""
 
@@ -229,6 +297,58 @@ class SettingsDocumentsTests(unittest.TestCase):
         self.assertEqual(self.store.context_documents(), {})
         self.assertEqual(self.page.document_names["resume"].text(), "")
         self.assertFalse(self.page.document_remove_buttons["resume"].isEnabled())
+
+    def test_link_rename_and_remove_resume_details(self) -> None:
+        """Link a file and folder, save typed names, reject unreadable files, and remove links."""
+        notes = Path(self.directory.name) / "que notes.md"
+        notes.write_text("Details", encoding="utf-8")
+        project = Path(self.directory.name) / "Que"
+        project.mkdir()
+        bad = Path(self.directory.name) / "scan.doc"
+        bad.write_text("x", encoding="utf-8")
+        with patch("ui.window.settings_page.choose_file", return_value=str(notes)):
+            self.page._link_resume_detail(False)
+        with patch(
+            "ui.window.settings_page.choose_directory", return_value=str(project)
+        ) as choose:
+            self.page._link_resume_detail(True)
+        # The picker opens beside the previous link
+        self.assertEqual(choose.call_args.args[1], self.directory.name)
+        with patch("ui.window.settings_page.choose_file", return_value=str(bad)):
+            self.page._link_resume_detail(False)
+        self.assertIn("Choose a PDF", self.page.save_status.text())
+        self.assertEqual(
+            self.store.resume_details(),
+            [("que notes", str(notes)), ("Que", str(project))],
+        )
+        name_input = self.page.detail_rows[0][0]
+        name_input.setText(" Que overlay ")
+        self.assertTrue(self.page.details_timer.isActive())
+        self.page.hideEvent(None)
+        self.assertFalse(self.page.details_timer.isActive())
+        self.assertEqual(
+            SettingsStore(self.store.path).resume_details()[0],
+            ("Que overlay", str(notes)),
+        )
+        project.rmdir()
+        self.page.open_settings()
+        self.app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        self.assertEqual(
+            [
+                field.text()
+                for field in self.page.findChildren(QLineEdit)
+                if field.property("missing")
+            ],
+            [str(project)],
+        )
+        remove: QPushButton | None = None
+        for button in self.page.findChildren(QPushButton):
+            if button.accessibleName() == "Remove link to que notes.md":
+                remove = button
+        assert remove is not None
+        remove.click()
+        self.assertEqual(self.store.resume_details(), [("Que", str(project))])
+        self.assertEqual(len(self.page.detail_rows), 1)
 
     def test_instruction_saves_after_typing(self) -> None:
         """Save the trimmed instruction on hide, and reload it when settings reopen."""
