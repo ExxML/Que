@@ -47,6 +47,7 @@ src/assets/ — Icons and images
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
 - `ui/window/main_window.py` — Frameless translucent `QWidget` with `WindowStaysOnTopHint | Tool`; re-raises itself every 1s via visibility timer
 - `ui/chat/ai_formatter.py` — Markdown→Qt rich text for `QLabel` (block parser for headings, nested lists, tables, quotes, fenced code; Pygments highlighting in VS Code Dark Modern colours from `theme.CODE_COLORS`); must handle half-streamed text since it re-renders every chunk
+- `ui/chat/latex.py` — Renders LaTeX maths (`$…$`, `\(…\)`, `$$…$$`, `\[…\]`) as Unicode text in Cambria Math; display maths stacks fractions/limits with rich-text tables. No images, so maths stays selectable
 - `ui/theme.py` — Centralized color theming; all colors must come from here
 - `src/data/` — Runtime data: `chat_history.json`, `config.json`, `cache/`
 

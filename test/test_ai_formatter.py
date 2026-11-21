@@ -75,6 +75,43 @@ class FormatMessageTests(unittest.TestCase):
         self.assertNotIn("&gt; quoted", html)
 
 
+class MathTests(unittest.TestCase):
+    """Check that LaTeX maths renders as readable Unicode maths."""
+
+    def test_inline_symbols_scripts_and_fractions(self) -> None:
+        """Turn commands into symbols, scripts into sup/sub, and inline fractions into slashes."""
+        html = format_message(r"$\alpha \le \sqrt{n}$ and $x_i^2$ and \(\frac{n(n+1)}{2}\)")
+        for expected in ("α", "≤", "√", "<sub>", "<sup>2</sup>", ")/2", "Cambria Math"):
+            self.assertIn(expected, html)
+        self.assertNotIn("\\", html)
+
+    def test_prices_stay_text(self) -> None:
+        """Leave dollar amounts alone and show escaped dollar signs."""
+        html = format_message(r"It costs $5 and $10, or \$3.")
+        self.assertIn("$5 and $10, or $3.", html)
+        self.assertNotIn("Cambria Math", html)
+
+    def test_display_math_stacks_fractions_and_limits(self) -> None:
+        """Stack fractions and sum limits in a centred display block across several lines."""
+        html = format_message("Before\n$$\n\\sum_{i=1}^{n} i = \\frac{a}{b}\n$$\nAfter")
+        self.assertIn("<td align='center'>", html)
+        self.assertIn("∑", html)
+        self.assertNotIn("a/b", html)
+        self.assertLess(html.index("∑"), html.index("After"))
+
+    def test_environment_and_half_streamed_display_math(self) -> None:
+        """Lay out cases as rows, and still render display maths that has not been closed."""
+        html = format_message(r"\[ f = \begin{cases} 1 & x \\ 0 & \text{otherwise} \end{cases} \]")
+        self.assertIn("otherwise", html)
+        self.assertIn("{", html)
+        self.assertIn("1/", format_message(r"$$\tfrac{1}{"))
+
+    def test_math_inside_code_stays_literal(self) -> None:
+        """Show dollar signs inside code exactly as written."""
+        html = format_message("`echo $HOME $PATH`\n```bash\necho $x$\n```")
+        self.assertNotIn("Cambria Math", html)
+
+
 class UserBubbleTests(unittest.TestCase):
     """Check user messages show exactly what was typed."""
 

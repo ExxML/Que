@@ -7,6 +7,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.token import Token, _TokenType, is_token_subtype
 from pygments.util import ClassNotFound
 
+from ui.chat.latex import render_math
 from ui.theme import (
     BRACKET_COLORS,
     CODE_BG_ALPHA,
@@ -44,10 +45,15 @@ QUOTE_RE = re.compile(r"^\s{0,3}>\s?(.*)$")
 LIST_RE = re.compile(r"^(\s*)([-*+]|\d{1,9}[.)])\s+(.*)$")
 TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$")
 TASK_RE = re.compile(r"^\[([ xX])\]\s+")
+DISPLAY_MATH_RE = re.compile(r"^\s*(\$\$|\\\[)(.*)$")
 
 PLACEHOLDER_RE = re.compile(r"\x00(\d+)\x00")
-ESCAPED_RE = re.compile(r"\\([\\`*_{}\[\]()#+\-.!|~>])")
+ESCAPED_RE = re.compile(r"\\([\\`*_{}\[\]()#+\-.!|~>$])")
 CODE_SPAN_RE = re.compile(r"(`+)(.+?)\1")
+# A lone $ opens maths only before a non-space and closes only after one and not before a digit, so prices stay text
+INLINE_MATH_RE = re.compile(
+    r"\$\$(.+?)\$\$|\\\((.+?)\\\)|\\\[(.+?)\\\]|(?<![\\$\w])\$(?=[^\s$])(.+?)(?<=[^\s\\])\$(?![\d$\w])"
+)
 LINK_RE = re.compile(r"\[([^\]\n]+)\]\([^)\s]+(?:\s+\"[^)]*\")?\)")
 LINE_BREAK_TAG_RE = re.compile(r"&lt;br\s*/?&gt;", re.IGNORECASE)
 EMPHASIS_RULES = (
@@ -185,6 +191,20 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
                 i += 1
             i += 1  # Skip the closing fence; a stream may not have sent it yet
             blocks.append(_code_block("\n".join(code), language, top))
+        elif math := _display_math(line):
+            closer = "$$" if math.group(1) == "$$" else "\\]"
+            body = [math.group(2)]
+            i += 1
+            while closer not in body[-1] and i < len(lines):
+                body.append(lines[i])
+                i += 1
+            tex = "\n".join(body).split(closer)[
+                0
+            ]  # A stream may not have sent the closer yet
+            blocks.append(
+                f"<table width='100%' cellspacing='0' cellpadding='0' style='margin-top: {top}px;'>"
+                f"<tr><td align='center'>{render_math(tex, display=True)}</td></tr></table>"
+            )
         elif heading := HEADING_RE.match(line):
             level = len(heading.group(1))
             size, heading_gap = HEADING_STYLES[level]
@@ -245,11 +265,33 @@ def _starts_block(lines: list[str], i: int) -> bool:
     line = lines[i]
     return bool(
         FENCE_RE.match(line)
+        or _display_math(line)
         or HEADING_RE.match(line)
         or RULE_RE.match(line)
         or QUOTE_RE.match(line)
         or LIST_RE.match(line)
         or _is_table_start(lines, i)
+    )
+
+
+def _display_math(line: str) -> re.Match[str] | None:
+    """Match a line that opens display maths on its own, rather than inline maths in a sentence.
+
+    Args:
+        line (str): The line to check.
+
+    Returns:
+        re.Match[str] | None: The opening delimiter and the rest of the line, or None.
+    """
+    math = DISPLAY_MATH_RE.match(line)
+    if math is None:
+        return None
+    closer = "$$" if math.group(1) == "$$" else "\\]"
+    rest = math.group(2).rstrip()
+    return (
+        math
+        if closer not in rest or (rest.endswith(closer) and rest.count(closer) == 1)
+        else None
     )
 
 
@@ -420,7 +462,7 @@ def _cells(row: str) -> list[str]:
 
 
 def _inline(text: str) -> str:
-    """Render inline Markdown (code, links, emphasis) in one line of text.
+    """Render inline Markdown (code, maths, links, emphasis) in one line of text.
 
     Args:
         text (str): The raw text.
@@ -446,6 +488,14 @@ def _inline(text: str) -> str:
         lambda match: protect(
             f"<span style='font-family: {CODE_FONT}; font-size: {CODE_PT}pt; color: {qss(CODE_COLORS['text'])}; "
             f"background-color: {CODE_BG};'>{html.escape(match.group(2).strip(), quote=False)}</span>"
+        ),
+        text,
+    )
+    text = INLINE_MATH_RE.sub(
+        lambda match: protect(
+            render_math(
+                next(tex for tex in match.groups() if tex is not None), display=False
+            )
         ),
         text,
     )
