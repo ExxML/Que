@@ -110,7 +110,7 @@ def offline(directory: Path, metadata: dict[str, Any]) -> list[Result]:
             env=environment,
             capture_output=True,
             text=True,
-            timeout=240,
+            timeout=600,  # Coverage tracing makes the hook equivalence tests about 5x slower
         )
     except subprocess.TimeoutExpired as error:
         # Keep the output so far: it shows the test that hung or how far a slow run got
