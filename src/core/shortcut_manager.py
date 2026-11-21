@@ -27,7 +27,7 @@ class ShortcutManager(QObject):
     move_signal = pyqtSignal(int, int)
     scroll_signal = pyqtSignal(int)
     quit_signal = pyqtSignal()
-    screenshot_signal = pyqtSignal()
+    screenshot_signal = pyqtSignal(int)
     new_chat_signal = pyqtSignal()
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
@@ -321,8 +321,8 @@ class ShortcutManager(QObject):
         self.request_quit()
 
     def _screenshot(self) -> None:
-        """Take a screenshot of the primary screen."""
-        self.screenshot_signal.emit()
+        """Take a screenshot of the screen Que is on."""
+        self.screenshot_signal.emit(int(self.main_window.winId()))
 
     def _new_chat(self) -> None:
         """Start a new chat."""
@@ -368,5 +368,5 @@ class ShortcutManager(QObject):
         Args:
             name (str): The interview prompt's action name.
         """
-        self.screenshot_signal.emit()
+        self._screenshot()
         self.prompt_signal.emit(*PROMPTS[name])

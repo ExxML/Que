@@ -3205,59 +3205,66 @@
     "expression": "if not efforts:",
     "sha256": "fbf2f865e7ac4f10b2517febbce13a44e9ba6457333fa7ac6d7b84f84a2c198f"
   },
-  "core/screenshot_manager.py:12:routine": {
+  "core/screenshot_manager.py:35:routine": {
     "category": "routine",
     "source": "core/screenshot_manager.py",
-    "line": 12,
+    "line": 35,
     "expression": "def __init__(self) -> None:",
     "sha256": "2940ec5bd03aae5f1cac8a4948ef07bab728d768a5c3d8d17e7ed6e57e52ebab"
   },
-  "core/screenshot_manager.py:21:routine": {
+  "core/screenshot_manager.py:44:routine": {
     "category": "routine",
     "source": "core/screenshot_manager.py",
-    "line": 21,
-    "expression": "def take_screenshot(self) -> str:",
-    "sha256": "ef50064dd9ae12734566895ded2f37af11e11caab69ac7c2e1c88eb1f8c01b22"
+    "line": 44,
+    "expression": "def take_screenshot(self, hwnd: int) -> str:",
+    "sha256": "c1e7a5433dd48bed839a35f3ed1d7f4f0b391399805fbf7f8e42039b62acb78d"
   },
-  "core/screenshot_manager.py:47:routine": {
+  "core/screenshot_manager.py:84:routine": {
     "category": "routine",
     "source": "core/screenshot_manager.py",
-    "line": 47,
+    "line": 84,
     "expression": "def get_and_clear_pending(self) -> list[str]:",
     "sha256": "e8eb11ec3e5a7a1ddbee62c3f955c1324cca0b54c9dfa6e45c4fce6084f6dac2"
   },
-  "core/screenshot_manager.py:57:routine": {
+  "core/screenshot_manager.py:94:routine": {
     "category": "routine",
     "source": "core/screenshot_manager.py",
-    "line": 57,
+    "line": 94,
     "expression": "def remove_pending(self, path: str) -> None:",
     "sha256": "d739bf354a74a5c6b8f0f4919beba229b351dacb5ae4edcdace16bc8246e4eff"
   },
-  "core/screenshot_manager.py:66:routine": {
+  "core/screenshot_manager.py:103:routine": {
     "category": "routine",
     "source": "core/screenshot_manager.py",
-    "line": 66,
+    "line": 103,
     "expression": "def clear_screenshots(self) -> None:",
     "sha256": "a15121c7cda5850b447fa71bb106e860ad1cda8ef22b5b4ffd893779a335f81b"
   },
-  "core/screenshot_manager.py:63:branch": {
+  "core/screenshot_manager.py:100:branch": {
     "category": "branch",
     "source": "core/screenshot_manager.py",
-    "line": 63,
+    "line": 100,
     "expression": "if path in self.pending_paths:",
     "sha256": "789ae51fcfa5991c97df0b98385fcb2449f12bdd67a63b9a7fcc0585ddd8cd8f"
   },
-  "core/screenshot_manager.py:43:failure": {
+  "core/screenshot_manager.py:59:branch": {
+    "category": "branch",
+    "source": "core/screenshot_manager.py",
+    "line": 59,
+    "expression": "if not native.GetMonitorInfoW(monitor_handle, ctypes.byref(info)):",
+    "sha256": "c486d875e9ff110b60f34483b717adda7d15a99ad5ff7772c6582242e5137b0f"
+  },
+  "core/screenshot_manager.py:80:failure": {
     "category": "failure",
     "source": "core/screenshot_manager.py",
-    "line": 43,
+    "line": 80,
     "expression": "except Exception as e:",
     "sha256": "9cf233fcaf37621db7be49d4f39bbb5002dd762fd59ac9c0e422182e1530897e"
   },
-  "core/screenshot_manager.py:73:failure": {
+  "core/screenshot_manager.py:110:failure": {
     "category": "failure",
     "source": "core/screenshot_manager.py",
-    "line": 73,
+    "line": 110,
     "expression": "except Exception as e:",
     "sha256": "c447ead4af6d67825bc0bc2a74e421fb7c9881a262dcb3fd2134fb50aaea05ef"
   },
@@ -3679,7 +3686,7 @@
     "source": "core/shortcut_manager.py",
     "line": 323,
     "expression": "def _screenshot(self) -> None:",
-    "sha256": "cedc265721a724654bc95d6d5b55104c136eed723c3ff7e9cb5d8b28c781be49"
+    "sha256": "ae059e32fa867be977d9aaa04d17d61540f5263db9482dd01e132dcc44244571"
   },
   "core/shortcut_manager.py:327:routine": {
     "category": "routine",
@@ -3749,7 +3756,7 @@
     "source": "core/shortcut_manager.py",
     "line": 365,
     "expression": "def _ask(self, name: str) -> None:",
-    "sha256": "a839896bb057c6ccb6fc4aa674e5d245e550ce577a73fe1fd9fdba4f1c4ff8df"
+    "sha256": "b713a827d3439f624c4da426b1cf9787fb3a043133ad121a032ba728fbd89ffb"
   },
   "core/shortcut_manager.py:108:branch": {
     "category": "branch",

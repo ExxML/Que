@@ -115,7 +115,7 @@ class ControlledFailureTests(unittest.TestCase):
                 "core.screenshot_manager.mss.mss",
                 side_effect=OSError("synthetic capture failure"),
             ):
-                self.assertEqual(manager.take_screenshot(), "")
+                self.assertEqual(manager.take_screenshot(0), "")
             self.assertEqual(manager.pending_paths, [])
             self.assertEqual(list(Path(directory).iterdir()), [])
             added.assert_not_called()
