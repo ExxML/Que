@@ -41,7 +41,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+R | Start/stop recording | yes |
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
   | Caps Lock+Arrow keys | Move Que (hold to repeat) | no |
-  | Caps Lock+Shift+W/S/D/A | Make Que taller/shorter/wider/narrower (hold to repeat) | no |
+  | Caps Lock+Alt+W/S/A/D | Move the bottom edge up/down or the right edge left/right (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
   | Caps Lock+G | Screenshot | no |
   | Caps Lock+Shift+X | Toggle click-through | no |
