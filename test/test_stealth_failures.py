@@ -13,7 +13,7 @@ from google import genai
 from google.genai import types
 from numpy.typing import NDArray
 from PyQt6.QtCore import QObject
-from PyQt6.QtWidgets import QApplication
+from qt_application import application
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
@@ -30,7 +30,7 @@ class ControlledFailureTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a Qt application for real signal delivery."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
 
     def test_provider_auth_quota_and_server_errors(self) -> None:
         """Exercise real SDK error responses without any live quota consumption."""

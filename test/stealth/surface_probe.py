@@ -316,9 +316,15 @@ def run() -> dict[str, object]:
             window.setGeometry(original)
             for index in range(25):
                 window.chat_area.add_message(f"Fixture message {index}", False)
-            wait(80)
             scrollbar = window.chat_area.verticalScrollBar()
-            assert scrollbar is not None and scrollbar.maximum() > 0
+            assert scrollbar is not None
+            # The range arrives after two layout passes, which take over 80 ms on a 1.5x display
+            deadline = time.monotonic() + 5
+            while scrollbar.maximum() <= 0 and time.monotonic() < deadline:
+                wait(20)
+            assert scrollbar.maximum() > 0, (
+                "Fixture messages did not overflow the chat."
+            )
             scrollbar.setValue(scrollbar.maximum())
             before_scroll = scrollbar.value()
             chat_viewport = window.chat_area.viewport()

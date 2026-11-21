@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 import httpx
 from google import genai
 from google.genai import types
-from PyQt6.QtWidgets import QApplication
+from qt_application import application
 
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
@@ -33,7 +33,7 @@ class InteractionsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a sender with an isolated mocked transport."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.bodies: list[dict[str, Any]] = []
         self.events: list[dict[str, Any]] = [
             {

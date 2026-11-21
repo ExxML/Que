@@ -4,7 +4,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.ai_sender import InteractionRequest
 from core.transcriber import (
@@ -60,7 +61,7 @@ class TranscriptDeliveryTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a transcriber without starting audio capture."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.transcriber = Transcriber(MagicMock())
 
     def test_pending_until_marked_sent(self) -> None:

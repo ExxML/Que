@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 from PyQt6.QtCore import QEvent, QPointF, Qt
 from PyQt6.QtGui import QColor, QImage, QKeyEvent, QMouseEvent
 from PyQt6.QtWidgets import QAbstractButton, QApplication, QPushButton, QWidget
+from qt_application import application
 
 from core.chat_history import ChatHistory, Conversation
 from core.claude_bridge import ClaudeBridge
@@ -41,7 +42,7 @@ class ScreenshotHistoryTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create an isolated history location and a capture cache."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
@@ -182,7 +183,7 @@ class ScreenshotDisplayTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create screenshot files to display."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         root = Path(self.directory.name)

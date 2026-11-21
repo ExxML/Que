@@ -13,7 +13,8 @@ from uuid import uuid4
 
 from google.genai import types
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.ai_sender import AISender
 from core.chat_history import ChatHistory
@@ -395,7 +396,7 @@ class SettingsPageTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create settings with deterministic connection check identifiers."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.store = SettingsStore(Path(self.directory.name) / "config.json")

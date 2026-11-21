@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pypdf import PdfWriter
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.ai_sender import AISender, InteractionRequest
 from core.chat_history import ChatHistory
@@ -193,7 +194,7 @@ class SettingsDocumentsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a settings page backed by an isolated store."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.store = SettingsStore(Path(self.directory.name) / "config.json")

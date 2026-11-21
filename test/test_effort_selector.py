@@ -7,7 +7,8 @@ from unittest.mock import MagicMock
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.ai_sender import AISender
 from core.model_catalog import ModelOption
@@ -33,7 +34,7 @@ class EffortSelectorTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a real settings row with a disconnected Gemini client."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.window = QWidget()
         self.window.resize(600, 350)
         self.field = InputField(self.window)

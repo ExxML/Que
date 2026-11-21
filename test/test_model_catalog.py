@@ -8,7 +8,8 @@ from unittest.mock import patch
 import httpx
 from google import genai
 from google.genai import types
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.model_catalog import ModelCatalog, compatible_model
 from ui.input.input_settings import InputSettings
@@ -19,7 +20,7 @@ class ModelCatalogTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Prepare deterministic model pages and a Qt event loop."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         effort_patch = patch("core.model_catalog.load_efforts", return_value={})
         effort_patch.start()
         self.addCleanup(effort_patch.stop)

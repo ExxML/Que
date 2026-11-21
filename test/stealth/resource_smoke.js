@@ -16,13 +16,14 @@ function evaluate(expression) {
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function main() {
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
-    let ready = false;
-    for (let index = 0; index < 100; index++) {
-        ready = await evaluate('typeof evidence !== "undefined" && evidence.some(e => e.type === "observer-ready")');
-        if (ready) break;
+    // A cold headless profile on a busy runner can take well over ten seconds to boot the page
+    let boot, deadline = Date.now() + 60000;
+    while (Date.now() < deadline) {
+        boot = await evaluate('({url: location.href, state: document.readyState, ready: typeof evidence !== "undefined" && evidence.some(e => e.type === "observer-ready"), errors: typeof evidence === "undefined" ? [] : evidence.filter(e => ["observer-error", "logger-error"].includes(e.type))})');
+        if (boot.ready || boot.errors.length) break;
         await sleep(100);
     }
-    if (!ready) throw new Error("Observer did not become ready");
+    if (!boot.ready || boot.errors.length) throw new Error(`Observer did not become ready: ${JSON.stringify(boot)}`);
     await evaluate('log("smoke-synthetic-controls", {scope: "observer worker self-test only"}); $("storage-mib").value = "1"; $("storage-probe").click(); $("memory-probe").click(); true');
     let samples;
     for (let index = 0; index < 150; index++) {

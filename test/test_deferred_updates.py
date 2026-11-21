@@ -6,7 +6,8 @@ from typing import cast
 
 from PyQt6 import sip
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from ui.chat.chat_area import ChatArea
 from ui.input.input_field import InputField
@@ -20,7 +21,7 @@ class DeferredUpdateTests(unittest.TestCase):
 
     def test_deleted_widgets_skip_queued_updates(self) -> None:
         """Delete widgets with scrolls and height changes still queued, then run the event loop."""
-        _app = QApplication.instance() or QApplication([])
+        application()
         parent = QWidget()
         chat = ChatArea(parent)
         chat.load_messages([("Saved", True, "", ())])
@@ -33,6 +34,14 @@ class DeferredUpdateTests(unittest.TestCase):
         wait(500)  # Past the delayed scroll to the newest message
         self.assertTrue(sip.isdeleted(chat))
         self.assertTrue(sip.isdeleted(field))
+
+    def test_wrappers_of_qt_created_widgets_see_their_deletion(self) -> None:
+        """Mark the chat's Qt-created scroll bar deleted, which fails once any earlier test destroyed the app."""
+        application()
+        parent = QWidget()
+        chat = ChatArea(parent)
+        sip.delete(parent)
+        self.assertTrue(sip.isdeleted(chat.scrollbar))
 
 
 if __name__ == "__main__":

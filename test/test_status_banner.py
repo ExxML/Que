@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 
 from core.ai_sender import AISender
 from core.hook_client import HookClient
@@ -20,7 +21,7 @@ class StatusBannerTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a banner inside a plain window."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.window = QWidget()
         self.banner = StatusBanner(self.window)
 
@@ -77,7 +78,7 @@ class MainWindowBannerTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a main window with an isolated settings store and no model discovery."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         store = SettingsStore(Path(directory.name) / "config.json")
@@ -129,7 +130,7 @@ class HookClientWarningTests(unittest.TestCase):
 
     def test_outage_resolves_when_a_helper_connects(self) -> None:
         """Resolve a critical helper error once a helper reports ready."""
-        _app = QApplication.instance() or QApplication([])
+        application()
         client = HookClient()
         alerts: list[str] = []
         failures: list[str] = []

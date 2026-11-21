@@ -52,20 +52,7 @@ def main() -> int:
         stderr=subprocess.DEVNULL,
     )
     try:
-        port_file = profile / "DevToolsActivePort"
-        deadline = time.monotonic() + 20
-        while not port_file.exists() and time.monotonic() < deadline:
-            time.sleep(0.1)
-        port = int(port_file.read_text(encoding="utf-8").splitlines()[0])
-        with urllib.request.urlopen(
-            f"http://127.0.0.1:{port}/json/list", timeout=5
-        ) as response:
-            targets = json.load(response)
-        target = next(
-            item
-            for item in targets
-            if item["type"] == "page" and item["url"].startswith(server.origin)
-        )
+        target = _page_target(profile / "DevToolsActivePort", server.origin)
         check = subprocess.run(
             [
                 "node",
@@ -75,7 +62,7 @@ def main() -> int:
             capture_output=True,
             text=True,
             check=False,
-            timeout=45,
+            timeout=120,
         )
         (directory / "result.log").write_text(
             check.stdout + check.stderr, encoding="utf-8"
@@ -88,6 +75,39 @@ def main() -> int:
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def _page_target(port_file: Path, origin: str) -> dict[str, str]:
+    """Wait for the browser's debugger port and the observer page target.
+
+    DevToolsActivePort can appear while Chrome is still writing it, so reading it can fail
+    (PermissionError on CI) or find no port, and the page may not be listed yet, so each
+    step is retried until the deadline.
+
+    Args:
+        port_file (Path): The profile's DevToolsActivePort file.
+        origin (str): The observer server origin the page must be loaded from.
+
+    Returns:
+        dict[str, str]: The DevTools target description of the observer page.
+    """
+    deadline = time.monotonic() + 60
+    while True:
+        try:
+            port = int(port_file.read_text(encoding="utf-8").splitlines()[0])
+            with urllib.request.urlopen(
+                f"http://127.0.0.1:{port}/json/list", timeout=5
+            ) as response:
+                targets = json.load(response)
+            return next(
+                item
+                for item in targets
+                if item["type"] == "page" and item["url"].startswith(origin)
+            )
+        except (OSError, IndexError, ValueError, StopIteration):
+            if time.monotonic() > deadline:
+                raise
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from numpy.typing import NDArray
 from PyQt6.QtCore import QObject, QPoint, QRect, Qt, QTimer
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QWidget
+from qt_application import application
 from stealth.hooks import HookDriver
 
 from core.hook_client import HookClient
@@ -487,7 +488,7 @@ class HelperWatchdogTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a client that believes it is connected, without starting a process."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.client = HookClient()
         self.client.connected = True
         self.alerts: list[str] = []
@@ -570,7 +571,7 @@ class DragCoalescingTests(unittest.TestCase):
 
     def test_fast_moves_apply_only_the_newest_position(self) -> None:
         """Apply one resize per event-loop pass and the pending one at release."""
-        app = QApplication.instance() or QApplication([])
+        app = application()
         router = InputRouter.__new__(InputRouter)
         QObject.__init__(router)
         router.windows = {}
@@ -601,7 +602,7 @@ class HelperProcessTests(unittest.TestCase):
 
     def test_helper_connects_answers_quit_and_exits(self) -> None:
         """Connect over the authenticated pipe, confirm a quit, and exit once disconnected."""
-        app = QApplication.instance() or QApplication([])
+        app = application()
         client = HookClient()
         failures: list[str] = []
         quits: list[bool] = []
@@ -633,7 +634,7 @@ class AudioHealthTests(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create a signal-capable application and an isolated settings store."""
-        self.app = QApplication.instance() or QApplication([])
+        self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.transcriber = Transcriber(

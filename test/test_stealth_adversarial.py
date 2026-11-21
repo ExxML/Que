@@ -263,7 +263,7 @@ class EvidenceContractTests(unittest.TestCase):
             capture_output=True,
             text=True,
             check=False,
-            timeout=15,
+            timeout=120,  # Busy CI runners have stalled this CPU-bound check past 15 seconds
         )
         self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
 
