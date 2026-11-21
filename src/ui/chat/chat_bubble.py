@@ -56,6 +56,13 @@ class ChatBubble(QWidget):
         self.message = message
         self.message_label.setText(format_message(message))
 
+    def mark_stopped(self) -> None:
+        """Show a muted note after the message that the reply was stopped before it finished."""
+        note = f"<div style='color: {qss(PRIMARY_COLOR, 140)}; font-style: italic;'>Stopped.</div>"
+        self.message_label.setText(
+            f"{format_message(self.message)}{note}" if self.message else note
+        )
+
     def start_loading_animation(self) -> None:
         """Start the animated three-dot loading indicator."""
         self._loading_frame = 0

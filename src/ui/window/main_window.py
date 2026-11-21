@@ -77,6 +77,9 @@ class MainWindow(QWidget):
         for error in self.window_policy.errors:
             self.status_banner.show_warning(error, critical=True)
         self.worker.turn_committed.connect(self._on_turn_committed)
+        stop_button = self.input_field.input_settings.stop_button
+        stop_button.clicked.connect(self.worker.cancel)
+        self.worker.generating_changed.connect(stop_button.setVisible)
         self.input_field.model_changed.connect(self.ai_sender.set_model)
         self.input_field.effort_changed.connect(self.ai_sender.set_effort_level)
         self.model_catalog = ProviderCatalog(self.ai_sender.claude_bridge)

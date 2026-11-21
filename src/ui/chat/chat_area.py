@@ -121,6 +121,14 @@ class ChatArea(QScrollArea):
         self.streaming_bubble.stop_loading_animation()
         self._reset_stream()
 
+    def stop_assistant_stream(self) -> None:
+        """Mark the streamed assistant message as stopped and clear streaming state."""
+        if self.streaming_bubble is None:
+            return
+        self.streaming_bubble.stop_loading_animation()
+        self.streaming_bubble.mark_stopped()
+        self._reset_stream()
+
     def show_stream_error(self, error_msg: str) -> None:
         """Display an error message in the current streaming bubble, replacing the loading indicator.
 

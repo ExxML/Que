@@ -29,6 +29,8 @@ class InputSettings(QWidget):
         self.effort_dropdown.setAccessibleName("Reasoning effort")
         self.record_button = _RecordButton()
         self.set_recording(False)
+        self.stop_button = _StopButton()
+        self.stop_button.hide()  # Shown only while a reply is generating
         self.directory_widget = QWidget()
         self.directory_widget.hide()
         self.directory_button = QPushButton()
@@ -166,6 +168,7 @@ class InputSettings(QWidget):
         layout.addStretch()
         layout.addWidget(self.model_dropdown)
         layout.addWidget(self.effort_dropdown)
+        layout.addWidget(self.stop_button)
 
     def _on_model_changed(self, model_id: str) -> None:
         """Update the model and restrict effort choices to supported levels.
@@ -222,3 +225,26 @@ class _RecordButton(QPushButton):
         painter.drawArc(QRectF(center - 5.5, 6.5, 11, 11), 200 * 16, 140 * 16)
         painter.drawLine(QPointF(center, 17.5), QPointF(center, 20))
         painter.drawLine(QPointF(center - 3, 20), QPointF(center + 3, 20))
+
+
+class _StopButton(QPushButton):
+    """Draw a rounded square that stops the reply being generated."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setFixedSize(24, 24)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setAccessibleName("Stop generating")
+        self.setToolTip("Stop generating (Caps Lock+Esc)")
+        self.setStyleSheet("QPushButton { background: transparent; border: none; }")
+
+    def paintEvent(self, _event: QPaintEvent | None) -> None:
+        """Paint the stop square in the idle or hover color."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        color = qcolor(PRIMARY_COLOR, 255 if self.underMouse() else 200)
+        painter.setPen(QPen(color, 1.4))
+        painter.drawRoundedRect(QRectF(5, 5, 14, 14), 4, 4)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(color)
+        painter.drawRoundedRect(QRectF(9, 9, 6, 6), 1.5, 1.5)

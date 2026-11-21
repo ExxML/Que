@@ -17,6 +17,7 @@ from qt_application import application
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender
 from core.model_catalog import ModelOption
+from ui.chat.chat_bubble import ChatBubble
 
 TEST_MODELS = (
     ModelOption(
@@ -251,6 +252,34 @@ class InteractionsTests(unittest.TestCase):
                     chat.append_to_stream.assert_not_called()
                 else:
                     chat.append_to_stream.assert_called_once_with("Hello")
+
+    def test_user_stop_keeps_partial_reply_uncommitted(self) -> None:
+        """Mark a stopped reply, hide the stop button and never commit the turn."""
+        chat = MagicMock()
+        chat.streaming_bubble = None
+        receiver = AIReceiver(self.sender, chat)
+        states: list[bool] = []
+        turns: list[str] = []
+        receiver.generating_changed.connect(states.append)
+        receiver.turn_committed.connect(
+            lambda _r, interaction_id, _t: turns.append(interaction_id)
+        )
+        receiver.cancel()  # Nothing is generating, so nothing happens
+        self.assertEqual(states, [])
+        receiver.handle_message("hello")
+        chat.streaming_bubble = MagicMock()  # ChatArea pre-creates the loading bubble
+        assert receiver.ai_thread is not None
+        receiver.ai_thread.join(timeout=5)
+        receiver.cancel()
+        self.app.processEvents()
+        chat.stop_assistant_stream.assert_called_once_with()
+        self.assertEqual(states, [True, False])
+        self.assertEqual(turns, [])
+        self.assertIsNone(self.sender.previous_interaction_id)
+        bubble = ChatBubble("Partial", is_user=False)
+        bubble.mark_stopped()
+        self.assertIn("Partial", bubble.message_label.text())
+        self.assertIn("Stopped.", bubble.message_label.text())
 
     def _assert_main_thread(self, *_args: Any, **_kwargs: Any) -> None:
         """Assert that a UI call runs on the test's Qt thread."""

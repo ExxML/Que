@@ -31,6 +31,7 @@ class ShortcutManager(QObject):
     new_chat_signal = pyqtSignal()
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
+    stop_generation_signal = pyqtSignal()
     prompt_signal = pyqtSignal(str, str)
     preset_signal = pyqtSignal(int)
     toggle_recording_signal = pyqtSignal()
@@ -70,6 +71,7 @@ class ShortcutManager(QObject):
         self.new_chat_signal.connect(self.main_window._new_chat)
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)
+        self.stop_generation_signal.connect(self.main_window.worker.cancel)
         self.prompt_signal.connect(self.main_window.send_prompt)
         self.preset_signal.connect(self.main_window.apply_preset)
         self.toggle_recording_signal.connect(self.main_window.transcriber.toggle)
@@ -322,6 +324,10 @@ class ShortcutManager(QObject):
     def _toggle_history(self) -> None:
         """Show or hide the conversation history sidebar."""
         self.toggle_history_signal.emit()
+
+    def _stop_generation(self) -> None:
+        """Stop the reply being generated, keeping what has streamed so far."""
+        self.stop_generation_signal.emit()
 
     def _toggle_recording(self) -> None:
         """Start or stop recording and transcribing audio."""

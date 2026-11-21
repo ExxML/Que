@@ -47,6 +47,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+Shift+X | Toggle click-through | no |
   | Caps Lock+N | New chat | no |
   | Caps Lock+H | History | no |
+  | Caps Lock+Esc | Stop the reply being generated | no |
   | Caps Lock+1 … Caps Lock+0 | Switch this chat to model preset 1 … 10 | no |
   | Caps Lock+A / Caps Lock+C / Caps Lock+D / Caps Lock+F | Screenshot and answer the interview question / walk through the coding problem / walk through the system design / answer the follow-up, hint or fix | no |
 

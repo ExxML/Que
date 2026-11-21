@@ -16,6 +16,7 @@ class AIReceiver(QObject):
     error = pyqtSignal(str, int)
     progress = pyqtSignal(str, int)
     turn_committed = pyqtSignal(object, str, str)  # request, interaction_id, response
+    generating_changed = pyqtSignal(bool)  # Whether a reply is being generated
 
     def __init__(self, ai_sender: AISender, chat_area: ChatArea) -> None:
         super().__init__()
@@ -82,6 +83,14 @@ class AIReceiver(QObject):
             target=self._run, args=(request, current_id, local_flag), daemon=True
         )
         self.ai_thread.start()
+        self.generating_changed.emit(True)
+
+    def cancel(self) -> None:
+        """Stop the reply being generated at the user's request, keeping what has streamed so far."""
+        if self.chat_area.streaming_bubble is None:
+            return
+        self.stop()
+        self.chat_area.stop_assistant_stream()
 
     def stop(self) -> None:
         """Signal the current stream to stop and invalidate any queued signals."""
@@ -91,6 +100,7 @@ class AIReceiver(QObject):
         self.stream_id += (
             1  # Discard any progress/finished/error signals already queued
         )
+        self.generating_changed.emit(False)
 
     def _run(
         self,
@@ -144,6 +154,7 @@ class AIReceiver(QObject):
             or self.request is None
         ):
             return
+        self.generating_changed.emit(False)
         if not self.ai_sender.commit_interaction(self.request, interaction_id):
             return
         self.turn_committed.emit(
@@ -160,6 +171,7 @@ class AIReceiver(QObject):
         """
         if stream_id != self.stream_id:
             return
+        self.generating_changed.emit(False)
         error_msg = f"Error generating response: {error}"
         self.chat_area.show_stream_error(error_msg)
 
