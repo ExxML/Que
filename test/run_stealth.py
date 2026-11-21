@@ -99,18 +99,31 @@ def offline(directory: Path, metadata: dict[str, Any]) -> list[Result]:
     environment["QUE_AUDIT_COVERAGE"] = str(
         directory / "native" / "source-execution.json"
     )
-    process = subprocess.run(
-        [sys.executable, str(ASSETS / "stealth" / "regressions.py")],
-        cwd=REPOSITORY,
-        check=False,
-        env=environment,
-        capture_output=True,
-        text=True,
-        timeout=240,
-    )
-    (directory / "native" / "regressions.log").write_text(
-        process.stdout + process.stderr, encoding="utf-8"
-    )
+    # A native crash leaves its Python stack in the log
+    environment["PYTHONFAULTHANDLER"] = "1"
+    log = directory / "native" / "regressions.log"
+    try:
+        process = subprocess.run(
+            [sys.executable, str(ASSETS / "stealth" / "regressions.py")],
+            cwd=REPOSITORY,
+            check=False,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=240,
+        )
+    except subprocess.TimeoutExpired as error:
+        # Keep the output so far: it shows the test that hung or how far a slow run got
+        log.write_text(
+            "".join(
+                part if isinstance(part, str) else part.decode(errors="replace")
+                for part in (error.stdout, error.stderr)
+                if part
+            ),
+            encoding="utf-8",
+        )
+        raise
+    log.write_text(process.stdout + process.stderr, encoding="utf-8")
     results.append(
         Result(
             "regressions.offline",
