@@ -46,7 +46,7 @@ src/assets/ — Icons and images
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
 - `ui/window/main_window.py` — Frameless translucent `QWidget` with `WindowStaysOnTopHint | Tool`; re-raises itself every 1s via visibility timer
-- `ui/chat/ai_formatter.py` — Markdown→HTML converter for `QLabel`; known pain point, being redesigned (see WIP.md)
+- `ui/chat/ai_formatter.py` — Markdown→Qt rich text for `QLabel` (block parser for headings, nested lists, tables, quotes, fenced code; Pygments highlighting in VS Code Dark Modern colours from `theme.CODE_COLORS`); must handle half-streamed text since it re-renders every chunk
 - `ui/theme.py` — Centralized color theming; all colors must come from here
 - `src/data/` — Runtime data: `chat_history.json`, `config.json`, `cache/`
 
@@ -59,7 +59,7 @@ Use `threading.Thread(daemon=True)` for background work — not `QThread` (Nuitk
 ## Translucency Rules
 
 The window background is one translucent fill (`BG_COLOR` at `WINDOW_ALPHA`, painted by `MainWindow._paint_frame`). Translucent fills compound, so any widget that paints its own translucent background inside the window looks darker than the window. This bug has recurred (history sidebar, model dropdowns, transcript panel); avoid it:
-- Never give an in-window widget a translucent background fill. Use `background: transparent` and a border for framing (see `InputField`'s input container).
+- Never give an in-window widget a translucent background fill. Use `background: transparent` and a border for framing (see `InputField`'s input container). The one deliberate exception: code blocks, inline code and table headers in chat replies use `CODE_BG_ALPHA` so they read darker than the window while staying see-through.
 - Dock new panels in the layout and grow the window by their height (see `InputField` and `TranscriptPanel`) instead of floating them over the chat, so they never cover text and need no fill.
 - If a widget must float over content, clear its area and repaint the window frame instead of filling over it (`CompositionMode_Source` with transparent, then `MainWindow._paint_frame`; see `HistorySidebar.paintEvent`).
 

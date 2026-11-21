@@ -6,3 +6,4 @@ google-genai==2.33.0
 faster-whisper==1.2.1
 pyaudiowpatch==0.2.12.9
 pypdf==7.1.0
+pygments==2.21.0

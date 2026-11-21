@@ -10,6 +10,31 @@ PROVIDER_COLORS: dict[str, tuple[int, int, int]] = {
     "gemini": (138, 180, 248),
     "claude": (217, 119, 87),
 }
+LINK_COLOR: tuple[int, int, int] = (77, 170, 252)
+# Darkens code blocks and table headers against the window fill while staying see-through
+CODE_BG_ALPHA: int = 140
+# VS Code Dark Modern syntax colours, keyed by the role a token plays
+CODE_COLORS: dict[str, tuple[int, int, int]] = {
+    "text": (204, 204, 204),
+    "comment": (106, 153, 85),
+    "keyword": (86, 156, 214),
+    "control": (197, 134, 192),
+    "string": (206, 145, 120),
+    "escape": (215, 186, 125),
+    "regex": (209, 105, 105),
+    "number": (181, 206, 168),
+    "function": (220, 220, 170),
+    "type": (78, 201, 176),
+    "variable": (156, 220, 254),
+    "constant": (79, 193, 255),
+    "operator": (212, 212, 212),
+}
+# Bracket pair colours by nesting depth
+BRACKET_COLORS: tuple[tuple[int, int, int], ...] = (
+    (255, 215, 0),
+    (218, 112, 214),
+    (23, 159, 255),
+)
 
 
 def qcolor(rgb: tuple[int, int, int], alpha: int | None = None) -> QColor:

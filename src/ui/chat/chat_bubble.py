@@ -1,3 +1,4 @@
+import html
 import math
 
 from PyQt6.QtCore import QEvent, QRectF, Qt, QTimer, pyqtSignal
@@ -19,7 +20,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ui.chat.ai_formatter import format_message
+from ui.chat.ai_formatter import BODY_FONT, BODY_PT, format_message
 from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
 
 PREVIEW_WIDTH = 64
@@ -85,7 +86,7 @@ class ChatBubble(QWidget):
 
         # Create message label with HTML formatting
         # Default formatting for user message only (bot message uses formatting in set_bot_message)
-        html_message = f'<div style="line-height: 1.4; white-space: pre-wrap;">{self.message}</div>'
+        html_message = f'<div style="white-space: pre-wrap;">{html.escape(self.message, quote=False)}</div>'
         self.message_label = QLabel(html_message)
         self.message_label.setTextFormat(Qt.TextFormat.RichText)
         self.message_label.setTextInteractionFlags(
@@ -93,7 +94,8 @@ class ChatBubble(QWidget):
         )
 
         # Set font
-        font = QFont("Helvetica", 11)
+        font = QFont(BODY_FONT)
+        font.setPointSizeF(BODY_PT)
         self.message_label.setFont(font)
 
         # Style the bubble based on sender
@@ -105,7 +107,7 @@ class ChatBubble(QWidget):
                     background-color: transparent;
                     border: 1px solid {qss(PRIMARY_COLOR, 255)};
                     border-radius: 8px;
-                    padding: 5px 4px -3px 5px;  /* top, right, bottom, left - negative bottom padding to account for line spacing */
+                    padding: 3px 8px 4px 8px;  /* top, right, bottom, left */
                 }}
             """)  # padding adjusted to visually center text within the bubble
 
