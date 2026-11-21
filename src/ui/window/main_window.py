@@ -159,11 +159,12 @@ class MainWindow(QWidget):
         """
         self.mouse_routing_changed.emit(not enabled)
 
-    def send_message(self, message: str) -> None:
+    def send_message(self, message: str, display: str = "") -> None:
         """Send a user message with any pending screenshot attachments.
 
         Args:
             message (str): The user's message text.
+            display (str): Text shown and saved in the chat instead of the message, if any.
         """
         if not self.ai_sender.model:
             self.chat_area.show_stream_error(
@@ -178,8 +179,24 @@ class MainWindow(QWidget):
         # The transcript stays pending until the turn commits, so failed turns resend it
         transcript, transcript_seq = self.transcriber.pending()
         self.worker.handle_message(
-            message, attachments or None, transcript, transcript_seq
+            message, attachments or None, transcript, transcript_seq, display
         )
+
+    def send_prompt(self, label: str, prompt: str) -> None:
+        """Send a shortcut prompt with any typed note, showing only its label in the chat.
+
+        Args:
+            label (str): The short label shown in the chat.
+            prompt (str): The full prompt sent to the model.
+        """
+        note = self.input_field.input_field.toPlainText().strip()
+        if note:
+            prompt = f"{prompt}\n\nMy note: {note}"
+            label = f"{label}: {note}"
+            # Without a model nothing is sent, so the typed note stays in the input
+            if self.ai_sender.model:
+                self.input_field.input_field.clear()
+        self.send_message(prompt, label)
 
     def toggle_history(self) -> None:
         """Open or close the conversation history sidebar."""
@@ -699,14 +716,15 @@ class MainWindow(QWidget):
         """
         provider = interaction_request.provider
         conversation = self.conversations[provider]
+        shown = interaction_request.display or interaction_request.message
         if conversation is None:
-            title = " ".join(interaction_request.message.split())[:80]
+            title = " ".join(shown.split())[:80]
             conversation = Conversation(provider, title or "Untitled chat")
             self.conversations[provider] = conversation
         self.transcriber.mark_sent(interaction_request.transcript_seq)
         user_message: dict[str, Any] = {
             "role": "user",
-            "text": interaction_request.message,
+            "text": shown,
         }
         if interaction_request.transcript:
             user_message["transcript"] = interaction_request.transcript

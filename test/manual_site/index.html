@@ -603,13 +603,14 @@ const SHORTCUTS = [
   ['move_window_down', 'Move Que down', '[[Caps Lock]]+[[Alt]]+[[S]]', 'Hold for about 1 s, then release.', 12],
   ['scroll_up', 'Scroll chat up', '[[Caps Lock]]+[[W]]', 'Hold for about 1 s with a long chat open.', 12],
   ['scroll_down', 'Scroll chat down', '[[Caps Lock]]+[[S]]', 'Hold for about 1 s with a long chat open.', 12],
-  ['screenshot', 'Screenshot', '[[Caps Lock]]+[[C]]', 'Press once; a thumbnail appears in Que.', 12],
+  ['screenshot', 'Screenshot', '[[Caps Lock]]+[[G]]', 'Press once; a thumbnail appears in Que.', 12],
   ['toggle_click_through', 'Toggle click-through', '[[Caps Lock]]+[[Shift]]+[[X]]', 'Press twice (on, then off again).', 12],
   ['new_chat', 'New chat', '[[Caps Lock]]+[[N]]', 'Press once; the chat clears.', 12],
   ['toggle_history', 'History sidebar', '[[Caps Lock]]+[[H]]', 'Press twice (open, close).', 12],
-  ['solve_coding_problem', 'Solve coding problem', '[[Caps Lock]]+[[T]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
-  ['fix_code', 'Fix code', '[[Caps Lock]]+[[F]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
-  ['solve_question', 'Solve any question', '[[Caps Lock]]+[[V]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['answer', 'Answer interview question', '[[Caps Lock]]+[[A]]', 'Screenshot + AI answer (needs an API key). Wait for the first streamed text.', 25],
+  ['code', 'Coding walkthrough', '[[Caps Lock]]+[[C]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['system_design', 'System design walkthrough', '[[Caps Lock]]+[[D]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
+  ['follow_up', 'Follow-up / hint / fix', '[[Caps Lock]]+[[F]]', 'Screenshot + AI answer. Wait for the first streamed text.', 25],
 ].map(([id, title, keys, how, seconds]) => ({ id: 'kbd.sc.' + id, tab: 'keyboard', group: 'Every shortcut', compact: true, title, keys, steps: [how], seconds, guard: true, startLabel: 'Test',
   confirmText: `Did the shortcut work in Que (${title.toLowerCase()})?`,
   evaluate(ctx) {
@@ -675,11 +676,11 @@ const KEY_TESTS = [
     } },
   { id: 'kbd.quekey-swallow', tab: 'keyboard', group: 'Edge cases', title: 'Caps Lock + a non-Que key is swallowed',
     why: 'Caps Lock is Que\'s dedicated key and never toggles while Que runs. A key pressed with it that is not a Que shortcut goes nowhere, so a mistyped shortcut never reaches the page.',
-    steps: ['Press [[Caps Lock]]+[[C]] once (not a Que shortcut).'], seconds: 10, confirmText: 'Que did not react to the chord, and the Caps Lock light stayed off?',
+    steps: ['Press [[Caps Lock]]+[[J]] once (not a Que shortcut).'], seconds: 10, confirmText: 'Que did not react to the chord, and the Caps Lock light stayed off?',
     evaluate(ctx) {
-      const d = ctx.keys.filter(k => k.phase === 'down' && (k.code === 'CapsLock' || k.code === 'KeyC'));
-      if (d.length) return { status: 'fail', findings: [bad(`Caps Lock+C reached the page: ${E.keyList(d, ctx.t0)}.`)] };
-      return { status: 'pass', findings: [ok('Neither Caps Lock nor C reached the page.')] };
+      const d = ctx.keys.filter(k => k.phase === 'down' && (k.code === 'CapsLock' || k.code === 'KeyJ'));
+      if (d.length) return { status: 'fail', findings: [bad(`Caps Lock+J reached the page: ${E.keyList(d, ctx.t0)}.`)] };
+      return { status: 'pass', findings: [ok('Neither Caps Lock nor J reached the page.')] };
     } },
   { id: 'kbd.leftctrl-not-que', tab: 'keyboard', group: 'Edge cases', title: 'Ctrl shortcuts are not Que\'s',
     why: 'Only Caps Lock starts a Que shortcut. Left and Caps Lock+E must reach the page untouched.',
@@ -691,13 +692,13 @@ const KEY_TESTS = [
     } },
   { id: 'kbd.hidden-passthrough', tab: 'keyboard', group: 'Edge cases', title: 'Hidden Que does not steal keys',
     why: 'While Que is hidden only its three always-on shortcuts may run. Ordinary typing must reach the page; Caps Lock chords that only work while Que is visible run nothing and still reach nothing.',
-    steps: ['Hide Que with [[Caps Lock]]+[[E]] (before starting).', 'Type `abc`.', 'Press [[Caps Lock]]+[[V]] once.', 'Afterwards show Que again with [[Caps Lock]]+[[E]].'],
+    steps: ['Hide Que with [[Caps Lock]]+[[E]] (before starting).', 'Type `abc`.', 'Press [[Caps Lock]]+[[D]] once.', 'Afterwards show Que again with [[Caps Lock]]+[[E]].'],
     seconds: 10, guard: true, confirmText: 'Que was hidden and did not react (no AI request started)?',
     evaluate(ctx) {
       const d = ctx.keys.filter(k => k.phase === 'down');
-      const leaked = d.filter(k => k.code === 'CapsLock' || k.code === 'KeyV');
-      if (leaked.length) return { status: 'fail', findings: [bad(`Caps Lock+V reached the page while Que was hidden: ${E.keyList(leaked, ctx.t0)}.`)] };
-      if (['KeyA', 'KeyB', 'KeyC'].every(code => d.some(k => k.code === code))) return { status: 'pass', findings: [ok('`abc` reached the page while Que was hidden, and Caps Lock+V did not.')] };
+      const leaked = d.filter(k => k.code === 'CapsLock' || k.code === 'KeyD');
+      if (leaked.length) return { status: 'fail', findings: [bad(`Caps Lock+D reached the page while Que was hidden: ${E.keyList(leaked, ctx.t0)}.`)] };
+      if (['KeyA', 'KeyB', 'KeyC'].every(code => d.some(k => k.code === code))) return { status: 'pass', findings: [ok('`abc` reached the page while Que was hidden, and Caps Lock+D did not.')] };
       return { status: 'fail', findings: [bad('`abc` did not reach the page while Que was hidden; hidden Que intercepted ordinary typing.')] };
     } },
   { id: 'kbd.typing-passthrough', tab: 'keyboard', group: 'Typing in Que', title: 'Typing in Que stays invisible to the page',
@@ -1012,9 +1013,9 @@ const SURFACES = [
   ['context-menu', 'Text context menu (CAP-002)', 'Right-click in Que\'s input, wait 3 s, Esc.', 20],
   ['tooltip', 'Tooltip (CAP-002)', 'Hover the History icon ~3 s without clicking.', 15],
   ['history-chat', 'History, new chat, chat bubbles', 'Open History ([[Caps Lock]]+[[H]]), pick an old chat, start a new one ([[Caps Lock]]+[[N]]).', 30],
-  ['screenshot', 'Screenshot capture', 'Press [[Caps Lock]]+[[Shift]]+[[S]] twice.', 20],
-  ['ai-answer', 'AI request and streamed answer', 'Press [[Caps Lock]]+[[M]] and wait until the answer finishes streaming.', 60],
-  ['recording', 'Recording and transcript panel', 'Press [[Caps Lock]]+[[Shift]]+[[R]], speak, then stop it.', 45],
+  ['screenshot', 'Screenshot capture', 'Press [[Caps Lock]]+[[G]] twice.', 20],
+  ['ai-answer', 'AI request and streamed answer', 'Press [[Caps Lock]]+[[A]] and wait until the answer finishes streaming.', 60],
+  ['recording', 'Recording and transcript panel', 'Press [[Caps Lock]]+[[R]], speak, then stop it.', 45],
   ['startup', 'Startup (first paint)', 'Quit Que first. Start the measurement, then launch Que (`python src/Que.py`) and let it appear.', 40],
 ].map(([id, title, how, seconds]) => ({ id: 'cap.' + id, tab: 'capture', group: 'Surfaces: nothing may appear in the capture', compact: true, title, steps: [how], seconds, startLabel: 'Test',
   countdown: 0, needsFocus: false, allowBlur: true, stage: 'board',
@@ -1067,7 +1068,7 @@ const AudioLab = {
 const AUDIO_TESTS = [
   { id: 'audio.continuity', tab: 'audio', group: 'Microphone and speakers', title: 'Page audio is undisturbed while Que records',
     why: 'Que records your microphone and the speaker loopback. A page using the same devices must see no mute, ended or device-change event, no gaps in microphone data and no output glitches. Try both orders: Que first, or the page first.',
-    steps: ['Click **Acquire microphone** (allow the prompt) and tick the quiet tone.', 'During the measurement press [[Caps Lock]]+[[Shift]]+[[R]] to start Que recording (or already have it recording for the other order).', 'Say "The blue robot counts seven stars." and click **Say phrase** (the page says "The green robot counts nine moons.").', 'Stop Que\'s recording with [[Caps Lock]]+[[Shift]]+[[R]] before the end.'], seconds: 50, allowBlur: true, needsFocus: false, countdown: 3,
+    steps: ['Click **Acquire microphone** (allow the prompt) and tick the quiet tone.', 'During the measurement press [[Caps Lock]]+[[R]] to start Que recording (or already have it recording for the other order).', 'Say "The blue robot counts seven stars." and click **Say phrase** (the page says "The green robot counts nine moons.").', 'Stop Que\'s recording with [[Caps Lock]]+[[R]] before the end.'], seconds: 50, allowBlur: true, needsFocus: false, countdown: 3,
     controls: () => h('div', {},
       h('div', { class: 'row' },
         h('button', { class: 'btn small', onclick: async e => { try { const s = await AudioLab.acquire(); e.target.textContent = `Microphone on (${s.sampleRate || '?'} Hz)`; } catch (err) { toast('Microphone: ' + err.message); } } }, 'Acquire microphone'),

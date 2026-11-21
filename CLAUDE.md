@@ -32,7 +32,7 @@ src/data/ — Runtime data (chat_history.json, config.json, cache/)
 src/assets/ — Icons and images
 ```
 
-**Data flow:** User hotkey → `ShortcutManager` emits Qt signal → `AIReceiver.handle_message()` → `threading.Thread` calls `AISender.generate_content_with_screenshot()` → Gemini streaming API → chunks emitted via `pyqtSignal` → `ChatArea` renders via `ChatBubble` + `ai_formatter.py`.
+**Data flow:** User hotkey → `ShortcutManager` emits Qt signal → `AIReceiver.handle_message()` → `threading.Thread` calls `AISender.send_message()` → Gemini streaming API → chunks emitted via `pyqtSignal` → `ChatArea` renders via `ChatBubble` + `ai_formatter.py`.
 
 **Key components:**
 - `src/que.py` — Entry point; wires all components together

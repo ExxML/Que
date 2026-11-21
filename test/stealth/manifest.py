@@ -14,13 +14,14 @@ HOTKEYS = [
     (10, 83, "move_window_down", True, False),
     (8, 87, "scroll_up", True, False),
     (8, 83, "scroll_down", True, False),
-    (8, 67, "screenshot", False, False),
+    (8, 71, "screenshot", False, False),
     (12, 88, "toggle_click_through", False, False),
     (8, 78, "new_chat", False, False),
     (8, 72, "toggle_history", False, False),
-    (8, 84, "solve_coding_problem", False, False),
-    (8, 70, "fix_code", False, False),
-    (8, 86, "solve_question", False, False),
+    (8, 65, "answer", False, False),
+    (8, 67, "code", False, False),
+    (8, 68, "system_design", False, False),
+    (8, 70, "follow_up", False, False),
 ]
 SURFACES = [
     "main overlay",

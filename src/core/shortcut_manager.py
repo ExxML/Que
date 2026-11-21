@@ -5,6 +5,7 @@ from PyQt6.QtCore import QEvent, QObject, QPoint, QTimer, pyqtSignal
 
 from core.hook_client import HookClient
 from core.hook_engine import ACTION_NAMES
+from core.interview_prompts import PROMPTS
 from core.screenshot_manager import ScreenshotManager
 from ui.window.main_window import MainWindow
 
@@ -29,7 +30,7 @@ class ShortcutManager(QObject):
     new_chat_signal = pyqtSignal()
     toggle_signal = pyqtSignal()
     toggle_history_signal = pyqtSignal()
-    send_message_signal = pyqtSignal(str)
+    prompt_signal = pyqtSignal(str, str)
     toggle_recording_signal = pyqtSignal()
     toggle_click_through_signal = pyqtSignal()
     hook_failed = pyqtSignal(str)
@@ -62,7 +63,7 @@ class ShortcutManager(QObject):
         self.new_chat_signal.connect(self.main_window._new_chat)
         self.toggle_signal.connect(self.main_window.toggle_window_visibility)
         self.toggle_history_signal.connect(self.main_window.toggle_history)
-        self.send_message_signal.connect(self.main_window.send_message)
+        self.prompt_signal.connect(self.main_window.send_prompt)
         self.toggle_recording_signal.connect(self.main_window.transcriber.toggle)
         # Toggling the settings checkbox saves the change and applies it to the window
         self.toggle_click_through_signal.connect(
@@ -274,32 +275,29 @@ class ShortcutManager(QObject):
         """Turn mouse click-through on or off for the main window."""
         self.toggle_click_through_signal.emit()
 
-    def _solve_coding_problem(self) -> None:
-        """Take a screenshot then ask for a full solution to the coding problem on screen."""
-        self.screenshot_signal.emit()
-        self.send_message_signal.emit(
-            """Help me solve this programming problem. Be concise.
-1. Give me 5 clarification questions to ask about the problem.
-2. State the type of problem (ex. Arrays & Hashing, Two Pointers, Sliding Window, Stack, Binary Search, Linked List, Trees, Heap / Priority Queue, Backtracking, Tries, Graphs, Advanced Graphs, 1-D Dynamic Programming, 2-D Dynamic Programming, Greedy, Intervals, Math & Geometry, and/or Bit Manipulation), data structure(s), what each element in the data structure means, and algorithm(s) used to solve this problem.
-3. Give me a high-level, point-form plan to approach and solve this problem (including edge cases).
-4. Give me a short example walkthrough using your solution.
-5. Give me a code block with the solution in Python, supplied with comments.
-6. Give me a concise explanation of the solution.
-7. Give me the time and space complexity for the solution."""
-        )
+    # Interview shortcuts: the question may be in the transcript, the screen, typed text or the chat
 
-    def _fix_code(self) -> None:
-        """Take a screenshot then ask to fix or improve the code on screen."""
-        self.screenshot_signal.emit()
-        self.send_message_signal.emit(
-            "Fix or improve the code based on the new instructions. Then, state the changes you made."
-        )
+    def _answer(self) -> None:
+        """Answer a spoken interview question such as behavioural, resume, concept or brainteaser."""
+        self._ask("answer")
 
-    def _solve_question(self) -> None:
-        """Take a screenshot then ask for an answer and explanation to any question on screen."""
+    def _code(self) -> None:
+        """Walk through the coding problem on screen or in the transcript."""
+        self._ask("code")
+
+    def _system_design(self) -> None:
+        """Walk through the system design question being asked."""
+        self._ask("system_design")
+
+    def _follow_up(self) -> None:
+        """Answer the interviewer's follow-up, hint or pushback on the current question."""
+        self._ask("follow_up")
+
+    def _ask(self, name: str) -> None:
+        """Take a screenshot then send an interview prompt with any typed note.
+
+        Args:
+            name (str): The interview prompt's action name.
+        """
         self.screenshot_signal.emit()
-        self.send_message_signal.emit(
-            """Solve the question in the screenshot. It may be on any topic (ex. behavioural, data structures and algorithms, systems, databases, system design). Be concise.
-1. Give the answer or solution first, in the format that suits the question (ex. code for a coding question, a query for a database question, a structured answer for a behavioural question, components and trade-offs for a system design question).
-2. Then explain the reasoning behind it."""
-        )
+        self.prompt_signal.emit(*PROMPTS[name])

@@ -42,11 +42,11 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
   | Caps Lock+Alt+W/A/S/D | Move Que (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
-  | Caps Lock+C | Screenshot | no |
+  | Caps Lock+G | Screenshot | no |
   | Caps Lock+Shift+X | Toggle click-through | no |
   | Caps Lock+N | New chat | no |
   | Caps Lock+H | History | no |
-  | Caps Lock+T / Caps Lock+F / Caps Lock+V | Screenshot and solve the coding problem / fix the code / solve any question (any topic) with an explanation | no |
+  | Caps Lock+A / Caps Lock+C / Caps Lock+D / Caps Lock+F | Screenshot and answer the interview question / walk through the coding problem / walk through the system design / answer the follow-up, hint or fix | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
 - For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.
@@ -130,7 +130,7 @@ Scenario IDs are those offered by the page (`ids("part")` lists matches). `input
 | Que shortcuts are invisible | `go("input.integrity.stage-1",40,false)`. Caps Lock+E twice; hold Caps Lock+Alt+D ~1 s, then Caps Lock+Alt+A ~1 s; Caps Lock+H twice. | **No key events at all.** Operator confirms each action worked. | `analyze`, `timeline` |
 | Normal keys are natural | `go("input.integrity.stage-1",45,false)`. Hold Shift ~1.5 s, type `ab`, release; hold **Left** Ctrl ~1 s, press A, release; then 3× (Alt+Tab away, Alt+Tab back, wait 2 s). | Shift and Ctrl key-downs arrive when pressed (hundreds of ms before the letter, not 0–1 ms); held modifiers auto-repeat (`repeat=true` key-downs); each Alt+Tab shows `keydown Alt` ~100–160 ms before the `blur`. Compare with the baseline below. | `timeline` |
 | Baseline without Que | Quit Que (Caps Lock+Alt+Shift+Q), wait 5 s, then repeat the "normal keys" steps in a new attempt. | The reference pattern for the row above. | `timeline` |
-| Caps Lock with a non-Que key | Press Caps Lock+C. | **Zero key events** (the key is swallowed); the Caps Lock light stays off. | `analyze` |
+| Caps Lock with a non-Que key | Press Caps Lock+J. | **Zero key events** (the key is swallowed); the Caps Lock light stays off. | `analyze` |
 | Released modifier keeps owning the key (KEY-001) | `go("key.toggle_window_visibility.release-modifier-first",15,false)`. Hold Caps Lock, hold E until Que hides and ~1.5 s more, release Caps Lock, release E ~1 s later. Afterwards Caps Lock+E to show Que. | **Zero key events**; Que hid exactly once. | `analyze` |
 | Quit leaves no orphan key-ups (KEY-006) | `go("capture.main overlay.stage-2",15,false)`. Press Caps Lock+Alt+Shift+Q once. Then `launch` again. | **Zero key events**; Que's window and processes gone. | `analyze`, process list |
 

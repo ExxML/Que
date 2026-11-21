@@ -39,6 +39,7 @@ class AIReceiver(QObject):
         attachments: list[str] | None = None,
         transcript: str = "",
         transcript_seq: int = 0,
+        display: str = "",
     ) -> None:
         """Handle a user message by displaying it and starting AI generation.
 
@@ -47,6 +48,7 @@ class AIReceiver(QObject):
             attachments (list[str], optional): List of file paths to attach to the request.
             transcript (str): Audio transcript recorded since the last committed turn.
             transcript_seq (int): The last transcript segment included.
+            display (str): Text shown in the chat instead of the message, if any.
         """
         # Stop the current stream and finalize any in-progress bubble
         self.stop_flag.set()
@@ -63,13 +65,13 @@ class AIReceiver(QObject):
         local_flag = self.stop_flag
 
         request = self.ai_sender.prepare_request(
-            message, attachments, transcript, transcript_seq
+            message, attachments, transcript, transcript_seq, display
         )
         self.request = request
 
         # Immediately add user's message to the chat area
         self.chat_area.add_message(
-            message,
+            display or message,
             is_user=True,
             transcript=transcript,
             screenshots=tuple(attachments or ()),

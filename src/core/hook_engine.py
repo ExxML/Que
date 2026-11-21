@@ -42,13 +42,14 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE | MOD_ALT, ord("S"), "move_window_down", True, False),
     (MOD_QUE, ord("W"), "scroll_up", True, False),
     (MOD_QUE, ord("S"), "scroll_down", True, False),
-    (MOD_QUE, ord("C"), "screenshot", False, False),
+    (MOD_QUE, ord("G"), "screenshot", False, False),
     (MOD_QUE | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
     (MOD_QUE, ord("N"), "new_chat", False, False),
     (MOD_QUE, ord("H"), "toggle_history", False, False),
-    (MOD_QUE, ord("T"), "solve_coding_problem", False, False),
-    (MOD_QUE, ord("F"), "fix_code", False, False),
-    (MOD_QUE, ord("V"), "solve_question", False, False),
+    (MOD_QUE, ord("A"), "answer", False, False),
+    (MOD_QUE, ord("C"), "code", False, False),
+    (MOD_QUE, ord("D"), "system_design", False, False),
+    (MOD_QUE, ord("F"), "follow_up", False, False),
 )
 ACTION_NAMES = tuple(name for _, _, name, _, _ in HOTKEYS)
 

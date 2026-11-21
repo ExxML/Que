@@ -257,7 +257,7 @@ class QueKeyTests(unittest.TestCase):
                 self.assertEqual(len(driver.delivered), 4)
 
     def test_caps_lock_and_keys_pressed_with_it_never_reach_the_app(self) -> None:
-        """Hide a lone Caps Lock tap with its auto-repeat, and swallow Caps Lock+C entirely."""
+        """Hide a lone Caps Lock tap with its auto-repeat, and swallow Caps Lock+Shift+J entirely."""
         driver = HookDriver()
         driver.event(QUE_KEY)
         driver.event(QUE_KEY)  # Auto-repeat
@@ -265,9 +265,9 @@ class QueKeyTests(unittest.TestCase):
         for vk, down in (
             (QUE_KEY, True),
             (0xA0, True),
-            (ord("C"), True),
-            (ord("C"), True),
-            (ord("C"), False),
+            (ord("J"), True),
+            (ord("J"), True),
+            (ord("J"), False),
             (0xA0, False),
             (QUE_KEY, False),
         ):

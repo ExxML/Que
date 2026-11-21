@@ -14,7 +14,7 @@ src/data/ — Runtime data (chat_history.json, config.json, cache/)
 src/assets/ — Icons and images
 ```
 
-**Data flow:** User hotkey → `ShortcutManager` emits Qt signal → `AIReceiver.handle_message()` → spawns `threading.Thread` calling `AISender.generate_content_with_screenshot()` → Gemini streaming API → chunks emitted via `pyqtSignal` → `ChatArea` renders via `ChatBubble` + `ai_formatter.py`.
+**Data flow:** User hotkey → `ShortcutManager` emits Qt signal → `AIReceiver.handle_message()` → spawns `threading.Thread` calling `AISender.send_message()` → Gemini streaming API → chunks emitted via `pyqtSignal` → `ChatArea` renders via `ChatBubble` + `ai_formatter.py`.
 
 **Key component roles:**
 - `ShortcutManager` (`core/shortcut_manager.py`) — Win32 low-level keyboard hook (`WH_KEYBOARD_LL`) on a dedicated thread. All hotkey callbacks emit **Qt signals** to marshal work onto the main thread; never call UI methods directly from the hook thread.

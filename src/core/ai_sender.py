@@ -35,6 +35,7 @@ class InteractionRequest:
     transcript_seq: int = 0
     context: str = ""
     resume_details: tuple[tuple[str, str], ...] = ()
+    display: str = ""  # Shown and saved in the chat instead of the message; never sent
 
     @property
     def prompt(self) -> str:
@@ -187,6 +188,7 @@ class AISender:
         attachments: list[str] | None = None,
         transcript: str = "",
         transcript_seq: int = 0,
+        display: str = "",
     ) -> InteractionRequest:
         """Snapshot a new turn on the Qt thread and supersede older requests.
 
@@ -195,6 +197,7 @@ class AISender:
             attachments (list[str], optional): Paths to this turn's attachments.
             transcript (str): Audio transcript recorded since the last committed turn.
             transcript_seq (int): The last transcript segment included.
+            display (str): Text shown and saved in the chat instead of the message, if any.
 
         Returns:
             InteractionRequest: The immutable worker inputs.
@@ -221,6 +224,7 @@ class AISender:
             "" if self.previous_interaction_id else self._context(),
             # Snapshotted every turn because Claude needs folder access after the first
             tuple(self.settings_store.resume_details()),
+            display,
         )
 
     def commit_interaction(
