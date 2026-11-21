@@ -80,7 +80,9 @@ class MathTests(unittest.TestCase):
 
     def test_inline_symbols_scripts_and_fractions(self) -> None:
         """Turn commands into symbols, scripts into sup/sub, and inline fractions into slashes."""
-        html = format_message(r"$\alpha \le \sqrt{n}$ and $x_i^2$ and \(\frac{n(n+1)}{2}\)")
+        html = format_message(
+            r"$\alpha \le \sqrt{n}$ and $x_i^2$ and \(\frac{n(n+1)}{2}\)"
+        )
         for expected in ("α", "≤", "√", "<sub>", "<sup>2</sup>", ")/2", "Cambria Math"):
             self.assertIn(expected, html)
         self.assertNotIn("\\", html)
@@ -101,7 +103,9 @@ class MathTests(unittest.TestCase):
 
     def test_environment_and_half_streamed_display_math(self) -> None:
         """Lay out cases as rows, and still render display maths that has not been closed."""
-        html = format_message(r"\[ f = \begin{cases} 1 & x \\ 0 & \text{otherwise} \end{cases} \]")
+        html = format_message(
+            r"\[ f = \begin{cases} 1 & x \\ 0 & \text{otherwise} \end{cases} \]"
+        )
         self.assertIn("otherwise", html)
         self.assertIn("{", html)
         self.assertIn("1/", format_message(r"$$\tfrac{1}{"))
