@@ -49,7 +49,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+H | History | no |
   | Caps Lock+Esc | Stop the reply being generated | no |
   | Caps Lock+1 … Caps Lock+0 | Switch this chat to model preset 1 … 10 | no |
-  | Caps Lock+A / Caps Lock+C / Caps Lock+D / Caps Lock+F | Screenshot and answer the interview question / walk through the coding problem / walk through the system design / answer the follow-up, hint or fix | no |
+  | Caps Lock+F | Screenshot and answer the interview question (any kind, including follow-ups) | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
 - For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.

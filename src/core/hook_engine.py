@@ -52,10 +52,7 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
     (MOD_QUE, ord("N"), "new_chat", False, False),
     (MOD_QUE, ord("H"), "toggle_history", False, False),
-    (MOD_QUE, ord("A"), "answer", False, False),
-    (MOD_QUE, ord("C"), "code", False, False),
-    (MOD_QUE, ord("D"), "system_design", False, False),
-    (MOD_QUE, ord("F"), "follow_up", False, False),
+    (MOD_QUE, ord("F"), "answer", False, False),
     (MOD_QUE, VK_ESCAPE, "stop_generation", False, False),
     # Caps Lock+1 to Caps Lock+0 apply model presets 1 to 10
     *(

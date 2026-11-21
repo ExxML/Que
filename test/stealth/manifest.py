@@ -22,10 +22,7 @@ HOTKEYS = [
     (12, 88, "toggle_click_through", False, False),
     (8, 78, "new_chat", False, False),
     (8, 72, "toggle_history", False, False),
-    (8, 65, "answer", False, False),
-    (8, 67, "code", False, False),
-    (8, 68, "system_design", False, False),
-    (8, 70, "follow_up", False, False),
+    (8, 70, "answer", False, False),
     (8, 27, "stop_generation", False, False),
     *((8, 48 + slot % 10, f"preset_{slot}", False, False) for slot in range(1, 11)),
 ]

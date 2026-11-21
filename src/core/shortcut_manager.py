@@ -6,7 +6,7 @@ from PyQt6.QtCore import QEvent, QObject, QPoint, QTimer, pyqtSignal
 
 from core.hook_client import HookClient
 from core.hook_engine import ACTION_NAMES, PRESET_COUNT
-from core.interview_prompts import PROMPTS
+from core.interview_prompts import LABEL, PROMPT
 from core.screenshot_manager import ScreenshotManager
 from ui.window.main_window import MainWindow
 
@@ -344,29 +344,7 @@ class ShortcutManager(QObject):
         """Turn mouse click-through on or off for the main window."""
         self.toggle_click_through_signal.emit()
 
-    # Interview shortcuts: the question may be in the transcript, the screen, typed text or the chat
-
     def _answer(self) -> None:
-        """Answer a spoken interview question such as behavioural, resume, concept or brainteaser."""
-        self._ask("answer")
-
-    def _code(self) -> None:
-        """Walk through the coding problem on screen or in the transcript."""
-        self._ask("code")
-
-    def _system_design(self) -> None:
-        """Walk through the system design question being asked."""
-        self._ask("system_design")
-
-    def _follow_up(self) -> None:
-        """Answer the interviewer's follow-up, hint or pushback on the current question."""
-        self._ask("follow_up")
-
-    def _ask(self, name: str) -> None:
-        """Take a screenshot then send an interview prompt with any typed note.
-
-        Args:
-            name (str): The interview prompt's action name.
-        """
+        """Take a screenshot then answer the interview question, whatever kind it is."""
         self._screenshot()
-        self.prompt_signal.emit(*PROMPTS[name])
+        self.prompt_signal.emit(LABEL, PROMPT)
