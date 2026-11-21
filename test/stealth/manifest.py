@@ -6,7 +6,7 @@ from typing import Any
 
 HOTKEYS = [
     (8, 69, "toggle_window_visibility", False, True),
-    (8, 82, "toggle_recording", False, True),
+    (12, 82, "toggle_recording", False, True),
     (14, 81, "close_app", False, True),
     (8, 37, "move_window_left", True, False),
     (8, 39, "move_window_right", True, False),
@@ -18,7 +18,7 @@ HOTKEYS = [
     (10, 83, "resize_window_taller", True, False),
     (8, 87, "scroll_up", True, False),
     (8, 83, "scroll_down", True, False),
-    (8, 71, "screenshot", False, False),
+    (8, 70, "screenshot", False, False),
     (12, 88, "toggle_click_through", False, False),
     (8, 78, "new_chat", False, False),
     (8, 72, "toggle_history", False, False),

@@ -40,7 +40,7 @@ VK_ESCAPE = 0x1B
 # (modifier mask, virtual key, action name, repeats while held, active while hidden)
 HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE, ord("E"), "toggle_window_visibility", False, True),
-    (MOD_QUE, ord("R"), "toggle_recording", False, True),
+    (MOD_QUE | MOD_SHIFT, ord("R"), "toggle_recording", False, True),
     (MOD_QUE | MOD_ALT | MOD_SHIFT, ord("Q"), "close_app", False, True),
     (MOD_QUE, VK_LEFT, "move_window_left", True, False),
     (MOD_QUE, VK_RIGHT, "move_window_right", True, False),
@@ -52,7 +52,7 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE | MOD_ALT, ord("S"), "resize_window_taller", True, False),
     (MOD_QUE, ord("W"), "scroll_up", True, False),
     (MOD_QUE, ord("S"), "scroll_down", True, False),
-    (MOD_QUE, ord("G"), "screenshot", False, False),
+    (MOD_QUE, ord("F"), "screenshot", False, False),
     (MOD_QUE | MOD_SHIFT, ord("X"), "toggle_click_through", False, False),
     (MOD_QUE, ord("N"), "new_chat", False, False),
     (MOD_QUE, ord("H"), "toggle_history", False, False),

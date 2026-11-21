@@ -38,12 +38,12 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Shortcut | Action | Works while hidden |
   |---|---|---|
   | Caps Lock+E | Show/hide Que | yes |
-  | Caps Lock+R | Start/stop recording | yes |
+  | Caps Lock+Shift+R | Start/stop recording | yes |
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
   | Caps Lock+Arrow keys | Move Que (hold to repeat) | no |
   | Caps Lock+Alt+W/S/A/D | Move the bottom edge up/down or the right edge left/right (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
-  | Caps Lock+G | Screenshot | no |
+  | Caps Lock+F | Screenshot | no |
   | Caps Lock+Shift+X | Toggle click-through | no |
   | Caps Lock+N | New chat | no |
   | Caps Lock+H | History | no |
@@ -178,9 +178,9 @@ Also check by eye, without an attempt:
 ### 7.5 Audio
 
 1. Download the smallest model first (Settings → Voice).
-2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+R to stop.
+2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+Shift+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+Shift+R to stop.
 3. Expect in Que's transcript (operator reads it): a **You** line with the spoken phrase and a **Them** line with the page's phrase; no "silent" or "no speech" warnings; the caption shows the latest line. On the page: continuous audio samples, no mute/ended events.
-4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
+4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
 
 ## 8. Analyse
 
