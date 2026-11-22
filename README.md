@@ -38,18 +38,18 @@ python test/manual_site/serve.py
 ```
 Open <http://localhost:8765/> (use `--port` to change it), launch Que, and drag it over the **Stage** (the checkered area on the right). Work through the tabs (Keyboard, Focus & pointer, Capture, Audio, Timing & system, Manual). For each test: press **Start**, click the page title so the page has focus, do the listed steps while it shows **MEASURING**, then answer the question about whether Que acted. Every Que shortcut starts with **Caps Lock**. Keep DevTools closed, and do not scroll, resize or zoom during capture tests; calibrate once in the Capture tab first (share the entire screen, then follow its five steps). The **Report** tab exports results as Markdown or JSON. A "No leak seen" verdict is evidence for that run only, not proof of invisibility. See the [manual stealth testing walkthrough](test/STEALTH_MANUAL_TESTING.md) for the runner-based procedure.
 
-Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_hook.dll`, built from `native/que_hook.c` and committed with it, so running Que needs no compiler. After changing `native/que_hook.c`, rebuild it with MSVC (Visual Studio Build Tools, C++) or gcc and commit both files. Nuitka skips DLLs in data directories, so the build command below names it explicitly.
+Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_hook.dll`, built from `native/que_hook.c` and committed with it, so running Que needs no compiler. After changing `native/que_hook.c`, rebuild it with MSVC (Visual Studio Build Tools, C++) or gcc and commit both files. The Nuitka options in `src/que.py` include the DLL explicitly.
 ```bash
 python native/build.py
 ```
 
-Before packaging Que, run `python test/run_ci.py` from the repository root and confirm that all jobs pass. If a job fails, rerun it by name while fixing it, then run the full suite again on the final changes.
+## Build a standalone Windows executable
 
-Compile the executable with Nuitka.
-```bash
-pip install nuitka
-python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-package=onnx_asr --include-package-data=onnx_asr --include-data-dir="src/assets=assets" --include-data-files="src/assets/que_hook.dll=assets/que_hook.dll" src/que.py
+Use the Python 3.13 `.venv` with the runtime requirements installed and the C++ workload from Visual Studio Build Tools. From the repository root, run `python test/run_ci.py` and confirm that all jobs pass before packaging. If a job fails, rerun it by name while fixing it, then run the full suite again on the final changes.
+
+```powershell
+python -m pip install nuitka==4.1.1
+python -m nuitka --mode=standalone src/que.py
 ```
-> [!NOTE]
-> Due to the large google.genai library, the first compilation will take a long time (20-30 minutes using Nuitka).
-> Subsequent compilations will be faster due to cached files in the build directory.
+
+Run `que.dist\que.exe` and keep the entire `que.dist` folder together when distributing it. Nuitka bundles `google.genai.types` as Python bytecode to avoid MSVC's `C1002` heap error when optimizing the generated C for that module.

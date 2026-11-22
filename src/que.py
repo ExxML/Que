@@ -38,3 +38,18 @@ if __name__ == "__main__":
     main_window.settings_page.system_tray_saved.connect(tray_icon.setVisible)
 
     sys.exit(app.exec())
+
+
+# nuitka-project: --windows-icon-from-ico={MAIN_DIRECTORY}/assets/que.ico
+# nuitka-project: --windows-console-mode=disable
+# nuitka-project: --enable-plugin=pyqt6
+# nuitka-project: --include-package=google.genai
+# nuitka-project: --include-package=onnx_asr
+# nuitka-project: --include-package-data=onnx_asr
+# nuitka-project: --include-data-dir={MAIN_DIRECTORY}/assets=assets
+# nuitka-project: --include-data-files={MAIN_DIRECTORY}/assets/que_hook.dll=assets/que_hook.dll
+
+# The generated Gemini schema produces a C file large enough to exhaust MSVC's optimizer.
+# nuitka-project: --noinclude-custom-mode=google.genai.types:bytecode
+# Ship the runtime SDK without its tests or Pydantic's mypy plugin.
+# nuitka-project: --nofollow-import-to=google.genai.tests,pydantic.mypy
