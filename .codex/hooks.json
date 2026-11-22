@@ -7,8 +7,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" pre",
-            "commandWindows": "py -3.13 test/agent_ci_gate.py pre",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'pre']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'pre']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
             "timeout": 30
           }
         ]
@@ -20,8 +20,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" post",
-            "commandWindows": "py -3.13 test/agent_ci_gate.py post",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'post']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'post']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
             "timeout": 30
           }
         ]
@@ -32,8 +32,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" stop",
-            "commandWindows": "py -3.13 test/agent_ci_gate.py stop",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'stop']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'stop']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
             "timeout": 30
           }
         ]
