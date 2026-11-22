@@ -9377,7 +9377,7 @@
     "source": "ui/window/settings_page.py",
     "line": 130,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "d1654aa9d48443860f336ff696f9250f9c376873779db5803f671e23c7c5e6d0"
+    "sha256": "5db96366fb03014f6a17351510a14083c067e2d687d59164b88e104a05c37881"
   },
   "ui/window/settings_page.py:548:routine": {
     "category": "routine",
