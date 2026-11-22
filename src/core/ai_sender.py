@@ -48,7 +48,7 @@ class InteractionRequest:
         """
         prompt = self.message
         if self.transcript:
-            prompt = f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. It may be unrelated to my request.
+            prompt = f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. Lines run oldest to newest. It may be unrelated to my request.
 <transcript>
 {self.transcript}
 </transcript>

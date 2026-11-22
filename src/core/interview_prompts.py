@@ -2,7 +2,14 @@
 
 PREAMBLE = """I'm in a live software engineering interview and need to answer the interviewer right now. Help me respond.
 
-Find the question in this order: my note at the end of this message if there is one, then the most recent question from [Them] in the audio transcript, then the screenshot (a shared problem, editor, document or whiteboard), then our earlier conversation. The transcript is speech-to-text, so correct misheard technical terms. Ignore screenshot content that isn't part of the interview, like video tiles or this overlay. If [You] already started answering, continue from what I said instead of restarting. If the question is ambiguous, answer the most likely reading and give me one clarifying question I can ask.
+Work out what the interviewer wants from me right now. My note at the end of this message, if there is one, wins. Otherwise use the audio transcript and the screenshots (a shared problem, editor, document or whiteboard) together:
+- The transcript runs oldest to newest and may span several questions. Questions I already answered aloud are done, so use them only as context.
+- Instructions that aren't questions ("go ahead and code it", "take a look at this") and the interviewer's answers to my clarifying questions refer to the current problem, usually the one on screen or the last one discussed.
+- Either source may have nothing to do with the interview. Ignore small talk, mic checks and other audio like a video in the transcript, and unrelated windows, video tiles and this overlay in the screenshots. If there are several screenshots, the last one is the current screen.
+- If the transcript and the screen point to different questions, go with the interviewer's latest request.
+- If I'm partway through answering that request aloud, continue from what I said instead of restarting.
+- If neither has a request, use our earlier conversation.
+The transcript is speech-to-text, so correct misheard technical terms. If the question is ambiguous, answer the most likely reading and give me one clarifying question I can ask.
 
 How to write it:
 - I'm reading this while I talk, so make it easy to scan: start with one bolded sentence I can say word for word, then short bullet talking points with the key terms in bold.
