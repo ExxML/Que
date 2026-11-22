@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QWidget
 from qt_application import application
 
 from core.ai_sender import InteractionRequest
-from core.settings import WHISPER_MODELS
+from core.settings import WHISPER_MODELS, SettingsStore
 from core.transcriber import (
     CHUNK_SECONDS,
     MODEL_FILES,
@@ -169,16 +169,23 @@ class ModelFilesTests(unittest.TestCase):
         self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-        self.transcriber = Transcriber(MagicMock())
-        self.transcriber.cache_dir = Path(self.directory.name)
+        directory = Path(self.directory.name)
+        self.store = SettingsStore(directory / "config.json")
+        self.transcriber = Transcriber(self.store)
+        self.transcriber.cache_dir = directory / "cache"
+        self.transcriber.cache_dir.mkdir()
 
-    def test_models_count_as_downloaded_only_with_every_file(self) -> None:
-        """Require the VAD and every model file."""
+    def test_saved_model_is_active_only_with_a_complete_cache(self) -> None:
+        """Use the saved model when its files and the VAD are present."""
+        self.store.save_whisper_model(MODEL)
         self.assertEqual(self.transcriber.downloaded_models(), [])
+        self.assertEqual(self.transcriber.active_model(), "")
         self._write(MODEL, MODEL_FILES)
         self.assertEqual(self.transcriber.downloaded_models(), [])  # VAD still missing
+        self.assertEqual(self.transcriber.active_model(), "")
         self._write(VAD_DIR, (VAD_FILE,))
         self.assertEqual(self.transcriber.downloaded_models(), [MODEL])
+        self.assertEqual(self.transcriber.active_model(), MODEL)
 
     def test_download_fetches_only_the_needed_files(self) -> None:
         """Fetch the VAD and the int8 model files into the cache, then report success."""
