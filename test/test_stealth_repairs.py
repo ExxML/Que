@@ -764,7 +764,7 @@ class AudioHealthTests(unittest.TestCase):
             patch.object(
                 self.transcriber,
                 "_open_source",
-                side_effect=lambda _audio, source: captures[source],
+                side_effect=lambda _audio, source, _name: captures[source],
             ),
             patch.object(self.transcriber, "_poll_source", side_effect=poll),
         ):

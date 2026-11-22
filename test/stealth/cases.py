@@ -46,6 +46,9 @@ WORKFLOWS = {
         "disable the active device",
         "start with no input device",
         "quit during capture",
+        "open Settings Audio and refresh the available devices while recording and sharing",
+        "select nondefault You and Them devices by keyboard and pointer, then verify the next recording and restart",
+        "unplug a saved device, refresh, verify the unavailable selection, and return to Windows default",
     ),
     "audio.que-first": (
         "start browser capture after Que",

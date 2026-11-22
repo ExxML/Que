@@ -93,6 +93,18 @@ class SettingsStore:
         model = self.data.get("whisper_model")
         return str(model) if model in WHISPER_MODELS else "small.en"
 
+    def audio_device(self, source: str) -> str:
+        """Return the saved WASAPI device name or an empty string for the Windows default.
+
+        Args:
+            source (str): The transcript source, you or them.
+
+        Returns:
+            str: The device name to match when recording starts.
+        """
+        name = self.data.get(f"audio_device_{source}")
+        return name if isinstance(name, str) else ""
+
     def system_tray(self) -> bool:
         """Return whether to show the system tray icon, defaulting to shown.
 
@@ -243,6 +255,15 @@ class SettingsStore:
             model (str): The faster-whisper model name.
         """
         self._write({**self.data, "whisper_model": model})
+
+    def save_audio_device(self, source: str, name: str) -> None:
+        """Atomically save one transcript source's audio device.
+
+        Args:
+            source (str): The transcript source, you or them.
+            name (str): The WASAPI device name, or an empty string for the Windows default.
+        """
+        self._write({**self.data, f"audio_device_{source}": name})
 
     def save_system_tray(self, enabled: bool) -> None:
         """Atomically save whether to show the system tray icon.

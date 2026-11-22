@@ -59,6 +59,9 @@ class Transcriber(QObject):
     transcribed = pyqtSignal(str, str)  # source, text (worker thread to Qt thread)
     failed = pyqtSignal(str, bool)  # message, whether recording must stop
     download_finished = pyqtSignal(str, str)  # model, error or an empty string
+    audio_devices_loaded = pyqtSignal(
+        object, str
+    )  # device names by source, error or an empty string
     source_status = pyqtSignal(str, str, object)
     session_failed = pyqtSignal(str, bool, object)
 
@@ -120,6 +123,9 @@ class Transcriber(QObject):
         self.stop_event = threading.Event()
         self.source_health.clear()
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
+        devices = {
+            source: self.settings_store.audio_device(source) for source in SOURCE_LABELS
+        }
         threading.Thread(
             target=self._transcribe_loop,
             args=(utterances, model, self.stop_event),
@@ -127,7 +133,7 @@ class Transcriber(QObject):
         ).start()
         threading.Thread(
             target=self._capture_sources,
-            args=(tuple(SOURCE_LABELS), self.stop_event, utterances),
+            args=(tuple(SOURCE_LABELS), self.stop_event, utterances, devices),
             daemon=True,
         ).start()
         self.status_changed.emit("")
@@ -142,6 +148,10 @@ class Transcriber(QObject):
         for source in SOURCE_LABELS:
             self.speaking_changed.emit(source, False)
         self.recording_changed.emit(False)
+
+    def refresh_audio_devices(self) -> None:
+        """List Windows audio devices on a worker without starting any streams."""
+        threading.Thread(target=self._scan_audio_devices, daemon=True).start()
 
     def downloaded_models(self) -> list[str]:
         """List the transcription models whose files are fully downloaded.
@@ -295,6 +305,24 @@ class Transcriber(QObject):
         if not self.recording or session is self.stop_event:
             self.failed.emit(message, fatal)
 
+    def _scan_audio_devices(self) -> None:
+        """Enumerate the available devices and deliver their names to the Qt thread."""
+        try:
+            with PORTAUDIO_LOCK, pyaudiowpatch.PyAudio() as audio:
+                devices = _wasapi_devices(audio)
+        except (OSError, ValueError):
+            self.audio_devices_loaded.emit(
+                {}, "Could not refresh audio devices. Try again."
+            )
+            return
+        self.audio_devices_loaded.emit(
+            {
+                source: [str(device["name"]) for device in matches]
+                for source, matches in devices.items()
+            },
+            "",
+        )
+
     def _capture(
         self,
         source: str,
@@ -315,6 +343,7 @@ class Transcriber(QObject):
         sources: tuple[str, ...],
         stop_event: threading.Event,
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
+        devices: dict[str, str] | None = None,
     ) -> None:
         """Own both WASAPI streams and their PortAudio host on one daemon thread.
 
@@ -322,7 +351,9 @@ class Transcriber(QObject):
             sources (tuple[str, ...]): The sources in acquisition order.
             stop_event (threading.Event): The recording session's stop flag.
             utterances (queue.Queue): The transcription worker's input queue.
+            devices (dict[str, str], optional): The recording's selected device names by source.
         """
+        devices = devices or {}
         audio: Any = None
         captures: dict[str, _CaptureState] = {}
         finished: set[str] = set()
@@ -332,7 +363,9 @@ class Transcriber(QObject):
             for source in sources:
                 try:
                     with PORTAUDIO_LOCK:
-                        captures[source] = self._open_source(audio, source)
+                        captures[source] = self._open_source(
+                            audio, source, devices.get(source, "")
+                        )
                 except Exception as error:  # noqa: BLE001
                     self._report_source_failure(source, error, stop_event)
                     utterances.put(None)
@@ -377,17 +410,29 @@ class Transcriber(QObject):
                 with PORTAUDIO_LOCK:
                     audio.terminate()
 
-    def _open_source(self, audio: Any, source: str) -> "_CaptureState":
+    def _open_source(self, audio: Any, source: str, name: str) -> "_CaptureState":
         """Open a device on the same thread that initialized the PortAudio host.
 
         Args:
             audio (Any): The session's PyAudio host.
             source (str): The microphone or system-output source.
+            name (str): The selected WASAPI device name, or an empty string for the default.
 
         Returns:
             _CaptureState: The open stream and its independent segmentation state.
         """
-        if source == "them":
+        if name:
+            matches = [
+                device
+                for device in _wasapi_devices(audio)[source]
+                if device["name"] == name
+            ]
+            if len(matches) != 1:
+                raise OSError(
+                    "Reconnect the selected device or choose an available one in Settings → Audio."
+                )
+            device = matches[0]
+        elif source == "them":
             device = audio.get_default_wasapi_loopback()
         else:
             wasapi = audio.get_host_api_info_by_type(pyaudiowpatch.paWASAPI)
@@ -678,6 +723,25 @@ class _Segmenter:
         audio = np.concatenate(self.parts) if self.parts else np.zeros(0, np.float32)
         self.parts = []
         return audio if audio.size >= SAMPLE_RATE * MIN_UTTERANCE_SECONDS else None
+
+
+def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:
+    """Group WASAPI microphones and playback loopbacks by transcript source.
+
+    Args:
+        audio (Any): The initialized PyAudio host.
+
+    Returns:
+        dict[str, list[dict[str, Any]]]: Devices with capture channels for each source.
+    """
+    devices: dict[str, list[dict[str, Any]]] = {source: [] for source in SOURCE_LABELS}
+    for device in audio.get_device_info_generator_by_host_api(
+        host_api_type=pyaudiowpatch.paWASAPI
+    ):
+        if device["maxInputChannels"] > 0:
+            source = "them" if device["isLoopbackDevice"] else "you"
+            devices[source].append(device)
+    return devices
 
 
 def _to_mono_16k(data: bytes, channels: int, rate: int) -> NDArray[np.float32]:

@@ -37,6 +37,7 @@ SURFACES = [
     "settings",
     "custom dropdown",
     "Qt combo popup",
+    "Audio device selector popups",
     "tooltip",
     "text context menu",
     "file dialog",
@@ -177,8 +178,8 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
         ),
         (
             "audio.devices",
-            "Repeat silence/speech/playback using speakers then headset; change and disable devices; test unavailable device and shutdown.",
-            "Record devicechange, acquisition errors, mute/end, transcript segments and intentional silence intervals.",
+            "Repeat silence/speech/playback using speakers then headset; select and refresh Que's microphone and playback devices while sharing and recording; change and disable devices; test unavailable device and shutdown.",
+            "Verify saved choices across restart and apply them on the next recording. Record devicechange, focus, acquisition errors, mute/end, both transcripts and intentional silence intervals.",
             "audio",
         ),
         (

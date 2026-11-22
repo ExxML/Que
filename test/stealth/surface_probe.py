@@ -395,17 +395,49 @@ def run() -> dict[str, object]:
                 wait(40)
                 completed.append(surface)
             window.show_settings()
-            for name, combo in (
-                ("model", window.settings_page.model_combo),
-                ("effort", window.settings_page.effort_combo),
-                ("transcription", window.settings_page.whisper_combo),
-            ):
-                window.settings_page.tab_bar.setCurrentIndex(
-                    2 if name == "transcription" else 0
-                )
+            settings_page = window.settings_page
+            audio_tab = settings_page.audio_tab_index
+            device_names = {
+                "you": ["Fixture microphone"],
+                "them": ["Fixture headset [Loopback]"],
+            }
+            with patch.object(
+                transcriber,
+                "refresh_audio_devices",
+                side_effect=lambda: transcriber.audio_devices_loaded.emit(
+                    device_names, ""
+                ),
+            ) as refresh_devices:
+                settings_page.tab_bar.setCurrentIndex(audio_tab)
                 wait(20)
-                combo.setEnabled(True)
-                combo.addItems(["Fixture one", "Fixture two"])
+                assert settings_page.audio_refresh.isVisible()
+                click(
+                    settings_page.audio_refresh,
+                    settings_page.audio_refresh.rect().center(),
+                )
+                assert refresh_devices.call_count == 2, (
+                    "Routed refresh did not scan for devices."
+                )
+                interactions.append("audio-refresh")
+            for name, combo, tab in (
+                ("model", settings_page.model_combo, 0),
+                ("effort", settings_page.effort_combo, 0),
+                ("transcription", settings_page.whisper_combo, 2),
+                ("audio-you", settings_page.audio_combos["you"], audio_tab),
+                ("audio-them", settings_page.audio_combos["them"], audio_tab),
+            ):
+                with patch.object(
+                    transcriber,
+                    "refresh_audio_devices",
+                    side_effect=lambda: transcriber.audio_devices_loaded.emit(
+                        device_names, ""
+                    ),
+                ):
+                    settings_page.tab_bar.setCurrentIndex(tab)
+                wait(20)
+                if tab != audio_tab:
+                    combo.setEnabled(True)
+                    combo.addItems(["Fixture one", "Fixture two"])
                 for repeat in range(3):
                     surface = f"combo-{name}-{repeat}"
                     combo.showPopup()
@@ -461,6 +493,11 @@ def run() -> dict[str, object]:
                     f"{name} keyboard selection did not dismiss the popup."
                 )
                 interactions.append(f"combo-{name}-keyboard")
+                if tab == audio_tab:
+                    source = name.removeprefix("audio-")
+                    assert settings.audio_device(source) == device_names[source][0], (
+                        f"{name} selection was not persisted."
+                    )
             for name, field in (
                 ("input", window.input_field.input_field),
                 ("settings", window.settings_page.key_input),

@@ -53,9 +53,9 @@ def run(source: Path) -> int:
     opened: list[str] = []
     open_source = transcriber._open_source
 
-    def record_open(audio: Any, source: str) -> Any:
+    def record_open(audio: Any, source: str, name: str) -> Any:
         """Note each WASAPI stream that actually opened; healthy sources emit no status."""
-        capture = open_source(audio, source)
+        capture = open_source(audio, source, name)
         opened.append(source)
         return capture
 

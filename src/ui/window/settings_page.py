@@ -1,8 +1,9 @@
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 
-from PyQt6.QtCore import Qt, QTimer, pyqtBoundSignal, pyqtSignal
-from PyQt6.QtGui import QHideEvent, QWheelEvent
+from PyQt6.QtCore import QSignalBlocker, Qt, QTimer, pyqtBoundSignal, pyqtSignal
+from PyQt6.QtGui import QHideEvent, QStandardItemModel, QWheelEvent
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -86,6 +87,7 @@ class SettingsPage(QWidget):
         self.details_timer.setInterval(500)
         self.details_timer.timeout.connect(self._save_detail_names)
         self.detail_rows: list[tuple[QLineEdit, str]] = []
+        self.audio_devices: dict[str, list[str]] = {}
         self._init_UI()
 
     def open_settings(self) -> None:
@@ -119,6 +121,7 @@ class SettingsPage(QWidget):
         self._show_documents()
         self._show_resume_details()
         self._show_screenshots_size()
+        self._on_settings_tab_changed(self.tab_bar.currentIndex())
         self._update_provider()
         if self.settings_store.error:
             self.status.setText(self.settings_store.error)
@@ -458,6 +461,7 @@ class SettingsPage(QWidget):
         transcription_hint.setWordWrap(True)
         voice_layout.addWidget(transcription_hint)
         voice_layout.addStretch(1)
+        self._init_audio_tab()
         window_layout = self._add_tab("Window")
         self.tray_checkbox = QCheckBox("Show system tray icon")
         self.tray_checkbox.toggled.connect(
@@ -541,11 +545,158 @@ class SettingsPage(QWidget):
         self.tab_bar.currentChanged.connect(
             lambda _index: self._show_screenshots_size()
         )
+        self.tab_bar.currentChanged.connect(self._on_settings_tab_changed)
         self._show_screenshots_size()
         self.save_status = QLabel("Changes are saved automatically after validation.")
         self.save_status.setWordWrap(True)
         self.save_status.setContentsMargins(22, 0, 22, 0)
         page_layout.addWidget(self.save_status)
+
+    def _init_audio_tab(self) -> None:
+        """Build the two independent recording source selectors."""
+        self.audio_tab_index = self.tab_bar.count()
+        layout = self._add_tab("Audio")
+        self.audio_combos: dict[str, QComboBox] = {}
+        for source, label, hint in (
+            (
+                "you",
+                "You · Microphone",
+                "Choose the microphone that picks up your voice.",
+            ),
+            (
+                "them",
+                "Them · Playback device",
+                "Choose the speakers or headphones your call or app plays through.",
+            ),
+        ):
+            title = QLabel(label)
+            combo = _SettingsComboBox()
+            combo.setAccessibleName(label)
+            combo.setAccessibleDescription(hint)
+            combo.setSizeAdjustPolicy(
+                QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+            )
+            combo.setMinimumContentsLength(16)
+            combo.addItem("Windows default", "")
+            title.setBuddy(combo)
+            description = QLabel(hint)
+            description.setWordWrap(True)
+            group = QVBoxLayout()
+            group.setSpacing(4)
+            group.addWidget(title)
+            group.addWidget(combo)
+            group.addWidget(description)
+            layout.addLayout(group)
+            self.audio_combos[source] = combo
+            combo.currentIndexChanged.connect(
+                lambda index, source=source: self._save_audio_device(source, index)
+            )
+        hint_label = QLabel("Changes apply the next time you start recording.")
+        hint_label.setWordWrap(True)
+        layout.addWidget(hint_label)
+        self.audio_refresh = QPushButton("Refresh devices")
+        self.audio_refresh.clicked.connect(self._refresh_audio_devices)
+        layout.addWidget(self.audio_refresh, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.audio_status = QLabel()
+        self.audio_status.setWordWrap(True)
+        self.audio_status.setAccessibleName("Audio device status")
+        self.audio_status.hide()
+        layout.addWidget(self.audio_status)
+        layout.addStretch(1)
+        self.transcriber.audio_devices_loaded.connect(self._on_audio_devices_loaded)
+
+    def _on_settings_tab_changed(self, index: int) -> None:
+        """Refresh the device list each time the Audio tab opens.
+
+        Args:
+            index (int): The selected settings tab.
+        """
+        if index == self.audio_tab_index:
+            self._refresh_audio_devices()
+
+    def _refresh_audio_devices(self) -> None:
+        """Refresh the source list once and show progress inline."""
+        if not self.audio_refresh.isEnabled():
+            return
+        self.audio_refresh.setEnabled(False)
+        for combo in self.audio_combos.values():
+            combo.setEnabled(False)
+        self.audio_status.setText("Looking for audio devices…")
+        self.audio_status.show()
+        self.transcriber.refresh_audio_devices()
+
+    def _on_audio_devices_loaded(
+        self, devices: dict[str, list[str]], error: str
+    ) -> None:
+        """Display available choices while keeping disconnected preferences visible.
+
+        Args:
+            devices (dict[str, list[str]]): The WASAPI device names by source.
+            error (str): The refresh error, or an empty string on success.
+        """
+        if not error:
+            self.audio_devices = devices
+        duplicate_names = False
+        for source, combo in self.audio_combos.items():
+            counts = Counter(self.audio_devices.get(source, ()))
+            with QSignalBlocker(combo):
+                combo.clear()
+                combo.addItem("Windows default", "")
+                for name, count in sorted(
+                    counts.items(), key=lambda item: item[0].casefold()
+                ):
+                    if count > 1:
+                        duplicate_names = True
+                        continue
+                    combo.addItem(
+                        name.removesuffix(" [Loopback]") if source == "them" else name,
+                        name,
+                    )
+                saved = self.settings_store.audio_device(source)
+                index = combo.findData(saved)
+                if index < 0:
+                    label = (
+                        saved.removesuffix(" [Loopback]") if source == "them" else saved
+                    )
+                    combo.addItem(f"{label} (unavailable)", saved)
+                    index = combo.count() - 1
+                    model = combo.model()
+                    assert isinstance(model, QStandardItemModel)
+                    item = model.item(index)
+                    assert item is not None
+                    item.setEnabled(False)
+                combo.setCurrentIndex(index)
+            combo.setEnabled(True)
+        if not error and duplicate_names:
+            error = "Some devices share a name. Give them unique names in Windows Sound settings, then refresh."
+        elif not error and not any(self.audio_devices.values()):
+            error = "No audio devices found. Connect a device and refresh."
+        self.audio_status.setText(error)
+        self.audio_status.setVisible(bool(error))
+        self.audio_refresh.setEnabled(True)
+
+    def _save_audio_device(self, source: str, index: int) -> None:
+        """Save one selection and restore the previous choice if the write fails.
+
+        Args:
+            source (str): The transcript source whose selection changed.
+            index (int): The selected row in that source's device list.
+        """
+        combo = self.audio_combos[source]
+        name = combo.itemData(index)
+        saved = self.settings_store.audio_device(source)
+        if not isinstance(name, str) or name == saved:
+            return
+        try:
+            self.settings_store.save_audio_device(source, name)
+        except OSError:
+            with QSignalBlocker(combo):
+                combo.setCurrentIndex(combo.findData(saved))
+            self.save_status.setText(
+                "The audio device could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self.save_status.setText("Changes saved automatically.")
 
     def _add_tab(self, name: str) -> QVBoxLayout:
         """Add a tab whose contents scroll independently below the tab bar.

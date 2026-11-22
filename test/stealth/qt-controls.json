@@ -161,6 +161,20 @@
     "enabled": true
   },
   {
+    "accessible": "",
+    "class": "QListView",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QFrame"
+  },
+  {
+    "accessible": "",
+    "class": "QListView",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QFrame"
+  },
+  {
     "class": "QMenu",
     "name": "",
     "accessible": "",
@@ -243,6 +257,13 @@
     "accessible": "",
     "parent_class": "QWidget",
     "enabled": true
+  },
+  {
+    "accessible": "",
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
     "class": "QPushButton",
@@ -630,6 +651,13 @@
     "enabled": true
   },
   {
+    "accessible": "Them \u00b7 Playback device",
+    "class": "_SettingsComboBox",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
+  },
+  {
     "class": "QPushButton",
     "name": "",
     "accessible": "Upload cover letter",
@@ -656,5 +684,12 @@
     "accessible": "Use no directory",
     "parent_class": "QWidget",
     "enabled": true
+  },
+  {
+    "accessible": "You \u00b7 Microphone",
+    "class": "_SettingsComboBox",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   }
 ]
