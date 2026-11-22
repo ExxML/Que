@@ -391,7 +391,7 @@ class SettingsPage(QWidget):
         documents_layout.addWidget(documents_hint)
         details_label = QLabel("Resume details")
         details_description = QLabel(
-            "Link items on your resume to notes or project folders so the AI can explain them in depth. Name each link as the item appears on your resume."
+            "Link resume items to notes or project folders so the AI can explain them in depth. For the link name, use the full bullet or a key phrase, your role and employer, or the project or activity name. Include relevant technologies you used so the AI can easily look it up."
         )
         details_description.setWordWrap(True)
         # Rows sit in a plain widget so rebuilding them never disturbs the buttons below
