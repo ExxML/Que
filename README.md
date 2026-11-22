@@ -43,7 +43,9 @@ Que's keyboard and mouse hooks run in a small compiled library, `src/assets/que_
 python native/build.py
 ```
 
-Compile .exe using Nuitka
+Before packaging Que, run `python test/run_ci.py` from the repository root and confirm that all jobs pass. If a job fails, rerun it by name while fixing it, then run the full suite again on the final changes.
+
+Compile the executable with Nuitka.
 ```bash
 pip install nuitka
 python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-package=onnx_asr --include-package-data=onnx_asr --include-data-dir="src/assets=assets" --include-data-files="src/assets/que_hook.dll=assets/que_hook.dll" src/que.py

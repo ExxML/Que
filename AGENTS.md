@@ -22,7 +22,11 @@ python test/run_ci.py static          # ruff, ruff format, mypy --strict, pylint
 python test/run_ci.py regression compliance   # offline regressions, browser smokes, compliance audit
 ```
 
-**Before finishing any turn that changed files, run `python test/run_ci.py` and make it pass.** Run `static` while iterating, but run the full script at least once before you stop. Report the summary it prints; if a failure is unrelated to your change (check whether the same step also fails on main: `gh run list --branch main`; never `git stash`, other agents' edits share this tree), say so instead of hiding it. Judge CI by `test/run_ci.py`, not by tools in `.venv`: extra packages installed there can hide differences from GitHub. If `.venv` is ever rebuilt, use `py -3.13 -m venv .venv`. The workflows in `.github/workflows` call this script, so add or change CI steps in `test/run_ci.py` (and pinned tool versions in `test/requirements-ci.txt`), never in the YAML alone. Hooks in `.claude/settings.json` and `.codex/hooks.json` run `test/agent_ci_gate.py`, which blocks you from finishing a turn in which you changed files until a full `python test/run_ci.py` has started after your last change; a failed run is flagged once, then you may finish after explaining it.
+Run checks that match the change. Use `python test/run_ci.py static` for routine Python changes and focused regression tests for behavior changes. Follow the stealth testing requirements below for changes to observable behavior. Docs-only edits can skip CI. Report the checks you ran and any failures.
+
+Run full CI (`python test/run_ci.py`) before packaging Que or when the user requests it. During build prep, rerun individual jobs while fixing failures, then require a full pass on the final changes before packaging. Save verbose output to a log and report the summary and relevant failures. If a failure appears unrelated to your change, check whether the same step also fails on main with `gh run list --branch main` and report what you find. Never use `git stash` because other agents share the working tree.
+
+Use `test/run_ci.py` for CI so the checks use the same pinned tools as GitHub. If `.venv` is ever rebuilt, use `py -3.13 -m venv .venv`. Define CI steps in `test/run_ci.py` and pin tool versions in `test/requirements-ci.txt`. The workflows in `.github/workflows` call that script.
 
 ## Stealth Testing
 
