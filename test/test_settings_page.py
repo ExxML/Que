@@ -217,6 +217,20 @@ class GuardTests(SettingsTestCase):
             self.page._save()
         save.assert_not_called()
 
+    def test_downloaded_whisper_choice_is_saved(self) -> None:
+        """Save a downloaded model at once, whatever this machine's model cache holds."""
+        model = str(self.page.whisper_combo.currentData())
+        self.window.transcriber.downloading = ""
+        with (
+            patch.object(
+                self.window.transcriber, "downloaded_models", return_value=[model]
+            ),
+            patch.object(self.page, "_save_whisper_model") as save,
+        ):
+            self.page._on_whisper_changed(self.page.whisper_combo.currentIndex())
+        save.assert_called_once_with(model)
+        self.assertTrue(self.page.download_status.isHidden())
+
     def test_whisper_choice_waits_for_a_running_download(self) -> None:
         """Explain nothing new while another model downloads."""
         self.window.transcriber.downloading = "small"
