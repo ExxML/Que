@@ -2,6 +2,7 @@ import base64
 import json
 import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any
 
 import win32crypt  # type: ignore[import-untyped]
@@ -14,6 +15,40 @@ CONTEXT_DOCUMENTS: dict[str, str] = {
     "cover_letter": "Cover letter",
     "interview_script": "Interview script",
 }
+CONFIG_GROUPS: dict[str, dict[str, str]] = {
+    "AI": {
+        "provider": "AI provider",
+        "gemini": "Gemini default model and effort",
+        "claude": "Claude default model and effort",
+        "gemini_key": "Gemini API key",
+        "claude_directory": "Default Claude directory",
+        **{
+            f"presets.{provider}.{slot}": f"{provider.title()} preset · Caps Lock+{(slot + 1) % 10}"
+            for provider in ("gemini", "claude")
+            for slot in range(PRESET_COUNT)
+        },
+    },
+    "Context": {
+        "instruction": "Instruction",
+        **{
+            f"context_documents.{kind}": name
+            for kind, name in CONTEXT_DOCUMENTS.items()
+        },
+        "resume_details": "Resume detail links",
+    },
+    "Voice": {"whisper_model": "Transcription model"},
+    "Audio": {
+        "audio_device_you": "Microphone",
+        "audio_device_them": "Playback device",
+    },
+    "Window": {
+        "system_tray": "Show system tray icon",
+        "capture_hidden": "Hide from screen recording",
+        "click_through": "Click through window",
+        "elevate_helper": "Allow shortcuts in admin apps",
+    },
+}
+CONFIG_KEYS = frozenset(key for group in CONFIG_GROUPS.values() for key in group)
 
 
 class SettingsStore:
@@ -187,11 +222,7 @@ class SettingsStore:
         if not encrypted:
             return ""
         try:
-            return bytes(
-                win32crypt.CryptUnprotectData(
-                    base64.b64decode(encrypted), None, None, None, 0
-                )[1]
-            ).decode("utf-8")
+            return _decrypt_key(encrypted)
         except Exception:  # noqa: BLE001
             self.error = "The saved Gemini key cannot be opened by this Windows account. Paste it again."
             return ""
@@ -337,6 +368,136 @@ class SettingsStore:
             }
         )
 
+    def config_values(self) -> dict[str, Any]:
+        """Collect exportable preferences, including defaults and the encrypted credential.
+
+        Returns:
+            dict[str, Any]: Saved settings keyed by their import selection identifiers.
+        """
+        documents = self.context_documents()
+        encrypted_key = (
+            str(self.data.get("gemini_key", "")) if self.gemini_key() else ""
+        )
+        return {
+            "provider": self.provider(),
+            **{
+                provider: _model_settings(*self.defaults(provider))
+                for provider in ("gemini", "claude")
+            },
+            "gemini_key": encrypted_key,
+            "claude_directory": self.claude_directory(),
+            **{
+                f"presets.{provider}.{slot}": _model_settings(*preset)
+                for provider in ("gemini", "claude")
+                for slot, preset in enumerate(self.presets(provider))
+            },
+            "instruction": self.instruction(),
+            **{
+                f"context_documents.{kind}": dict(
+                    zip(("name", "text"), documents[kind], strict=True)
+                )
+                if kind in documents
+                else None
+                for kind in CONTEXT_DOCUMENTS
+            },
+            "resume_details": [
+                {"name": name, "path": path} for name, path in self.resume_details()
+            ],
+            "whisper_model": self.whisper_model(),
+            "audio_device_you": self.audio_device("you"),
+            "audio_device_them": self.audio_device("them"),
+            "system_tray": self.system_tray(),
+            "capture_hidden": self.capture_hidden(),
+            "click_through": self.click_through(),
+            "elevate_helper": self.elevate_helper(),
+        }
+
+    def export_config(self, path: Path) -> None:
+        """Write a versioned settings backup atomically outside Que's data folder.
+
+        Args:
+            path (Path): The destination chosen by the user.
+        """
+        if path.resolve().is_relative_to(self.path.resolve().parent):
+            raise ValueError("Choose a destination outside Que’s data folder.")
+        backup = {
+            "format": "que-settings",
+            "version": 1,
+            "settings": self.config_values(),
+        }
+        with NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent, delete_on_close=False
+        ) as temporary:
+            json.dump(backup, temporary, ensure_ascii=False, indent=2)
+            temporary.close()
+            os.replace(temporary.name, path)
+
+    def read_config(self, path: Path) -> tuple[dict[str, Any], bool]:
+        """Validate a backup and return only settings available for selection.
+
+        Args:
+            path (Path): The backup chosen by the user.
+
+        Returns:
+            tuple[dict[str, Any], bool]: Selectable values and whether the key is unavailable.
+        """
+        backup = json.loads(path.read_text(encoding="utf-8-sig"))
+        if not isinstance(backup, dict) or backup.get("format") != "que-settings":
+            raise ValueError("Choose a JSON settings backup exported by Que.")
+        if type(backup.get("version")) is not int or backup["version"] != 1:
+            raise ValueError("This backup uses an unsupported settings format.")
+        values = backup.get("settings")
+        if not isinstance(values, dict) or not values.keys() & CONFIG_KEYS:
+            raise ValueError("This backup contains no recognized settings.")
+        settings = {key: value for key, value in values.items() if key in CONFIG_KEYS}
+        for key, value in settings.items():
+            if not _valid_config_value(key, value):
+                label = next(
+                    group[key] for group in CONFIG_GROUPS.values() if key in group
+                )
+                raise ValueError(f"The backup contains an invalid value for {label}.")
+        encrypted = settings.get("gemini_key")
+        if encrypted:
+            try:
+                _decrypt_key(encrypted)
+            except Exception:  # noqa: BLE001
+                del settings["gemini_key"]
+                return settings, True
+        return settings, False
+
+    def import_config(self, settings: dict[str, Any]) -> None:
+        """Merge reviewed preferences into the live config with one atomic write.
+
+        Args:
+            settings (dict[str, Any]): The selected values from a validated backup.
+        """
+        data = dict(self.data)
+        for key in settings.keys() & CONFIG_KEYS:
+            value = settings[key]
+            parent, separator, child = key.partition(".")
+            if not separator:
+                data[parent] = value
+                continue
+            existing = data.get(parent)
+            group = dict(existing) if isinstance(existing, dict) else {}
+            if parent == "presets":
+                provider, _, slot = child.partition(".")
+                rows = group.get(provider)
+                presets = list(rows) if isinstance(rows, list) else []
+                presets.extend(
+                    _model_settings("", "default")
+                    for _ in range(PRESET_COUNT - len(presets))
+                )
+                presets[int(slot)] = value
+                group[provider] = presets
+            elif value is None:
+                group.pop(child, None)
+            else:
+                group[child] = value
+            data[parent] = group
+        self._write(data)
+        self.error = ""
+
     def _write(self, data: dict[str, Any]) -> None:
         """Atomically replace the settings file and adopt its contents.
 
@@ -348,3 +509,48 @@ class SettingsStore:
         temporary.write_text(json.dumps(data, indent=2), encoding="utf-8")
         os.replace(temporary, self.path)
         self.data = data
+
+
+def _decrypt_key(encrypted: str) -> str:
+    """Decrypt a Gemini credential using the current Windows account."""
+    return bytes(
+        win32crypt.CryptUnprotectData(base64.b64decode(encrypted), None, None, None, 0)[
+            1
+        ]
+    ).decode("utf-8")
+
+
+def _model_settings(model: str, effort: str) -> dict[str, str]:
+    """Represent a model and its compatible effort as one setting."""
+    return {"model": model, "effort": effort}
+
+
+def _has_string_fields(value: Any, *fields: str) -> bool:
+    """Check an imported object against an exact set of string-valued fields."""
+    return (
+        isinstance(value, dict)
+        and value.keys() == set(fields)
+        and all(isinstance(value[field], str) for field in fields)
+    )
+
+
+def _valid_config_value(key: str, value: Any) -> bool:
+    """Check the type and shape of a setting before presenting it for import."""
+    if key == "provider":
+        return value in ("gemini", "claude")
+    if key == "whisper_model":
+        return value in WHISPER_MODELS
+    if key in CONFIG_GROUPS["Window"]:
+        return isinstance(value, bool)
+    if key in ("gemini", "claude") or key.startswith("presets."):
+        return _has_string_fields(value, "model", "effort")
+    if key.startswith("context_documents."):
+        return value is None or (
+            _has_string_fields(value, "name", "text") and bool(value["text"])
+        )
+    if key == "resume_details":
+        return isinstance(value, list) and all(
+            _has_string_fields(detail, "name", "path") and bool(detail["path"])
+            for detail in value
+        )
+    return isinstance(value, str)

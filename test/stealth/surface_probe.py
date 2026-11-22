@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
-from PyQt6.QtCore import QMimeData, QPoint, Qt
+from PyQt6.QtCore import QMimeData, QPoint, Qt, QTimer
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -134,7 +134,7 @@ def run() -> dict[str, object]:
     try:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            settings = SettingsStore(root / "config.json")
+            settings = SettingsStore(root / "data" / "config.json")
             sender = AISender(settings, client=MagicMock())
             transcriber = Transcriber(settings)
             screenshot = ScreenshotManager()
@@ -396,6 +396,55 @@ def run() -> dict[str, object]:
                 completed.append(surface)
             window.show_settings()
             settings_page = window.settings_page
+            settings_page.tab_bar.setCurrentIndex(settings_page.tab_bar.count() - 1)
+            config = settings_page.config_panel
+            config.folder = str(root)
+            backup = root / "que-settings.json"
+            config_foreground = native.GetForegroundWindow()
+
+            def complete_config_picker(mode: QFileDialog.AcceptMode) -> None:
+                """Observe the real protected picker before returning a fixture path."""
+                dialog = next(
+                    widget
+                    for widget in app.topLevelWidgets()
+                    if isinstance(widget, QFileDialog) and widget.isVisible()
+                )
+                assert dialog.acceptMode() == mode
+                assert dialog.testOption(QFileDialog.Option.DontUseNativeDialog)
+                wait(80)
+                hwnd = int(dialog.winId())
+                assert any(
+                    row["surface"] == surface and row["hwnd"] == hwnd for row in samples
+                )
+                dialog.selectFile(str(backup))
+                dialog.accept()
+
+            settings_page.instruction_input.setPlainText("Config export fixture")
+            surface = "config-export-picker"
+            QTimer.singleShot(
+                100, lambda: complete_config_picker(QFileDialog.AcceptMode.AcceptSave)
+            )
+            click(config.export_button, config.export_button.rect().center())
+            assert backup.is_file()
+            completed.append(surface)
+            settings_page.instruction_input.setPlainText("Config import fixture")
+            surface = "config-import-picker"
+            QTimer.singleShot(
+                100, lambda: complete_config_picker(QFileDialog.AcceptMode.AcceptOpen)
+            )
+            click(config.browse_button, config.browse_button.rect().center())
+            completed.append(surface)
+            surface = "config-import-review"
+            wait(80)
+            choice = config.choices["instruction"]
+            assert choice.isVisible() and not config.apply_button.isEnabled()
+            click(choice, QPoint(8, choice.height() // 2))
+            assert choice.isChecked()
+            click(config.apply_button, config.apply_button.rect().center())
+            assert settings.instruction() == "Config export fixture"
+            assert native.GetForegroundWindow() == config_foreground
+            completed.append(surface)
+            interactions.append("config-transfer")
             audio_tab = settings_page.audio_tab_index
             device_names = {
                 "you": ["Fixture microphone"],

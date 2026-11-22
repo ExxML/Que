@@ -37,6 +37,13 @@ WORKFLOWS = {
         "quit while recording",
         "repeat launch and shutdown ten times",
     ),
+    "config.transfer": (
+        "export a settings backup, including browsing and confirming the file location",
+        "open and cancel the import picker",
+        "open a different backup and cancel the selection review",
+        "import one setting by keyboard or pointer while leaving another unchecked",
+        "open an invalid backup and verify the inline error",
+    ),
     "audio.devices": (
         "record silence with speakers",
         "record speech with speakers",

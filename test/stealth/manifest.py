@@ -42,6 +42,9 @@ SURFACES = [
     "text context menu",
     "file dialog",
     "directory dialog",
+    "Config export picker",
+    "Config import picker",
+    "Config import review",
     "tray menu",
     "startup",
     "provider error",
@@ -163,6 +166,12 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
             "Capture before launching Que; start, hide/show, change settings, quit and repeat launch.",
             "Record process start/exit, first native window, first decoded frame and each visible transition.",
             "capture",
+        ),
+        (
+            "config.transfer",
+            "Use Settings Config with a disposable backup while the browser remains foreground and calibrated capture runs.",
+            "Record the selected path, the expected settings-only file or reviewed preferences, and the visible completion. Verify an unchecked preference and saved conversation stay intact.",
+            "interaction",
         ),
         (
             "audio.browser-first",

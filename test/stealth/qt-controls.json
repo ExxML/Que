@@ -154,11 +154,11 @@
     "enabled": false
   },
   {
-    "class": "QListView",
-    "name": "",
     "accessible": "",
-    "parent_class": "QFrame",
-    "enabled": true
+    "class": "QListView",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QFrame"
   },
   {
     "accessible": "",
@@ -192,6 +192,27 @@
     "class": "QPushButton",
     "name": "",
     "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "ConfigPanel",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
+    "parent_class": "ConfigPanel",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "",
     "parent_class": "MainWindow",
     "enabled": true
   },
@@ -203,60 +224,74 @@
     "enabled": true
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
-    "class": "QPushButton",
-    "name": "",
     "accessible": "",
-    "parent_class": "QWidget",
-    "enabled": true
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
+  },
+  {
+    "accessible": "",
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
+  },
+  {
+    "accessible": "",
+    "class": "QPushButton",
+    "enabled": true,
+    "name": "",
+    "parent_class": "QWidget"
   },
   {
     "accessible": "",
@@ -493,6 +528,13 @@
     "class": "QLineEdit",
     "name": "",
     "accessible": "Gemini API key",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QCheckBox",
+    "name": "",
+    "accessible": "Import Instruction",
     "parent_class": "QWidget",
     "enabled": true
   },

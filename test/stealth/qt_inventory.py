@@ -63,10 +63,25 @@ def inspect_controls(source: Path, output: Path) -> None:
             TranscriptSegment(2, "them", "Synthetic loopback phrase."),
         ]
         transcriber.changed.emit()
+        backup = source / "config-fixture.json"
+        backup.write_text(
+            json.dumps(
+                {
+                    "format": "que-settings",
+                    "version": 1,
+                    "settings": {"instruction": "Synthetic backup instruction"},
+                }
+            ),
+            encoding="utf-8",
+        )
+        with patch("ui.window.config_panel.choose_file", return_value=str(backup)):
+            window.settings_page.config_panel.browse_button.click()
         rows: list[dict[str, Any]] = []
         for widget in app.allWidgets():
             cls = type(widget).__name__
-            if any(
+            if (
+                cls == "QCheckBox" and widget.accessibleName().startswith("Import ")
+            ) or any(
                 token in cls.lower()
                 for token in (
                     "button",

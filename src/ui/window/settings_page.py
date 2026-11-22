@@ -33,6 +33,7 @@ from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
 from ui.directory_picker import choose_directory, choose_file
 from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, qss
+from ui.window.config_panel import ConfigPanel
 
 WHISPER_LABELS: dict[str, str] = {
     "tiny.en": "Tiny · fastest · 75 MB",
@@ -46,6 +47,7 @@ class SettingsPage(QWidget):
     """Configure provider connections and independent model defaults inside the overlay."""
 
     saved = pyqtSignal(object)
+    config_ai_saved = pyqtSignal(object)
     directory_saved = pyqtSignal(str)
     system_tray_saved = pyqtSignal(bool)
     capture_hidden_saved = pyqtSignal(bool)
@@ -74,6 +76,8 @@ class SettingsPage(QWidget):
         self.models: tuple[ModelOption, ...] = ()
         self.drafts: dict[str, tuple[str, str]] = {}
         self.loading = False
+        self.restoring_config = False
+        self.keep_voice_preference = False
         self.key_timer = QTimer(self)
         self.key_timer.setSingleShot(True)
         self.key_timer.setInterval(500)
@@ -92,23 +96,13 @@ class SettingsPage(QWidget):
 
     def open_settings(self) -> None:
         """Load saved values when opening or reopening the settings page."""
-        self.key_timer.stop()
-        self.provider = self.settings_store.provider()
-        self.models = ()
-        self.drafts = {
-            provider: self.settings_store.defaults(provider)
-            for provider in ("gemini", "claude")
-        }
-        self.key_input.blockSignals(True)
-        self.key_input.setText(self.settings_store.gemini_key())
-        self.key_input.blockSignals(False)
-        self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.show_key.setChecked(False)
-        self._show_directory(self.settings_store.claude_directory())
-        self.gemini_button.setChecked(self.provider == "gemini")
-        self.claude_button.setChecked(self.provider == "claude")
         self._select_whisper(
             self.transcriber.downloading
+            or (
+                self.settings_store.whisper_model()
+                if self.keep_voice_preference
+                else ""
+            )
             or self.transcriber.active_model()
             or "small.en"
         )
@@ -122,9 +116,7 @@ class SettingsPage(QWidget):
         self._show_resume_details()
         self._show_screenshots_size()
         self._on_settings_tab_changed(self.tab_bar.currentIndex())
-        self._update_provider()
-        if self.settings_store.error:
-            self.status.setText(self.settings_store.error)
+        self._load_ai_settings()
 
     def hideEvent(self, event: QHideEvent | None) -> None:
         """Save pending instruction and resume detail edits when leaving settings or hiding Que.
@@ -133,7 +125,6 @@ class SettingsPage(QWidget):
             event (QHideEvent | None): The hide event.
         """
         if self.instruction_timer.isActive():
-            self.instruction_timer.stop()
             self._save_instruction()
         if self.details_timer.isActive():
             self._save_detail_names()
@@ -167,7 +158,7 @@ class SettingsPage(QWidget):
             QFrame#tab_row {{ background: transparent; border-bottom: 1px solid {qss(PRIMARY_COLOR, 40)}; }}
             QTabBar::tab {{
                 color: {qss(PRIMARY_COLOR, 210)}; background: transparent; border: none;
-                border-bottom: 2px solid transparent; padding: 6px 2px; margin-right: 20px;
+                border-bottom: 2px solid transparent; padding: 6px 2px; margin-right: 16px;
             }}
             QTabBar::tab:hover {{ color: {qss(PRIMARY_COLOR, 220)}; }}
             QTabBar::tab:selected {{ color: {qss(PRIMARY_COLOR)}; border-bottom-color: {qss(PRIMARY_COLOR)}; }}
@@ -541,6 +532,11 @@ class SettingsPage(QWidget):
         storage_hint.setWordWrap(True)
         storage_layout.addWidget(storage_hint)
         storage_layout.addStretch(1)
+        self.config_tab_index = self.tab_bar.count()
+        config_layout = self._add_tab("Config")
+        self.config_panel = ConfigPanel(self.settings_store, self._flush_context_edits)
+        self.config_panel.imported.connect(self._apply_imported_config)
+        config_layout.addWidget(self.config_panel, 1)
         # Connected after the tabs exist; switching tabs cancels a pending delete and remeasures
         self.tab_bar.currentChanged.connect(
             lambda _index: self._show_screenshots_size()
@@ -551,6 +547,107 @@ class SettingsPage(QWidget):
         self.save_status.setWordWrap(True)
         self.save_status.setContentsMargins(22, 0, 22, 0)
         page_layout.addWidget(self.save_status)
+
+    def _load_ai_settings(self) -> None:
+        """Reload the saved AI preferences and check the active connection."""
+        self.key_timer.stop()
+        self.provider = self.settings_store.provider()
+        self.models = ()
+        self.drafts = {
+            provider: self.settings_store.defaults(provider)
+            for provider in ("gemini", "claude")
+        }
+        self.key_input.blockSignals(True)
+        self.key_input.setText(self.settings_store.gemini_key())
+        self.key_input.blockSignals(False)
+        self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.show_key.setChecked(False)
+        self._show_directory(self.settings_store.claude_directory())
+        self.gemini_button.setChecked(self.provider == "gemini")
+        self.claude_button.setChecked(self.provider == "claude")
+        self._update_provider()
+        if self.settings_store.error:
+            self.status.setText(self.settings_store.error)
+
+    def _flush_context_edits(self) -> bool:
+        """Persist buffered Context edits before reading or writing a backup.
+
+        Returns:
+            bool: True if both Context fields are up to date.
+        """
+        instruction_saved = self._save_instruction()
+        details_saved = self._save_detail_names()
+        return instruction_saved and details_saved
+
+    def _apply_imported_config(self, selected: set[str]) -> None:
+        """Update only controls and runtime consumers affected by the import.
+
+        Args:
+            selected (set[str]): The imported preference identifiers.
+        """
+        store = self.settings_store
+        ai_changes = selected & {"provider", "gemini_key", "gemini", "claude"}
+        if ai_changes:
+            self.restoring_config = True
+            self._load_ai_settings()
+            self.config_ai_saved.emit(ai_changes)
+        if self.models and any(
+            key.startswith(f"presets.{self.provider}.") for key in selected
+        ):
+            self._show_presets()
+        if "claude_directory" in selected:
+            directory = store.claude_directory()
+            self._show_directory(directory)
+            self.directory_saved.emit(directory)
+        if "instruction" in selected:
+            with QSignalBlocker(self.instruction_input):
+                self.instruction_input.setPlainText(store.instruction())
+        if any(key.startswith("context_documents.") for key in selected):
+            self._show_documents()
+        if "resume_details" in selected:
+            self._show_resume_details()
+        if "whisper_model" in selected:
+            self.keep_voice_preference = True
+            self._select_whisper(store.whisper_model())
+            self._show_download_status(
+                "Download the imported model if it is unavailable on this device."
+            )
+        if (
+            selected & {"audio_device_you", "audio_device_them"}
+            and self.audio_refresh.isEnabled()
+        ):
+            self._on_audio_devices_loaded(self.audio_devices, "")
+        for key, checkbox, value, signal in (
+            (
+                "system_tray",
+                self.tray_checkbox,
+                store.system_tray(),
+                self.system_tray_saved,
+            ),
+            (
+                "capture_hidden",
+                self.capture_checkbox,
+                store.capture_hidden(),
+                self.capture_hidden_saved,
+            ),
+            (
+                "click_through",
+                self.click_through_checkbox,
+                store.click_through(),
+                self.click_through_saved,
+            ),
+            (
+                "elevate_helper",
+                self.elevation_checkbox,
+                store.elevate_helper(),
+                self.elevation_saved,
+            ),
+        ):
+            if key in selected:
+                with QSignalBlocker(checkbox):
+                    checkbox.setChecked(value)
+                signal.emit(value)
+        self.save_status.setText("Imported settings saved.")
 
     def _init_audio_tab(self) -> None:
         """Build the two independent recording source selectors."""
@@ -606,11 +703,12 @@ class SettingsPage(QWidget):
         self.transcriber.audio_devices_loaded.connect(self._on_audio_devices_loaded)
 
     def _on_settings_tab_changed(self, index: int) -> None:
-        """Refresh the device list each time the Audio tab opens.
+        """Refresh Audio devices and let Config show its own operation status.
 
         Args:
             index (int): The selected settings tab.
         """
+        self.save_status.setVisible(index != self.config_tab_index)
         if index == self.audio_tab_index:
             self._refresh_audio_devices()
 
@@ -748,6 +846,7 @@ class SettingsPage(QWidget):
         """
         if self.provider == provider:
             return
+        self.restoring_config = False
         if self.models:
             self.drafts[self.provider] = (
                 str(self.model_combo.currentData()),
@@ -849,21 +948,23 @@ class SettingsPage(QWidget):
             "Changes saved automatically. They apply to new chats."
         )
 
-    def _save_instruction(self) -> None:
+    def _save_instruction(self) -> bool:
         """Save the typed instruction when it differs from the saved one."""
+        self.instruction_timer.stop()
         instruction = self.instruction_input.toPlainText().strip()
         if instruction == self.settings_store.instruction():
-            return
+            return True
         try:
             self.settings_store.save_instruction(instruction)
         except OSError:
             self.save_status.setText(
                 "The instruction could not be saved. Check that Que's data folder is writable."
             )
-            return
+            return False
         self.save_status.setText(
             "Changes saved automatically. They apply to new chats."
         )
+        return True
 
     def _show_documents(self) -> None:
         """Display each saved document's name and size, and offer removal only when saved."""
@@ -910,12 +1011,13 @@ class SettingsPage(QWidget):
         name_input.setFocus()
         name_input.selectAll()
 
-    def _save_detail_names(self) -> None:
+    def _save_detail_names(self) -> bool:
         """Save typed resume item names when they differ from the saved ones."""
         self.details_timer.stop()
         details = self._resume_details()
         if details != self.settings_store.resume_details():
-            self._save_resume_details(details, False)
+            return self._save_resume_details(details, False)
+        return True
 
     def _save_resume_details(
         self, details: list[tuple[str, str]], rebuild: bool = True
@@ -1091,6 +1193,7 @@ class SettingsPage(QWidget):
 
     def _download_whisper(self) -> None:
         """Start downloading the selected model."""
+        self.keep_voice_preference = False
         model = str(self.whisper_combo.currentData())
         self.transcriber.download(model)
         self._show_download_status(
@@ -1109,6 +1212,8 @@ class SettingsPage(QWidget):
             self._show_download_status(
                 f"Could not download the {model} model. Check your internet connection and try again. ({error})"
             )
+        elif self.keep_voice_preference:
+            self._show_download_status(f"Downloaded the {model} model.")
         else:
             try:
                 self.settings_store.save_whisper_model(model)
@@ -1174,6 +1279,7 @@ class SettingsPage(QWidget):
 
     def _on_key_changed(self, _text: str) -> None:
         """Validate a new key automatically after a short typing pause."""
+        self.restoring_config = False
         self.revision = -1
         self._set_loading(False)
         self._clear_models()
@@ -1275,7 +1381,9 @@ class SettingsPage(QWidget):
         self.model_combo.blockSignals(False)
         self.model_combo.setEnabled(True)
         self._show_presets()
-        self._on_model_changed(self.model_combo.currentIndex())
+        self._on_model_changed(
+            self.model_combo.currentIndex(), save=not self.restoring_config
+        )
 
     def _on_failed(self, revision: int, error: str) -> None:
         """Show actionable connection failures without exposing stale choices.
@@ -1292,11 +1400,12 @@ class SettingsPage(QWidget):
             "Changes were not applied. Your saved settings are still active."
         )
 
-    def _on_model_changed(self, index: int) -> None:
+    def _on_model_changed(self, index: int, *, save: bool = True) -> None:
         """Restrict effort choices to the current model's discovered capabilities.
 
         Args:
             index (int): The selected model index.
+            save (bool): Whether to save the displayed choice as a new default.
         """
         previous = self.effort_combo.currentData() or self.drafts[self.provider][1]
         self.effort_combo.blockSignals(True)
@@ -1312,7 +1421,8 @@ class SettingsPage(QWidget):
             self.effort_combo.setEnabled(self.effort_combo.count() > 1)
         finally:
             self.effort_combo.blockSignals(False)
-        self._save()
+        if save:
+            self._save()
 
     def _save(self) -> None:
         """Persist changed, verified settings without interrupting page navigation."""

@@ -88,6 +88,7 @@ class MainWindow(QWidget):
         self.model_catalog.failed.connect(self._on_models_failed)
         self.input_field.input_settings.reload_requested.connect(self._refresh_models)
         self.settings_page.saved.connect(self._on_settings_saved)
+        self.settings_page.config_ai_saved.connect(self._on_config_ai_saved)
         self.settings_page.directory_saved.connect(self._set_claude_directory)
         self.settings_page.capture_hidden_saved.connect(self.set_capture_hidden)
         self.settings_page.click_through_saved.connect(self.set_click_through)
@@ -558,16 +559,41 @@ class MainWindow(QWidget):
             result (ProviderResult): The verified provider configuration.
         """
         self.catalog_revision = -1
-        api_key = self.ai_sender.settings_store.gemini_key()
-        if (
-            result.provider != self.ai_sender.provider
-            or api_key != self.ai_sender.api_key
-        ):
-            self.worker.stop()
-            self.chat_area.finalize_assistant_stream()
-            self.ai_sender.configure(result.provider, api_key)
-            self._show_claude_directory()
+        self._apply_saved_connection(result.provider)
         self._apply_models(result)
+
+    def _on_config_ai_saved(self, selected: set[str]) -> None:
+        """Apply restored AI settings to the relevant provider only.
+
+        Args:
+            selected (set[str]): The AI connection and default settings restored from a backup.
+        """
+        provider_changed = "provider" in selected
+        provider = (
+            self.ai_sender.settings_store.provider()
+            if provider_changed
+            else self.ai_sender.provider
+        )
+        connection_changed = provider_changed or (
+            provider == "gemini" and "gemini_key" in selected
+        )
+        if connection_changed and self._apply_saved_connection(provider):
+            self._refresh_models()
+        elif provider in selected and self.ai_sender.models:
+            self._apply_models(
+                ProviderResult(provider, tuple(self.ai_sender.models.values()), "")
+            )
+
+    def _apply_saved_connection(self, provider: str) -> bool:
+        """Reconfigure the sender if the saved provider or credential has changed."""
+        api_key = self.ai_sender.settings_store.gemini_key()
+        if provider == self.ai_sender.provider and api_key == self.ai_sender.api_key:
+            return False
+        self.worker.stop()
+        self.chat_area.finalize_assistant_stream()
+        self.ai_sender.configure(provider, api_key)
+        self._show_claude_directory()
+        return True
 
     def _choose_claude_directory(self) -> None:
         """Move Claude to another directory for subsequent turns of this session."""
@@ -801,7 +827,9 @@ class MainWindow(QWidget):
         self.worker.stop()
         if conversation.provider != self.ai_sender.provider:
             # Switch only for this session; the saved default provider stays unchanged
-            self.ai_sender.configure(conversation.provider, self.ai_sender.api_key)
+            self.ai_sender.configure(
+                conversation.provider, self.ai_sender.settings_store.gemini_key()
+            )
             self._show_claude_directory()
             self._refresh_models()
         self.ai_sender.restore_chat(
