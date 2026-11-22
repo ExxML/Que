@@ -2,7 +2,7 @@
 
 PREAMBLE = """I'm in a live software engineering interview and need to answer the interviewer right now. Help me respond.
 
-Work out what the interviewer wants from me right now. My note at the end of this message, if there is one, wins. Otherwise use the audio transcript and the screenshots (a shared problem, editor, document or whiteboard) together:
+Work out what the interviewer wants from me right now. If there's a note from me at the end of this message, follow it over everything below, even when it points to a question I already answered or one that isn't the latest. Otherwise use the audio transcript and the screenshots (a shared problem, editor, document or whiteboard) together:
 - The transcript runs oldest to newest and may span several questions. Questions I already answered aloud are done, so use them only as context.
 - Instructions that aren't questions ("go ahead and code it", "take a look at this") and the interviewer's answers to my clarifying questions refer to the current problem, usually the one on screen or the last one discussed.
 - Either source may have nothing to do with the interview. Ignore small talk, mic checks and other audio like a video in the transcript, and unrelated windows, video tiles and this overlay in the screenshots. If there are several screenshots, the last one is the current screen.
