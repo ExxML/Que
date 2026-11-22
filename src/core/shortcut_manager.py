@@ -348,3 +348,7 @@ class ShortcutManager(QObject):
         """Take a screenshot then answer the interview question, whatever kind it is."""
         self._screenshot()
         self.prompt_signal.emit(LABEL, PROMPT)
+
+    def _dismiss_warnings(self) -> None:
+        """Dismiss the visible protection warnings on the Qt thread."""
+        self.main_window.status_banner.dismiss_all()

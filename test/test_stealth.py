@@ -562,8 +562,8 @@ class IsolationInventoryTests(unittest.TestCase):
         self.assertEqual(
             {row["configuration"]["exclusion"] for row in rows}, {True, False}
         )
-        self.assertEqual(len(HOTKEYS), 29)
-        self.assertEqual(len({(mask, vk) for mask, vk, *_ in HOTKEYS}), 29)
+        self.assertEqual(len(HOTKEYS), 30)
+        self.assertEqual(len({(mask, vk) for mask, vk, *_ in HOTKEYS}), len(HOTKEYS))
         self.assertTrue(
             any(
                 row["configuration"]["capture_source"] == "Que-if-offered"

@@ -3,8 +3,9 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+from PyQt6.QtCore import QEvent
 from PyQt6.QtWidgets import QWidget
 from qt_application import application
 
@@ -12,6 +13,7 @@ from core.ai_sender import AISender
 from core.hook_client import HookClient
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
+from core.shortcut_manager import ShortcutManager
 from ui.window.main_window import MainWindow
 from ui.window.status_banner import MAX_ENTRIES, StatusBanner
 
@@ -55,6 +57,28 @@ class StatusBannerTests(unittest.TestCase):
         self.banner._dismiss("Leaked.")
         self.assertEqual(self.banner.entries, {})
         self.assertTrue(self.banner.badge.isHidden())
+
+    def test_dismiss_all_preserves_only_ongoing_warnings(self) -> None:
+        """Dismiss open rows in one update and restore only ongoing warnings from the badge."""
+        self.banner.show_warning("Already hidden.")
+        self.banner._dismiss("Already hidden.")
+        self.banner.show_warning("Reduced protection.")
+        self.banner.show_warning("Input leaked.", critical=True, lasting=False)
+        size_changed = Mock()
+        self.banner.size_changed.connect(size_changed)
+
+        self.banner.dismiss_all()
+        self.banner.dismiss_all()
+
+        size_changed.assert_called_once_with()
+        self.assertEqual(self.banner.rows.count(), 0)
+        self.assertFalse(self.banner.wanted())
+        self.assertFalse(self.banner.badge.isHidden())
+        self.banner.badge.click()
+        self.assertEqual(self.banner.rows.count(), 2)
+        self.assertEqual(
+            list(self.banner.entries), ["Already hidden.", "Reduced protection."]
+        )
 
     def test_event_flood_drops_oldest_events_only(self) -> None:
         """Bound the rows by dropping old leaks, never a condition that still holds."""
@@ -123,6 +147,23 @@ class MainWindowBannerTests(unittest.TestCase):
         self.banner._dismiss("Not elevated.")
         self.assertEqual(self.window.height(), height)
         self.assertTrue(self.banner.isHidden())
+
+    def test_shortcut_action_dismisses_warning_rows(self) -> None:
+        """Dispatch the helper's action through the main window's shortcut manager."""
+        with patch.object(HookClient, "start"):
+            shortcuts = ShortcutManager(self.window, ScreenshotManager())
+        self.addCleanup(self.app.sendPostedEvents, None, QEvent.Type.DeferredDelete)
+        self.addCleanup(shortcuts.deleteLater)
+        self.addCleanup(self.window.removeEventFilter, shortcuts)
+        self.addCleanup(shortcuts.stop)
+        self.banner.show_warning("Reduced protection.")
+        self.banner.show_warning("Input leaked.", critical=True, lasting=False)
+
+        shortcuts.hook_client.dispatch({"type": "action", "name": "dismiss_warnings"})
+
+        self.assertTrue(self.banner.isHidden())
+        self.assertEqual(self.window.status_banner_height, 0)
+        self.assertFalse(self.banner.badge.isHidden())
 
 
 class HookClientWarningTests(unittest.TestCase):

@@ -168,7 +168,7 @@ def audit_hooks() -> tuple[list[Result], list[dict[str, Any]]]:
         "inventory.hotkeys",
         inventory,
         actual == set(HOTKEYS),
-        "Compare actual populated tables with all 16 reviewed action contracts.",
+        f"Compare actual populated tables with all {len(HOTKEYS)} reviewed action contracts.",
     )
     for mask, vk, name, repeat, always in HOTKEYS:
         for variant in range(3):

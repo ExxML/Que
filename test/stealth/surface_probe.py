@@ -27,7 +27,7 @@ from PyQt6.QtWidgets import (
 from core.ai_sender import AISender
 from core.chat_history import ChatHistory
 from core.hook_client import HookClient
-from core.hook_engine import HookEngine
+from core.hook_engine import QUE_KEY, HookEngine
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
 from core.shortcut_manager import ShortcutManager
@@ -187,7 +187,7 @@ def run() -> dict[str, object]:
                     0, WM_KEYDOWN if down else WM_KEYUP, ctypes.addressof(event)
                 )
                 assert result == 1, (
-                    f"Armed key {vk} was not consumed; target={router.target}, armed={engine.input_armed}."
+                    f"Key {vk} was not consumed; target={router.target}, armed={engine.input_armed}."
                 )
 
             with patch("core.hook_engine.user32") as api:
@@ -239,6 +239,42 @@ def run() -> dict[str, object]:
             )
             assert not native.GetCapture(), "Local editing grabbed the pointer."
             router.disarm()
+
+            banner = window.status_banner
+            height = window.height()
+            surface = "warnings-open"
+            banner.show_warning("Fixture ongoing warning.")
+            banner.show_warning("Fixture one-off warning.", lasting=False)
+            wait(40)
+            assert banner.isVisible() and banner.rows.count() == 2
+            completed.append(surface)
+            surface = "warnings-dismissed"
+            warning_focus = native.GetForegroundWindow()
+            with patch("core.hook_engine.user32") as api:
+                key(QUE_KEY)
+                key(ord("D"))
+                key(ord("D"), False)
+                key(QUE_KEY, False)
+                api.CallNextHookEx.assert_not_called()
+            assert native.GetForegroundWindow() == warning_focus, (
+                "Dismissing warnings changed native foreground focus."
+            )
+            wait(40)
+            assert banner.isHidden() and banner.badge.isVisible()
+            assert window.height() == height, (
+                "Dismissing warnings did not return their space."
+            )
+            foreground_process = wintypes.DWORD()
+            native.GetWindowThreadProcessId(
+                native.GetForegroundWindow(), ctypes.byref(foreground_process)
+            )
+            assert foreground_process.value != os.getpid(), (
+                "Que gained foreground focus after dismissing warnings."
+            )
+            assert not native.GetCapture(), "Dismissing warnings grabbed the pointer."
+            completed.append(surface)
+            interactions.append("dismiss-warnings-shortcut")
+            banner.clear_warning("Fixture ongoing warning.")
 
             def click(widget: QWidget | None, point: QPoint) -> None:
                 """Route a logical widget click through the production mouse receiver."""

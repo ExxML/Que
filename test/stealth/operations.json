@@ -3730,6 +3730,13 @@
     "expression": "def _answer(self) -> None:",
     "sha256": "ec5e71dfe72109238e49186ab06908d13a49ea97b5e6bb7b547249841f531b1f"
   },
+  "core/shortcut_manager.py:352:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 352,
+    "expression": "def _dismiss_warnings(self) -> None:",
+    "sha256": "9089936cf936dbfe340965503a1cb0e231079bec6a64a93457f8445230af0116"
+  },
   "core/shortcut_manager.py:108:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
@@ -9432,48 +9439,55 @@
     "category": "routine",
     "source": "ui/window/status_banner.py",
     "line": 94,
-    "expression": "def show_all(self) -> None:",
-    "sha256": "d6a55d237ef2a2aec52402a5c3e756d4fd0b41ff1c023c72098f6af2e90bb377"
+    "expression": "def dismiss_all(self) -> None:",
+    "sha256": "ce5ae99a908a93e317c6b5d79b19273c95cf8028879ae0d3f34a9802172983af"
   },
   "ui/window/status_banner.py:100:routine": {
     "category": "routine",
     "source": "ui/window/status_banner.py",
     "line": 100,
+    "expression": "def show_all(self) -> None:",
+    "sha256": "d6a55d237ef2a2aec52402a5c3e756d4fd0b41ff1c023c72098f6af2e90bb377"
+  },
+  "ui/window/status_banner.py:106:routine": {
+    "category": "routine",
+    "source": "ui/window/status_banner.py",
+    "line": 106,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "b2c5339f867d13e8530acdb91df9014233cdd861ac74fd1dfb0fe4e61ee1b5c2"
   },
-  "ui/window/status_banner.py:110:routine": {
+  "ui/window/status_banner.py:116:routine": {
     "category": "routine",
     "source": "ui/window/status_banner.py",
-    "line": 110,
+    "line": 116,
     "expression": "def _init_UI(self) -> None:",
     "sha256": "3a43217ada0f49d02fcdc51ae7c42e3e3e39efcbf697f2c6cb084d358cdff711"
-  },
-  "ui/window/status_banner.py:130:routine": {
-    "category": "routine",
-    "source": "ui/window/status_banner.py",
-    "line": 130,
-    "expression": "def _trim(self) -> None:",
-    "sha256": "df33c262550ffe8bb869a1c94817606e373bb01cc380a223d8aa8c54c9506a1a"
   },
   "ui/window/status_banner.py:136:routine": {
     "category": "routine",
     "source": "ui/window/status_banner.py",
     "line": 136,
-    "expression": "def _dismiss(self, text: str) -> None:",
-    "sha256": "83f23c3b57e062696e31c3078e1fe79e843d3465c666a68d035db1b18c5cf2ce"
+    "expression": "def _trim(self) -> None:",
+    "sha256": "df33c262550ffe8bb869a1c94817606e373bb01cc380a223d8aa8c54c9506a1a"
   },
-  "ui/window/status_banner.py:149:routine": {
+  "ui/window/status_banner.py:142:routine": {
     "category": "routine",
     "source": "ui/window/status_banner.py",
-    "line": 149,
+    "line": 142,
+    "expression": "def _dismiss(self, *texts: str) -> None:",
+    "sha256": "85adb0e0df3c1fd6548eabf0c39bd1a90209708deb4529a7f1a6065103ff3e33"
+  },
+  "ui/window/status_banner.py:157:routine": {
+    "category": "routine",
+    "source": "ui/window/status_banner.py",
+    "line": 157,
     "expression": "def _refresh(self) -> None:",
     "sha256": "c95f758f406db50d3c039d9d5023c4e0e741a94067a97565fa56fdb9ebe7dfed"
   },
-  "ui/window/status_banner.py:190:routine": {
+  "ui/window/status_banner.py:198:routine": {
     "category": "routine",
     "source": "ui/window/status_banner.py",
-    "line": 190,
+    "line": 198,
     "expression": "def _row(self, text: str, entry: BannerEntry) -> QWidget:",
     "sha256": "66a06a80357bc68cc2af89aed36e0258c26a336dd761c411519911ffdbb38e25"
   },
@@ -9491,17 +9505,24 @@
     "expression": "if self.entries.pop(text, None) is not None:",
     "sha256": "018748a532f948013855e41f31ce9c09b8f000fa3c46b30dd0d8354a4fea8bf6"
   },
-  "ui/window/status_banner.py:143:branch": {
+  "ui/window/status_banner.py:154:branch": {
     "category": "branch",
     "source": "ui/window/status_banner.py",
-    "line": 143,
+    "line": 154,
+    "expression": "if texts:",
+    "sha256": "db2c13a53da76f74a0a29300ce5514ca7c5f5bd3214bd091bcf3e2c08babb8d2"
+  },
+  "ui/window/status_banner.py:150:branch": {
+    "category": "branch",
+    "source": "ui/window/status_banner.py",
+    "line": 150,
     "expression": "if entry.lasting:",
     "sha256": "d681635471b7c29fc0cb246ade60560b8d2a148c3ef25aea0016f400d7091878"
   },
-  "ui/window/status_banner.py:155:branch": {
+  "ui/window/status_banner.py:163:branch": {
     "category": "branch",
     "source": "ui/window/status_banner.py",
-    "line": 155,
+    "line": 163,
     "expression": "if row is not None:",
     "sha256": "04d5ea7ddad94387d8ecf8573ab38ad4bd601bd5d8c08b54e7dfb3ef1dd9d780"
   },

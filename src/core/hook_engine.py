@@ -58,7 +58,7 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE, ord("H"), "toggle_history", False, False),
     (MOD_QUE, ord("C"), "answer", False, False),
     (MOD_QUE, VK_ESCAPE, "stop_generation", False, False),
-    # Caps Lock+1 to Caps Lock+0 apply model presets 1 to 10
+    (MOD_QUE, ord("D"), "dismiss_warnings", False, False),
     *(
         (MOD_QUE, ord(str(slot % 10)), f"preset_{slot}", False, False)
         for slot in range(1, PRESET_COUNT + 1)

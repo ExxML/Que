@@ -24,6 +24,7 @@ HOTKEYS = [
     (8, 72, "toggle_history", False, False),
     (8, 67, "answer", False, False),
     (8, 27, "stop_generation", False, False),
+    (8, 68, "dismiss_warnings", False, False),
     *((8, 48 + slot % 10, f"preset_{slot}", False, False) for slot in range(1, 11)),
 ]
 SURFACES = [
@@ -71,14 +72,19 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
     """Return an explicit coverage contract for every current action and surface."""
     items = []
     for mask, vk, name, repeat, always in HOTKEYS:
+        setup = ""
+        effect = ""
+        if name == "dismiss_warnings":
+            setup = "Before measuring, open the overlay with multiple warning rows, including an ongoing warning, then set the visibility for this variant. "
+            effect = "When visible, all rows close and the badge can reopen the ongoing warnings. When hidden, show Que after measuring and confirm the warnings are still open. "
         for variant in ("normal", "release-modifier-first", "hidden", "stress"):
             items.append(
                 Scenario(
                     f"key.{name}.{variant}",
-                    f"Physically press modifiers mask {mask} (Caps Lock=8 Alt=2 Shift=4) + VK {vk}; {variant}. "
+                    f"{setup}Physically press modifiers mask {mask} (Caps Lock=8 Alt=2 Shift=4) + VK {vk}; {variant}. "
                     "During measurement use only this chord, hold for repeats, then release. Test ordinary text after the interval in input.integrity. Stress: stream, record and capture simultaneously.",
-                    f"Record observed {name} completion; repeat callbacks={repeat}; always active={always}. "
-                    "Hidden conditional shortcuts must instead reach the browser intact. Quit requires relaunch.",
+                    f"{effect}Record observed {name} completion; repeat callbacks={repeat}; always active={always}. "
+                    "Caps Lock chords are consumed even when a hidden conditional shortcut does not run. Quit requires relaunch.",
                     "keydown/up/keypress, beforeinput/input, text, composition, modifier/repeat state, focus, capture",
                     "No matched chord reaches the page; ordinary input remains intact.",
                     family="keyboard",

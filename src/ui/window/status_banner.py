@@ -91,6 +91,12 @@ class StatusBanner(QWidget):
         if self.entries.pop(text, None) is not None:
             self._refresh()
 
+    def dismiss_all(self) -> None:
+        """Dismiss every warning currently shown in the strip."""
+        self._dismiss(
+            *(text for text, entry in self.entries.items() if not entry.dismissed)
+        )
+
     def show_all(self) -> None:
         """Show every dismissed warning again."""
         for entry in self.entries.values():
@@ -133,18 +139,20 @@ class StatusBanner(QWidget):
         while len(self.entries) > MAX_ENTRIES and events:
             del self.entries[events.pop(0)]
 
-    def _dismiss(self, text: str) -> None:
-        """Hide a warning, forgetting it if it was a one-off event.
+    def _dismiss(self, *texts: str) -> None:
+        """Hide the selected warnings, forgetting one-off events.
 
         Args:
-            text (str): The warning.
+            *texts (str): The warnings to dismiss.
         """
-        entry = self.entries[text]
-        if entry.lasting:
-            entry.dismissed = True
-        else:
-            del self.entries[text]
-        self._refresh()
+        for text in texts:
+            entry = self.entries[text]
+            if entry.lasting:
+                entry.dismissed = True
+            else:
+                del self.entries[text]
+        if texts:
+            self._refresh()
 
     def _refresh(self) -> None:
         """Rebuild the warning rows, border color, and badge, then report the size change."""
