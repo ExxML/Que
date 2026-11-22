@@ -23,24 +23,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            test/requirements-ci.txt
 
-      - name: Install dependencies and tools
-        run: |
-          pip install -r requirements.txt
-          pip install ruff==0.17.5 mypy pylint types-Pygments
-
-      - name: Run Ruff Linter
-        run: |
-          ruff check src test native
-
-      - name: Run Ruff Formatter Check
-        run: |
-          ruff format --check src test native
-
-      - name: Run Mypy Type Checker
-        run: |
-          mypy --strict src test native
-
-      - name: Check for Circular Imports
-        run: |
-          pylint --disable=all --enable=cyclic-import src
+      - name: Run static analysis (same steps as python test/run_ci.py static)
+        run: python test/run_ci.py static

@@ -30,7 +30,7 @@ class ConnectionInventoryTests(unittest.TestCase):
         self.baseline = root / "inventory.json"
 
     def test_tuple_target_parentheses_are_equivalent(self) -> None:
-        """Accept both Python 3.10 and 3.13 spellings of the reviewed connection."""
+        """Accept the reviewed connection with or without parentheses around the tuple target."""
         for target in ("position, detail", "(position, detail)"):
             with self.subTest(target=target):
                 expression = self.expression.replace("position, detail", target)

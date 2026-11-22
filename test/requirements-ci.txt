@@ -1,0 +1,5 @@
+# Static analysis tools for CI; test/run_ci.py installs these locally and on GitHub.
+ruff==0.17.5
+mypy==2.4.1
+pylint==4.1.4
+types-Pygments==2.21.0.20261115

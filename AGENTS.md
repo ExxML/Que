@@ -13,14 +13,16 @@ Que is a Windows-only stealth AI programming assistant — a frameless, transluc
 ## Commands
 
 ```bash
-# Run from repo root with venv active
+# Python 3.13 everywhere (.venv, .venv-ci and GitHub). Run from repo root with .venv active
 python src/que.py
 
-# Static analysis (must all pass before merging)
-ruff check src test native
-ruff format --check src test native
-mypy --strict src test native
+# CI, exactly as GitHub runs it (uses its own Python 3.13 .venv-ci with pinned tools)
+python test/run_ci.py                 # every job (~10 min)
+python test/run_ci.py static          # ruff, ruff format, mypy --strict, pylint cycles (~10 s)
+python test/run_ci.py regression compliance   # offline regressions, browser smokes, compliance audit
 ```
+
+**Before finishing any turn that changed files, run `python test/run_ci.py` and make it pass.** Run `static` while iterating, but run the full script at least once before you stop. Report the summary it prints; if a failure is unrelated to your change (check whether the same step also fails on main: `gh run list --branch main`; never `git stash`, other agents' edits share this tree), say so instead of hiding it. Judge CI by `test/run_ci.py`, not by tools in `.venv`: extra packages installed there can hide differences from GitHub. If `.venv` is ever rebuilt, use `py -3.13 -m venv .venv`. The workflows in `.github/workflows` call this script, so add or change CI steps in `test/run_ci.py` (and pinned tool versions in `test/requirements-ci.txt`), never in the YAML alone.
 
 ## Architecture
 
