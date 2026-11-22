@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pypdf import PdfWriter
-from PyQt6.QtCore import QEvent
+from PyQt6.QtCore import QEvent, QPoint, Qt
+from PyQt6.QtGui import QFocusEvent
 from PyQt6.QtWidgets import QLineEdit, QPushButton, QWidget
 from qt_application import application
 
@@ -349,6 +350,40 @@ class SettingsDocumentsTests(unittest.TestCase):
         remove.click()
         self.assertEqual(self.store.resume_details(), [("Que", str(project))])
         self.assertEqual(len(self.page.detail_rows), 1)
+
+    def test_long_resume_detail_name_shows_its_beginning(self) -> None:
+        """Show the start of a long name when loading, linking, or leaving its editor."""
+        name = "Led the Que project using Python, PyQt, and Win32 APIs" * 2
+        notes = Path(self.directory.name) / f"{name}.md"
+        notes.write_text("Details", encoding="utf-8")
+        self.store.save_resume_details([(name, str(notes))])
+        self.page._show_resume_details()
+        name_input = self.page.detail_rows[0][0]
+        name_input.resize(140, name_input.sizeHint().height())
+        left_edge = QPoint(0, name_input.height() // 2)
+        name_input.grab()
+        self.assertEqual(name_input.cursorPositionAt(left_edge), 0)
+
+        name_input.end(False)
+        name_input.grab()
+        self.assertGreater(name_input.cursorPositionAt(left_edge), 0)
+        self.app.sendEvent(
+            name_input,
+            QFocusEvent(QEvent.Type.FocusOut, Qt.FocusReason.PopupFocusReason),
+        )
+        self.assertEqual(name_input.cursorPosition(), len(name))
+        self.app.sendEvent(name_input, QFocusEvent(QEvent.Type.FocusOut))
+        name_input.grab()
+        self.assertEqual(name_input.cursorPositionAt(left_edge), 0)
+        self.assertEqual(name_input.text(), name)
+
+        with patch("ui.window.settings_page.choose_file", return_value=str(notes)):
+            self.page._link_resume_detail(False)
+        name_input = self.page.detail_rows[-1][0]
+        name_input.resize(140, name_input.sizeHint().height())
+        name_input.grab()
+        self.assertEqual(name_input.cursorPositionAt(left_edge), 0)
+        self.assertEqual(name_input.selectedText(), name)
 
     def test_instruction_saves_after_typing(self) -> None:
         """Save the trimmed instruction on hide, and reload it when settings reopen."""

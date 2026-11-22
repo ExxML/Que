@@ -3,7 +3,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from PyQt6.QtCore import QSignalBlocker, Qt, QTimer, pyqtBoundSignal, pyqtSignal
-from PyQt6.QtGui import QHideEvent, QStandardItemModel, QWheelEvent
+from PyQt6.QtGui import QFocusEvent, QHideEvent, QStandardItemModel, QWheelEvent
 from PyQt6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -87,7 +87,7 @@ class SettingsPage(QWidget):
         self.details_timer.setSingleShot(True)
         self.details_timer.setInterval(500)
         self.details_timer.timeout.connect(self._save_detail_names)
-        self.detail_rows: list[tuple[QLineEdit, str]] = []
+        self.detail_rows: list[tuple[_ResumeDetailNameEdit, str]] = []
         self.audio_devices: dict[str, list[str]] = {}
         self._init_UI()
 
@@ -1006,7 +1006,7 @@ class SettingsPage(QWidget):
             return
         name_input = self.detail_rows[-1][0]
         name_input.setFocus()
-        name_input.selectAll()
+        name_input.select_from_start()
 
     def _save_detail_names(self) -> bool:
         """Save typed resume item names when they differ from the saved ones."""
@@ -1062,7 +1062,7 @@ class SettingsPage(QWidget):
         for index, (name, path) in enumerate(self.settings_store.resume_details()):
             source = Path(path)
             kind = "folder" if source.is_dir() else "file"
-            name_input = QLineEdit(name)
+            name_input = _ResumeDetailNameEdit(name)
             name_input.setPlaceholderText("Resume item, e.g., Que overlay")
             name_input.setAccessibleName(f"Resume item linked to {source.name}")
             name_input.textChanged.connect(self.details_timer.start)
@@ -1566,3 +1566,29 @@ def _format_size(size: int) -> str:
             return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
         value /= 1024
     return f"{value:.1f} GB"
+
+
+class _ResumeDetailNameEdit(QLineEdit):
+    """Show the beginning of a resume detail name when editing ends."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.setCursorPosition(0)
+
+    def select_from_start(self) -> None:
+        """Select the entire name with its beginning in view."""
+        self.end(False)
+        self.home(True)
+
+    def focusOutEvent(self, event: QFocusEvent | None) -> None:
+        """Reset horizontal scrolling when leaving the editor.
+
+        Args:
+            event (QFocusEvent): The focus event.
+        """
+        super().focusOutEvent(event)
+        if event is not None and event.reason() not in (
+            Qt.FocusReason.PopupFocusReason,
+            Qt.FocusReason.ActiveWindowFocusReason,
+        ):
+            self.setCursorPosition(0)

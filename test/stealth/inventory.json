@@ -50,7 +50,7 @@
     "ui/window/settings_page.py:SettingsPage._init_UI/QPushButton/69b8ae89b5/1": "QPushButton('Remove')",
     "ui/window/settings_page.py:SettingsPage._init_audio_tab/QPushButton/ec52aa4a59/1": "QPushButton('Refresh devices')",
     "ui/window/settings_page.py:SettingsPage._init_audio_tab/_SettingsComboBox/31c981dd76/1": "_SettingsComboBox()",
-    "ui/window/settings_page.py:SettingsPage._show_resume_details/QLineEdit/0f1f224786/1": "QLineEdit(name)",
+    "ui/window/settings_page.py:SettingsPage._show_resume_details/_ResumeDetailNameEdit/135b852822/1": "_ResumeDetailNameEdit(name)",
     "ui/window/settings_page.py:SettingsPage._show_resume_details/QLineEdit/1976158493/1": "QLineEdit(path)",
     "ui/window/settings_page.py:SettingsPage._show_resume_details/QPushButton/69b8ae89b5/1": "QPushButton('Remove')",
     "ui/window/status_banner.py:StatusBanner.__init__/QPushButton/6de742631f/1": "QPushButton(ICON, main_window)",

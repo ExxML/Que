@@ -9356,7 +9356,7 @@
     "source": "ui/window/settings_page.py",
     "line": 54,
     "expression": "def __init__(self, settings_store: SettingsStore, claude_bridge: ClaudeBridge, transcriber: Transcriber, chat_history: ChatHistory, parent: QWidget) -> None:",
-    "sha256": "6c359f21ece492df3218e46c26eb1fe0af448d1b9971f672d6cac167078cf1ea"
+    "sha256": "376484df675541bce771e6d1af540318f3c2c835091b656bc0a266ceae5f0ee3"
   },
   "ui/window/settings_page.py:94:routine": {
     "category": "routine",
@@ -9517,7 +9517,7 @@
     "source": "ui/window/settings_page.py",
     "line": 976,
     "expression": "def _link_resume_detail(self, folder: bool) -> None:",
-    "sha256": "ef8dc82fe55c5131fb4f2ce9ed4e6f0acc6fb76fcd56326104f90899b092a708"
+    "sha256": "101a9082b348b6eff3c13f0bcf322aa3d1151dd8bafaa2cfa50898101e557ac9"
   },
   "ui/window/settings_page.py:1011:routine": {
     "category": "routine",
@@ -9545,7 +9545,7 @@
     "source": "ui/window/settings_page.py",
     "line": 1056,
     "expression": "def _show_resume_details(self) -> None:",
-    "sha256": "112ddb297f0e5a7f6686f2eca6435ecae27858c8833a3b260868073c6cd93487"
+    "sha256": "539fb8a858da6d089b56a122dfe82c83ca9532d1ded6784565871c5920d80db5"
   },
   "ui/window/settings_page.py:1100:routine": {
     "category": "routine",
@@ -9721,6 +9721,27 @@
     "line": 1544,
     "expression": "def wheelEvent(self, event: QWheelEvent | None) -> None:",
     "sha256": "64a1d966ded0f5488de783076e1b1d58e26f420f1abac66d82149888559242a1"
+  },
+  "ui/window/settings_page.py:1574:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1574,
+    "expression": "def __init__(self, name: str) -> None:",
+    "sha256": "d9cc0220458031a993d82c8f21233a639e1287c9e92877fe87b061e0764cc3ea"
+  },
+  "ui/window/settings_page.py:1578:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1578,
+    "expression": "def select_from_start(self) -> None:",
+    "sha256": "4d372ad7e2f378a4b79332a94af3b393b8918e3be61772c27894f92cf9893ff8"
+  },
+  "ui/window/settings_page.py:1583:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1583,
+    "expression": "def focusOutEvent(self, event: QFocusEvent | None) -> None:",
+    "sha256": "dc02fb5a92cbbd1c465972aa2b823dee8ebf19a18efa932e51831ad6f6ecc53a"
   },
   "ui/window/settings_page.py:124:branch": {
     "category": "branch",
@@ -10022,6 +10043,13 @@
     "line": 1565,
     "expression": "if value < 1024:",
     "sha256": "ae7d776c541f6d843020a9c8d0691d235ad71b472ca7b6bbabdad1a5b0511b90"
+  },
+  "ui/window/settings_page.py:1590:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1590,
+    "expression": "if event is not None and event.reason() not in (Qt.FocusReason.PopupFocusReason, Qt.FocusReason.ActiveWindowFocusReason):",
+    "sha256": "05ec328d7e1d0f0d1c9276e6d7a07f0407355424b2cdc5573fd4bb1446bbfc74"
   },
   "ui/window/settings_page.py:78:background": {
     "category": "background",
