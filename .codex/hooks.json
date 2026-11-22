@@ -1,0 +1,43 @@
+{
+  "description": "Make agents run the full CI (python test/run_ci.py) before finishing a turn that changed files.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'pre']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'pre']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|Edit|Write)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'post']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'post']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'stop']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "commandWindows": "py -3.13 -c \"import os,runpy,sys; p=os.path.join('.','test','agent_ci_gate.py'); sys.argv=[p,'stop']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

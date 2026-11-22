@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3.13 -c \"import os,runpy,sys; p=os.path.join(os.environ.get('CLAUDE_PROJECT_DIR','.'),'test','agent_ci_gate.py'); sys.argv=[p,'pre']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3.13 -c \"import os,runpy,sys; p=os.path.join(os.environ.get('CLAUDE_PROJECT_DIR','.'),'test','agent_ci_gate.py'); sys.argv=[p,'post']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3.13 -c \"import os,runpy,sys; p=os.path.join(os.environ.get('CLAUDE_PROJECT_DIR','.'),'test','agent_ci_gate.py'); sys.argv=[p,'stop']; os.path.isfile(p) and runpy.run_path(p,run_name='__main__')\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

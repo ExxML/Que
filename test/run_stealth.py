@@ -58,10 +58,16 @@ def offline(directory: Path, metadata: dict[str, Any]) -> list[Result]:
     )
     environment = child_environment(directory)
     environment["QT_QPA_PLATFORM"] = "offscreen"
+    environment["QUE_AUDIT_COVERAGE"] = str(
+        directory / "native" / "source-execution.json"
+    )
     inventory_path = directory / "native" / "qt-controls.json"
     process = subprocess.run(
         [
             sys.executable,
+            str(
+                ASSETS / "stealth" / "traced.py"
+            ),  # Counts the instantiated UI as executed.
             str(ASSETS / "stealth" / "qt_inventory.py"),
             str(directory / "isolated"),
             str(inventory_path),

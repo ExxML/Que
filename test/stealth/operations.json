@@ -6654,89 +6654,89 @@
     "source": "ui/input/input_router.py",
     "line": 553,
     "expression": "def _close_popups(self, except_window: QWidget | None=None) -> None:",
-    "sha256": "2a875b8a84e0c826a0b22671ae3412b1da42a267731beb990743191dce57a7b0"
+    "sha256": "ab61af81be7115301e5424144bf4c3a62e35eecb1b73351eedba557eb07fd63f"
   },
-  "ui/input/input_router.py:573:routine": {
+  "ui/input/input_router.py:579:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 573,
+    "line": 579,
     "expression": "def _modifiers(self) -> Qt.KeyboardModifier:",
     "sha256": "0712ee242acbe5c02375903846c29ec162a09bc4368e0892758d587ba8cf8c9e"
   },
-  "ui/input/input_router.py:581:routine": {
+  "ui/input/input_router.py:587:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 581,
+    "line": 587,
     "expression": "def _mouse_event(self, widget: QWidget, kind: QEvent.Type, position: QPoint, button: Qt.MouseButton) -> None:",
     "sha256": "0418f3f2be8cbf754ad8f0e4c4a95cc56435a3e3f7806d5262483f842e14a3b1"
   },
-  "ui/input/input_router.py:606:routine": {
+  "ui/input/input_router.py:612:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 606,
+    "line": 612,
     "expression": "def _wheel(self, widget: QWidget, position: QPoint, message: int, data: int) -> None:",
     "sha256": "bf569ed0785c7b335376b3c42ac88031df42228e9946e06283991e620c1f1613"
   },
-  "ui/input/input_router.py:642:routine": {
+  "ui/input/input_router.py:648:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 642,
+    "line": 648,
     "expression": "def _hover(self, widget: QWidget | None, position: QPoint) -> None:",
     "sha256": "555ac0146dd24c4162993ee7c00b68f119b8ca91a9838a82df566d9ead3cdc1e"
   },
-  "ui/input/input_router.py:668:routine": {
+  "ui/input/input_router.py:674:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 668,
+    "line": 674,
     "expression": "def _show_tooltip(self) -> None:",
     "sha256": "5c5aa008b34d6c1172194dc4096fa6e96e15519010648622058a3255d525aca2"
   },
-  "ui/input/input_router.py:677:routine": {
+  "ui/input/input_router.py:683:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 677,
+    "line": 683,
     "expression": "def _start_drag(self, widget: QWidget, position: QPoint) -> bool:",
     "sha256": "c74b7f2ea8a8e8806defb55948f5a729d13f4c8c94e2b0fb03ffb12e2ce7f9f1"
-  },
-  "ui/input/input_router.py:699:routine": {
-    "category": "routine",
-    "source": "ui/input/input_router.py",
-    "line": 699,
-    "expression": "def _apply_drag(self) -> None:",
-    "sha256": "556c861b8e3e590f5ddb87abdc2728941d0f63194e25e78f00e6e886db711ddb"
   },
   "ui/input/input_router.py:705:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
     "line": 705,
+    "expression": "def _apply_drag(self) -> None:",
+    "sha256": "556c861b8e3e590f5ddb87abdc2728941d0f63194e25e78f00e6e886db711ddb"
+  },
+  "ui/input/input_router.py:711:routine": {
+    "category": "routine",
+    "source": "ui/input/input_router.py",
+    "line": 711,
     "expression": "def _drag_to(self, position: QPoint) -> None:",
     "sha256": "66b3875e654a34e74ed7c4229be121c5288ea3c5023156f83c7a1f9643afe516"
   },
-  "ui/input/input_router.py:754:routine": {
+  "ui/input/input_router.py:760:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 754,
+    "line": 760,
     "expression": "def __init__(self) -> None:",
     "sha256": "a65ecccad2f6ccbfe56f084a044a79326cfbe14081bb18578f9a105653c8f3cb"
   },
-  "ui/input/input_router.py:759:routine": {
+  "ui/input/input_router.py:765:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 759,
+    "line": 765,
     "expression": "@staticmethod",
     "sha256": "47797c96dc9c6702930fe4245f413287bcc37bd5942a49941a4fc5112f6249db"
   },
-  "ui/input/input_router.py:781:routine": {
+  "ui/input/input_router.py:787:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 781,
+    "line": 787,
     "expression": "def reset(self) -> None:",
     "sha256": "670a4f11fc31185a0e71301b2eb554cd7b72b17cbb6aaceefd1a3182d7f27c18"
   },
-  "ui/input/input_router.py:796:routine": {
+  "ui/input/input_router.py:802:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
-    "line": 796,
+    "line": 802,
     "expression": "def translate(self, vk: int, scan: int, flags: int, down: bool, repeated: bool, held: tuple[int, ...]) -> QKeyEvent | None:",
     "sha256": "6fb6f878d71816f262939e57c5b5ebfbd4dbea86afd0974738ea199adfd58c25"
   },
@@ -6880,115 +6880,115 @@
     "expression": "if widget is not self.target:",
     "sha256": "8174f36592afe40d57e16cea07bc15b51820ed136111107f4e0104c34d32dce4"
   },
-  "ui/input/input_router.py:649:branch": {
+  "ui/input/input_router.py:655:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 649,
+    "line": 655,
     "expression": "if widget is self.hovered:",
     "sha256": "bba0b509226b42f403022c9fd605c84b1e0edb4ec70b19d4edf451c3fa28b75b"
   },
-  "ui/input/input_router.py:651:branch": {
+  "ui/input/input_router.py:657:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 651,
+    "line": 657,
     "expression": "if self._alive(self.hovered):",
     "sha256": "364f80dab199fb700b134dcc4c55b249aaac45bc59d7ccab213b33e0951e66cd"
   },
-  "ui/input/input_router.py:660:branch": {
+  "ui/input/input_router.py:666:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 660,
+    "line": 666,
     "expression": "if self._alive(widget):",
     "sha256": "abf6c753bb9a2fa1b636e61a38ae86dfaad750caf4a59f4ee8102df80910fe1c"
-  },
-  "ui/input/input_router.py:688:branch": {
-    "category": "branch",
-    "source": "ui/input/input_router.py",
-    "line": 688,
-    "expression": "if window is not self.shortcut_manager.main_window:",
-    "sha256": "a19847bc080b76a1d639bdbdc2dca10875c2d54db25f1f17d56c0f605b7a93ed"
   },
   "ui/input/input_router.py:694:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
     "line": 694,
+    "expression": "if window is not self.shortcut_manager.main_window:",
+    "sha256": "a19847bc080b76a1d639bdbdc2dca10875c2d54db25f1f17d56c0f605b7a93ed"
+  },
+  "ui/input/input_router.py:700:branch": {
+    "category": "branch",
+    "source": "ui/input/input_router.py",
+    "line": 700,
     "expression": "if edge or (widget is window and local.y() < 32):",
     "sha256": "594c26bd662e54459d6db2a6875cc53b49e17699a6fd879d170bc7e19a8c56de"
   },
-  "ui/input/input_router.py:702:branch": {
+  "ui/input/input_router.py:708:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 702,
+    "line": 708,
     "expression": "if position is not None:",
     "sha256": "b3a6c4f84de530982c504e6188d3ad7f0775a07e1c0d6ce22e4b248355d74bb7"
   },
-  "ui/input/input_router.py:711:branch": {
+  "ui/input/input_router.py:717:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 711,
+    "line": 717,
     "expression": "if self.drag is None:",
     "sha256": "bfaeb0910707a5e8f98bdd5e7aae47a12becbb67d4bf008e48d61cb6785c07d4"
   },
-  "ui/input/input_router.py:716:branch": {
+  "ui/input/input_router.py:722:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 716,
+    "line": 722,
     "expression": "if not edge:",
     "sha256": "d1ddfcfde9e20d123da684737debbdcb35e0dc115b017b246a8a0e7e2d1b5172"
   },
-  "ui/input/input_router.py:783:branch": {
+  "ui/input/input_router.py:789:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 783,
+    "line": 789,
     "expression": "if self.layout:",
     "sha256": "51f464b92aeaf27db9ed33ef6fbc9f32ff95a00036a6eb957d4854c5ccfcf6eb"
   },
-  "ui/input/input_router.py:820:branch": {
+  "ui/input/input_router.py:826:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 820,
+    "line": 826,
     "expression": "if layout != self.layout:",
     "sha256": "e881c774af4357ecf929b62330a52b647841481a61121e21648781189c4f80f1"
   },
-  "ui/input/input_router.py:823:branch": {
+  "ui/input/input_router.py:829:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 823,
+    "line": 829,
     "expression": "if vk == 8 and down and self.dead_pending:",
     "sha256": "72052f48aa1ee5e37178e7699aa919f739c498acad1286138f0e8f945acfc2d1"
   },
-  "ui/input/input_router.py:832:branch": {
+  "ui/input/input_router.py:838:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 832,
+    "line": 838,
     "expression": "if 165 in held:",
     "sha256": "b795e6b4a429f85627fb8275da7f82fce42a4555eaa3fbea478b23bbfb9f8779"
   },
-  "ui/input/input_router.py:839:branch": {
+  "ui/input/input_router.py:845:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 839,
+    "line": 845,
     "expression": "if down and (vk not in KEYS or vk == 32) and (not 112 <= vk <= 135):",
     "sha256": "d5777a5ff61ffe9449f52209269917c352ff3974244ac67c8edaa32689e02b0f"
   },
-  "ui/input/input_router.py:860:branch": {
+  "ui/input/input_router.py:866:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 860,
+    "line": 866,
     "expression": "if 48 <= vk <= 90:",
     "sha256": "cdb60998668e038a1f8f1656a4dd2271173b11b2e8158b2261d1de99fb4b0d6a"
   },
-  "ui/input/input_router.py:867:branch": {
+  "ui/input/input_router.py:873:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 867,
+    "line": 873,
     "expression": "if vk == 32 and (not down):",
     "sha256": "8a2d53c6bc47fa400aeabbebda31a86e2d3b12212394a631ef797719c4f5e457"
   },
-  "ui/input/input_router.py:869:branch": {
+  "ui/input/input_router.py:875:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 869,
+    "line": 875,
     "expression": "if 96 <= vk <= 111 or (vk == 13 and flags & 1):",
     "sha256": "d71f0fc13630186f67a01fe59309187a07ca888cc3c67cf31188a157e98770f0"
   },
@@ -7125,87 +7125,87 @@
     "expression": "if self._alive(window) and window.isVisible() and window.property('quePopup'):",
     "sha256": "672c8aee7c11f3d41cd7925ee4a81e9915396a9fb2c38ebfcc6f46c8424d442b"
   },
-  "ui/input/input_router.py:560:branch": {
+  "ui/input/input_router.py:566:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 560,
+    "line": 566,
     "expression": "if widget is not except_window and widget.property('quePopup') and widget.isVisible():",
-    "sha256": "79b9bc8b44439a88c2ef43fde246cf22d77b234b42916ed24ad8b06f8952d5d4"
+    "sha256": "c166cbf9bb2f8910e76195e45847fbc81cace31974681cc739337cc645b3f210"
   },
-  "ui/input/input_router.py:638:branch": {
+  "ui/input/input_router.py:644:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 638,
+    "line": 644,
     "expression": "if event.isAccepted() or receiver.isWindow():",
     "sha256": "1c053658cbf5ec822e52f3ce01c05f85373b40bd2e57ce2a140a64aff4e6fc78"
   },
-  "ui/input/input_router.py:672:branch": {
+  "ui/input/input_router.py:678:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 672,
+    "line": 678,
     "expression": "if widget.toolTip():",
     "sha256": "0d445337e706dcf02f833054dcbeac40848dd2525b2ba815145e874b783dc640"
   },
-  "ui/input/input_router.py:719:branch": {
+  "ui/input/input_router.py:725:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 719,
+    "line": 725,
     "expression": "if 'l' in edge:",
     "sha256": "05de11fb3ffcf58fc996167b368aea3bd5cac2c19d44b345393fa4a459672efc"
   },
-  "ui/input/input_router.py:726:branch": {
+  "ui/input/input_router.py:732:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 726,
+    "line": 732,
     "expression": "if 'r' in edge:",
     "sha256": "765d980cfeeade594b41c438365dff943020800c1341abbcd7bba29981239e91"
   },
-  "ui/input/input_router.py:733:branch": {
+  "ui/input/input_router.py:739:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 733,
+    "line": 739,
     "expression": "if 't' in edge:",
     "sha256": "4ff3830e5166ccfd25ff697c3bc07d690110969df1dce4ce5fbf3a8974d77928"
   },
-  "ui/input/input_router.py:740:branch": {
+  "ui/input/input_router.py:746:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 740,
+    "line": 746,
     "expression": "if 'b' in edge:",
     "sha256": "fb5b86333a0db88974478847b0f60f2f33b7f8b6bf3f96fb85068d1505631c1d"
   },
-  "ui/input/input_router.py:777:branch": {
+  "ui/input/input_router.py:783:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 777,
+    "line": 783,
     "expression": "if mask & bit:",
     "sha256": "a2148240f94619f1b22be1e34ac749cc910cb8fe5b7b9ab99c6bd1259d5497b5"
   },
-  "ui/input/input_router.py:830:branch": {
+  "ui/input/input_router.py:836:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 830,
+    "line": 836,
     "expression": "if generic is not None:",
     "sha256": "c01bb9134cb01c7e50a581690eb9bb4a3f2901fcf219f3576c4e2c992a572c9d"
   },
-  "ui/input/input_router.py:844:branch": {
+  "ui/input/input_router.py:850:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 844,
+    "line": 850,
     "expression": "if count < 0:",
     "sha256": "fa5678b57993cd4fae220b4af77ca5e7cad89cca3a27bbb1fcf9aae0ae76ac9e"
   },
-  "ui/input/input_router.py:847:branch": {
+  "ui/input/input_router.py:853:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 847,
+    "line": 853,
     "expression": "if count:",
     "sha256": "8bca21ef3ac8fe1dcb62f7217504b33618a1b13386b143a8929a2790823f5f92"
   },
-  "ui/input/input_router.py:862:branch": {
+  "ui/input/input_router.py:868:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 862,
+    "line": 868,
     "expression": "if 112 <= vk <= 135:",
     "sha256": "19be6ea1fbdc65501a8072a4c4ad4026da50c12487cd0bd14dd0c6eb0c6d589d"
   },
@@ -7279,38 +7279,38 @@
     "expression": "if self._alive(captured):",
     "sha256": "3e810887f90f6fce81d29f09e5c350530b3c1354fef21eb54b8e13cfd2ee5042"
   },
-  "ui/input/input_router.py:565:branch": {
+  "ui/input/input_router.py:571:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 565,
-    "expression": "if except_window is not None and widget.isAncestorOf(except_window):",
-    "sha256": "3cf487747432aa68972256eb69fa1b2233ded4b3d3c3e1a499acd86ec0e99182"
+    "line": 571,
+    "expression": "if any((widget is owner for owner in owners)):",
+    "sha256": "89a15e0c3b8a5e33bd29539ba017d0ca99529a619c7e117e728e92a1d6f77a9d"
   },
-  "ui/input/input_router.py:568:branch": {
+  "ui/input/input_router.py:574:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 568,
+    "line": 574,
     "expression": "if isinstance(parent, QComboBox):",
     "sha256": "f37cdaefb19c281e8ac73b8255329faaffa93fc4d1452ed455072eaa7fe2ee1b"
   },
-  "ui/input/input_router.py:787:branch": {
+  "ui/input/input_router.py:793:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 787,
+    "line": 793,
     "expression": "if native.ToUnicodeEx(32, 57, state, output, len(output), 0, self.layout) >= 0:",
     "sha256": "137c1f750d55f22301f7a30f1e7ed184fa313a853da314e8e67b0a74513cec34"
   },
-  "ui/input/input_router.py:852:branch": {
+  "ui/input/input_router.py:858:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 852,
+    "line": 858,
     "expression": "if 165 in held:",
     "sha256": "c3759c96b61ce4745f4e0614d17241b469252d5779152425999929dd9bf9b1b4"
   },
-  "ui/input/input_router.py:864:branch": {
+  "ui/input/input_router.py:870:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 864,
+    "line": 870,
     "expression": "if text:",
     "sha256": "1a2908272a59cd6ac05051397d74fde5183e2ee7e16a6404f91d83e2197d2061"
   },
@@ -7349,10 +7349,10 @@
     "expression": "if button == Qt.MouseButton.RightButton:",
     "sha256": "b05f1a659ac9b1e82767690391a19bc88a4f3a2c9467f0a9cbb7b9687e264e23"
   },
-  "ui/input/input_router.py:857:branch": {
+  "ui/input/input_router.py:863:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 857,
+    "line": 863,
     "expression": "if modifiers & Qt.KeyboardModifier.ControlModifier:",
     "sha256": "ffd5954f9249d4816939ab01cfd8f5de06bee0dd45d6f3c71e0d2a39f04838ca"
   },
