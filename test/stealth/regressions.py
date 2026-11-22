@@ -13,7 +13,7 @@ def main() -> int:
     repository = Path(__file__).resolve().parents[2]
     sys.path[:0] = [str(repository / "src"), str(repository / "test")]
     os.environ["QT_QPA_PLATFORM"] = "offscreen"
-    import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
+    import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
 
     from stealth.coverage import SourceCoverage
 

@@ -6,7 +6,7 @@ from core.hook_host import run_hook_host
 if __name__ == "__main__" and len(sys.argv) in (3, 4) and sys.argv[1] == "--hook-host":
     sys.exit(run_hook_host(*sys.argv[2:]))
 
-import ctranslate2  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose DLLs crash CTranslate2 model loading otherwise
+import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
 from PyQt6.QtWidgets import QApplication
 
 from core.ai_sender import AISender

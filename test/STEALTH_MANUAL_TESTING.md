@@ -53,7 +53,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+C | Screenshot and answer the interview question (any kind, including follow-ups) | no |
 
 - Avoid browser-bound keys in pass-through tests (for example Ctrl+G opens Edge's find bar, Ctrl+Shift+R reloads the page).
-- For audio tests: speakers on, a working microphone, and the smallest Whisper model downloaded in Que (Settings → Voice) before the attempt.
+- For audio tests: speakers on, a working microphone, and the Parakeet transcription model downloaded in Que (Settings → Voice) before the attempt.
 - Optional for the flashing check: a click-through overlay such as `dimmer.exe` running.
 
 ## 3. Start the runner

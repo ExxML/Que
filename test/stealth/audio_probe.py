@@ -14,8 +14,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
 import numpy as np
+import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
 from PyQt6.QtCore import QCoreApplication
 
 from core.settings import SettingsStore
@@ -66,13 +66,13 @@ def run() -> list[dict[str, object]]:
             def measure(
                 data: bytes,
                 channels: int,
-                rate: int,
+                resampler: Any,
                 counters: Counters = counters,
                 current_source: list[str] = current_source,
             ) -> Any:
                 """Count received samples without preserving their content."""
                 source = current_source[0]
-                samples = _to_mono_16k(data, channels, rate)
+                samples = _to_mono_16k(data, channels, resampler)
                 counters[source]["chunks"] += 1
                 counters[source]["bytes"] += len(data)
                 counters[source]["nonzero_chunks"] += int(

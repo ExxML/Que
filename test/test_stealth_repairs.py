@@ -11,7 +11,6 @@ import tempfile
 import threading
 import time
 import unittest
-from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -717,6 +716,8 @@ class AudioHealthTests(unittest.TestCase):
 
                 with (
                     patch("core.transcriber.pyaudiowpatch.PyAudio", return_value=audio),
+                    # The energy gate, whatever this machine's model cache holds
+                    patch.object(transcriber, "_vad", return_value=None),
                     patch("core.transcriber.time.monotonic", side_effect=(0, 6, 7, 8)),
                     patch("core.transcriber.queue.Queue") as queue_type,
                 ):
@@ -806,7 +807,7 @@ class AudioHealthTests(unittest.TestCase):
     def test_unrecognized_sound_is_not_reported_as_a_failure(self) -> None:
         """Skip non-speech sound quietly and keep transcribing the speech that follows."""
         model = MagicMock()
-        model.transcribe.side_effect = [([], None), ([MagicMock(text="fixture")], None)]
+        model.recognize.side_effect = ["", "fixture"]
         queue_items: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
         for _ in range(2):
             queue_items.put(("them", np.ones(16000, np.float32)))
@@ -836,17 +837,15 @@ class AudioHealthTests(unittest.TestCase):
             utterances.put(None)
         decoding = threading.Event()
         release = threading.Event()
-        decode_more = MagicMock()
 
-        def segments() -> Iterator[MagicMock]:
+        def recognize(*_args: object, **_kwargs: object) -> str:
             """Hold the first result until recording has stopped."""
             decoding.set()
             release.wait(5)
-            yield MagicMock(text="Finished after stop")
-            decode_more()
+            return "Finished after stop"
 
         model = MagicMock()
-        model.transcribe.return_value = (segments(), None)
+        model.recognize.side_effect = recognize
         transcribed = MagicMock()
         transcriber.transcribed.connect(transcribed)
         with patch.object(transcriber, "_load_model", return_value=model):
@@ -867,8 +866,7 @@ class AudioHealthTests(unittest.TestCase):
         self.assertFalse(worker.is_alive())
         self.app.processEvents()
         transcribed.assert_not_called()
-        model.transcribe.assert_called_once()
-        decode_more.assert_not_called()
+        model.recognize.assert_called_once()
 
     def test_stop_before_loading_or_while_dequeuing_skips_inference(self) -> None:
         """Skip model loading for an already stopped worker and ignore audio arriving at stop."""
@@ -889,7 +887,7 @@ class AudioHealthTests(unittest.TestCase):
             transcriber._transcribe_loop(utterances, "tiny.en", session)
             transcriber._transcribe_loop(utterances, "tiny.en", session)
         load.assert_called_once_with("tiny.en")
-        model.transcribe.assert_not_called()
+        model.recognize.assert_not_called()
 
     def test_stop_during_model_operation_discards_late_failure(self) -> None:
         """Ignore errors from model loading or inference that finish after stop."""
@@ -916,7 +914,7 @@ class AudioHealthTests(unittest.TestCase):
                     raise RuntimeError("Model failed after stop")
 
                 model = MagicMock()
-                model.transcribe.side_effect = fail
+                model.recognize.side_effect = fail
                 with patch.object(
                     transcriber,
                     "_load_model",

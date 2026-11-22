@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 def run(source: Path) -> int:
     """Create the production widget tree and service bounded fixture commands."""
     sys.path.insert(0, str(source))
-    import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
+    import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
     import win32api  # type: ignore[import-untyped]
     from PyQt6.QtCore import QPoint, Qt, QTimer
     from PyQt6.QtGui import QImage
@@ -124,7 +124,7 @@ def run(source: Path) -> int:
             elif name == "audio":
                 if command.get("enabled"):
                     model = MagicMock()
-                    model.transcribe.return_value = ([], None)
+                    model.recognize.return_value = ""
                     transcriber.model = model
                     transcriber.model_size = "fixture"
                     # Exercise the actual microphone/WASAPI capture while keeping model

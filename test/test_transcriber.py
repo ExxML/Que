@@ -1,22 +1,38 @@
 """Verify utterance segmentation, transcript delivery tracking, and prompt composition."""
 
+import tempfile
 import unittest
-from unittest.mock import MagicMock, patch
+from pathlib import Path
+from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from PyQt6.QtWidgets import QWidget
 from qt_application import application
 
 from core.ai_sender import InteractionRequest
+from core.settings import WHISPER_MODELS
 from core.transcriber import (
     CHUNK_SECONDS,
+    MODEL_FILES,
+    ONNX_THREADS,
     SAMPLE_RATE,
+    VAD_CONTEXT,
+    VAD_DIR,
+    VAD_FILE,
+    VAD_FRAME,
+    VAD_REPO,
     Transcriber,
+    _Resampler,
     _Segmenter,
+    _SileroVad,
+    _to_mono_16k,
 )
 from ui.window.transcript_panel import TranscriptPanel
 
 CHUNK = int(SAMPLE_RATE * CHUNK_SECONDS)
+LOUD = np.full(CHUNK, 0.1, np.float32)
+QUIET = np.zeros(CHUNK, np.float32)
+MODEL = WHISPER_MODELS[0]
 
 
 class SegmenterTests(unittest.TestCase):
@@ -54,6 +70,178 @@ class SegmenterTests(unittest.TestCase):
         segmenter = _Segmenter()
         segmenter.feed(np.full(CHUNK, 0.1, np.float32))
         self.assertIsNone(segmenter.flush())
+
+    def test_longer_speech_ends_on_shorter_pauses(self) -> None:
+        """Need a long pause early in a line and only a brief one once it runs long."""
+        for speech_chunks, pause_chunks in ((10, 5), (40, 3), (70, 1)):
+            with self.subTest(speech_seconds=speech_chunks * CHUNK_SECONDS):
+                segmenter = _Segmenter()
+                for _ in range(speech_chunks):
+                    self.assertIsNone(segmenter.feed(LOUD))
+                for _ in range(pause_chunks - 1):
+                    self.assertIsNone(segmenter.feed(QUIET))
+                utterance = segmenter.feed(QUIET)
+                assert utterance is not None
+                self.assertEqual(utterance.size, (speech_chunks + pause_chunks) * CHUNK)
+
+    def test_unbroken_speech_splits_at_its_least_speechlike_chunk(self) -> None:
+        """Cut a 10 s monologue at its weakest recent chunk and keep every sample."""
+        scores = [0.9] * 120
+        scores[95] = 0.4  # Still speech, so no pause ever ends the line
+        vad = MagicMock()
+        vad.score.side_effect = scores
+        segmenter = _Segmenter(vad)
+        chunks = [np.full(CHUNK, index, np.float32) for index in range(120)]
+        lines = [
+            line for chunk in chunks if (line := segmenter.feed(chunk)) is not None
+        ]
+        self.assertEqual(lines[0].size, 96 * CHUNK)
+        self.assertEqual(lines[0][-1], 95)  # Ends with the weakest chunk
+        self.assertTrue(segmenter.speaking)
+        rest = segmenter.flush()
+        assert rest is not None
+        np.testing.assert_array_equal(
+            np.concatenate([*lines, rest]), np.concatenate(chunks)
+        )
+
+
+class AudioPreparationTests(unittest.TestCase):
+    """Feed recognition clean 16 kHz audio and per-source speech probabilities."""
+
+    def test_silero_vad_scores_whole_frames_and_keeps_state(self) -> None:
+        """Run each completed 512-sample frame once with its context and recurrent state."""
+        session = MagicMock()
+        session.run.side_effect = [
+            (
+                np.array([[probability]], np.float32),
+                np.full((2, 1, 128), index, np.float32),
+            )
+            for index, probability in enumerate((0.2, 0.8, 0.4, 0.1))
+        ]
+        vad = _SileroVad(session)
+        samples = np.arange(CHUNK, dtype=np.float32)
+        self.assertAlmostEqual(vad.score(samples), 0.8)
+        self.assertEqual(
+            session.run.call_count, 3
+        )  # 1600 samples: three frames, 64 left over
+        inputs = session.run.call_args.args[1]
+        self.assertEqual(inputs["input"].shape, (1, VAD_CONTEXT + VAD_FRAME))
+        np.testing.assert_array_equal(
+            inputs["input"][0, :VAD_CONTEXT], samples[960:1024]
+        )
+        self.assertEqual(inputs["state"][0, 0, 0], 1)  # The previous frame's state
+        self.assertAlmostEqual(vad.score(samples[:100]), 0.8)  # No whole frame yet
+        self.assertAlmostEqual(vad.score(samples[:400]), 0.1)
+
+    def test_resampler_removes_aliasing_and_keeps_speech(self) -> None:
+        """Keep a 1 kHz tone, remove a 12 kHz tone, and match whole-signal filtering in chunks."""
+        time = np.arange(48000) / 48000
+
+        def level(frequency: int) -> float:
+            """Return the peak of a tone after downsampling, past the filter's start-up."""
+            tone = np.sin(2 * np.pi * frequency * time).astype(np.float32)
+            return float(np.abs(_Resampler(48000).resample(tone)[200:]).max())
+
+        self.assertGreater(level(1000), 0.95)
+        self.assertLess(level(12000), 0.05)
+        signal = np.random.default_rng(1).standard_normal(48000).astype(np.float32)
+        chunked = _Resampler(48000)
+        np.testing.assert_allclose(
+            np.concatenate([chunked.resample(part) for part in np.split(signal, 10)]),
+            _Resampler(48000).resample(signal),
+            atol=1e-5,
+        )
+        self.assertIs(_Resampler(SAMPLE_RATE).resample(signal), signal)
+        self.assertEqual(_Resampler(8000).resample(signal[:800]).size, 1600)
+
+    def test_stereo_frames_become_mono(self) -> None:
+        """Average the channels before resampling."""
+        frames = np.array([[0.2, 0.4], [0.6, 0.8]], np.float32).tobytes()
+        mono = _to_mono_16k(frames, 2, _Resampler(SAMPLE_RATE))
+        np.testing.assert_allclose(mono, [0.3, 0.7])
+
+
+class ModelFilesTests(unittest.TestCase):
+    """Download, detect and load the speech models only from Que's own cache."""
+
+    def setUp(self) -> None:
+        """Point a transcriber at an empty private cache."""
+        self.app = application()
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.transcriber = Transcriber(MagicMock())
+        self.transcriber.cache_dir = Path(self.directory.name)
+
+    def test_models_count_as_downloaded_only_with_every_file(self) -> None:
+        """Require the VAD and every model file."""
+        self.assertEqual(self.transcriber.downloaded_models(), [])
+        self._write(MODEL, MODEL_FILES)
+        self.assertEqual(self.transcriber.downloaded_models(), [])  # VAD still missing
+        self._write(VAD_DIR, (VAD_FILE,))
+        self.assertEqual(self.transcriber.downloaded_models(), [MODEL])
+
+    def test_download_fetches_only_the_needed_files(self) -> None:
+        """Fetch the VAD and the int8 model files into the cache, then report success."""
+        finished = MagicMock()
+        self.transcriber.download_finished.connect(finished)
+        with patch("huggingface_hub.snapshot_download") as download:
+            self.transcriber._download(MODEL)
+        cache = self.transcriber.cache_dir
+        self.assertEqual(
+            download.call_args_list,
+            [
+                call(
+                    VAD_REPO, local_dir=str(cache / VAD_DIR), allow_patterns=[VAD_FILE]
+                ),
+                call(
+                    f"istupakov/{MODEL}-onnx",
+                    local_dir=str(cache / MODEL),
+                    allow_patterns=list(MODEL_FILES),
+                ),
+            ],
+        )
+        finished.assert_called_once_with(MODEL, "")
+
+    def test_model_loads_once_offline_and_warms_up(self) -> None:
+        """Load from the local folder with bounded threads and run one silent warm-up."""
+        (self.transcriber.cache_dir / MODEL).mkdir()
+        statuses: list[str] = []
+        self.transcriber.status_changed.connect(statuses.append)
+        with patch("onnx_asr.load_model") as load:
+            model = self.transcriber._load_model(MODEL)
+            self.assertIs(self.transcriber._load_model(MODEL), model)
+        load.assert_called_once()
+        self.assertEqual(
+            load.call_args.args, (f"nemo-{MODEL}", self.transcriber.cache_dir / MODEL)
+        )
+        self.assertEqual(load.call_args.kwargs["quantization"], "int8")
+        self.assertEqual(
+            load.call_args.kwargs["sess_options"].intra_op_num_threads, ONNX_THREADS
+        )
+        model.recognize.assert_called_once()
+        self.assertEqual(statuses, [f"Loading the {MODEL} model…", ""])
+
+    def test_vad_is_shared_when_downloaded_and_absent_otherwise(self) -> None:
+        """Fall back to the energy gate without the VAD, and load one session for both sources."""
+        self.assertIsNone(self.transcriber._vad())
+        self._write(VAD_DIR, (VAD_FILE,))
+        with patch("onnxruntime.InferenceSession") as session:
+            first, second = self.transcriber._vad(), self.transcriber._vad()
+        session.assert_called_once()
+        assert first is not None and second is not None
+        self.assertIs(first.session, second.session)
+        self.assertIsNot(first, second)  # Each source keeps its own recurrent state
+
+    def _write(self, folder: str, names: tuple[str, ...]) -> None:
+        """Create placeholder model files.
+
+        Args:
+            folder (str): The folder inside the cache.
+            names (tuple[str, ...]): The file names to create.
+        """
+        (self.transcriber.cache_dir / folder).mkdir(exist_ok=True)
+        for name in names:
+            (self.transcriber.cache_dir / folder / name).write_text("x")
 
 
 class TranscriptDeliveryTests(unittest.TestCase):

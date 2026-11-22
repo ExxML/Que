@@ -46,7 +46,7 @@ python native/build.py
 Compile .exe using Nuitka
 ```bash
 pip install nuitka
-python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-package=av --include-data-dir="src/assets=assets" --include-data-files="src/assets/que_hook.dll=assets/que_hook.dll" src/que.py
+python -m nuitka --standalone --windows-icon-from-ico="src/assets/que.ico" --windows-console-mode=disable --enable-plugin=pyqt6 --include-package=google.genai --include-package=onnx_asr --include-package-data=onnx_asr --include-data-dir="src/assets=assets" --include-data-files="src/assets/que_hook.dll=assets/que_hook.dll" src/que.py
 ```
 > [!NOTE]
 > Due to the large google.genai library, the first compilation will take a long time (20-30 minutes using Nuitka).

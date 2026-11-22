@@ -12,9 +12,11 @@ from PyQt6.QtGui import QWheelEvent
 from test_main_window import FLASH, WindowTestCase
 
 from core.provider_catalog import ProviderResult
+from core.settings import WHISPER_MODELS
 from ui.window.settings_page import _SettingsComboBox
 
 UNWRITABLE = "Check that Que's data folder is writable."
+MODEL = WHISPER_MODELS[0]
 
 
 class SettingsTestCase(WindowTestCase):
@@ -74,7 +76,7 @@ class SaveFailureTests(SettingsTestCase):
                 "save_resume_details",
                 lambda: self.page._save_resume_details([("Item", str(Path.home()))]),
             ),
-            ("save_whisper_model", lambda: self.page._save_whisper_model("tiny.en")),
+            ("save_whisper_model", lambda: self.page._save_whisper_model(MODEL)),
         )
         for method, action in cases:
             with (
@@ -107,10 +109,10 @@ class SaveFailureTests(SettingsTestCase):
 
     def test_downloaded_model_that_cannot_be_selected_is_reported(self) -> None:
         """Report a download error, and a download that could not be selected."""
-        self.page._on_whisper_downloaded("tiny.en", "offline")
+        self.page._on_whisper_downloaded(MODEL, "offline")
         self.assertIn("Could not download", self.page.download_status.text())
         with patch.object(self.store, "save_whisper_model", side_effect=OSError):
-            self.page._on_whisper_downloaded("tiny.en", "")
+            self.page._on_whisper_downloaded(MODEL, "")
         self.assertIn("could not be selected", self.page.download_status.text())
 
     def test_screenshot_deletion_needs_two_clicks_and_reports_failure(self) -> None:

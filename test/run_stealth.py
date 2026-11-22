@@ -420,7 +420,7 @@ def main() -> int:
         )
         return 2
     sys.path.insert(0, str(REPOSITORY / "src"))
-    import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
+    import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
 
     directory = (
         args.resume

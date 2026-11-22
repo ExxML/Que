@@ -23,8 +23,8 @@ from core.gemini_efforts import load_efforts, parse_efforts
 from core.model_catalog import EFFORT_WARNING, ModelOption, compatible_model
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
-from core.settings import SettingsStore
-from core.transcriber import Transcriber
+from core.settings import WHISPER_MODELS, SettingsStore
+from core.transcriber import MODEL_FILES, VAD_DIR, VAD_FILE, Transcriber
 from ui.window.main_window import MainWindow
 from ui.window.settings_page import SettingsPage
 
@@ -440,7 +440,7 @@ class SettingsPageTests(unittest.TestCase):
         self.window = QWidget()
         self.addCleanup(self.window.close)
         self.transcriber = Transcriber(self.store)
-        self.transcriber.cache_dir = Path(self.directory.name) / "whisper"
+        self.transcriber.cache_dir = Path(self.directory.name) / "transcription"
         self.page = SettingsPage(
             self.store,
             ClaudeBridge(),
@@ -582,31 +582,23 @@ class SettingsPageTests(unittest.TestCase):
     def test_whisper_model_is_saved_only_once_downloaded(self) -> None:
         """Offer to download a missing model and select it once the download finishes."""
         combo = self.page.whisper_combo
-        self.assertEqual(combo.currentData(), "small.en")
+        model = WHISPER_MODELS[0]
+        self.assertEqual(combo.currentData(), model)
         self.assertTrue(self.page.download_button.isEnabled())
-        combo.setCurrentIndex(combo.findData("tiny.en"))
         self.assertNotIn("whisper_model", self.store.data)
         with patch.object(self.transcriber, "_download"):
             self.page._download_whisper()
         self.assertFalse(self.page.download_button.isEnabled())
-        snapshot = (
-            self.transcriber.cache_dir
-            / "models--Systran--faster-whisper-tiny.en"
-            / "snapshots"
-            / "abc"
-        )
-        snapshot.mkdir(parents=True)
-        for name in ("config.json", "model.bin", "tokenizer.json", "vocabulary.txt"):
-            (snapshot / name).write_text("x")
-        self.transcriber.download_finished.emit("tiny.en", "")
-        self.assertEqual(self.store.whisper_model(), "tiny.en")
-        self.assertEqual(combo.currentData(), "tiny.en")
+        for directory, names in ((VAD_DIR, (VAD_FILE,)), (model, MODEL_FILES)):
+            (self.transcriber.cache_dir / directory).mkdir(parents=True)
+            for name in names:
+                (self.transcriber.cache_dir / directory / name).write_text("x")
+        self.transcriber.download_finished.emit(model, "")
+        self.assertEqual(self.store.whisper_model(), model)
+        self.assertEqual(combo.currentData(), model)
         self.assertIn("downloaded", combo.currentText())
         self.assertEqual(self.page.download_button.text(), "Downloaded")
         self.assertFalse(self.page.download_button.isEnabled())
-        combo.setCurrentIndex(combo.findData("small.en"))
-        self.assertEqual(self.store.whisper_model(), "tiny.en")
-        self.assertTrue(self.page.download_button.isEnabled())
 
     def test_auto_apply_keeps_page_open_and_does_not_cancel_model_changes(self) -> None:
         """Apply effort changes to subsequent turns without interrupting the current one."""

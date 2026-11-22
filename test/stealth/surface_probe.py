@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
+import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
 from PyQt6.QtCore import QMimeData, QPoint, Qt, QTimer
 from PyQt6.QtWidgets import (
     QApplication,

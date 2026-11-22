@@ -11,7 +11,7 @@ from unittest.mock import patch
 def inspect_controls(source: Path, output: Path) -> None:
     """Instantiate Qt controls with synthetic state and denied network access."""
     sys.path.insert(0, str(source))
-    import ctranslate2  # type: ignore[import-untyped]  # noqa: F401
+    import onnxruntime  # type: ignore[import-untyped]  # noqa: F401  # Load before PyQt6, whose older msvcp140.dll crashes onnxruntime
     from PyQt6.QtGui import QImage
     from PyQt6.QtWidgets import QApplication, QWidget
 

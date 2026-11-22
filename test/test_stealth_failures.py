@@ -21,8 +21,10 @@ from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.model_catalog import ModelOption
 from core.screenshot_manager import ScreenshotManager
-from core.settings import SettingsStore
+from core.settings import WHISPER_MODELS, SettingsStore
 from core.transcriber import Transcriber
+
+MODEL = WHISPER_MODELS[0]
 
 
 class ControlledFailureTests(unittest.TestCase):
@@ -128,19 +130,28 @@ class ControlledFailureTests(unittest.TestCase):
             completed = MagicMock()
             transcriber.download_finished.connect(completed)
             with patch(
-                "faster_whisper.download_model",
+                "huggingface_hub.snapshot_download",
                 side_effect=OSError("synthetic offline download"),
             ):
-                transcriber._download("tiny.en")
-            completed.assert_called_once_with("tiny.en", "synthetic offline download")
+                transcriber._download(MODEL)
+            completed.assert_called_once_with(MODEL, "synthetic offline download")
+            with (
+                patch("onnx_asr.load_model") as load,
+                self.assertRaises(FileNotFoundError),
+            ):
+                transcriber._load_model(
+                    MODEL
+                )  # Never lets onnx-asr download a missing model
+            load.assert_not_called()
+            (transcriber.cache_dir / MODEL).mkdir(parents=True)
             with (
                 patch(
-                    "faster_whisper.WhisperModel",
+                    "onnx_asr.load_model",
                     side_effect=OSError("synthetic missing model"),
                 ),
                 self.assertRaises(OSError),
             ):
-                transcriber._load_model("tiny.en")
+                transcriber._load_model(MODEL)
             self.assertIsNone(transcriber.model)
 
     def test_capture_device_failure_reports_and_finishes_both_sources(self) -> None:
@@ -187,9 +198,9 @@ class ControlledFailureTests(unittest.TestCase):
             utterances.put(None)
             utterances.put(None)
             model = MagicMock()
-            model.transcribe.side_effect = [
+            model.recognize.side_effect = [
                 RuntimeError("fixture inference failure"),
-                ([MagicMock(text="Recovered fixture phrase")], None),
+                " Recovered fixture phrase ",
             ]
             with patch.object(transcriber, "_load_model", return_value=model):
                 transcriber._transcribe_loop(

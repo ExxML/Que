@@ -17,13 +17,14 @@ from core.chat_history import ChatHistory, Conversation
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderResult
 from core.screenshot_manager import ScreenshotManager
-from core.settings import CONFIG_KEYS, SettingsStore
+from core.settings import CONFIG_KEYS, WHISPER_MODELS, SettingsStore
 from ui.window.main_window import MainWindow
 
 KEY = "synthetic-gemini-key"
 ENCRYPTED = b"synthetic DPAPI blob"
 PICKER = "ui.window.config_panel.choose_file"
 FLASH = ModelOption("flash", "Flash", ("low", "high"))
+MODEL = WHISPER_MODELS[0]
 
 
 class ConfigTransferTests(unittest.TestCase):
@@ -105,7 +106,7 @@ class ConfigTransferTests(unittest.TestCase):
         self.page.detail_rows[0][0].setText("Edited")
         self.page.instruction_input.setPlainText("Recently typed instruction")
         self.store.save_audio_device("you", "USB microphone")
-        self.store.save_whisper_model("tiny.en")
+        self.store.save_whisper_model(MODEL)
         self.store.save_claude_directory(str(self.backup.parent))
         self.store.save_click_through(True)
         self.history.save(
@@ -145,7 +146,11 @@ class ConfigTransferTests(unittest.TestCase):
         self.store.save_context_document("resume", "old.txt", "Old résumé")
         self.store.save_context_document("cover_letter", "letter.txt", "Keep me")
         self.store.save_audio_device("them", "Keep speakers")
-        self.store.save_whisper_model("small.en")
+        # Que ships one model, so add a second one for the backup to differ from
+        models = patch("core.settings.WHISPER_MODELS", (MODEL, "other-model"))
+        models.start()
+        self.addCleanup(models.stop)
+        self.store.save_whisper_model("other-model")
         self.history.save(Conversation("gemini", "Existing conversation"))
         original_history = self.history.path.read_bytes()
         self.write_backup(
@@ -160,7 +165,7 @@ class ConfigTransferTests(unittest.TestCase):
                 "claude_directory": str(self.backup.parent),
                 "audio_device_you": "Imported microphone",
                 "audio_device_them": "",
-                "whisper_model": "tiny.en",
+                "whisper_model": MODEL,
                 "system_tray": False,
                 "capture_hidden": False,
                 "click_through": True,
@@ -205,9 +210,11 @@ class ConfigTransferTests(unittest.TestCase):
             self.page.audio_combos["you"].currentData(), "Imported microphone"
         )
         self.assertEqual(self.store.audio_device("them"), "Keep speakers")
-        self.assertEqual(self.page.whisper_combo.currentData(), "tiny.en")
-        self.page._on_whisper_downloaded("small.en", "")
-        self.assertEqual(self.store.whisper_model(), "tiny.en")
+        self.assertEqual(self.page.whisper_combo.currentData(), MODEL)
+        self.page._on_whisper_downloaded(MODEL, "")
+        self.assertEqual(self.store.whisper_model(), MODEL)
+        self.page.open_settings()  # Reopening keeps showing the imported choice
+        self.assertEqual(self.page.whisper_combo.currentData(), MODEL)
         self.assertTrue(self.page.capture_checkbox.isChecked())
         self.assertFalse(self.page.tray_checkbox.isChecked())
         self.assertTrue(self.page.click_through_checkbox.isChecked())
@@ -302,7 +309,7 @@ class ConfigTransferTests(unittest.TestCase):
 
     def test_new_voice_download_can_replace_the_imported_choice(self) -> None:
         """Keep the standard download action available after restoring a model preference."""
-        self.write_backup({"whisper_model": "tiny.en"})
+        self.write_backup({"whisper_model": MODEL})
         self.open_backup()
         self.panel.select_button.click()
         with (
@@ -310,13 +317,11 @@ class ConfigTransferTests(unittest.TestCase):
             patch.object(self.page.transcriber, "download") as download,
         ):
             self.panel.apply_button.click()
-            self.page.whisper_combo.setCurrentIndex(
-                self.page.whisper_combo.findData("base.en")
-            )
+            self.page._refresh_whisper()  # Whatever this machine's model cache holds
             self.page.download_button.click()
-        download.assert_called_once_with("base.en")
-        self.page._on_whisper_downloaded("base.en", "")
-        self.assertEqual(self.store.whisper_model(), "base.en")
+        download.assert_called_once_with(MODEL)
+        self.page._on_whisper_downloaded(MODEL, "")
+        self.assertEqual(self.store.whisper_model(), MODEL)
         self.assertIn("selected it for transcription", self.page.download_status.text())
 
     def test_invalid_backups_never_offer_a_review(self) -> None:

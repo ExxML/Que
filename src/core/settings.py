@@ -9,7 +9,7 @@ import win32crypt  # type: ignore[import-untyped]
 
 from core.hook_engine import PRESET_COUNT
 
-WHISPER_MODELS: tuple[str, ...] = ("tiny.en", "base.en", "small.en", "medium.en")
+WHISPER_MODELS: tuple[str, ...] = ("parakeet-tdt-0.6b-v2",)  # Transcription models
 CONTEXT_DOCUMENTS: dict[str, str] = {
     "resume": "Resume",
     "cover_letter": "Cover letter",
@@ -120,13 +120,13 @@ class SettingsStore:
         return str(self.data.get("claude_directory", ""))
 
     def whisper_model(self) -> str:
-        """Return the saved transcription model, defaulting to small.en.
+        """Return the saved transcription model, defaulting to the first one.
 
         Returns:
-            str: The faster-whisper model name.
+            str: The transcription model name.
         """
         model = self.data.get("whisper_model")
-        return str(model) if model in WHISPER_MODELS else "small.en"
+        return str(model) if model in WHISPER_MODELS else WHISPER_MODELS[0]
 
     def audio_device(self, source: str) -> str:
         """Return the saved WASAPI device name or an empty string for the Windows default.
@@ -283,7 +283,7 @@ class SettingsStore:
         """Atomically save the transcription model.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
         """
         self._write({**self.data, "whisper_model": model})
 

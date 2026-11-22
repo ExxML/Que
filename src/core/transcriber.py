@@ -6,7 +6,7 @@ from collections import deque
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import numpy as np
 import pyaudiowpatch  # type: ignore[import-untyped]
@@ -15,15 +15,22 @@ from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
 from core.settings import WHISPER_MODELS, SettingsStore
 
-SAMPLE_RATE = 16000
+SAMPLE_RATE: Final = 16000
 CHUNK_SECONDS = 0.1
 SPEECH_RMS = 0.01  # Energy gate used only when the Silero VAD is not downloaded
 SPEECH_START = 0.5  # Speech probability that starts an utterance
-SPEECH_CONTINUE = 0.35  # Lower probability that keeps one going, so soft word endings stay inside it
+# A lower probability keeps an utterance going, so soft word endings stay inside it
+SPEECH_CONTINUE = 0.35
 # (utterance length below which, pause that ends it): the longer someone talks, the shorter the pause needed
-END_PAUSES: tuple[tuple[float, float], ...] = ((3.0, 0.5), (6.0, 0.3), (float("inf"), 0.1))
+END_PAUSES: tuple[tuple[float, float], ...] = (
+    (3.0, 0.5),
+    (6.0, 0.3),
+    (float("inf"), 0.1),
+)
 MAX_UTTERANCE_SECONDS = 10.0  # Split unbroken speech so captions keep up
-SPLIT_SEARCH_CHUNKS = 15  # A forced split happens at the least speech-like chunk of the last 1.5 s
+SPLIT_SEARCH_CHUNKS = (
+    15  # A forced split happens at the least speech-like chunk of the last 1.5 s
+)
 MIN_UTTERANCE_SECONDS = 0.3  # Ignore clicks and pops
 PRE_ROLL_CHUNKS = 3  # Keep the quiet start of the first word
 VAD_FRAME = 512  # Silero VAD frame at 16 kHz
@@ -98,7 +105,9 @@ class Transcriber(QObject):
         self.model: Any = None
         self.model_size = ""
         self.model_lock = threading.Lock()
-        self.vad_session: Any = None  # Shared Silero VAD; each source keeps its own state
+        self.vad_session: Any = (
+            None  # Shared Silero VAD; each source keeps its own state
+        )
         self.downloading = ""  # Model being downloaded, or an empty string
         self.missing_model = False  # Showing the missing-model notice
         self.source_health: dict[str, str] = {}
@@ -669,9 +678,11 @@ class Transcriber(QObject):
                 path = self.cache_dir / model_size
                 # onnx-asr loads an existing directory offline but downloads into a missing one
                 if not path.is_dir():
-                    raise FileNotFoundError(f"{path} is missing. Download it in Settings.")
+                    raise FileNotFoundError(
+                        f"{path} is missing. Download it in Settings."
+                    )
                 import onnx_asr  # Slow import, only when recording
-                import onnxruntime
+                import onnxruntime  # type: ignore[import-untyped]
 
                 options = onnxruntime.SessionOptions()
                 options.intra_op_num_threads = ONNX_THREADS
@@ -682,7 +693,9 @@ class Transcriber(QObject):
                     sess_options=options,
                 )
                 # The first run sets up the graph and takes seconds; spend that before speech arrives
-                model.recognize(np.zeros(SAMPLE_RATE, np.float32), sample_rate=SAMPLE_RATE)
+                model.recognize(
+                    np.zeros(SAMPLE_RATE, np.float32), sample_rate=SAMPLE_RATE
+                )
                 self.model = model
                 self.model_size = model_size
                 self.status_changed.emit("")
@@ -697,10 +710,12 @@ class Transcriber(QObject):
         """
         path = self.cache_dir / VAD_DIR / VAD_FILE
         if self.vad_session is None and path.is_file():
-            import onnxruntime  # Slow import, only when recording
+            import onnxruntime
 
             options = onnxruntime.SessionOptions()
-            options.intra_op_num_threads = 1  # Tiny model; more threads only add overhead
+            options.intra_op_num_threads = (
+                1  # Tiny model; more threads only add overhead
+            )
             options.inter_op_num_threads = 1
             self.vad_session = onnxruntime.InferenceSession(
                 str(path), options, providers=["CPUExecutionProvider"]
@@ -827,8 +842,8 @@ class _SileroVad:
     def __init__(self, session: Any) -> None:
         self.session = session
         self.state = np.zeros((2, 1, 128), np.float32)
-        self.context = np.zeros(VAD_CONTEXT, np.float32)
-        self.pending = np.zeros(0, np.float32)
+        self.context: NDArray[np.float32] = np.zeros(VAD_CONTEXT, np.float32)
+        self.pending: NDArray[np.float32] = np.zeros(0, np.float32)
         self.probability = 0.0
 
     def score(self, samples: NDArray[np.float32]) -> float:
@@ -870,11 +885,13 @@ class _Resampler:
         ratio = rate / SAMPLE_RATE
         count = int(FILTER_TAPS_PER_RATIO * ratio) + 1
         offsets = np.arange(count) - (count - 1) / 2
-        cutoff = 0.45 / ratio  # Just under the 8 kHz limit, as a fraction of the device rate
+        cutoff = (
+            0.45 / ratio
+        )  # Just under the 8 kHz limit, as a fraction of the device rate
         taps = cutoff * np.sinc(cutoff * offsets) * np.hamming(count)
         self.taps = (taps / taps.sum()).astype(np.float32)
         # The previous chunk's tail, so filtering never clicks at chunk edges
-        self.history = np.zeros(count - 1, np.float32)
+        self.history: NDArray[np.float32] = np.zeros(count - 1, np.float32)
 
     def resample(self, mono: NDArray[np.float32]) -> NDArray[np.float32]:
         """Low-pass filter and downsample one chunk.
@@ -887,7 +904,7 @@ class _Resampler:
         """
         if self.rate == SAMPLE_RATE:
             return mono
-        filtered = mono
+        filtered: NDArray[np.float32] = mono
         if self.rate > SAMPLE_RATE:  # Slower devices have nothing above 8 kHz to remove
             padded = np.concatenate((self.history, mono))
             self.history = padded[padded.size - self.history.size :]

@@ -36,10 +36,7 @@ from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, qss
 from ui.window.config_panel import ConfigPanel
 
 WHISPER_LABELS: dict[str, str] = {
-    "tiny.en": "Tiny · fastest · 75 MB",
-    "base.en": "Base · fast · 145 MB",
-    "small.en": "Small · recommended · 480 MB",
-    "medium.en": "Medium · most accurate · 1.5 GB",
+    "parakeet-tdt-0.6b-v2": "Parakeet TDT 0.6B · English · 670 MB",
 }
 
 
@@ -104,7 +101,7 @@ class SettingsPage(QWidget):
                 else ""
             )
             or self.transcriber.active_model()
-            or "small.en"
+            or WHISPER_MODELS[0]
         )
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
@@ -1145,7 +1142,7 @@ class SettingsPage(QWidget):
         """Show a transcription model as selected without saving it.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
         """
         self.whisper_combo.blockSignals(True)
         self.whisper_combo.setCurrentIndex(max(0, self.whisper_combo.findData(model)))
@@ -1205,7 +1202,7 @@ class SettingsPage(QWidget):
         """Report a finished download and select the new model for transcription.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
             error (str): The download error, or an empty string on success.
         """
         if error:
@@ -1241,7 +1238,7 @@ class SettingsPage(QWidget):
         """Save the chosen transcription model.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
         """
         try:
             self.settings_store.save_whisper_model(model)
