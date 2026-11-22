@@ -556,13 +556,19 @@ class InputRouter(QObject):
         Args:
             except_window (QWidget): The popup currently receiving the press.
         """
+        # isAncestorOf stops at window boundaries, so walk the owners of the pressed popup instead
+        owners: list[QWidget] = []
+        owner = except_window.parentWidget() if except_window is not None else None
+        while owner is not None:
+            owners.append(owner)
+            owner = owner.parentWidget()
         for widget in QApplication.topLevelWidgets():
             if (
                 widget is not except_window
                 and widget.property("quePopup")
                 and widget.isVisible()
             ):
-                if except_window is not None and widget.isAncestorOf(except_window):
+                if any(widget is owner for owner in owners):
                     continue
                 parent = widget.parentWidget()
                 if isinstance(parent, QComboBox):

@@ -1,0 +1,43 @@
+{
+  "description": "Make agents run the full CI (python test/run_ci.py) before finishing a turn that changed files.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" pre",
+            "commandWindows": "py -3.13 test/agent_ci_gate.py pre",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|Edit|Write)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" post",
+            "commandWindows": "py -3.13 test/agent_ci_gate.py post",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/test/agent_ci_gate.py\" stop",
+            "commandWindows": "py -3.13 test/agent_ci_gate.py stop",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

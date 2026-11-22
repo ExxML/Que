@@ -3,12 +3,17 @@
 import ast
 import sys
 import threading
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from types import FrameType
 from typing import Any
 
 from stealth.results import Result, atomic_json, read_json
+
+KNOWN_GAPS = Path(__file__).with_name(
+    "known-execution-gaps.json"
+)  # Accepted gaps; may only shrink.
 
 
 class SourceCoverage:
@@ -63,9 +68,13 @@ def coverage_results(source: Path, directory: Path) -> list[Result]:
             )
         ]
     hits = {tuple(item) for item in read_json(path)["hits"]}
-    hook_path = directory / "native" / "hook-execution.json"
-    if hook_path.exists():
-        hits.update(tuple(item) for item in read_json(hook_path)["hits"])
+    # Hook callbacks and subprocess fixtures run through test/stealth/traced.py record their own hits.
+    for extra in [
+        directory / "native" / "hook-execution.json",
+        *(directory / "native").glob("source-execution-*.json"),
+    ]:
+        if extra.exists():
+            hits.update(tuple(item) for item in read_json(extra)["hits"])
     gaps = []
     for file in source.rglob("*.py"):
         relative = file.relative_to(source).as_posix()
@@ -87,7 +96,13 @@ def coverage_results(source: Path, directory: Path) -> list[Result]:
             elif isinstance(node, ast.If):
                 bodies = [node.body, node.orelse]
             for body in bodies:
-                if body and (relative, body[0].lineno) not in hits:
+                # A multi-line first statement reports its line event on a later line of its span.
+                if body and not any(
+                    (relative, line) in hits
+                    for line in range(
+                        body[0].lineno, (body[0].end_lineno or body[0].lineno) + 1
+                    )
+                ):
                     gaps.append(
                         {
                             "source": relative,
@@ -103,5 +118,51 @@ def coverage_results(source: Path, directory: Path) -> list[Result]:
             "INCONCLUSIVE" if gaps else "PASS",
             f"{len(gaps)} source entry/branch/failure bodies lack offline execution evidence. Line hits establish execution only, not browser protection or complete condition coverage.",
             evidence=["native/source-execution.json", "native/execution-gaps.json"],
-        )
+        ),
+        ratchet_result(gaps, read_json(KNOWN_GAPS) if KNOWN_GAPS.exists() else []),
     ]
+
+
+def gap_key(gap: dict[str, Any]) -> str:
+    """Identify a gap by file, kind and opening line, so unrelated edits that move lines keep it known.
+
+    Args:
+        gap (dict[str, Any]): A gap from execution-gaps.json.
+
+    Returns:
+        str: The key.
+    """
+    return f"{gap['source']} | {gap['kind']} | {gap['trigger']}"
+
+
+def ratchet_result(gaps: list[dict[str, Any]], known: list[str]) -> Result:
+    """Fail new unexecuted paths, and known gaps that tests now cover, so the known list only shrinks.
+
+    Args:
+        gaps (list[dict[str, Any]]): The gaps measured in this run.
+        known (list[str]): The accepted gap keys from known-execution-gaps.json.
+
+    Returns:
+        Result: PASS when the measured gaps match the known list exactly.
+    """
+    measured, accepted = Counter(map(gap_key, gaps)), Counter(known)
+    new, covered = (
+        sorted((measured - accepted).elements()),
+        sorted((accepted - measured).elements()),
+    )
+    problems = []
+    if new:
+        problems.append(
+            f"New code that no offline test executes (add tests): {'; '.join(new)}."
+        )
+    if covered:
+        problems.append(
+            f"Known gaps now executed; remove them with `python test/stealth/approve.py prune-gaps RUN`: {'; '.join(covered)}."
+        )
+    return Result(
+        "coverage.ratchet",
+        "FAIL" if problems else "PASS",
+        " ".join(problems)
+        or f"No new unexecuted code; {len(known)} known gaps remain to be covered.",
+        evidence=["native/execution-gaps.json"],
+    )

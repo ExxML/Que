@@ -20,6 +20,8 @@ import tempfile
 import time
 from pathlib import Path
 
+from agent_ci_gate import record_ci_run
+
 REPOSITORY = Path(__file__).resolve().parents[1]
 VENV = REPOSITORY / ".venv-ci"
 STAMP = VENV / "requirements.sha256"
@@ -165,6 +167,7 @@ def main() -> int:
         )
     failures: list[str] = []
     started = time.monotonic()
+    started_at = time.time()
     for job in jobs:
         for name, command in JOBS[job]:
             if not _run_step(
@@ -188,6 +191,10 @@ def main() -> int:
             print(f"Step outputs kept in {runs}")
         else:
             shutil.rmtree(REPOSITORY / runs, ignore_errors=True)
+    if not ON_GITHUB and set(jobs) == set(JOBS):
+        record_ci_run(
+            started_at, not failures
+        )  # Lets agents' stop hooks see that CI ran.
     return 1 if failures else 0
 
 

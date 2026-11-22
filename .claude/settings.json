@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "py -3.13 \"$CLAUDE_PROJECT_DIR/test/agent_ci_gate.py\" pre", "timeout": 30 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "py -3.13 \"$CLAUDE_PROJECT_DIR/test/agent_ci_gate.py\" post", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "py -3.13 \"$CLAUDE_PROJECT_DIR/test/agent_ci_gate.py\" stop", "timeout": 30 }
+        ]
+      }
+    ]
+  }
+}

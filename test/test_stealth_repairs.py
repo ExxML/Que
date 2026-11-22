@@ -830,9 +830,14 @@ class NativeSurfaceTests(unittest.TestCase):
         """Include transient opening samples, popup grabs, handle replacement, and failure recovery."""
         repository = Path(__file__).resolve().parents[1]
         environment = dict(os.environ, QT_QPA_PLATFORM="windows")
-        environment.pop("QUE_AUDIT_COVERAGE", None)
         result = subprocess.run(
-            [sys.executable, str(repository / "test/stealth/surface_probe.py")],
+            [
+                sys.executable,
+                str(
+                    repository / "test/stealth/traced.py"
+                ),  # Counts the probe's native paths as executed.
+                str(repository / "test/stealth/surface_probe.py"),
+            ],
             cwd=repository,
             env=environment,
             capture_output=True,

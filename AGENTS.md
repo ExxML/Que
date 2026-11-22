@@ -22,7 +22,15 @@ python test/run_ci.py static          # ruff, ruff format, mypy --strict, pylint
 python test/run_ci.py regression compliance   # offline regressions, browser smokes, compliance audit
 ```
 
-**Before finishing any turn that changed files, run `python test/run_ci.py` and make it pass.** Run `static` while iterating, but run the full script at least once before you stop. Report the summary it prints; if a failure is unrelated to your change (check whether the same step also fails on main: `gh run list --branch main`; never `git stash`, other agents' edits share this tree), say so instead of hiding it. Judge CI by `test/run_ci.py`, not by tools in `.venv`: extra packages installed there can hide differences from GitHub. If `.venv` is ever rebuilt, use `py -3.13 -m venv .venv`. The workflows in `.github/workflows` call this script, so add or change CI steps in `test/run_ci.py` (and pinned tool versions in `test/requirements-ci.txt`), never in the YAML alone.
+**Before finishing any turn that changed files, run `python test/run_ci.py` and make it pass.** Run `static` while iterating, but run the full script at least once before you stop. Report the summary it prints; if a failure is unrelated to your change (check whether the same step also fails on main: `gh run list --branch main`; never `git stash`, other agents' edits share this tree), say so instead of hiding it. Judge CI by `test/run_ci.py`, not by tools in `.venv`: extra packages installed there can hide differences from GitHub. If `.venv` is ever rebuilt, use `py -3.13 -m venv .venv`. The workflows in `.github/workflows` call this script, so add or change CI steps in `test/run_ci.py` (and pinned tool versions in `test/requirements-ci.txt`), never in the YAML alone. Hooks in `.claude/settings.json` and `.codex/hooks.json` run `test/agent_ci_gate.py`, which blocks you from finishing a turn in which you changed files until a full `python test/run_ci.py` has started after your last change; a failed run is flagged once, then you may finish after explaining it.
+
+## Stealth Testing
+
+Every change must keep Que completely undetectable: no page, meeting app, screen recorder or other program may be able to tell that Que is running or what it is doing. Treat this as part of finishing a change, not a follow-up:
+- If your change adds or alters anything another program could observe (windows, popups, menus, tooltips and dialogs; focus or activation; keyboard and mouse handling or hotkeys; capture exclusion; timers, threads and processes; audio; clipboard; files; network), add or update the automated stealth tests so they exercise the new behaviour, not just its existence: `test/test_stealth*.py`, `test/test_native_hook.py`, `test/stealth/surface_probe.py` (every native window must stay capture-excluded) and the scenarios in `test/stealth/manifest.py` / `cases.py`.
+- The compliance job (`python test/run_ci.py compliance`) fails on `Unreviewed operation changes` whenever source code changes. Review each listed change for stealth (`python test/stealth/approve.py operations` lists them), then approve only the identities you reviewed: `python test/stealth/approve.py operations <identity> ...`. A changed control or connection inventory (`inventory.json`, `qt-controls.json`) needs a scenario decision first; see "Inventory and maintenance" in `test/STEALTH_AUDIT.md`. Never refresh a snapshot wholesale just to silence a failure.
+- Compliance also fails (`coverage.ratchet`) on any new code path no offline test executes: write a test that runs it; there is no approval for untested code. When your tests execute a known gap, it fails until you run `python test/stealth/approve.py prune-gaps <run>/ci` on that run's kept output, so `test/stealth/known-execution-gaps.json` only shrinks. If code genuinely cannot run offline, ask the user.
+- Automated tests cannot prove physical invisibility (screen capture, audio, focus with real browsers and meeting apps). If your change could affect those, say so and name the manual checks in `test/STEALTH_MANUAL_TESTING.md` that the user should run.
 
 ## Architecture
 
@@ -41,14 +49,15 @@ src/assets/ — Icons and images
 - `core/shortcut_manager.py` — Runs hotkey actions on the Qt thread; the physical keys are decided by the input helper
 - `core/hook_engine.py` / `core/hook_host.py` — Qt-free keyboard/mouse decision logic and the input helper process (`que.py --hook-host`) that hosts the `WH_KEYBOARD_LL`/`WH_MOUSE_LL` hooks plus Raw Input leak detection, so Que's own work can never stall the hooks
 - `core/native_hook.py` + `native/que_hook.c` — The hook callbacks in compiled code (`src/assets/que_hook.dll`, committed; rebuild with `python native/build.py`): a C port of `HookEngine`'s rules on its own native thread with locked memory, so no Python work can delay a callback. `HookEngine` stays the reference; `test/test_native_hook.py` requires identical decisions. Policy tables (`HOTKEYS` etc.) are passed in from `core/hook_engine.py`, never duplicated in C.
-- `core/hook_client.py` — Starts and supervises the helper over authenticated named pipes; turns its events into Qt signals
+- `core/hook_client.py` — Starts and supervises the helper over authenticated named pipes; turns its events into Qt signals; when the "Allow shortcuts in admin apps" setting is on (default off, read once at startup), starts it as administrator with one UAC prompt per launch so hooks also see input to elevated windows like Task Manager; declined prompts and restarts use an unelevated helper
 - `core/window_policy.py` — Applies capture affinity and non-activating, click-through styles to every top-level window before it is shown
 - `ui/input/input_router.py` — Delivers routed keys and clicks to Qt widgets without activating Que's windows
 - `core/win32_hook.py` — ctypes bindings for Win32 keyboard hook constants and types
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
 - `ui/window/main_window.py` — Frameless translucent `QWidget` with `WindowStaysOnTopHint | Tool`; re-raises itself every 1s via visibility timer
-- `ui/chat/ai_formatter.py` — Markdown→HTML converter for `QLabel`; known pain point, being redesigned (see WIP.md)
+- `ui/chat/ai_formatter.py` — Markdown→Qt rich text for `QLabel` (block parser for headings, nested lists, tables, quotes, fenced code; Pygments highlighting in VS Code Dark Modern colours from `theme.CODE_COLORS`); must handle half-streamed text since it re-renders every chunk
+- `ui/chat/latex.py` — Renders LaTeX maths (`$…$`, `\(…\)`, `$$…$$`, `\[…\]`) as Unicode text in Cambria Math; display maths stacks fractions/limits with rich-text tables. No images, so maths stays selectable
 - `ui/theme.py` — Centralized color theming; all colors must come from here
 - `src/data/` — Runtime data: `chat_history.json`, `config.json`, `cache/`
 
@@ -61,7 +70,7 @@ Use `threading.Thread(daemon=True)` for background work — not `QThread` (Nuitk
 ## Translucency Rules
 
 The window background is one translucent fill (`BG_COLOR` at `WINDOW_ALPHA`, painted by `MainWindow._paint_frame`). Translucent fills compound, so any widget that paints its own translucent background inside the window looks darker than the window. This bug has recurred (history sidebar, model dropdowns, transcript panel); avoid it:
-- Never give an in-window widget a translucent background fill. Use `background: transparent` and a border for framing (see `InputField`'s input container).
+- Never give an in-window widget a translucent background fill. Use `background: transparent` and a border for framing (see `InputField`'s input container). The one deliberate exception: code blocks, inline code and table headers in chat replies use `CODE_BG_ALPHA` so they read darker than the window while staying see-through.
 - Dock new panels in the layout and grow the window by their height (see `InputField` and `TranscriptPanel`) instead of floating them over the chat, so they never cover text and need no fill.
 - If a widget must float over content, clear its area and repaint the window frame instead of filling over it (`CompositionMode_Source` with transparent, then `MainWindow._paint_frame`; see `HistorySidebar.paintEvent`).
 
