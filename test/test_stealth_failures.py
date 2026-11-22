@@ -177,7 +177,9 @@ class ControlledFailureTests(unittest.TestCase):
             with patch.object(
                 transcriber, "_load_model", side_effect=OSError("fixture load failure")
             ):
-                transcriber._transcribe_loop(utterances, "tiny.en")
+                transcriber._transcribe_loop(
+                    utterances, "tiny.en", transcriber.stop_event
+                )
             self.assertTrue(failed.call_args.args[1])
             failed.reset_mock()
             for _ in range(2):
@@ -190,11 +192,15 @@ class ControlledFailureTests(unittest.TestCase):
                 ([MagicMock(text="Recovered fixture phrase")], None),
             ]
             with patch.object(transcriber, "_load_model", return_value=model):
-                transcriber._transcribe_loop(utterances, "tiny.en")
+                transcriber._transcribe_loop(
+                    utterances, "tiny.en", transcriber.stop_event
+                )
             failed.assert_called_once_with(
                 "Transcription failed: fixture inference failure", False
             )
-            transcribed.assert_called_once_with("you", "Recovered fixture phrase")
+            transcribed.assert_called_once_with(
+                "you", "Recovered fixture phrase", transcriber.stop_event
+            )
             self.assertTrue(utterances.empty())
 
     def test_receiver_error_delivery_and_cancelled_failure(self) -> None:

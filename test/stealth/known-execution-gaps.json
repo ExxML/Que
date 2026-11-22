@@ -9,7 +9,6 @@
   "core/ai_sender.py | If | if not self.model:",
   "core/ai_sender.py | If | if provider not in ('gemini', 'claude'):",
   "core/ai_sender.py | If | if request.provider == 'claude':",
-  "core/ai_sender.py | If | if self.api_key != api_key:",
   "core/ai_sender.py | If | if stop_flag.is_set():",
   "core/ai_sender.py | If | if stop_flag.is_set():",
   "core/ai_sender.py | If | if stop_flag.is_set():",
@@ -82,7 +81,6 @@
   "ui/chat/ai_formatter.py | If | if value.isupper() and len(value) > 1:",
   "ui/chat/ai_formatter.py | If | if value[:1].isupper():",
   "ui/chat/chat_area.py | FunctionDef | def _animate_to_bottom(self) -> None:",
-  "ui/chat/chat_area.py | FunctionDef | def _jump_to_bottom(self) -> None:",
   "ui/chat/chat_area.py | FunctionDef | def append_to_stream(self, chunk_text: str) -> None:",
   "ui/chat/chat_area.py | FunctionDef | def shortcut_scroll(self, amount: int) -> None:",
   "ui/chat/chat_area.py | FunctionDef | def show_stream_error(self, error_msg: str) -> None:",
@@ -152,10 +150,7 @@
   "ui/chat/latex.py | If | if token == '{':",
   "ui/chat/latex.py | If | if token == '~':",
   "ui/chat/latex.py | If | if token in ('}', '&'):",
-  "ui/directory_picker.py | FunctionDef | def _run(dialog: QFileDialog) -> str:",
   "ui/directory_picker.py | FunctionDef | def choose_directory(parent: QWidget, current: str, title: str=\"Choose Claude's directory\") -> str:",
-  "ui/directory_picker.py | FunctionDef | def choose_file(parent: QWidget, title: str, current: str, name_filter: str) -> str:",
-  "ui/directory_picker.py | If | if dialog.exec() != QFileDialog.DialogCode.Accepted or not dialog.selectedFiles():",
   "ui/input/input_field.py | FunctionDef | def _set_enabled(self, enabled: bool) -> None:",
   "ui/input/input_field.py | If | if not sip.isdeleted(widget):",
   "ui/input/input_router.py | If | if candidate is None:",
@@ -223,6 +218,5 @@
   "ui/window/transcript_panel.py | FunctionDef | def _toggle_expanded(self) -> None:",
   "ui/window/transcript_panel.py | If | if self.expanded:",
   "ui/window/transcript_panel.py | If | if self.status:",
-  "ui/window/transcript_panel.py | If | if self.transcriber.recording:",
   "ui/window/transcript_panel.py | If | if transcriber.recording and health:"
 ]

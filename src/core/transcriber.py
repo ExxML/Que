@@ -17,16 +17,33 @@ from core.settings import WHISPER_MODELS, SettingsStore
 
 SAMPLE_RATE = 16000
 CHUNK_SECONDS = 0.1
-SPEECH_RMS = 0.01  # shortcut: fixed energy gate, switch to Silero VAD if noisy rooms trigger false speech
-SILENCE_SECONDS = 0.7  # Quiet time that ends an utterance
-MAX_UTTERANCE_SECONDS = 15.0  # Flush long monologues so captions keep up
+SPEECH_RMS = 0.01  # Energy gate used only when the Silero VAD is not downloaded
+SPEECH_START = 0.5  # Speech probability that starts an utterance
+SPEECH_CONTINUE = 0.35  # Lower probability that keeps one going, so soft word endings stay inside it
+# (utterance length below which, pause that ends it): the longer someone talks, the shorter the pause needed
+END_PAUSES: tuple[tuple[float, float], ...] = ((3.0, 0.5), (6.0, 0.3), (float("inf"), 0.1))
+MAX_UTTERANCE_SECONDS = 10.0  # Split unbroken speech so captions keep up
+SPLIT_SEARCH_CHUNKS = 15  # A forced split happens at the least speech-like chunk of the last 1.5 s
 MIN_UTTERANCE_SECONDS = 0.3  # Ignore clicks and pops
 PRE_ROLL_CHUNKS = 3  # Keep the quiet start of the first word
+VAD_FRAME = 512  # Silero VAD frame at 16 kHz
+VAD_CONTEXT = 64  # Samples of the previous frame Silero VAD expects before each frame
+FILTER_TAPS_PER_RATIO = 20  # Low-pass length per multiple of 16 kHz; longer filters cut aliasing more sharply
 SOURCE_LABELS: dict[str, str] = {"you": "You", "them": "Them"}
 ECHO_SIMILARITY = 0.75  # shortcut: text match only catches whole-utterance echoes, use AEC if partial echoes slip through
 ECHO_WINDOW = 3  # Recent segments checked for speaker echo
 PORTAUDIO_LOCK = threading.Lock()  # PortAudio setup and teardown are not thread-safe
-MODEL_FILES = ("config.json", "model.bin", "tokenizer.json", "vocabulary.txt")
+MODEL_FILES = (
+    "config.json",
+    "vocab.txt",
+    "encoder-model.int8.onnx",
+    "decoder_joint-model.int8.onnx",
+)
+VAD_REPO = "istupakov/silero-vad-onnx"
+VAD_DIR = "silero-vad"
+VAD_FILE = "silero_vad.onnx"
+# More threads spill onto efficiency cores and decode about 3x slower on hybrid CPUs
+ONNX_THREADS = min(4, os.cpu_count() or 1)
 MISSING_MODEL_STATUS = "No transcription model yet. Download one in Settings."
 MISSING_MODEL_MS = 8000  # How long the missing-model notice stays up
 SOURCE_QUIET_SECONDS = 5.0
@@ -46,7 +63,7 @@ class TranscriptSegment:
 
 
 class Transcriber(QObject):
-    """Record microphone and system audio and transcribe speech locally with faster-whisper.
+    """Record microphone and system audio and transcribe speech locally with Parakeet.
 
     Capture and transcription run on daemon threads. Transcript state lives on the Qt
     thread and only changes through queued signals, so it needs no locks.
@@ -56,7 +73,7 @@ class Transcriber(QObject):
     recording_changed = pyqtSignal(bool)
     speaking_changed = pyqtSignal(str, bool)  # source, speaking
     status_changed = pyqtSignal(str)  # Loading or error text, or an empty string
-    transcribed = pyqtSignal(str, str)  # source, text (worker thread to Qt thread)
+    transcribed = pyqtSignal(str, str, object)  # source, text, recording stop event
     failed = pyqtSignal(str, bool)  # message, whether recording must stop
     download_finished = pyqtSignal(str, str)  # model, error or an empty string
     audio_devices_loaded = pyqtSignal(
@@ -69,7 +86,7 @@ class Transcriber(QObject):
         super().__init__()
         self.settings_store = settings_store
         self.cache_dir = (
-            Path(__file__).resolve().parent.parent / "data" / "cache" / "whisper"
+            Path(__file__).resolve().parent.parent / "data" / "cache" / "transcription"
         )
         self.segments: list[TranscriptSegment] = []
         self.sent_seq = 0  # Segments up to this seq reached the AI in a committed turn
@@ -81,6 +98,7 @@ class Transcriber(QObject):
         self.model: Any = None
         self.model_size = ""
         self.model_lock = threading.Lock()
+        self.vad_session: Any = None  # Shared Silero VAD; each source keeps its own state
         self.downloading = ""  # Model being downloaded, or an empty string
         self.missing_model = False  # Showing the missing-model notice
         self.source_health: dict[str, str] = {}
@@ -140,7 +158,7 @@ class Transcriber(QObject):
         self.recording_changed.emit(True)
 
     def stop(self) -> None:
-        """Stop capturing; speech already captured still finishes transcribing."""
+        """Stop capturing and discard any transcript results still pending."""
         if not self.recording:
             return
         self.recording = False
@@ -157,22 +175,16 @@ class Transcriber(QObject):
         """List the transcription models whose files are fully downloaded.
 
         Returns:
-            list[str]: The downloaded faster-whisper model names, smallest first.
+            list[str]: The downloaded transcription model names.
         """
-        downloaded = []
-        for model in WHISPER_MODELS:
-            snapshots = (
-                self.cache_dir
-                / f"models--Systran--faster-whisper-{model}"
-                / "snapshots"
-            )
-            # Hugging Face places a file in a snapshot only once it finishes downloading
-            if snapshots.is_dir() and any(
-                all((snapshot / name).is_file() for name in MODEL_FILES)
-                for snapshot in snapshots.iterdir()
-            ):
-                downloaded.append(model)
-        return downloaded
+        # Hugging Face moves a file into place only once it finishes downloading
+        if not (self.cache_dir / VAD_DIR / VAD_FILE).is_file():
+            return []
+        return [
+            model
+            for model in WHISPER_MODELS
+            if all((self.cache_dir / model / name).is_file() for name in MODEL_FILES)
+        ]
 
     def active_model(self) -> str:
         """Return the model recording will use.
@@ -190,7 +202,7 @@ class Transcriber(QObject):
         """Download a transcription model in the background, one at a time.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
         """
         if self.downloading:
             return
@@ -225,13 +237,16 @@ class Transcriber(QObject):
         self.sent_seq = self.next_seq - 1
         self.changed.emit()
 
-    def _on_transcribed(self, source: str, text: str) -> None:
-        """Append a finished utterance on the Qt thread.
+    def _on_transcribed(self, source: str, text: str, session: object) -> None:
+        """Append a finished utterance for the active recording on the Qt thread.
 
         Args:
             source (str): The audio source, "you" or "them".
             text (str): The transcribed text.
+            session (object): The stop event identifying the recording.
         """
+        if not self.recording or session is not self.stop_event:
+            return
         # Speakers echo into the microphone; keep one line, attributed to the computer audio
         for index in range(
             len(self.segments) - 1, len(self.segments) - 1 - ECHO_WINDOW, -1
@@ -438,7 +453,10 @@ class Transcriber(QObject):
             wasapi = audio.get_host_api_info_by_type(pyaudiowpatch.paWASAPI)
             device = audio.get_device_info_by_index(wasapi["defaultInputDevice"])
         capture = _CaptureState(
-            source, int(device["maxInputChannels"]), int(device["defaultSampleRate"])
+            source,
+            int(device["maxInputChannels"]),
+            int(device["defaultSampleRate"]),
+            self._vad(),
         )
 
         def on_audio(data: bytes, *_args: Any) -> tuple[None, int]:
@@ -493,7 +511,7 @@ class Transcriber(QObject):
                 np.zeros(0, np.float32), max(timeout, now - capture.last_poll)
             )
         else:
-            samples = _to_mono_16k(data, capture.channels, capture.rate)
+            samples = _to_mono_16k(data, capture.channels, capture.resampler)
             if samples.size:
                 capture.last_data = now
             utterance = capture.segmenter.feed(samples)
@@ -565,62 +583,72 @@ class Transcriber(QObject):
         self,
         utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None],
         model_size: str,
-        stop_event: threading.Event | None = None,
+        stop_event: threading.Event,
     ) -> None:
-        """Transcribe queued utterances in order until both capture threads finish.
+        """Transcribe queued utterances until recording stops or both sources finish.
 
         Args:
             utterances (queue.Queue): Utterances from both sources, ending with one None per source.
-            model_size (str): The faster-whisper model name.
-            stop_event (threading.Event, optional): The session whose recognition health is reported.
+            model_size (str): The transcription model name.
+            stop_event (threading.Event): The session stop flag and identity for queued results.
         """
+        if stop_event.is_set():
+            return
         try:
             model = self._load_model(model_size)
         except Exception as exc:  # noqa: BLE001
-            self.session_failed.emit(
-                f"Could not load the {model_size} transcription model: {exc}",
-                True,
-                stop_event if stop_event is not None else self.stop_event,
-            )
+            if not stop_event.is_set():
+                self.session_failed.emit(
+                    f"Could not load the {model_size} transcription model: {exc}",
+                    True,
+                    stop_event,
+                )
             return
         finished = 0
-        while finished < len(SOURCE_LABELS):
+        while finished < len(SOURCE_LABELS) and not stop_event.is_set():
             item = utterances.get()
+            if stop_event.is_set():
+                return
             if item is None:
                 finished += 1
                 continue
             source, audio = item
             try:
-                segments, _info = model.transcribe(
-                    audio,
-                    language="en",
-                    beam_size=1,
-                    vad_filter=True,  # Drops non-speech that Whisper would hallucinate words for
-                    condition_on_previous_text=False,
-                )
-                text = " ".join(segment.text.strip() for segment in segments).strip()
+                text = str(model.recognize(audio, sample_rate=SAMPLE_RATE)).strip()
             except Exception as exc:  # noqa: BLE001
+                if stop_event.is_set():
+                    return
                 self.session_failed.emit(
                     f"Transcription failed: {exc}",
                     False,
-                    stop_event if stop_event is not None else self.stop_event,
+                    stop_event,
                 )
                 continue
-            if text:
-                self.transcribed.emit(source, text)
+            if text and not stop_event.is_set():
+                self.transcribed.emit(source, text, stop_event)
 
     def _download(self, model: str) -> None:
         """Download a model's files into the cache and report the outcome.
 
         Args:
-            model (str): The faster-whisper model name.
+            model (str): The transcription model name.
         """
         try:
-            from faster_whisper import (  # type: ignore[import-untyped]  # Slow import, only when downloading
-                download_model,
+            from huggingface_hub import (  # Slow import, only when downloading
+                snapshot_download,
             )
 
-            download_model(model, cache_dir=str(self.cache_dir))
+            snapshot_download(
+                VAD_REPO,
+                local_dir=str(self.cache_dir / VAD_DIR),
+                allow_patterns=[VAD_FILE],
+            )
+            # Only the int8 files: the full-precision weights add 2.4 GB for no audible gain
+            snapshot_download(
+                f"istupakov/{model}-onnx",
+                local_dir=str(self.cache_dir / model),
+                allow_patterns=list(MODEL_FILES),
+            )
         except Exception as exc:  # noqa: BLE001
             self.download_finished.emit(model, str(exc))
             return
@@ -630,52 +658,85 @@ class Transcriber(QObject):
         """Load a downloaded model once from the cache without contacting huggingface.co.
 
         Args:
-            model_size (str): The faster-whisper model name.
+            model_size (str): The transcription model name.
 
         Returns:
-            Any: The loaded WhisperModel.
+            Any: The loaded onnx-asr model.
         """
         with self.model_lock:
             if self.model_size != model_size:
                 self.status_changed.emit(f"Loading the {model_size} model…")
-                from faster_whisper import (  # Slow import, only when recording
-                    WhisperModel,
-                )
+                path = self.cache_dir / model_size
+                # onnx-asr loads an existing directory offline but downloads into a missing one
+                if not path.is_dir():
+                    raise FileNotFoundError(f"{path} is missing. Download it in Settings.")
+                import onnx_asr  # Slow import, only when recording
+                import onnxruntime
 
-                self.model = WhisperModel(
-                    model_size,
-                    device="cpu",
-                    compute_type="int8",
-                    download_root=str(self.cache_dir),
-                    local_files_only=True,
+                options = onnxruntime.SessionOptions()
+                options.intra_op_num_threads = ONNX_THREADS
+                model = onnx_asr.load_model(
+                    f"nemo-{model_size}",
+                    path,
+                    quantization="int8",
+                    sess_options=options,
                 )
+                # The first run sets up the graph and takes seconds; spend that before speech arrives
+                model.recognize(np.zeros(SAMPLE_RATE, np.float32), sample_rate=SAMPLE_RATE)
+                self.model = model
                 self.model_size = model_size
                 self.status_changed.emit("")
             return self.model
+
+    def _vad(self) -> "_SileroVad | None":
+        """Create a source's speech detector on the capture thread.
+
+        Returns:
+            _SileroVad | None: A Silero VAD with its own state, or None to use the energy gate
+                when the VAD is not downloaded.
+        """
+        path = self.cache_dir / VAD_DIR / VAD_FILE
+        if self.vad_session is None and path.is_file():
+            import onnxruntime  # Slow import, only when recording
+
+            options = onnxruntime.SessionOptions()
+            options.intra_op_num_threads = 1  # Tiny model; more threads only add overhead
+            options.inter_op_num_threads = 1
+            self.vad_session = onnxruntime.InferenceSession(
+                str(path), options, providers=["CPUExecutionProvider"]
+            )
+        return None if self.vad_session is None else _SileroVad(self.vad_session)
 
 
 class _CaptureState:
     """Keep one source's callback queue and health separate from the other source."""
 
-    def __init__(self, source: str, channels: int, rate: int) -> None:
+    def __init__(
+        self, source: str, channels: int, rate: int, vad: "_SileroVad | None" = None
+    ) -> None:
         self.source = source
         self.channels = channels
         self.rate = rate
         self.stream: Any = None
         self.chunks: queue.Queue[bytes] = queue.Queue()
-        self.segmenter = _Segmenter()
+        self.resampler = _Resampler(rate)
+        self.segmenter = _Segmenter(vad)
         self.last_data = self.last_poll = time.monotonic()
         self.health = ""
 
 
 class _Segmenter:
-    """Split a 16 kHz mono stream into utterances with an energy gate."""
+    """Split a 16 kHz mono stream into utterances at the pauses between speech."""
 
-    def __init__(self) -> None:
+    def __init__(self, vad: "_SileroVad | None" = None) -> None:
+        self.vad = vad
         self.speaking = False
         self.reported = False
         self.parts: list[NDArray[np.float32]] = []
-        self.pre_roll: deque[NDArray[np.float32]] = deque(maxlen=PRE_ROLL_CHUNKS)
+        self.scores: list[float] = []  # Speech probability of each part
+        self.pre_roll: deque[tuple[NDArray[np.float32], float]] = deque(
+            maxlen=PRE_ROLL_CHUNKS
+        )
         self.quiet = 0.0
         self.length = 0.0
 
@@ -692,23 +753,28 @@ class _Segmenter:
             NDArray[np.float32] | None: The finished utterance, or None.
         """
         duration = samples.size / SAMPLE_RATE if samples.size else quiet_seconds
-        loud = bool(samples.size) and float(np.sqrt(np.mean(samples**2))) >= SPEECH_RMS
+        score = self._score(samples)
         if not self.speaking:
-            if not loud:
+            if score < SPEECH_START:
                 if samples.size:
-                    self.pre_roll.append(samples)
+                    self.pre_roll.append((samples, score))
                 return None
             self.speaking = True
-            self.parts = list(self.pre_roll)
+            self.parts = [part for part, _score in self.pre_roll]
+            self.scores = [part_score for _part, part_score in self.pre_roll]
             self.pre_roll.clear()
             self.quiet = 0.0
             self.length = 0.0
         if samples.size:
             self.parts.append(samples)
+            self.scores.append(score)
         self.length += duration
-        self.quiet = 0.0 if loud else self.quiet + duration
-        if self.quiet >= SILENCE_SECONDS or self.length >= MAX_UTTERANCE_SECONDS:
+        self.quiet = 0.0 if score >= SPEECH_CONTINUE else self.quiet + duration
+        pause = next(pause for limit, pause in END_PAUSES if self.length < limit)
+        if self.quiet >= pause:
             return self.flush()
+        if self.length >= MAX_UTTERANCE_SECONDS:
+            return self._split()
         return None
 
     def flush(self) -> NDArray[np.float32] | None:
@@ -722,7 +788,115 @@ class _Segmenter:
         self.speaking = False
         audio = np.concatenate(self.parts) if self.parts else np.zeros(0, np.float32)
         self.parts = []
+        self.scores = []
         return audio if audio.size >= SAMPLE_RATE * MIN_UTTERANCE_SECONDS else None
+
+    def _score(self, samples: NDArray[np.float32]) -> float:
+        """Rate how likely new audio is speech.
+
+        Args:
+            samples (NDArray[np.float32]): New samples, or an empty array when no audio arrived.
+
+        Returns:
+            float: The speech probability, from 0 to 1.
+        """
+        if not samples.size:
+            return 0.0
+        if self.vad is not None:
+            return self.vad.score(samples)
+        return 1.0 if float(np.sqrt(np.mean(samples**2))) >= SPEECH_RMS else 0.0
+
+    def _split(self) -> NDArray[np.float32] | None:
+        """End unbroken speech at its least speech-like recent chunk and keep the rest going.
+
+        Returns:
+            NDArray[np.float32] | None: The audio up to the split, or None when it is too short.
+        """
+        window = min(len(self.scores), SPLIT_SEARCH_CHUNKS)
+        cut = len(self.scores) - window + int(np.argmin(self.scores[-window:])) + 1
+        audio = np.concatenate(self.parts[:cut])
+        self.parts = self.parts[cut:]
+        self.scores = self.scores[cut:]
+        self.length = sum(part.size for part in self.parts) / SAMPLE_RATE
+        return audio if audio.size >= SAMPLE_RATE * MIN_UTTERANCE_SECONDS else None
+
+
+class _SileroVad:
+    """Score speech with Silero VAD, carrying its recurrent state across chunks."""
+
+    def __init__(self, session: Any) -> None:
+        self.session = session
+        self.state = np.zeros((2, 1, 128), np.float32)
+        self.context = np.zeros(VAD_CONTEXT, np.float32)
+        self.pending = np.zeros(0, np.float32)
+        self.probability = 0.0
+
+    def score(self, samples: NDArray[np.float32]) -> float:
+        """Run every whole frame the new samples complete.
+
+        Args:
+            samples (NDArray[np.float32]): New 16 kHz samples.
+
+        Returns:
+            float: The highest speech probability among the completed frames, or the last
+                probability when no frame completed.
+        """
+        self.pending = np.concatenate((self.pending, samples))
+        frames = self.pending.size // VAD_FRAME
+        if frames:
+            probabilities = []
+            for index in range(frames):
+                frame = self.pending[index * VAD_FRAME : (index + 1) * VAD_FRAME]
+                output, self.state = self.session.run(
+                    ["output", "stateN"],
+                    {
+                        "input": np.concatenate((self.context, frame))[None],
+                        "state": self.state,
+                        "sr": np.array(SAMPLE_RATE, np.int64),
+                    },
+                )
+                self.context = frame[-VAD_CONTEXT:]
+                probabilities.append(float(output[0, 0]))
+            self.pending = self.pending[frames * VAD_FRAME :]
+            self.probability = max(probabilities)
+        return self.probability
+
+
+class _Resampler:
+    """Downsample one source to 16 kHz without folding high frequencies into the speech band."""
+
+    def __init__(self, rate: int) -> None:
+        self.rate = rate
+        ratio = rate / SAMPLE_RATE
+        count = int(FILTER_TAPS_PER_RATIO * ratio) + 1
+        offsets = np.arange(count) - (count - 1) / 2
+        cutoff = 0.45 / ratio  # Just under the 8 kHz limit, as a fraction of the device rate
+        taps = cutoff * np.sinc(cutoff * offsets) * np.hamming(count)
+        self.taps = (taps / taps.sum()).astype(np.float32)
+        # The previous chunk's tail, so filtering never clicks at chunk edges
+        self.history = np.zeros(count - 1, np.float32)
+
+    def resample(self, mono: NDArray[np.float32]) -> NDArray[np.float32]:
+        """Low-pass filter and downsample one chunk.
+
+        Args:
+            mono (NDArray[np.float32]): Mono samples at the device rate.
+
+        Returns:
+            NDArray[np.float32]: The 16 kHz samples.
+        """
+        if self.rate == SAMPLE_RATE:
+            return mono
+        filtered = mono
+        if self.rate > SAMPLE_RATE:  # Slower devices have nothing above 8 kHz to remove
+            padded = np.concatenate((self.history, mono))
+            self.history = padded[padded.size - self.history.size :]
+            filtered = np.convolve(padded, self.taps, mode="valid").astype(np.float32)
+        positions = np.arange(0, filtered.size, self.rate / SAMPLE_RATE)
+        resampled: NDArray[np.float32] = np.interp(
+            positions, np.arange(filtered.size), filtered
+        ).astype(np.float32)
+        return resampled
 
 
 def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:
@@ -744,13 +918,15 @@ def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:
     return devices
 
 
-def _to_mono_16k(data: bytes, channels: int, rate: int) -> NDArray[np.float32]:
-    """Convert interleaved float frames to 16 kHz mono for Whisper.
+def _to_mono_16k(
+    data: bytes, channels: int, resampler: _Resampler
+) -> NDArray[np.float32]:
+    """Convert interleaved float frames to 16 kHz mono for speech recognition.
 
     Args:
         data (bytes): Interleaved 32-bit float frames.
         channels (int): The channel count.
-        rate (int): The device sample rate.
+        resampler (_Resampler): The source's resampler, which keeps filter state between chunks.
 
     Returns:
         NDArray[np.float32]: The mono 16 kHz samples.
@@ -760,11 +936,4 @@ def _to_mono_16k(data: bytes, channels: int, rate: int) -> NDArray[np.float32]:
         .reshape(-1, channels)
         .mean(axis=1, dtype=np.float32)
     )
-    if rate == SAMPLE_RATE:
-        return mono
-    # Linear resampling is plenty for speech recognition
-    positions = np.arange(0, mono.size, rate / SAMPLE_RATE)
-    resampled: NDArray[np.float32] = np.interp(
-        positions, np.arange(mono.size), mono
-    ).astype(np.float32)
-    return resampled
+    return resampler.resample(mono)

@@ -3975,17 +3975,17 @@
     "expression": "if self.animation_active and self.animation_progress < 0.5:",
     "sha256": "992d67bd8a369cda832c02b5617e882a858d3c197748024320b17ccec8e9cf3d"
   },
-  "core/transcriber.py:728:routine": {
+  "core/transcriber.py:745:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 728,
+    "line": 745,
     "expression": "def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:",
     "sha256": "a9d87b9f081487cc4c5673625f57608568294825ad13a319b2a5b9adc917952c"
   },
-  "core/transcriber.py:747:routine": {
+  "core/transcriber.py:764:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 747,
+    "line": 764,
     "expression": "def _to_mono_16k(data: bytes, channels: int, rate: int) -> NDArray[np.float32]:",
     "sha256": "e563d4a134de76bab415f1a8e825ce0785fbb100c90d9a1b8bd92478299743ed"
   },
@@ -4015,7 +4015,7 @@
     "source": "core/transcriber.py",
     "line": 142,
     "expression": "def stop(self) -> None:",
-    "sha256": "1f6f1d0b38bd6b9a1645287bfa18f18a7500ea0712dee68301f9c8cd09edba3c"
+    "sha256": "03a0a3da0d5b5e555fab73a702ba4ab5207db8fc74b27240591099fa61950ee0"
   },
   "core/transcriber.py:152:routine": {
     "category": "routine",
@@ -4070,153 +4070,153 @@
     "category": "routine",
     "source": "core/transcriber.py",
     "line": 228,
-    "expression": "def _on_transcribed(self, source: str, text: str) -> None:",
-    "sha256": "efde37e9f5e7abeceadc4aa2f8595af6a880da9a5ed3a8bb1ffd359d3040afa5"
+    "expression": "def _on_transcribed(self, source: str, text: str, session: object) -> None:",
+    "sha256": "747a218b9351d048141321a6b5bf6a317e3cf2ce55c9301dcbb92f369121a684"
   },
-  "core/transcriber.py:255:routine": {
+  "core/transcriber.py:258:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 255,
+    "line": 258,
     "expression": "def _on_notice_timeout(self) -> None:",
     "sha256": "bcfac78936364157467c7ce0179655233794f827c459e500dac96cd51a05644b"
   },
-  "core/transcriber.py:260:routine": {
+  "core/transcriber.py:263:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 260,
+    "line": 263,
     "expression": "def _on_download_finished(self, _model: str, error: str) -> None:",
     "sha256": "b4d1ae59a0c349b63e138c874099e94aefe5f31038c1bd56b4edec8cd0684eb7"
   },
-  "core/transcriber.py:271:routine": {
+  "core/transcriber.py:274:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 271,
+    "line": 274,
     "expression": "def _on_failed(self, message: str, fatal: bool) -> None:",
     "sha256": "90a8f111bd678bafc485676c89fc52a582111426ad19ce46e23ad118a9260fc0"
   },
-  "core/transcriber.py:282:routine": {
+  "core/transcriber.py:285:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 282,
+    "line": 285,
     "expression": "def _on_source_status(self, source: str, status: str, session: object) -> None:",
     "sha256": "59a2efc29333f63476a9f935cf08dd19701743065a040b11b80f98b64cc41a69"
   },
-  "core/transcriber.py:297:routine": {
+  "core/transcriber.py:300:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 297,
+    "line": 300,
     "expression": "def _on_session_failed(self, message: str, fatal: bool, session: object) -> None:",
     "sha256": "eb8bc94a469cb457fd85e85dd3c5cc735e28afcedd453bdc6fed7f37598215bb"
   },
-  "core/transcriber.py:308:routine": {
+  "core/transcriber.py:311:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 308,
+    "line": 311,
     "expression": "def _scan_audio_devices(self) -> None:",
     "sha256": "c691e83132f3bcfa9a7c9858b2e116abc4eb29f382afd9c1c41908c1b6b83028"
   },
-  "core/transcriber.py:326:routine": {
+  "core/transcriber.py:329:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 326,
+    "line": 329,
     "expression": "def _capture(self, source: str, stop_event: threading.Event, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None]) -> None:",
     "sha256": "cbad7ac14b632c05e5634f81cb8b6804fa4eb1d4c7d528ed10e5dd077e646951"
   },
-  "core/transcriber.py:341:routine": {
+  "core/transcriber.py:344:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 341,
+    "line": 344,
     "expression": "def _capture_sources(self, sources: tuple[str, ...], stop_event: threading.Event, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None], devices: dict[str, str] | None=None) -> None:",
     "sha256": "8508613a383825794a232bb6f2daaffc64bb899a5f2f2ebdf14f75bd0853e3a7"
   },
-  "core/transcriber.py:413:routine": {
+  "core/transcriber.py:416:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 413,
+    "line": 416,
     "expression": "def _open_source(self, audio: Any, source: str, name: str) -> '_CaptureState':",
     "sha256": "19b2528e2c84fc92365866beb16f9688031882e30c3aa1f11a683a6c23462370"
   },
-  "core/transcriber.py:467:routine": {
+  "core/transcriber.py:470:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 467,
+    "line": 470,
     "expression": "def _poll_source(self, capture: '_CaptureState', stop_event: threading.Event, timeout: float=CHUNK_SECONDS) -> NDArray[np.float32] | None:",
     "sha256": "22f3429313afda18207d20b9a28fe5d28064a89a8569e33a14a72bce47a78119"
   },
-  "core/transcriber.py:515:routine": {
+  "core/transcriber.py:518:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 515,
+    "line": 518,
     "expression": "def _close_source(self, capture: '_CaptureState', utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None]) -> None:",
     "sha256": "2a35aadd70ca783dbe57daae5829cfef462f9461044d28b99436d7d6967c92dd"
   },
-  "core/transcriber.py:539:routine": {
+  "core/transcriber.py:542:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 539,
+    "line": 542,
     "expression": "def _report_source_failure(self, source: str, error: Exception, stop_event: threading.Event) -> None:",
     "sha256": "e33803bf563b47eaa87d2bdcd5979ac99420e3bc94b5b4c44a937d6821962190"
   },
-  "core/transcriber.py:553:routine": {
+  "core/transcriber.py:556:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 553,
+    "line": 556,
     "expression": "def _emit_speaking(self, source: str, segmenter: '_Segmenter') -> None:",
     "sha256": "1914096e92fe3b119d40af48918c7a8c7e19b29e85f49687b39fce95cf866e4f"
   },
-  "core/transcriber.py:564:routine": {
+  "core/transcriber.py:567:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 564,
-    "expression": "def _transcribe_loop(self, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None], model_size: str, stop_event: threading.Event | None=None) -> None:",
-    "sha256": "6afb3f9c40384867f505b992435ec2c1ccb9151480bc532d9b2fc406dff94bc4"
-  },
-  "core/transcriber.py:612:routine": {
-    "category": "routine",
-    "source": "core/transcriber.py",
-    "line": 612,
-    "expression": "def _download(self, model: str) -> None:",
-    "sha256": "ab19331a436543f10ef35b329e35ee0877b863740a80f6f3d6d82f3157232af4"
+    "line": 567,
+    "expression": "def _transcribe_loop(self, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None], model_size: str, stop_event: threading.Event) -> None:",
+    "sha256": "9995eca14b33a70ed7f09046aabd7f2b3157e6ff68b657692cfb5f2d1e43b03f"
   },
   "core/transcriber.py:629:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
     "line": 629,
+    "expression": "def _download(self, model: str) -> None:",
+    "sha256": "ab19331a436543f10ef35b329e35ee0877b863740a80f6f3d6d82f3157232af4"
+  },
+  "core/transcriber.py:646:routine": {
+    "category": "routine",
+    "source": "core/transcriber.py",
+    "line": 646,
     "expression": "def _load_model(self, model_size: str) -> Any:",
     "sha256": "0fae0482bbdf79978ab73019bcef1ec466200bc27b093d01672bb6fcf94de5b8"
   },
-  "core/transcriber.py:660:routine": {
+  "core/transcriber.py:677:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 660,
+    "line": 677,
     "expression": "def __init__(self, source: str, channels: int, rate: int) -> None:",
     "sha256": "864d7bb0dc0d3f909ba3ccfe2c00f80f203fced64a44fcdb93d70845bfdd93e6"
   },
-  "core/transcriber.py:674:routine": {
+  "core/transcriber.py:691:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 674,
+    "line": 691,
     "expression": "def __init__(self) -> None:",
     "sha256": "e83770b5fd24ac6fbd3a376b73c5214d365b292043f4c08529ac896c38e47182"
   },
-  "core/transcriber.py:682:routine": {
+  "core/transcriber.py:699:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 682,
+    "line": 699,
     "expression": "def feed(self, samples: NDArray[np.float32], quiet_seconds: float=0.0) -> NDArray[np.float32] | None:",
     "sha256": "4aba0f66cb855afec93f6c8a723d9ce09be04c693407f146e43f5d8145020710"
   },
-  "core/transcriber.py:714:routine": {
+  "core/transcriber.py:731:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 714,
+    "line": 731,
     "expression": "def flush(self) -> NDArray[np.float32] | None:",
     "sha256": "ea6db35ef969e2b10772a71504d2407db98d0b47587fa50df57c27ca6a08f76b"
   },
-  "core/transcriber.py:763:branch": {
+  "core/transcriber.py:780:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 763,
+    "line": 780,
     "expression": "if rate == SAMPLE_RATE:",
     "sha256": "d41bb6283a5049987c128be3014dc5fea4be09c4fe9ec81709f735c68f9a1bc8"
   },
@@ -4269,101 +4269,115 @@
     "expression": "if seq > self.sent_seq:",
     "sha256": "78fe9ef69b902220439a7dcf9d75dd16396e720c1ae1e18c5a8b90b910fb3a75"
   },
-  "core/transcriber.py:267:branch": {
+  "core/transcriber.py:236:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 267,
+    "line": 236,
+    "expression": "if not self.recording or session is not self.stop_event:",
+    "sha256": "ddc5d0dfdb7bb628faa08fdead1e89215d28683c947c8e8ff7f155941832f087"
+  },
+  "core/transcriber.py:270:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 270,
     "expression": "if not error and self.missing_model:",
     "sha256": "4e4d77e5f8824a95e48542843b6f3238a36c1bf130b4370146cc17aded1a2508"
   },
-  "core/transcriber.py:278:branch": {
+  "core/transcriber.py:281:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 278,
+    "line": 281,
     "expression": "if fatal:",
     "sha256": "5fed51a5dd48fe1553bacf0d980d34d8363ad9f9bbfce8f601183dee23e90678"
   },
-  "core/transcriber.py:290:branch": {
+  "core/transcriber.py:293:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 290,
+    "line": 293,
     "expression": "if session is not self.stop_event or not self.recording:",
     "sha256": "ac24b3dbe9177215c58c403bae75f02acc738b3583b8f30d488fac31106a8341"
   },
-  "core/transcriber.py:305:branch": {
+  "core/transcriber.py:308:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 305,
+    "line": 308,
     "expression": "if not self.recording or session is self.stop_event:",
     "sha256": "89959e7c54cf9c4ad884551a2caaa75424bcab8929543d70c6ae351badad4290"
   },
-  "core/transcriber.py:424:branch": {
+  "core/transcriber.py:427:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 424,
+    "line": 427,
     "expression": "if name:",
     "sha256": "21c2740f4948cf841797d7a67a697d095e7eab5338e9946747f932f572537b77"
   },
-  "core/transcriber.py:444:routine": {
+  "core/transcriber.py:447:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 444,
+    "line": 447,
     "expression": "def on_audio(data: bytes, *_args: Any) -> tuple[None, int]:",
     "sha256": "6a04238783e04888bff81957e3d61ab1e7c4cb0c5633cffa3f8858026dd8ee4d"
   },
-  "core/transcriber.py:483:branch": {
+  "core/transcriber.py:486:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 483,
+    "line": 486,
     "expression": "if not capture.stream.is_active():",
     "sha256": "e015b9d66eea79f3ca87bac9ea5d95e8db6c0a1ec396381ac3702832fc47fe36"
   },
-  "core/transcriber.py:509:branch": {
+  "core/transcriber.py:512:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 509,
+    "line": 512,
     "expression": "if status != capture.health:",
     "sha256": "5914c4e7efd53824b49012c129d93b581cc396d2e2c8019b97edd999cfeff785"
   },
-  "core/transcriber.py:560:branch": {
+  "core/transcriber.py:563:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 560,
+    "line": 563,
     "expression": "if segmenter.speaking != segmenter.reported:",
     "sha256": "5a76535ecba22eed75a6fca5c3a91da70cb11d6d8aac63c8e3e359a5367ebeb1"
   },
-  "core/transcriber.py:696:branch": {
+  "core/transcriber.py:580:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 696,
+    "line": 580,
+    "expression": "if stop_event.is_set():",
+    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
+  },
+  "core/transcriber.py:713:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 713,
     "expression": "if not self.speaking:",
     "sha256": "99b3f544457a1f3f470dd99fb8d22f99fd417546c834478b0ed1214a0d50df56"
   },
-  "core/transcriber.py:706:branch": {
+  "core/transcriber.py:723:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 706,
+    "line": 723,
     "expression": "if samples.size:",
     "sha256": "ae4b5173c3379a099393e5b7be42c44a7e8e3de02633ee1fa1af5b11dcf0a382"
   },
-  "core/transcriber.py:710:branch": {
+  "core/transcriber.py:727:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 710,
+    "line": 727,
     "expression": "if self.quiet >= SILENCE_SECONDS or self.length >= MAX_UTTERANCE_SECONDS:",
     "sha256": "6a224654077fe1f0c9641a27a00693db6305ae819ec26ae4174519464bd9fc82"
   },
-  "core/transcriber.py:720:branch": {
+  "core/transcriber.py:737:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 720,
+    "line": 737,
     "expression": "if not self.speaking:",
     "sha256": "ebd2c576a61a4197ba9ef0bfc81029da8ff43036dd23b8790d4c1d09e2818ddc"
   },
-  "core/transcriber.py:741:branch": {
+  "core/transcriber.py:758:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 741,
+    "line": 758,
     "expression": "if device['maxInputChannels'] > 0:",
     "sha256": "ec6f097601258ae85997600770c802a39379e4fc2960216b6fd5cc9307f65f2b"
   },
@@ -4381,143 +4395,157 @@
     "expression": "if snapshots.is_dir() and any((all(((snapshot / name).is_file() for name in MODEL_FILES)) for snapshot in snapshots.iterdir())):",
     "sha256": "c6c18e3d124d03ce03073843ded05e8396c8cb0a60f45f454137ca6fbfc705a0"
   },
-  "core/transcriber.py:239:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 239,
-    "expression": "if index < 0:",
-    "sha256": "63ea02c0206154f3c91c4430be1b24c3e341c24262da64db7f2aa019a13435a4"
-  },
   "core/transcriber.py:242:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
     "line": 242,
+    "expression": "if index < 0:",
+    "sha256": "63ea02c0206154f3c91c4430be1b24c3e341c24262da64db7f2aa019a13435a4"
+  },
+  "core/transcriber.py:245:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 245,
     "expression": "if segment.source != source and SequenceMatcher(None, segment.text.lower(), text.lower()).ratio() >= ECHO_SIMILARITY:",
     "sha256": "73937bf741bd55a55e848905fc75da5a1998c468ba68861462a2b01a71f1a3ec"
   },
-  "core/transcriber.py:313:failure": {
+  "core/transcriber.py:316:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 313,
+    "line": 316,
     "expression": "except (OSError, ValueError):",
     "sha256": "886b9b92caa235a5873470b228be8ade0f6c149a826acea924a91d562ceabce2"
   },
-  "core/transcriber.py:393:failure": {
+  "core/transcriber.py:396:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 393,
+    "line": 396,
     "expression": "except Exception as error:",
     "sha256": "be267233403fedae66936f25672d2102ece8d7a7b96bf29da4cbcbe5e3cbc900"
+  },
+  "core/transcriber.py:412:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 412,
+    "expression": "if audio is not None:",
+    "sha256": "d67c5b2d0742e8d432bba7c8f380481f86192e04cf0a4383f3852e124c86fdb2"
+  },
+  "core/transcriber.py:433:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 433,
+    "expression": "if len(matches) != 1:",
+    "sha256": "5f50720cdf9bf9621e9af613598d0bcb7cc1b2d779e72075a68d963fc39465f7"
+  },
+  "core/transcriber.py:438:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 438,
+    "expression": "if source == 'them':",
+    "sha256": "b03a5bf48cb5668c0743365cb4e289c70d4f1b99b986e5a04611d85169bed750"
+  },
+  "core/transcriber.py:493:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 493,
+    "expression": "except queue.Empty:",
+    "sha256": "2ececa5b6001e1f63a07ce58f7faf9f2c7a447d8de4f136797b124fddab1025b"
+  },
+  "core/transcriber.py:500:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 500,
+    "expression": "if samples.size:",
+    "sha256": "f0e5fd96faa04dc9fe4bb52df090c2bf5544f4fef6b07f49adecdd4a0ffdb760"
+  },
+  "core/transcriber.py:531:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 531,
+    "expression": "if utterance is not None:",
+    "sha256": "9ee950533724cb63610dc3c3c6027db4655cdf009bd8b6a0dd958c27205120c2"
+  },
+  "core/transcriber.py:584:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 584,
+    "expression": "except Exception as exc:",
+    "sha256": "f0dcb7b98038fd5ef9a0a0caf589044c9bf262014ca0297e5575d40616f5d7c1"
+  },
+  "core/transcriber.py:595:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 595,
+    "expression": "if stop_event.is_set():",
+    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
+  },
+  "core/transcriber.py:597:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 597,
+    "expression": "if item is None:",
+    "sha256": "ee8cfc9e1e667ba3771a25bd6597e3839192a6cb971dfc99e456abaed91be267"
+  },
+  "core/transcriber.py:626:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 626,
+    "expression": "if text and (not stop_event.is_set()):",
+    "sha256": "42e88ce461dfb1257e1e469660c3a5bff6b084b3aad03529ccc8b6c411b895f9"
+  },
+  "core/transcriber.py:641:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 641,
+    "expression": "except Exception as exc:",
+    "sha256": "fece02ba78918a05ca2962956d3fadf00b4db3e692bef7d68382afdf656e070b"
+  },
+  "core/transcriber.py:656:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 656,
+    "expression": "if self.model_size != model_size:",
+    "sha256": "1802d8e71d9796a42a6cf1423bceaae4a8822d55931485ffa44165f97ee7bf31"
+  },
+  "core/transcriber.py:714:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 714,
+    "expression": "if not loud:",
+    "sha256": "de363bc9c3fbfbf4cd6ac48bdd823455ad37b245e69079eb1072e7fdf3d5b2d1"
+  },
+  "core/transcriber.py:250:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 250,
+    "expression": "if segment.source == 'you' and segment.seq > self.sent_seq:",
+    "sha256": "b2a747130683b51918760dac3397e8661821198992b99d532b82200e94a910a0"
   },
   "core/transcriber.py:409:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
     "line": 409,
-    "expression": "if audio is not None:",
-    "sha256": "d67c5b2d0742e8d432bba7c8f380481f86192e04cf0a4383f3852e124c86fdb2"
-  },
-  "core/transcriber.py:430:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 430,
-    "expression": "if len(matches) != 1:",
-    "sha256": "5f50720cdf9bf9621e9af613598d0bcb7cc1b2d779e72075a68d963fc39465f7"
-  },
-  "core/transcriber.py:435:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 435,
-    "expression": "if source == 'them':",
-    "sha256": "b03a5bf48cb5668c0743365cb4e289c70d4f1b99b986e5a04611d85169bed750"
-  },
-  "core/transcriber.py:490:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 490,
-    "expression": "except queue.Empty:",
-    "sha256": "2ececa5b6001e1f63a07ce58f7faf9f2c7a447d8de4f136797b124fddab1025b"
-  },
-  "core/transcriber.py:497:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 497,
-    "expression": "if samples.size:",
-    "sha256": "f0e5fd96faa04dc9fe4bb52df090c2bf5544f4fef6b07f49adecdd4a0ffdb760"
-  },
-  "core/transcriber.py:528:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 528,
-    "expression": "if utterance is not None:",
-    "sha256": "9ee950533724cb63610dc3c3c6027db4655cdf009bd8b6a0dd958c27205120c2"
-  },
-  "core/transcriber.py:579:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 579,
-    "expression": "except Exception as exc:",
-    "sha256": "0a4506123bf53681dd7e68baeef98e845c61968c054da33ec07c8d52261296c7"
-  },
-  "core/transcriber.py:589:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 589,
-    "expression": "if item is None:",
-    "sha256": "ee8cfc9e1e667ba3771a25bd6597e3839192a6cb971dfc99e456abaed91be267"
-  },
-  "core/transcriber.py:609:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 609,
-    "expression": "if text:",
-    "sha256": "9410384df8c9004429783efe53821c17fcd79a6de9b4a19f67dc774cc8d39c68"
-  },
-  "core/transcriber.py:624:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 624,
-    "expression": "except Exception as exc:",
-    "sha256": "fece02ba78918a05ca2962956d3fadf00b4db3e692bef7d68382afdf656e070b"
-  },
-  "core/transcriber.py:639:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 639,
-    "expression": "if self.model_size != model_size:",
-    "sha256": "1802d8e71d9796a42a6cf1423bceaae4a8822d55931485ffa44165f97ee7bf31"
-  },
-  "core/transcriber.py:697:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 697,
-    "expression": "if not loud:",
-    "sha256": "de363bc9c3fbfbf4cd6ac48bdd823455ad37b245e69079eb1072e7fdf3d5b2d1"
-  },
-  "core/transcriber.py:247:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 247,
-    "expression": "if segment.source == 'you' and segment.seq > self.sent_seq:",
-    "sha256": "b2a747130683b51918760dac3397e8661821198992b99d532b82200e94a910a0"
-  },
-  "core/transcriber.py:406:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 406,
     "expression": "if source not in finished:",
     "sha256": "b432a775ea6be48b9aa7febdd9a425e8ec31c3456c782a4c3535e18d51dd14ab"
   },
-  "core/transcriber.py:602:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 602,
-    "expression": "except Exception as exc:",
-    "sha256": "6b0b79a86edd31b1a3753a3c6f622aa5688afec42729579d682276186f75a56a"
-  },
-  "core/transcriber.py:698:branch": {
+  "core/transcriber.py:585:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 698,
+    "line": 585,
+    "expression": "if not stop_event.is_set():",
+    "sha256": "71fc4451ea7498af0d21f68f1d8b091070fd6ba10217133bf1e3e9e2408db5a0"
+  },
+  "core/transcriber.py:617:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 617,
+    "expression": "except Exception as exc:",
+    "sha256": "8c3e6ed2a0333be3366205541285f2086b84f514d6ff17b7a09fd3538dcc851c"
+  },
+  "core/transcriber.py:715:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 715,
     "expression": "if samples.size:",
     "sha256": "b92fbc4c34015091c07949d41dcab234b2531b049799e6402a8ee7dd507f30ff"
   },
@@ -4549,45 +4577,59 @@
     "expression": "threading.Thread(target=self._download, args=(model,), daemon=True)",
     "sha256": "fd12f9d1d81e37d9b57a4857d2c5e41b25e2e955b7d621849e32820e0047a534"
   },
-  "core/transcriber.py:369:failure": {
+  "core/transcriber.py:372:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 369,
+    "line": 372,
     "expression": "except Exception as error:",
     "sha256": "1c9b84f81b54001d62d319a0001ed2bd230be8dfc043756a95dcc55878e70ddf"
   },
-  "core/transcriber.py:395:branch": {
+  "core/transcriber.py:398:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 395,
+    "line": 398,
     "expression": "if source not in finished:",
     "sha256": "f2bd70e88f2988dd0a317ba5cb255b0e5bd46c8c8e8911fe3cf6b72461919ae3"
   },
-  "core/transcriber.py:401:failure": {
+  "core/transcriber.py:404:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 401,
+    "line": 404,
     "expression": "except Exception as error:",
     "sha256": "046d1687792324769b54e33317b5ba6f95e848c6dddd315f03f88793979e86d8"
   },
-  "core/transcriber.py:383:branch": {
+  "core/transcriber.py:613:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 383,
+    "line": 613,
+    "expression": "if segment is None:",
+    "sha256": "54a44863ead98fa9dde51a77b53b57693e3b4e953ca103d4013dd81c16dfdfb8"
+  },
+  "core/transcriber.py:618:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 618,
+    "expression": "if stop_event.is_set():",
+    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
+  },
+  "core/transcriber.py:386:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 386,
     "expression": "if utterance is not None:",
     "sha256": "df0f916d771858ab8e0bf3b827ba6c92cfdae92341045886a92aa9dce1579211"
   },
-  "core/transcriber.py:385:failure": {
+  "core/transcriber.py:388:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 385,
+    "line": 388,
     "expression": "except Exception as error:",
     "sha256": "55cb5af424849b30d44215ef87fe0ebca3135b63a25a88c2c3d8400857cfb7f5"
   },
-  "core/transcriber.py:391:failure": {
+  "core/transcriber.py:394:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 391,
+    "line": 394,
     "expression": "except Exception as close_error:",
     "sha256": "77c08560e32f544b0fa7aef6e91b17c0334bc2781dec286b833f275cadad2ea9"
   },

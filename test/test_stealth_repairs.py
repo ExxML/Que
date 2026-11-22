@@ -11,6 +11,7 @@ import tempfile
 import threading
 import time
 import unittest
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -806,7 +807,7 @@ class AudioHealthTests(unittest.TestCase):
         """Skip non-speech sound quietly and keep transcribing the speech that follows."""
         model = MagicMock()
         model.transcribe.side_effect = [([], None), ([MagicMock(text="fixture")], None)]
-        queue_items: queue.Queue[object] = queue.Queue()
+        queue_items: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
         for _ in range(2):
             queue_items.put(("them", np.ones(16000, np.float32)))
         queue_items.put(None)
@@ -815,12 +816,159 @@ class AudioHealthTests(unittest.TestCase):
         lines: list[tuple[str, str]] = []
         self.transcriber.source_status.connect(lambda *args: health.append(args))
         self.transcriber.transcribed.connect(
-            lambda source, text: lines.append((source, text))
+            lambda source, text, _session: lines.append((source, text))
         )
         with patch.object(self.transcriber, "_load_model", return_value=model):
-            self.transcriber._transcribe_loop(queue_items, "tiny.en")  # type: ignore[arg-type]
+            self.transcriber._transcribe_loop(
+                queue_items, "tiny.en", self.transcriber.stop_event
+            )
         self.assertEqual(health, [])
         self.assertEqual(lines, [("them", "fixture")])
+
+    def test_stop_during_inference_discards_remaining_audio(self) -> None:
+        """Stop immediately while decoding and skip further segments and utterances."""
+        transcriber = self.transcriber
+        transcriber.recording = True
+        session = transcriber.stop_event
+        utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
+        for source in ("you", "them"):
+            utterances.put((source, np.ones(16000, np.float32)))
+            utterances.put(None)
+        decoding = threading.Event()
+        release = threading.Event()
+        decode_more = MagicMock()
+
+        def segments() -> Iterator[MagicMock]:
+            """Hold the first result until recording has stopped."""
+            decoding.set()
+            release.wait(5)
+            yield MagicMock(text="Finished after stop")
+            decode_more()
+
+        model = MagicMock()
+        model.transcribe.return_value = (segments(), None)
+        transcribed = MagicMock()
+        transcriber.transcribed.connect(transcribed)
+        with patch.object(transcriber, "_load_model", return_value=model):
+            worker = threading.Thread(
+                target=transcriber._transcribe_loop,
+                args=(utterances, "tiny.en", session),
+                daemon=True,
+            )
+            worker.start()
+            try:
+                self.assertTrue(decoding.wait(5))
+                transcriber.stop()
+                self.assertTrue(worker.is_alive())
+                self.assertFalse(transcriber.recording)
+            finally:
+                release.set()
+                worker.join(5)
+        self.assertFalse(worker.is_alive())
+        self.app.processEvents()
+        transcribed.assert_not_called()
+        model.transcribe.assert_called_once()
+        decode_more.assert_not_called()
+
+    def test_stop_before_loading_or_while_dequeuing_skips_inference(self) -> None:
+        """Skip model loading for an already stopped worker and ignore audio arriving at stop."""
+        transcriber = self.transcriber
+        session = transcriber.stop_event
+        utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = queue.Queue()
+        model = MagicMock()
+
+        def receive() -> tuple[str, NDArray[np.float32]]:
+            """Return the last queued audio just as the session stops."""
+            session.set()
+            return "you", np.ones(16000, np.float32)
+
+        with (
+            patch.object(transcriber, "_load_model", return_value=model) as load,
+            patch.object(utterances, "get", side_effect=receive),
+        ):
+            transcriber._transcribe_loop(utterances, "tiny.en", session)
+            transcriber._transcribe_loop(utterances, "tiny.en", session)
+        load.assert_called_once_with("tiny.en")
+        model.transcribe.assert_not_called()
+
+    def test_stop_during_model_operation_discards_late_failure(self) -> None:
+        """Ignore errors from model loading or inference that finish after stop."""
+        transcriber = self.transcriber
+        failed = MagicMock()
+        transcriber.session_failed.connect(failed)
+        for loading in (True, False):
+            with self.subTest(loading=loading):
+                session = threading.Event()
+                utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None] = (
+                    queue.Queue()
+                )
+                utterances.put(("you", np.ones(16000, np.float32)))
+                utterances.put(None)
+                utterances.put(None)
+
+                def fail(
+                    *_args: object,
+                    session: threading.Event = session,
+                    **_kwargs: object,
+                ) -> None:
+                    """Signal cancellation while the model operation is in progress."""
+                    session.set()
+                    raise RuntimeError("Model failed after stop")
+
+                model = MagicMock()
+                model.transcribe.side_effect = fail
+                with patch.object(
+                    transcriber,
+                    "_load_model",
+                    return_value=model,
+                    side_effect=fail if loading else None,
+                ):
+                    transcriber._transcribe_loop(utterances, "tiny.en", session)
+                self.assertTrue(session.is_set())
+        failed.assert_not_called()
+
+    def test_queued_result_cannot_change_a_stopped_or_restarted_transcript(
+        self,
+    ) -> None:
+        """Reject delayed Qt deliveries while preserving earlier lines and new results."""
+        transcriber = self.transcriber
+        with (
+            patch.object(transcriber, "active_model", return_value="tiny.en"),
+            patch.object(transcriber, "_capture_sources"),
+            patch.object(transcriber, "_transcribe_loop"),
+        ):
+            transcriber.start()
+            session = transcriber.stop_event
+            transcriber.transcribed.emit("you", "Already visible", session)
+            pending = transcriber.pending()
+            changed = MagicMock()
+            transcriber.changed.connect(changed)
+            worker = threading.Thread(
+                target=transcriber.transcribed.emit,
+                args=("them", "Already visible", session),
+                daemon=True,
+            )
+            worker.start()
+            worker.join(5)
+            self.assertFalse(worker.is_alive())
+            transcriber.stop()
+            self.app.processEvents()
+            self.assertEqual(transcriber.pending(), pending)
+            changed.assert_not_called()
+
+            transcriber.start()
+            transcriber.transcribed.emit("them", "Delayed old result", session)
+            self.assertEqual(transcriber.pending(), pending)
+            changed.assert_not_called()
+            transcriber.transcribed.emit(
+                "them", "New recording", transcriber.stop_event
+            )
+            self.assertEqual(
+                transcriber.pending(),
+                ("[You] Already visible\n[Them] New recording", 2),
+            )
+            changed.assert_called_once()
+            transcriber.stop()
 
 
 class NativeSurfaceTests(unittest.TestCase):

@@ -182,7 +182,7 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
         (
             "audio.que-first",
             "Start Que recording, then browser capture. Repeat start/stop while hidden and during streaming and sharing.",
-            "Verify both transcript sources and uninterrupted browser audio.",
+            "Verify both transcript sources and uninterrupted browser audio. During stop/restart, verify the transcript freezes at stop and only new speech is added after restart.",
             "audio",
         ),
         (

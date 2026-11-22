@@ -59,7 +59,7 @@ WORKFLOWS = {
     ),
     "audio.que-first": (
         "start browser capture after Que",
-        "stop then restart Que recording",
+        "stop Que during transcription, then restart promptly and speak a different phrase",
         "record while hidden",
         "record while streaming",
         "record while screen sharing",

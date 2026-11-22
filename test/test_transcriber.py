@@ -66,12 +66,13 @@ class TranscriptDeliveryTests(unittest.TestCase):
 
     def test_pending_until_marked_sent(self) -> None:
         """Keep lines pending through failed turns and drop them after commit."""
-        self.transcriber._on_transcribed("them", "Reverse a linked list.")
-        self.transcriber._on_transcribed("you", "Iteratively?")
+        self.transcriber.recording = True
+        self._record_utterance("them", "Reverse a linked list.")
+        self._record_utterance("you", "Iteratively?")
         text, seq = self.transcriber.pending()
         self.assertEqual(text, "[Them] Reverse a linked list.\n[You] Iteratively?")
         self.assertEqual(self.transcriber.pending(), (text, seq))  # Not committed yet
-        self.transcriber._on_transcribed("them", "Yes.")
+        self._record_utterance("them", "Yes.")
         self.transcriber.mark_sent(seq)
         self.assertEqual(self.transcriber.pending(), ("[Them] Yes.", seq + 1))
         self.transcriber.mark_sent(seq - 1)  # A stale commit never resends lines
@@ -79,11 +80,12 @@ class TranscriptDeliveryTests(unittest.TestCase):
 
     def test_speaker_echo_is_merged(self) -> None:
         """Keep one computer-audio line when the microphone hears the speakers."""
+        self.transcriber.recording = True
         line = "Return the indices of two numbers that add up to the target."
-        self.transcriber._on_transcribed("you", line)
-        self.transcriber._on_transcribed("them", line.lower())
-        self.transcriber._on_transcribed("you", line)
-        self.transcriber._on_transcribed("you", "Can I assume the input is sorted?")
+        self._record_utterance("you", line)
+        self._record_utterance("them", line.lower())
+        self._record_utterance("you", line)
+        self._record_utterance("you", "Can I assume the input is sorted?")
         self.assertEqual(
             [segment.source for segment in self.transcriber.segments], ["them", "you"]
         )
@@ -108,7 +110,6 @@ class TranscriptDeliveryTests(unittest.TestCase):
         """Name the model in use until this recording's first line or the download ends."""
         window = QWidget()
         panel = TranscriptPanel(self.transcriber, window)
-        self.transcriber._on_transcribed("you", "From an earlier recording")
         with (
             patch.object(
                 self.transcriber, "downloaded_models", return_value=["tiny.en"]
@@ -116,23 +117,31 @@ class TranscriptDeliveryTests(unittest.TestCase):
             patch.object(self.transcriber, "_transcribe_loop"),
             patch.object(self.transcriber, "_capture_sources"),
         ):
+            self.transcriber.start()
+            self._record_utterance("you", "From an earlier recording")
+            self.transcriber.stop()
             self.transcriber.downloading = "small.en"
             self.transcriber.start()
         note = "Using tiny.en while small.en downloads…"
         self.assertEqual(panel.caption.toolTip(), note)
         self.assertIn("Transcribing with tiny.en.", panel.text.text())
         self.assertTrue(panel.toggle_button.toolTip().endswith(" · tiny.en"))
-        self.transcriber._on_transcribed("them", "First new line")
+        self._record_utterance("them", "First new line")
         self.assertEqual(panel.caption.toolTip(), "Them: First new line")
         self.transcriber.stop()
 
     def test_clear_drops_unsent_lines(self) -> None:
         """Start a new chat with an empty transcript."""
-        self.transcriber._on_transcribed("you", "Hello")
+        self.transcriber.recording = True
+        self._record_utterance("you", "Hello")
         self.transcriber.clear()
         self.assertEqual(self.transcriber.pending()[0], "")
-        self.transcriber._on_transcribed("you", "Again")
+        self._record_utterance("you", "Again")
         self.assertEqual(self.transcriber.pending()[0], "[You] Again")
+
+    def _record_utterance(self, source: str, text: str) -> None:
+        """Deliver a synthetic utterance for the current recording."""
+        self.transcriber.transcribed.emit(source, text, self.transcriber.stop_event)
 
 
 class PromptTests(unittest.TestCase):
