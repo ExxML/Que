@@ -40,6 +40,11 @@ class FormatMessageTests(unittest.TestCase):
         self.assertIn(f"color: {qss(CODE_COLORS['control'])};'>return", html)
         self.assertIn(">python<", html)
 
+    def test_code_indent_levels_are_two_spaces(self) -> None:
+        """Show four-space and tab indent levels as two spaces, keeping extra alignment."""
+        html = format_message("```\nif a:\n    b(1,\n      2)\n\tc\n        d\n```")
+        self.assertIn("if a:\n  b(1,\n    2)\n  c\n    d", html)
+
     def test_unknown_language_is_plain(self) -> None:
         """Show code in a language Pygments does not know without colouring it."""
         html = format_message("```notalanguage\nif x < 1\n```")

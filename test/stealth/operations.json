@@ -5121,140 +5121,21 @@
     "source": "ui/chat/ai_formatter.py",
     "line": 162,
     "expression": "def _render_blocks(lines: list[str], gap: int, depth: int=0) -> str:",
-    "sha256": "052616fc8b66b010cab7ebebce0a10bfc101445d337e847330ac3bcc2d0ba084"
+    "sha256": "de52e02e276a0b2c29bf16af0b3c038f06819931ed405c1dd9a50539be638ea5"
   },
-  "ui/chat/ai_formatter.py:255:routine": {
+  "ui/chat/ai_formatter.py:331:routine": {
     "category": "routine",
     "source": "ui/chat/ai_formatter.py",
-    "line": 255,
-    "expression": "def _starts_block(lines: list[str], i: int) -> bool:",
-    "sha256": "251222651d673c9adc57e0df72f0f2b66477cdb73d1bf74c0f4c8635403beaae"
+    "line": 331,
+    "expression": "def _two_space_indent(lines: list[str]) -> list[str]:",
+    "sha256": "132e09776b267f45cab8c105954c3b70c1e01fcaa42978195b5410f9251923d0"
   },
-  "ui/chat/ai_formatter.py:277:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 277,
-    "expression": "def _display_math(line: str) -> re.Match[str] | None:",
-    "sha256": "a1902c3bb6342c4c9b17b58395b31c22cef93ec5902400624cffc1337ef43987"
-  },
-  "ui/chat/ai_formatter.py:298:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 298,
-    "expression": "def _is_table_start(lines: list[str], i: int) -> bool:",
-    "sha256": "3b383e9e5694bed669af0776cb62a3deb55ae4b466276f007783ad0780872634"
-  },
-  "ui/chat/ai_formatter.py:316:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 316,
-    "expression": "def _dedent(line: str, width: int) -> str:",
-    "sha256": "5d6a74f5fe3132de9c43379662dbbadc122d833c10bbb93e5260852523252f45"
-  },
-  "ui/chat/ai_formatter.py:329:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 329,
-    "expression": "def _collect_list(lines: list[str], start: int) -> tuple[list[tuple[str, list[str]]], int]:",
-    "sha256": "87c362bc61cc60ad91dde38d57fcd2f83ed9aba9bedbf7f19fcd17361c8f7a34"
-  },
-  "ui/chat/ai_formatter.py:377:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 377,
-    "expression": "def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:",
-    "sha256": "0f3e1e44bb64440b5183f76c49e4f68a6da73953b3bb422d41df969d4d0c6ed7"
-  },
-  "ui/chat/ai_formatter.py:411:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 411,
-    "expression": "def _table(rows: list[str], separator: str, top: int) -> str:",
-    "sha256": "3eb84cec9d98b0357a9201fcbcde7c9ebf4f74c59a7a609546fb24593a470fbb"
-  },
-  "ui/chat/ai_formatter.py:448:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 448,
-    "expression": "def _cells(row: str) -> list[str]:",
-    "sha256": "76511fe90b3f11d96a1a87fbf508fff47bec51af19fbfe2839683a557e2b463f"
-  },
-  "ui/chat/ai_formatter.py:464:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 464,
-    "expression": "def _inline(text: str) -> str:",
-    "sha256": "138387645152b62da170f2a2709dc9ea00eb4d89a3a9d67d98f04c818ea9407a"
-  },
-  "ui/chat/ai_formatter.py:517:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 517,
-    "expression": "def _code_block(code: str, language: str, top: int) -> str:",
-    "sha256": "c5ad115aebb46afe6931a85c2560ca2b3b9ee02ea893ad0dea810bec8425ec98"
-  },
-  "ui/chat/ai_formatter.py:544:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 544,
-    "expression": "def _highlight(code: str, language: str) -> str:",
-    "sha256": "f6ad25c08a756c3d056ce1f4b58832b3c85aa58eefb63598da5f46e903eb3f22"
-  },
-  "ui/chat/ai_formatter.py:586:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 586,
-    "expression": "@cache",
-    "sha256": "33331de5476de0f8d2345e1dd7281b0308c981672dabd6f6b49fbec06f7af99a"
-  },
-  "ui/chat/ai_formatter.py:603:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 603,
-    "expression": "def _role(token_type: _TokenType, value: str, tokens: list[tuple[_TokenType, str]], index: int) -> str:",
-    "sha256": "46a83878262a8e26b472da339281e9364e30b19c81c68be30bea5aeb9ead901f"
-  },
-  "ui/chat/ai_formatter.py:648:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 648,
-    "expression": "def _colored(text: str, rgb: tuple[int, int, int]) -> str:",
-    "sha256": "4d286a204dd01d79e51aef0fa3326d509383bcfa3ae8788b5db5ca08dd8373b9"
-  },
-  "ui/chat/ai_formatter.py:287:branch": {
+  "ui/chat/ai_formatter.py:345:branch": {
     "category": "branch",
     "source": "ui/chat/ai_formatter.py",
-    "line": 287,
-    "expression": "if math is None:",
-    "sha256": "766a1e2d636dbe8ad4d455ae0a296d8ff8f9159e54855be2f5fe3943b7e37374"
-  },
-  "ui/chat/ai_formatter.py:459:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 459,
-    "expression": "if row.endswith('|') and (not row.endswith('\\\\|')):",
-    "sha256": "e657212247541ea698981ec562e047260d8090c297477d20e53c2943a1ea235a"
-  },
-  "ui/chat/ai_formatter.py:475:routine": {
-    "category": "routine",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 475,
-    "expression": "def protect(fragment: str) -> str:",
-    "sha256": "e124410eaa659722d50f88bb6892185c2b461cc30809e571173656ba698d8250"
-  },
-  "ui/chat/ai_formatter.py:555:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 555,
-    "expression": "if lexer is None:",
-    "sha256": "af03c8dab6d3dd012d549bd14ae44a72e5c01b97a8b2a4fbfaf10bb1a3191b56"
-  },
-  "ui/chat/ai_formatter.py:595:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 595,
-    "expression": "if not language or language in ('text', 'txt', 'plaintext', 'plain'):",
-    "sha256": "23deffa5ac7d3437f52355db891bc1fb78085115acb07a3559d8692d834089ce"
+    "line": 345,
+    "expression": "if unit <= 2:",
+    "sha256": "7f1c9b1af946ea975d71ff7daa81b6e356d0c3fe1ede173656b482d863f899ef"
   },
   "ui/chat/ai_formatter.py:620:branch": {
     "category": "branch",
@@ -5263,173 +5144,19 @@
     "expression": "if is_token_subtype(token_type, Token.Keyword) and value in CONTROL_KEYWORDS:",
     "sha256": "4fb443ac355dce47ac3dae3aa6ebef51c69a15381dd939af0215d180a2696fa8"
   },
-  "ui/chat/ai_formatter.py:622:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 622,
-    "expression": "if token_type in (Token.Name, Token.Name.Other, Token.Name.Property, Token.Name.Builtin):",
-    "sha256": "a6f73c0bf0e0ba7286a565a05ece9b4c2cf35cc4f2a7212b3079d7e97fae6261"
-  },
   "ui/chat/ai_formatter.py:182:branch": {
     "category": "branch",
     "source": "ui/chat/ai_formatter.py",
     "line": 182,
     "expression": "if not line.strip():",
-    "sha256": "15aedfc341b351ecba23944faaf7555fa41a5918bce9ee60b27ac2326c23a3ec"
-  },
-  "ui/chat/ai_formatter.py:353:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 353,
-    "expression": "if item and line_indent < indent + 2:",
-    "sha256": "acb1bc1268cade113cb9eb7ca267414561f368f932772c3728db51df1dafe64b"
-  },
-  "ui/chat/ai_formatter.py:395:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 395,
-    "expression": "if (task := TASK_RE.match(content[0])):",
-    "sha256": "a6c98d3dd9f1b336f9914ad5ed84467bb3b5cc73bcb0989ad1f752c68964e325"
-  },
-  "ui/chat/ai_formatter.py:561:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 561,
-    "expression": "if is_token_subtype(token_type, Token.Punctuation):",
-    "sha256": "3875503703d0c1c37274c3cea0ce24b7502404ae37b157348ad92993718d472d"
-  },
-  "ui/chat/ai_formatter.py:599:failure": {
-    "category": "failure",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 599,
-    "expression": "except ClassNotFound:",
-    "sha256": "05dfb8901030075c0848f6e9f8880ed40f0d26acdec25346e8c3e23bae9ddefc"
-  },
-  "ui/chat/ai_formatter.py:636:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 636,
-    "expression": "if token_type is Token.Name.Builtin:",
-    "sha256": "92ab76ae42498896a564419275b6905eee1c53edb9e6d05d954178d46c51f310"
-  },
-  "ui/chat/ai_formatter.py:638:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 638,
-    "expression": "if value.isupper() and len(value) > 1:",
-    "sha256": "d2cc1f48d5fea27d634686942c6fef0e8c1e86fbfc98da8238f58b37c66a29dd"
-  },
-  "ui/chat/ai_formatter.py:640:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 640,
-    "expression": "if value[:1].isupper():",
-    "sha256": "bcd42d41fdd4cdf9accf629b2eda8da4d680951aaaa946d575aecc9349438be6"
+    "sha256": "79f6bded872533326016a6d497f267ab3f4098304b078930223c3425bcc66438"
   },
   "ui/chat/ai_formatter.py:184:branch": {
     "category": "branch",
     "source": "ui/chat/ai_formatter.py",
     "line": 184,
     "expression": "if (fence := FENCE_RE.match(line)):",
-    "sha256": "28955c1aec01aeac591c063b5992ae04729c6e31dced2af5f69d5c260db96317"
-  },
-  "ui/chat/ai_formatter.py:354:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 354,
-    "expression": "if item.group(2)[0].isdigit() != ordered:",
-    "sha256": "ef8f1c037b13cb1d287ee274d78d308e58fd3b8d401dbd2bbdef0513130d3788"
-  },
-  "ui/chat/ai_formatter.py:358:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 358,
-    "expression": "if not line.strip():",
-    "sha256": "3d3d65c1e4ef386755cba10311a24458ca9c05e39792042fd7d842319a9f8502"
-  },
-  "ui/chat/ai_formatter.py:398:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 398,
-    "expression": "if ordered:",
-    "sha256": "9e47656b903aa1d6dbc76775a6722bca0e7b44a36a3cd42b16df335ef386274b"
-  },
-  "ui/chat/ai_formatter.py:436:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 436,
-    "expression": "if index == 0:",
-    "sha256": "c5de03fb9b818243a8f12e0366da3c6d661a4b40f83b29f603e389df13aca736"
-  },
-  "ui/chat/ai_formatter.py:194:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 194,
-    "expression": "if (math := _display_math(line)):",
-    "sha256": "499927835b38a9d7f099f73814319616ce1654e06b766bf1d698c6869c3028d2"
-  },
-  "ui/chat/ai_formatter.py:361:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 361,
-    "expression": "if not following or (following_indent < indent + 2 and (not LIST_RE.match(following))):",
-    "sha256": "f692aa16a9ba6a988b67dbfec8bb1a189bca4908d0f9a2ad39d9c90fcaf28da3"
-  },
-  "ui/chat/ai_formatter.py:366:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 366,
-    "expression": "if line_indent >= indent + 2 or (items[-1][1][-1].strip() and (not _starts_block(lines, i))):",
-    "sha256": "b96cdcebd05521d76a0c12f7ec449d5285fefac43f90bc35e3eaf1d07d5b4813"
-  },
-  "ui/chat/ai_formatter.py:563:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 563,
-    "expression": "if char in '([{':",
-    "sha256": "541f26de5d6e91a329bbf5250fa8a6dc4b589906b58279cd15baa6be3602b7cd"
-  },
-  "ui/chat/ai_formatter.py:208:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 208,
-    "expression": "if (heading := HEADING_RE.match(line)):",
-    "sha256": "9b283c7ebbc934bf7b1b07a9d8c03e61f5df07fa2ca2e55ba6114f37f6e57be0"
-  },
-  "ui/chat/ai_formatter.py:568:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 568,
-    "expression": "if char in ')]}':",
-    "sha256": "fdeb15a11166a497174b603defcf98b26fedf30a72d21ab0128cf9733e325d2d"
-  },
-  "ui/chat/ai_formatter.py:216:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 216,
-    "expression": "if RULE_RE.match(line):",
-    "sha256": "33df5c3ee33b955345aacb2331d8970e9c7ff397c2892041b459fdec5d24b939"
-  },
-  "ui/chat/ai_formatter.py:222:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 222,
-    "expression": "if QUOTE_RE.match(line):",
-    "sha256": "c48fb7715077cde75ebc2440723c379e3fead592866e225027929712e258a5fe"
-  },
-  "ui/chat/ai_formatter.py:233:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 233,
-    "expression": "if LIST_RE.match(line):",
-    "sha256": "0950f5f9c280312fff5267a00867002cae11a4d1b3b4b58de7dcea12bbdc77d1"
-  },
-  "ui/chat/ai_formatter.py:236:branch": {
-    "category": "branch",
-    "source": "ui/chat/ai_formatter.py",
-    "line": 236,
-    "expression": "if _is_table_start(lines, i):",
-    "sha256": "413cc3701cb0edfdb20a0ce9e659a1abc9188caf2a0ef95b902fdbcfd2af773d"
+    "sha256": "b8708e6f1572714441a24cbe1a83eb4144c1af8388c5e8ce973339f925626337"
   },
   "ui/chat/chat_area.py:49:routine": {
     "category": "routine",
@@ -10568,5 +10295,292 @@
     "line": 260,
     "expression": "if self.transcriber.recording:",
     "sha256": "03650126fa25524da494d777e747701f4bdccdc68d68859a2b795f272f8f205e"
+  },
+  "ui/chat/ai_formatter.py:255:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 255,
+    "expression": "def _starts_block(lines: list[str], i: int) -> bool:",
+    "sha256": "251222651d673c9adc57e0df72f0f2b66477cdb73d1bf74c0f4c8635403beaae"
+  },
+  "ui/chat/ai_formatter.py:277:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 277,
+    "expression": "def _display_math(line: str) -> re.Match[str] | None:",
+    "sha256": "a1902c3bb6342c4c9b17b58395b31c22cef93ec5902400624cffc1337ef43987"
+  },
+  "ui/chat/ai_formatter.py:298:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 298,
+    "expression": "def _is_table_start(lines: list[str], i: int) -> bool:",
+    "sha256": "3b383e9e5694bed669af0776cb62a3deb55ae4b466276f007783ad0780872634"
+  },
+  "ui/chat/ai_formatter.py:316:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 316,
+    "expression": "def _dedent(line: str, width: int) -> str:",
+    "sha256": "5d6a74f5fe3132de9c43379662dbbadc122d833c10bbb93e5260852523252f45"
+  },
+  "ui/chat/ai_formatter.py:329:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 329,
+    "expression": "def _collect_list(lines: list[str], start: int) -> tuple[list[tuple[str, list[str]]], int]:",
+    "sha256": "87c362bc61cc60ad91dde38d57fcd2f83ed9aba9bedbf7f19fcd17361c8f7a34"
+  },
+  "ui/chat/ai_formatter.py:377:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 377,
+    "expression": "def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:",
+    "sha256": "0f3e1e44bb64440b5183f76c49e4f68a6da73953b3bb422d41df969d4d0c6ed7"
+  },
+  "ui/chat/ai_formatter.py:411:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 411,
+    "expression": "def _table(rows: list[str], separator: str, top: int) -> str:",
+    "sha256": "3eb84cec9d98b0357a9201fcbcde7c9ebf4f74c59a7a609546fb24593a470fbb"
+  },
+  "ui/chat/ai_formatter.py:448:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 448,
+    "expression": "def _cells(row: str) -> list[str]:",
+    "sha256": "76511fe90b3f11d96a1a87fbf508fff47bec51af19fbfe2839683a557e2b463f"
+  },
+  "ui/chat/ai_formatter.py:464:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 464,
+    "expression": "def _inline(text: str) -> str:",
+    "sha256": "138387645152b62da170f2a2709dc9ea00eb4d89a3a9d67d98f04c818ea9407a"
+  },
+  "ui/chat/ai_formatter.py:517:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 517,
+    "expression": "def _code_block(code: str, language: str, top: int) -> str:",
+    "sha256": "c5ad115aebb46afe6931a85c2560ca2b3b9ee02ea893ad0dea810bec8425ec98"
+  },
+  "ui/chat/ai_formatter.py:544:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 544,
+    "expression": "def _highlight(code: str, language: str) -> str:",
+    "sha256": "f6ad25c08a756c3d056ce1f4b58832b3c85aa58eefb63598da5f46e903eb3f22"
+  },
+  "ui/chat/ai_formatter.py:586:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 586,
+    "expression": "@cache",
+    "sha256": "33331de5476de0f8d2345e1dd7281b0308c981672dabd6f6b49fbec06f7af99a"
+  },
+  "ui/chat/ai_formatter.py:603:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 603,
+    "expression": "def _role(token_type: _TokenType, value: str, tokens: list[tuple[_TokenType, str]], index: int) -> str:",
+    "sha256": "46a83878262a8e26b472da339281e9364e30b19c81c68be30bea5aeb9ead901f"
+  },
+  "ui/chat/ai_formatter.py:648:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 648,
+    "expression": "def _colored(text: str, rgb: tuple[int, int, int]) -> str:",
+    "sha256": "4d286a204dd01d79e51aef0fa3326d509383bcfa3ae8788b5db5ca08dd8373b9"
+  },
+  "ui/chat/ai_formatter.py:287:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 287,
+    "expression": "if math is None:",
+    "sha256": "766a1e2d636dbe8ad4d455ae0a296d8ff8f9159e54855be2f5fe3943b7e37374"
+  },
+  "ui/chat/ai_formatter.py:459:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 459,
+    "expression": "if row.endswith('|') and (not row.endswith('\\\\|')):",
+    "sha256": "e657212247541ea698981ec562e047260d8090c297477d20e53c2943a1ea235a"
+  },
+  "ui/chat/ai_formatter.py:475:routine": {
+    "category": "routine",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 475,
+    "expression": "def protect(fragment: str) -> str:",
+    "sha256": "e124410eaa659722d50f88bb6892185c2b461cc30809e571173656ba698d8250"
+  },
+  "ui/chat/ai_formatter.py:555:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 555,
+    "expression": "if lexer is None:",
+    "sha256": "af03c8dab6d3dd012d549bd14ae44a72e5c01b97a8b2a4fbfaf10bb1a3191b56"
+  },
+  "ui/chat/ai_formatter.py:595:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 595,
+    "expression": "if not language or language in ('text', 'txt', 'plaintext', 'plain'):",
+    "sha256": "23deffa5ac7d3437f52355db891bc1fb78085115acb07a3559d8692d834089ce"
+  },
+  "ui/chat/ai_formatter.py:622:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 622,
+    "expression": "if token_type in (Token.Name, Token.Name.Other, Token.Name.Property, Token.Name.Builtin):",
+    "sha256": "a6f73c0bf0e0ba7286a565a05ece9b4c2cf35cc4f2a7212b3079d7e97fae6261"
+  },
+  "ui/chat/ai_formatter.py:353:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 353,
+    "expression": "if item and line_indent < indent + 2:",
+    "sha256": "acb1bc1268cade113cb9eb7ca267414561f368f932772c3728db51df1dafe64b"
+  },
+  "ui/chat/ai_formatter.py:395:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 395,
+    "expression": "if (task := TASK_RE.match(content[0])):",
+    "sha256": "a6c98d3dd9f1b336f9914ad5ed84467bb3b5cc73bcb0989ad1f752c68964e325"
+  },
+  "ui/chat/ai_formatter.py:561:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 561,
+    "expression": "if is_token_subtype(token_type, Token.Punctuation):",
+    "sha256": "3875503703d0c1c37274c3cea0ce24b7502404ae37b157348ad92993718d472d"
+  },
+  "ui/chat/ai_formatter.py:599:failure": {
+    "category": "failure",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 599,
+    "expression": "except ClassNotFound:",
+    "sha256": "05dfb8901030075c0848f6e9f8880ed40f0d26acdec25346e8c3e23bae9ddefc"
+  },
+  "ui/chat/ai_formatter.py:636:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 636,
+    "expression": "if token_type is Token.Name.Builtin:",
+    "sha256": "92ab76ae42498896a564419275b6905eee1c53edb9e6d05d954178d46c51f310"
+  },
+  "ui/chat/ai_formatter.py:638:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 638,
+    "expression": "if value.isupper() and len(value) > 1:",
+    "sha256": "d2cc1f48d5fea27d634686942c6fef0e8c1e86fbfc98da8238f58b37c66a29dd"
+  },
+  "ui/chat/ai_formatter.py:640:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 640,
+    "expression": "if value[:1].isupper():",
+    "sha256": "bcd42d41fdd4cdf9accf629b2eda8da4d680951aaaa946d575aecc9349438be6"
+  },
+  "ui/chat/ai_formatter.py:354:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 354,
+    "expression": "if item.group(2)[0].isdigit() != ordered:",
+    "sha256": "ef8f1c037b13cb1d287ee274d78d308e58fd3b8d401dbd2bbdef0513130d3788"
+  },
+  "ui/chat/ai_formatter.py:358:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 358,
+    "expression": "if not line.strip():",
+    "sha256": "3d3d65c1e4ef386755cba10311a24458ca9c05e39792042fd7d842319a9f8502"
+  },
+  "ui/chat/ai_formatter.py:398:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 398,
+    "expression": "if ordered:",
+    "sha256": "9e47656b903aa1d6dbc76775a6722bca0e7b44a36a3cd42b16df335ef386274b"
+  },
+  "ui/chat/ai_formatter.py:436:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 436,
+    "expression": "if index == 0:",
+    "sha256": "c5de03fb9b818243a8f12e0366da3c6d661a4b40f83b29f603e389df13aca736"
+  },
+  "ui/chat/ai_formatter.py:194:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 194,
+    "expression": "if (math := _display_math(line)):",
+    "sha256": "499927835b38a9d7f099f73814319616ce1654e06b766bf1d698c6869c3028d2"
+  },
+  "ui/chat/ai_formatter.py:361:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 361,
+    "expression": "if not following or (following_indent < indent + 2 and (not LIST_RE.match(following))):",
+    "sha256": "f692aa16a9ba6a988b67dbfec8bb1a189bca4908d0f9a2ad39d9c90fcaf28da3"
+  },
+  "ui/chat/ai_formatter.py:366:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 366,
+    "expression": "if line_indent >= indent + 2 or (items[-1][1][-1].strip() and (not _starts_block(lines, i))):",
+    "sha256": "b96cdcebd05521d76a0c12f7ec449d5285fefac43f90bc35e3eaf1d07d5b4813"
+  },
+  "ui/chat/ai_formatter.py:563:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 563,
+    "expression": "if char in '([{':",
+    "sha256": "541f26de5d6e91a329bbf5250fa8a6dc4b589906b58279cd15baa6be3602b7cd"
+  },
+  "ui/chat/ai_formatter.py:208:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 208,
+    "expression": "if (heading := HEADING_RE.match(line)):",
+    "sha256": "9b283c7ebbc934bf7b1b07a9d8c03e61f5df07fa2ca2e55ba6114f37f6e57be0"
+  },
+  "ui/chat/ai_formatter.py:568:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 568,
+    "expression": "if char in ')]}':",
+    "sha256": "fdeb15a11166a497174b603defcf98b26fedf30a72d21ab0128cf9733e325d2d"
+  },
+  "ui/chat/ai_formatter.py:216:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 216,
+    "expression": "if RULE_RE.match(line):",
+    "sha256": "33df5c3ee33b955345aacb2331d8970e9c7ff397c2892041b459fdec5d24b939"
+  },
+  "ui/chat/ai_formatter.py:222:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 222,
+    "expression": "if QUOTE_RE.match(line):",
+    "sha256": "c48fb7715077cde75ebc2440723c379e3fead592866e225027929712e258a5fe"
+  },
+  "ui/chat/ai_formatter.py:233:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 233,
+    "expression": "if LIST_RE.match(line):",
+    "sha256": "0950f5f9c280312fff5267a00867002cae11a4d1b3b4b58de7dcea12bbdc77d1"
+  },
+  "ui/chat/ai_formatter.py:236:branch": {
+    "category": "branch",
+    "source": "ui/chat/ai_formatter.py",
+    "line": 236,
+    "expression": "if _is_table_start(lines, i):",
+    "sha256": "413cc3701cb0edfdb20a0ce9e659a1abc9188caf2a0ef95b902fdbcfd2af773d"
   }
 }

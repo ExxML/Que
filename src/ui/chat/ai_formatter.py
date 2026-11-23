@@ -190,7 +190,9 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
                 code.append(_dedent(lines[i], len(indent)))
                 i += 1
             i += 1  # Skip the closing fence; a stream may not have sent it yet
-            blocks.append(_code_block("\n".join(code), language, top))
+            blocks.append(
+                _code_block("\n".join(_two_space_indent(code)), language, top)
+            )
         elif math := _display_math(line):
             closer = "$$" if math.group(1) == "$$" else "\\]"
             body = [math.group(2)]
@@ -324,6 +326,29 @@ def _dedent(line: str, width: int) -> str:
         str: The dedented line.
     """
     return line[min(width, len(line) - len(line.lstrip(" "))) :]
+
+
+def _two_space_indent(lines: list[str]) -> list[str]:
+    """Rescale code indentation so each level is two spaces wide.
+
+    The smallest indent in the code is taken as one level; spaces beyond whole levels are kept
+    so aligned continuation lines stay aligned.
+
+    Args:
+        lines (list[str]): The code lines.
+
+    Returns:
+        list[str]: The lines with two-space indent levels.
+    """
+    widths = [len(line) - len(line.lstrip(" ")) for line in lines if line.strip()]
+    unit = min((width for width in widths if width), default=0)
+    if unit <= 2:
+        return lines
+    rescaled: list[str] = []
+    for line in lines:
+        levels, extra = divmod(len(line) - len(line.lstrip(" ")), unit)
+        rescaled.append(" " * (levels * 2 + extra) + line.lstrip(" "))
+    return rescaled
 
 
 def _collect_list(
