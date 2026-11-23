@@ -5753,185 +5753,206 @@
     "expression": "QTimer.singleShot(0, self._update_fade_visibility)",
     "sha256": "1d1744aa14d298bace064c1e41d5c4762198f6d5695276414c9109d33b0c330c"
   },
-  "ui/chat/chat_bubble.py:36:routine": {
+  "ui/chat/chat_bubble.py:39:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 36,
+    "line": 39,
     "expression": "def __init__(self, message: str, is_user: bool=False, transcript: str='', screenshots: tuple[str, ...]=()) -> None:",
-    "sha256": "365d2546e7d78a7d7f54482a9aa91179c5178de0e8e874112794e3de8677637e"
+    "sha256": "ba32c3f5d4261caf59a03f1328978eb185d4f464ba80bdf401ea38fdf486243d"
   },
-  "ui/chat/chat_bubble.py:51:routine": {
+  "ui/chat/chat_bubble.py:55:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 51,
+    "line": 55,
     "expression": "def set_bot_message(self, message: str) -> None:",
     "sha256": "4c38a2141443b0ca855a21a435a0ba9545afd038271cab9df2112aa0bc2fb08a"
   },
-  "ui/chat/chat_bubble.py:60:routine": {
+  "ui/chat/chat_bubble.py:64:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 60,
+    "line": 64,
     "expression": "def mark_stopped(self) -> None:",
     "sha256": "bb3c511584e6f652dbf261056ccfc6b05193bfed026abb4669679276a6e1966e"
   },
-  "ui/chat/chat_bubble.py:67:routine": {
+  "ui/chat/chat_bubble.py:71:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 67,
+    "line": 71,
     "expression": "def start_loading_animation(self) -> None:",
     "sha256": "7b6486e99134e9edd6a09369502009e8ebdb03f2228f79dedd2822319cbd0d92"
   },
-  "ui/chat/chat_bubble.py:75:routine": {
+  "ui/chat/chat_bubble.py:79:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 75,
+    "line": 79,
     "expression": "def stop_loading_animation(self) -> None:",
     "sha256": "a35693f90fe4959c62c68084abe0ece3e704702942da23b70aa54123848cfcb8"
   },
-  "ui/chat/chat_bubble.py:82:routine": {
+  "ui/chat/chat_bubble.py:86:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 82,
-    "expression": "def _init_UI(self) -> None:",
-    "sha256": "8cf958b8d526ab7697d2d90937a3d70115de67566296eac7df2b882593427456"
+    "line": 86,
+    "expression": "def resizeEvent(self, event: QResizeEvent | None) -> None:",
+    "sha256": "0729380545ccbc166a184a99babd856e256610c6345c57ff1c0bd42225cd58c3"
   },
-  "ui/chat/chat_bubble.py:148:routine": {
+  "ui/chat/chat_bubble.py:96:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 148,
+    "line": 96,
+    "expression": "def _init_UI(self) -> None:",
+    "sha256": "21fda19b138d8173f4a844647edc0c997f4c1d29f6c75b3e62ff61bb1bc6c656"
+  },
+  "ui/chat/chat_bubble.py:164:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 164,
+    "expression": "def _fit_user_message(self, max_width: int) -> None:",
+    "sha256": "aec0a02ced202caef5e7439e18b4aa70005c190a4b33d3ace62f176ff77300f5"
+  },
+  "ui/chat/chat_bubble.py:176:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 176,
     "expression": "def _attachment_column(self, max_width: int) -> QVBoxLayout:",
     "sha256": "d84b99e9767693f4931ffc08299ba568f5c525edbef8cf386b55ab4ed56ec4e9"
   },
-  "ui/chat/chat_bubble.py:168:routine": {
+  "ui/chat/chat_bubble.py:196:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 168,
+    "line": 196,
     "expression": "def _screenshot_row(self, max_width: int) -> QHBoxLayout:",
     "sha256": "63d75aadcb2409cdd67a42b3b0cd536f6ecb73701fcc8d0471945f5365ac7805"
-  },
-  "ui/chat/chat_bubble.py:201:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 201,
-    "expression": "def _add_transcript(self, column: QVBoxLayout, max_width: int) -> None:",
-    "sha256": "dea1a4943586d6b302cfcb146d92d279049c710132ad41c7e622b5137dc83db4"
-  },
-  "ui/chat/chat_bubble.py:240:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 240,
-    "expression": "def _tick_loading(self) -> None:",
-    "sha256": "bcceaddc85dbabe6ea5b771b5a414c80ede39920ba6ada42439aff3f46759a75"
-  },
-  "ui/chat/chat_bubble.py:273:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 273,
-    "expression": "def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:",
-    "sha256": "8fe1c8e0e3f700343fdf8d4d8607be8c526a8232184a8556326252a500d878bf"
-  },
-  "ui/chat/chat_bubble.py:288:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 288,
-    "expression": "def enterEvent(self, event: QEnterEvent | None) -> None:",
-    "sha256": "7d283bb59a6a23c6ce92b8f14c58147525cf2c18fa5e9346fb3970acb124c6a8"
-  },
-  "ui/chat/chat_bubble.py:298:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 298,
-    "expression": "def leaveEvent(self, event: QEvent | None) -> None:",
-    "sha256": "fe4d08af88018adbff70f0ffedd85d81a623e1b9ce633bf5196506f69917b824"
-  },
-  "ui/chat/chat_bubble.py:308:routine": {
-    "category": "routine",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 308,
-    "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
-    "sha256": "3f00ac474232b05bb84eac607cf490aa6871de1e395dcf42c8273fe73bf1c693"
-  },
-  "ui/chat/chat_bubble.py:77:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 77,
-    "expression": "if hasattr(self, '_loading_timer') and self._loading_timer is not None:",
-    "sha256": "6eb12172ad8743b1266f83e04a47a1365ca872a06ffcbc83e8a57e2f46f9ddb4"
-  },
-  "ui/chat/chat_bubble.py:102:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 102,
-    "expression": "if self.is_user:",
-    "sha256": "a184a6d1a1741e75d6b37acd1a6500f400d31ebb636c18a828bed3f4f9faee5c"
-  },
-  "ui/chat/chat_bubble.py:159:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 159,
-    "expression": "if self.screenshots:",
-    "sha256": "eb61c4a336967e9351f95cb645a7bac8b1cfe13fc4942cb40943f4c384c492fd"
-  },
-  "ui/chat/chat_bubble.py:164:branch": {
-    "category": "branch",
-    "source": "ui/chat/chat_bubble.py",
-    "line": 164,
-    "expression": "if self.transcript:",
-    "sha256": "72acb4a19c42d18136f09bafa45017b74eaa8e0723f1bd8803a35bdb9e7bd5f7"
   },
   "ui/chat/chat_bubble.py:229:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
     "line": 229,
-    "expression": "def on_toggle() -> None:",
-    "sha256": "5836c92a567fd00573f5f45146aa7ba31c9d8cbb98718be5fd5881657a073365"
+    "expression": "def _add_transcript(self, column: QVBoxLayout, max_width: int) -> None:",
+    "sha256": "3a5d7e9e06ba3b7d0c36b27c97e59fb63d6d46a8d5d31c4b88d429fba0f25e32"
   },
-  "ui/chat/chat_bubble.py:244:routine": {
+  "ui/chat/chat_bubble.py:268:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 244,
-    "expression": "def dot_opacity(phase_offset: float) -> int:",
-    "sha256": "53a1fd346bdd44fc8eff098d2e6557b7d66cec0e26c065472ed96c1cc28e5d39"
+    "line": 268,
+    "expression": "def _tick_loading(self) -> None:",
+    "sha256": "bcceaddc85dbabe6ea5b771b5a414c80ede39920ba6ada42439aff3f46759a75"
   },
-  "ui/chat/chat_bubble.py:280:branch": {
-    "category": "branch",
+  "ui/chat/chat_bubble.py:301:routine": {
+    "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 280,
-    "expression": "if not self.pixmap.isNull():",
-    "sha256": "43ecf76635e7476f59607469619431aa2a2e7fa4d49009694e72d86db43d2654"
+    "line": 301,
+    "expression": "def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:",
+    "sha256": "8fe1c8e0e3f700343fdf8d4d8607be8c526a8232184a8556326252a500d878bf"
   },
-  "ui/chat/chat_bubble.py:316:branch": {
-    "category": "branch",
+  "ui/chat/chat_bubble.py:316:routine": {
+    "category": "routine",
     "source": "ui/chat/chat_bubble.py",
     "line": 316,
-    "expression": "if self.pixmap.isNull():",
-    "sha256": "2d896dd45902f94030f91836a9f490d8f04701df972d250a816724b1f30dc9e0"
+    "expression": "def enterEvent(self, event: QEnterEvent | None) -> None:",
+    "sha256": "7d283bb59a6a23c6ce92b8f14c58147525cf2c18fa5e9346fb3970acb124c6a8"
   },
-  "ui/chat/chat_bubble.py:326:branch": {
-    "category": "branch",
+  "ui/chat/chat_bubble.py:326:routine": {
+    "category": "routine",
     "source": "ui/chat/chat_bubble.py",
     "line": 326,
-    "expression": "if self.hidden:",
-    "sha256": "0d8b9e7b6f4f7ef5ae34cfc2a6b354a43089f47b6987afecf0ac856629b66f39"
+    "expression": "def leaveEvent(self, event: QEvent | None) -> None:",
+    "sha256": "fe4d08af88018adbff70f0ffedd85d81a623e1b9ce633bf5196506f69917b824"
   },
-  "ui/chat/chat_bubble.py:70:background": {
-    "category": "background",
+  "ui/chat/chat_bubble.py:336:routine": {
+    "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 70,
-    "expression": "QTimer(self)",
-    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+    "line": 336,
+    "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
+    "sha256": "3f00ac474232b05bb84eac607cf490aa6871de1e395dcf42c8273fe73bf1c693"
+  },
+  "ui/chat/chat_bubble.py:81:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 81,
+    "expression": "if hasattr(self, '_loading_timer') and self._loading_timer is not None:",
+    "sha256": "6eb12172ad8743b1266f83e04a47a1365ca872a06ffcbc83e8a57e2f46f9ddb4"
+  },
+  "ui/chat/chat_bubble.py:93:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 93,
+    "expression": "if self.is_user:",
+    "sha256": "e375c0c281a1fbef3c349a49ad9f56962bed81fd3faa260615fc86b4bcdb52de"
   },
   "ui/chat/chat_bubble.py:118:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
     "line": 118,
-    "expression": "if natural_width > max_width:",
-    "sha256": "3750bb44f2d07cf797f1a440c10f1222835b68716c7fc7989d1d91d393aa9d59"
+    "expression": "if self.is_user:",
+    "sha256": "cfa04047bd1d615eb830bda933a6afe4825009747ca842c0cfaf159b4d1d28ac"
   },
-  "ui/chat/chat_bubble.py:125:branch": {
+  "ui/chat/chat_bubble.py:173:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 125,
+    "line": 173,
+    "expression": "if self.transcript_label is not None:",
+    "sha256": "3afbaacaab6da23ce49066d8572765cf5dfb826930dd13f4da9794e10feb654e"
+  },
+  "ui/chat/chat_bubble.py:187:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 187,
+    "expression": "if self.screenshots:",
+    "sha256": "eb61c4a336967e9351f95cb645a7bac8b1cfe13fc4942cb40943f4c384c492fd"
+  },
+  "ui/chat/chat_bubble.py:192:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 192,
+    "expression": "if self.transcript:",
+    "sha256": "72acb4a19c42d18136f09bafa45017b74eaa8e0723f1bd8803a35bdb9e7bd5f7"
+  },
+  "ui/chat/chat_bubble.py:257:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 257,
+    "expression": "def on_toggle() -> None:",
+    "sha256": "5836c92a567fd00573f5f45146aa7ba31c9d8cbb98718be5fd5881657a073365"
+  },
+  "ui/chat/chat_bubble.py:272:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 272,
+    "expression": "def dot_opacity(phase_offset: float) -> int:",
+    "sha256": "53a1fd346bdd44fc8eff098d2e6557b7d66cec0e26c065472ed96c1cc28e5d39"
+  },
+  "ui/chat/chat_bubble.py:308:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 308,
+    "expression": "if not self.pixmap.isNull():",
+    "sha256": "43ecf76635e7476f59607469619431aa2a2e7fa4d49009694e72d86db43d2654"
+  },
+  "ui/chat/chat_bubble.py:344:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 344,
+    "expression": "if self.pixmap.isNull():",
+    "sha256": "2d896dd45902f94030f91836a9f490d8f04701df972d250a816724b1f30dc9e0"
+  },
+  "ui/chat/chat_bubble.py:354:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 354,
+    "expression": "if self.hidden:",
+    "sha256": "0d8b9e7b6f4f7ef5ae34cfc2a6b354a43089f47b6987afecf0ac856629b66f39"
+  },
+  "ui/chat/chat_bubble.py:74:background": {
+    "category": "background",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 74,
+    "expression": "QTimer(self)",
+    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+  },
+  "ui/chat/chat_bubble.py:136:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 136,
     "expression": "if self.transcript or self.screenshots:",
     "sha256": "1aabfb05eb5cb4df062bddd315b1ceabb6c95fc55a986b79a0632074410b847a"
   },

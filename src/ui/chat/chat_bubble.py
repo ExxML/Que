@@ -10,12 +10,14 @@ from PyQt6.QtGui import (
     QPaintEvent,
     QPen,
     QPixmap,
+    QResizeEvent,
 )
 from PyQt6.QtWidgets import (
     QAbstractButton,
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -26,6 +28,7 @@ from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
 PREVIEW_WIDTH = 64
 PREVIEW_HEIGHT = 36
 PREVIEW_SPACING = 4
+USER_WIDTH_RATIO = 0.75  # Widest a user message grows, as a share of the chat width
 
 
 class ChatBubble(QWidget):
@@ -46,6 +49,7 @@ class ChatBubble(QWidget):
         self.transcript = transcript
         self.screenshots = list(screenshots)
         self._loading_timer: QTimer | None = None
+        self.transcript_label: QLabel | None = None
         self._init_UI()
 
     def set_bot_message(self, message: str) -> None:
@@ -79,10 +83,22 @@ class ChatBubble(QWidget):
             self._loading_timer.deleteLater()
             self._loading_timer = None
 
+    def resizeEvent(self, event: QResizeEvent | None) -> None:
+        """Rewrap a user message to the new chat width.
+
+        Args:
+            event (QResizeEvent): The resize event.
+        """
+        super().resizeEvent(event)
+        if self.is_user:
+            self._fit_user_message(int(self.width() * USER_WIDTH_RATIO))
+
     def _init_UI(self) -> None:
         """Initialize the chat bubble UI layout and styling."""
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 2, 5, 2)
+        # Take the chat's width rather than the message's, so narrowing the window rewraps instead of clipping
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
 
         # Create message label with HTML formatting
         # Default formatting for user message only (bot message uses formatting in set_bot_message)
@@ -111,15 +127,10 @@ class ChatBubble(QWidget):
                 }}
             """)  # padding adjusted to visually center text within the bubble
 
-            # Let Qt estimate the natural width of the message, then word wrap if necessary
-            natural_width = self.message_label.sizeHint().width()
-            max_width = 400
-
-            if natural_width > max_width:
-                self.message_label.setFixedWidth(max_width)
-                self.message_label.setWordWrap(True)
-            else:
-                self.message_label.setFixedWidth(natural_width)
+            # Let Qt estimate the unwrapped width of the message; resizeEvent wraps it to the chat width
+            self.natural_width = self.message_label.sizeHint().width()
+            max_width = 400  # Until the first resize gives the real chat width
+            self._fit_user_message(max_width)
 
             layout.addStretch()
             if self.transcript or self.screenshots:
@@ -139,11 +150,28 @@ class ChatBubble(QWidget):
                 Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
             )
             self.message_label.setWordWrap(True)
-            self.message_label.setFixedWidth(515)
+            # Fill the row whatever its width, so lines rewrap as the window is resized
+            policy = self.message_label.sizePolicy()
+            policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
+            self.message_label.setSizePolicy(policy)
             layout.addWidget(self.message_label)
-            layout.addStretch()
+            layout.setContentsMargins(
+                5, 2, 19, 2
+            )  # Keep the gap before the scrollbar that replies always had
 
         layout.setSpacing(0)
+
+    def _fit_user_message(self, max_width: int) -> None:
+        """Size a user message to its natural width, wrapping it when that is wider than allowed.
+
+        Args:
+            max_width (int): The widest the message and its transcript may grow.
+        """
+        wraps = self.natural_width > max_width
+        self.message_label.setWordWrap(wraps)
+        self.message_label.setFixedWidth(max_width if wraps else self.natural_width)
+        if self.transcript_label is not None:
+            self.transcript_label.setMaximumWidth(max_width)
 
     def _attachment_column(self, max_width: int) -> QVBoxLayout:
         """Stack the message between its screenshots above and a collapsed audio transcript disclosure below.
@@ -205,7 +233,7 @@ class ChatBubble(QWidget):
             column (QVBoxLayout): The column to add the transcript and its toggle to.
             max_width (int): The widest the transcript may grow.
         """
-        transcript_label = QLabel(self.transcript)
+        self.transcript_label = transcript_label = QLabel(self.transcript)
         transcript_label.setTextFormat(Qt.TextFormat.PlainText)
         transcript_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
