@@ -19,15 +19,15 @@ from ui.theme import (
 
 BODY_FONT = "Segoe UI"
 CODE_FONT = "Cascadia Mono, Consolas, monospace"
-BODY_PT = 10.5
-CODE_PT = 9.5
+BODY_PT = 12.0
+CODE_PT = 11.0
 BLOCK_GAP = 10  # Pixels between paragraphs, lists, code blocks and tables
 ITEM_GAP = 4  # Pixels between list items
 HEADING_GAP = 4  # Pixels under a heading, so it sits with the section it introduces
 HEADING_STYLES = {  # Level: (point size, pixels above)
-    1: (14.0, 18),
-    2: (12.5, 16),
-    3: (11.5, 14),
+    1: (BODY_PT + 3.5, 18),
+    2: (BODY_PT + 2.0, 16),
+    3: (BODY_PT + 1.0, 14),
     4: (BODY_PT, 12),
     5: (BODY_PT, 12),
     6: (BODY_PT, 12),
@@ -526,7 +526,7 @@ def _code_block(code: str, language: str, top: int) -> str:
         str: The code block as rich text.
     """
     header = (
-        f"<tr><td style='padding: 6px 12px 0 12px; font-size: 8.5pt; color: {MUTED};'>"
+        f"<tr><td style='padding: 6px 12px 0 12px; font-size: {CODE_PT - 1}pt; color: {MUTED};'>"
         f"{html.escape(language)}</td></tr>"
         if language
         else ""

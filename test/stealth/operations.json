@@ -5191,7 +5191,7 @@
     "source": "ui/chat/ai_formatter.py",
     "line": 517,
     "expression": "def _code_block(code: str, language: str, top: int) -> str:",
-    "sha256": "0ad7aabe84467b827562ec3ceeb748511b5042ee6d789ec893f96022f9b4c7d5"
+    "sha256": "c5ad115aebb46afe6931a85c2560ca2b3b9ee02ea893ad0dea810bec8425ec98"
   },
   "ui/chat/ai_formatter.py:544:routine": {
     "category": "routine",

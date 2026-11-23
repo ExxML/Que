@@ -13,10 +13,10 @@ PROVIDER_COLORS: dict[str, tuple[int, int, int]] = {
 LINK_COLOR: tuple[int, int, int] = (77, 170, 252)
 # Darkens code blocks and table headers against the window fill while staying see-through
 CODE_BG_ALPHA: int = 140
-# VS Code Dark Modern syntax colours, keyed by the role a token plays
+# Syntax colours based on VS Code Dark Modern, keyed by token role
 CODE_COLORS: dict[str, tuple[int, int, int]] = {
     "text": (204, 204, 204),
-    "comment": (106, 153, 85),
+    "comment": (132, 181, 112),
     "keyword": (86, 156, 214),
     "control": (197, 134, 192),
     "string": (206, 145, 120),

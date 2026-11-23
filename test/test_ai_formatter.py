@@ -2,6 +2,7 @@
 
 import unittest
 
+from PyQt6.QtGui import QFont, QTextDocument
 from qt_application import application
 
 from ui.chat.ai_formatter import format_message
@@ -116,8 +117,8 @@ class MathTests(unittest.TestCase):
         self.assertNotIn("Cambria Math", html)
 
 
-class UserBubbleTests(unittest.TestCase):
-    """Check user messages show exactly what was typed."""
+class ChatBubbleTests(unittest.TestCase):
+    """Check that chat bubbles render messages with the intended text and typography."""
 
     def setUp(self) -> None:
         """Create the shared application."""
@@ -127,6 +128,36 @@ class UserBubbleTests(unittest.TestCase):
         """Show tags typed by the user as text."""
         bubble = ChatBubble("<b>hi</b> & bye", is_user=True)
         self.assertIn("&lt;b&gt;hi&lt;/b&gt; &amp; bye", bubble.message_label.text())
+
+    def test_chat_typography(self) -> None:
+        """Render prompts and streamed prose in 12 pt regular with readable code and math."""
+        prompt = ChatBubble("Prompt", is_user=True)
+        reply = ChatBubble("")
+        reply.set_bot_message(
+            "## Heading\n\nProse with `inline_code` and $\\alpha$.\n\n```python\n# comment"
+        )
+        for bubble in (prompt, reply):
+            self.assertEqual(bubble.message_label.font().pointSizeF(), 12.0)
+            self.assertEqual(bubble.message_label.font().weight(), QFont.Weight.Normal)
+
+        document = QTextDocument()
+        document.setDefaultFont(reply.message_label.font())
+        document.setHtml(reply.message_label.text())
+        for sample, points in (
+            ("Heading", 14.0),
+            ("Prose", 12.0),
+            ("inline_code", 11.0),
+            ("α", 13.0),
+            ("python", 10.0),
+            ("# comment", 11.0),
+        ):
+            with self.subTest(sample=sample):
+                cursor = document.find(sample)
+                self.assertFalse(cursor.isNull())
+                self.assertEqual(cursor.charFormat().fontPointSize(), points)
+        self.assertEqual(
+            document.find("Prose").charFormat().fontWeight(), QFont.Weight.Normal
+        )
 
 
 if __name__ == "__main__":

@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from ui.theme import PRIMARY_COLOR, qss
 
 MATH_FONT = "Cambria Math"
-MATH_PT = 11.5  # Cambria Math looks smaller than Segoe UI at the same size
-DISPLAY_PT = 12.5
-LIMIT_PT = 8.5
-BIG_OPERATOR_PT = 17.0
+MATH_PT = 13.0  # Cambria Math looks smaller than Segoe UI at the same size
+DISPLAY_PT = 14.0
+LIMIT_PT = 10.0
+BIG_OPERATOR_PT = 19.0
 THIN = "\u2009"
 MEDIUM = "\u2005"
 QUAD = "\u2003"
