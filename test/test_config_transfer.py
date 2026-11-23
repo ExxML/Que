@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
-from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QFileDialog
 from qt_application import application
 
@@ -401,38 +400,43 @@ class ConfigTransferTests(unittest.TestCase):
             self.panel.apply_button.click()
         self.assertTrue(self.store.system_tray())
 
-    def test_file_pickers_use_the_suggested_name_and_live_flow(self) -> None:
-        """Exercise both actual non-native dialogs, accepting export and canceling import."""
+    def test_file_pickers_use_the_suggested_name_and_handle_cancel(self) -> None:
+        """Check the real dialogs' configuration and handle export and import results."""
         dialogs: list[tuple[QFileDialog.AcceptMode, str, bool]] = []
 
-        def complete(accept: bool) -> None:
-            """Record the open picker's configuration and deliver its result."""
-            dialog = next(
-                widget
-                for widget in self.app.topLevelWidgets()
-                if isinstance(widget, QFileDialog) and widget.isVisible()
-            )
+        def complete(dialog: QFileDialog) -> int:
+            """Record the configured dialog and supply its modal result.
+
+            Args:
+                dialog (QFileDialog): The configured file picker.
+
+            Returns:
+                int: The dialog result for export or import.
+            """
+            mode = dialog.acceptMode()
+            selected = dialog.selectedFiles()
             dialogs.append(
                 (
-                    dialog.acceptMode(),
-                    Path(dialog.selectedFiles()[0]).name
-                    if dialog.selectedFiles()
-                    else "",
+                    mode,
+                    Path(selected[0]).name if selected else "",
                     dialog.testOption(QFileDialog.Option.DontUseNativeDialog),
                 )
             )
-            if accept:
+            if mode == QFileDialog.AcceptMode.AcceptSave:
                 dialog.selectFile(str(self.backup))
-                dialog.accept()
-            else:
-                dialog.reject()
+                return QFileDialog.DialogCode.Accepted.value
+            return QFileDialog.DialogCode.Rejected.value
 
         self.panel.folder = str(self.backup.parent)
-        QTimer.singleShot(25, lambda: complete(True))
-        self.panel.export_button.click()
-        self.assertTrue(self.backup.exists())
-        QTimer.singleShot(25, lambda: complete(False))
-        self.panel.browse_button.click()
+        # The Windows surface probe exercises the actual modal loop. Qt's offscreen
+        # backend can crash inside QFileDialog.exec() during the traced regressions.
+        with patch.object(QFileDialog, "exec", new=complete):
+            self.panel.export_button.click()
+            self.assertTrue(self.backup.exists())
+            export_status = self.panel.status.text()
+            self.panel.browse_button.click()
+        self.assertEqual(self.panel.status.text(), export_status)
+        self.assertTrue(self.panel.review.isHidden())
         self.assertEqual(
             dialogs,
             [

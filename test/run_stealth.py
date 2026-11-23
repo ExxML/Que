@@ -7,6 +7,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import asdict
@@ -109,15 +110,19 @@ def offline(directory: Path, metadata: dict[str, Any]) -> list[Result]:
     environment["PYTHONFAULTHANDLER"] = "1"
     log = directory / "native" / "regressions.log"
     try:
-        process = subprocess.run(
-            [sys.executable, str(ASSETS / "stealth" / "regressions.py")],
-            cwd=REPOSITORY,
-            check=False,
-            env=environment,
-            capture_output=True,
-            text=True,
-            timeout=600,  # Coverage tracing makes the hook equivalence tests about 5x slower
-        )
+        # Keep the temporary settings files out of the workspace, where Windows
+        # can intermittently deny their atomic replacement.
+        with tempfile.TemporaryDirectory(prefix="que-offline-regressions-") as scratch:
+            environment["TEMP"] = environment["TMP"] = scratch
+            process = subprocess.run(
+                [sys.executable, str(ASSETS / "stealth" / "regressions.py")],
+                cwd=REPOSITORY,
+                check=False,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=600,  # Coverage tracing makes the hook equivalence tests about 5x slower
+            )
     except subprocess.TimeoutExpired as error:
         # Keep the output so far: it shows the test that hung or how far a slow run got
         log.write_text(

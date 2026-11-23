@@ -67,6 +67,20 @@ class ChatWrapTests(unittest.TestCase):
         for bubble in chat.chat_container.findChildren(ChatBubble):
             self.assertTrue(all(width > 0 for width in bubble.message_label.heights))
 
+    def test_transcript_width_follows_the_message(self) -> None:
+        """Update a message's attached transcript width when the chat is resized."""
+        bubble = ChatBubble("Question", is_user=True, transcript="Transcript " * 40)
+        self.addCleanup(bubble.close)
+        transcript = bubble.transcript_label
+        assert transcript is not None
+
+        bubble.resize(600, 300)
+        bubble.show()
+        self.assertEqual(transcript.maximumWidth(), 450)
+
+        bubble.resize(300, 300)
+        self.assertEqual(transcript.maximumWidth(), 225)
+
     def test_message_heights_are_measured_once_per_text(self) -> None:
         """Reuse a measured height until the text changes."""
         bubble = ChatBubble("")
