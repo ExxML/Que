@@ -97,6 +97,10 @@ class ShortcutManager(QObject):
         self.animation_progress = 0.0
         self.move_dx = 0  # Summed direction of the move being animated
         self.move_dy = 0
+        # Summed directions of the resize steps waiting to be applied
+        self.resize_dx = 0
+        self.resize_dy = 0
+        self.resize_pending = False
         self._setup_movement_distances()
 
         self.main_window.installEventFilter(self)
@@ -262,12 +266,27 @@ class ShortcutManager(QObject):
         self.move_direction.emit(0, 1)
 
     def _resize_by(self, dx: int, dy: int) -> None:
-        """Resize the main window by one step, keeping its top-left corner in place.
+        """Queue a resize step, applied together with any other steps already waiting.
+
+        Each step rewraps the whole chat, which in a long chat takes longer than a held key
+        takes to repeat, so applying every repeat separately froze the window until it caught up.
 
         Args:
             dx (int): The width direction.
             dy (int): The height direction.
         """
+        self.resize_dx += dx
+        self.resize_dy += dy
+        if not self.resize_pending:
+            self.resize_pending = True
+            # Runs after the repeats that arrived during the previous resize, which then join this one
+            QTimer.singleShot(0, self._apply_resize)
+
+    def _apply_resize(self) -> None:
+        """Resize the main window by the waiting steps, keeping its top-left corner in place."""
+        dx, dy = self.resize_dx, self.resize_dy
+        self.resize_dx = self.resize_dy = 0
+        self.resize_pending = False
         geometry = self.main_window.geometry()
         # Same minimum as edge-drag resizing; never shrink a window already past the screen edge
         max_width = self.screen_rect.right() - geometry.x() - self.screen_bounds_offset

@@ -224,11 +224,27 @@ class MoveAndResizeTests(ShortcutTestCase):
         """Resize by one step per press, never below 200 by 150."""
         self.manager._run_action("resize_window_wider")
         self.manager._run_action("resize_window_taller")
+        self.app.processEvents()
         self.assertEqual((self.window.width(), self.window.height()), (340, 240))
+        self.manager._run_action("resize_window_wider")
+        self.app.processEvents()
+        self.assertEqual(self.window.width(), 380)
         for _ in range(20):
             self.manager._run_action("resize_window_narrower")
             self.manager._run_action("resize_window_shorter")
+        self.app.processEvents()
         self.assertEqual((self.window.width(), self.window.height()), (200, 150))
+
+    def test_queued_resize_steps_apply_as_one(self) -> None:
+        """Apply repeats that arrive while the window is busy in a single resize."""
+        with patch.object(self.window, "resize", wraps=self.window.resize) as resize:
+            for _ in range(3):
+                self.manager._run_action("resize_window_wider")
+            self.manager._run_action("resize_window_narrower")
+            # Nothing applies until Qt is idle
+            self.assertEqual(self.window.width(), 300)
+            self.app.processEvents()
+        resize.assert_called_once_with(380, 200)
 
 
 if __name__ == "__main__":

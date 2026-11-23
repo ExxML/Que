@@ -17,7 +17,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -97,13 +96,14 @@ class ChatBubble(QWidget):
         """Initialize the chat bubble UI layout and styling."""
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 2, 5, 2)
-        # Take the chat's width rather than the message's, so narrowing the window rewraps instead of clipping
-        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        # Let the chat narrow past the message's width so narrowing the window rewraps instead of clipping.
+        # An explicit minimum, not an Ignored policy, which makes Qt lay every message out at zero width.
+        self.setMinimumWidth(1)
 
         # Create message label with HTML formatting
         # Default formatting for user message only (bot message uses formatting in set_bot_message)
         html_message = f'<div style="white-space: pre-wrap;">{html.escape(self.message, quote=False)}</div>'
-        self.message_label = QLabel(html_message)
+        self.message_label = _MessageLabel(html_message)
         self.message_label.setTextFormat(Qt.TextFormat.RichText)
         self.message_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -150,10 +150,8 @@ class ChatBubble(QWidget):
                 Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
             )
             self.message_label.setWordWrap(True)
-            # Fill the row whatever its width, so lines rewrap as the window is resized
-            policy = self.message_label.sizePolicy()
-            policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
-            self.message_label.setSizePolicy(policy)
+            # Fill the row whatever its width, as the bubble does
+            self.message_label.setMinimumWidth(1)
             layout.addWidget(self.message_label)
             layout.setContentsMargins(
                 5, 2, 19, 2
@@ -293,6 +291,62 @@ class ChatBubble(QWidget):
         )
         self.message_label.setText(html)
         self._loading_frame = (self._loading_frame + 1) % 20
+
+
+class _MessageLabel(QLabel):
+    """Show a message, laying its text out once per width.
+
+    QLabel lays the whole rich text out again on every height query, and each resize step
+    asks several times per message, so resizing a long chat lagged.
+    """
+
+    def __init__(self, text: str) -> None:
+        super().__init__(text)
+        self.heights: dict[int, int] = {}
+
+    def setText(self, text: str | None) -> None:
+        """Show new text and forget the heights measured for the old one.
+
+        Args:
+            text (str | None): The rich text to show.
+        """
+        self.heights.clear()
+        super().setText(text)
+
+    def setWordWrap(self, on: bool) -> None:
+        """Turn wrapping on or off and forget the heights measured with the old setting.
+
+        Args:
+            on (bool): Whether to wrap the text.
+        """
+        self.heights.clear()
+        super().setWordWrap(on)
+
+    def heightForWidth(self, width: int) -> int:
+        """Return the text's height at a width, measuring it only the first time.
+
+        Args:
+            width (int): The width to lay the text out at.
+
+        Returns:
+            int: The height the text needs.
+        """
+        if width not in self.heights:
+            self.heights[width] = super().heightForWidth(width)
+        return self.heights[width]
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        """Forget measured heights when the font or style changes how the text lays out.
+
+        Args:
+            event (QEvent): The change event.
+        """
+        if event is not None and event.type() in (
+            QEvent.Type.FontChange,
+            QEvent.Type.StyleChange,
+        ):
+            self.heights.clear()
+        super().changeEvent(event)
 
 
 class _ScreenshotPreview(QAbstractButton):

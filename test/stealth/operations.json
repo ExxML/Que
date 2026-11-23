@@ -3700,266 +3700,280 @@
     "source": "core/shortcut_manager.py",
     "line": 42,
     "expression": "def __init__(self, main_window: MainWindow, screenshot_manager: ScreenshotManager) -> None:",
-    "sha256": "655b6bd063ffb0953b914acc9bf78e7f2a6ddd7dab39f812088fd5c6b781c356"
+    "sha256": "130082e802bf395b5bdc2dc99a8220a9df0fcd2375a627a82fd43f365f316c79"
   },
-  "core/shortcut_manager.py:106:routine": {
+  "core/shortcut_manager.py:110:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 106,
+    "line": 110,
     "expression": "def request_quit(self) -> None:",
     "sha256": "f2afa82e2608f4d1620eec676ab0ece7d70847d6a8d84f502c7623f1179abe8d"
   },
-  "core/shortcut_manager.py:111:routine": {
+  "core/shortcut_manager.py:115:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 111,
+    "line": 115,
     "expression": "def arm_input(self, armed: bool) -> None:",
     "sha256": "f2779cc3ccc6b58fae8a25359b0c26eebe7a414703246c80c1c4ed801cf8abe5"
-  },
-  "core/shortcut_manager.py:119:routine": {
-    "category": "routine",
-    "source": "core/shortcut_manager.py",
-    "line": 119,
-    "expression": "def stop(self) -> None:",
-    "sha256": "6bc79747f23a6fa0b7676c289c5ddcb4590c4680051ab0713bd7443352c742b0"
   },
   "core/shortcut_manager.py:123:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 123,
+    "expression": "def stop(self) -> None:",
+    "sha256": "6bc79747f23a6fa0b7676c289c5ddcb4590c4680051ab0713bd7443352c742b0"
+  },
+  "core/shortcut_manager.py:127:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 127,
     "expression": "def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:",
     "sha256": "4b4d817c4e93f68dd107f1bedc0be326e7b8e0ab89d0b3c1a069528e65d5ba8e"
   },
-  "core/shortcut_manager.py:133:routine": {
+  "core/shortcut_manager.py:137:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 133,
+    "line": 137,
     "expression": "def _run_action(self, name: str) -> None:",
     "sha256": "716c0291b78eec62293cc37d56190bf3e844adcaf323eef040e895ec0605d671"
   },
-  "core/shortcut_manager.py:143:routine": {
+  "core/shortcut_manager.py:147:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 143,
+    "line": 147,
     "expression": "def _on_input_alert(self, message: str, lasting: bool=True) -> None:",
     "sha256": "c43c36f9ba3ec4724d432144f3283b205e3a6b22d721e88a872bc3c90a1e93af"
   },
-  "core/shortcut_manager.py:158:routine": {
+  "core/shortcut_manager.py:162:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 158,
+    "line": 162,
     "expression": "def _setup_movement_distances(self) -> None:",
     "sha256": "744892df6834d9b2706fc782068484d35a2a295e89d0a7a3b6274f00b8c2f56f"
   },
-  "core/shortcut_manager.py:172:routine": {
+  "core/shortcut_manager.py:176:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 172,
+    "line": 176,
     "expression": "def _start_animation(self, target_x: int, target_y: int) -> None:",
     "sha256": "5a77404813f001f2f4df39fbdb0ed6cebddad7918ecff19cd5a9457659dc9f70"
   },
-  "core/shortcut_manager.py:185:routine": {
+  "core/shortcut_manager.py:189:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 185,
+    "line": 189,
     "expression": "def _animate_step(self) -> None:",
     "sha256": "294bc634e70d2a944fd2102a4c82025ab6386e35eff5f7e8799629e1b0ee7a72"
-  },
-  "core/shortcut_manager.py:211:routine": {
-    "category": "routine",
-    "source": "core/shortcut_manager.py",
-    "line": 211,
-    "expression": "def _toggle_window_visibility(self) -> None:",
-    "sha256": "d89bdd9f635104373d9c30dc0484a9130c64bceb88ec2c7ffb9fae18b19712ae"
   },
   "core/shortcut_manager.py:215:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 215,
-    "expression": "def _move_by_direction(self, dx: int, dy: int) -> None:",
-    "sha256": "464e09303ef3f0eafba5189276b4f5f7b5452ca3be682f1d12f284352e78bd64"
+    "expression": "def _toggle_window_visibility(self) -> None:",
+    "sha256": "d89bdd9f635104373d9c30dc0484a9130c64bceb88ec2c7ffb9fae18b19712ae"
   },
-  "core/shortcut_manager.py:248:routine": {
+  "core/shortcut_manager.py:219:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 248,
-    "expression": "def _move_window_left(self) -> None:",
-    "sha256": "8dea2e25dabdcdac27fb9e097577b28cbce94bd6c36b414c270e02b64ec24f17"
+    "line": 219,
+    "expression": "def _move_by_direction(self, dx: int, dy: int) -> None:",
+    "sha256": "464e09303ef3f0eafba5189276b4f5f7b5452ca3be682f1d12f284352e78bd64"
   },
   "core/shortcut_manager.py:252:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 252,
-    "expression": "def _move_window_right(self) -> None:",
-    "sha256": "e581355db2a34e4458e767d1251fa22b01baae9c6c1484efe1a6e4ee5d4c662e"
+    "expression": "def _move_window_left(self) -> None:",
+    "sha256": "8dea2e25dabdcdac27fb9e097577b28cbce94bd6c36b414c270e02b64ec24f17"
   },
   "core/shortcut_manager.py:256:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 256,
-    "expression": "def _move_window_up(self) -> None:",
-    "sha256": "28b173ab0dc5f5fda4ed4acc409b76471f3d891b93aabdf2ce080dd18445154c"
+    "expression": "def _move_window_right(self) -> None:",
+    "sha256": "e581355db2a34e4458e767d1251fa22b01baae9c6c1484efe1a6e4ee5d4c662e"
   },
   "core/shortcut_manager.py:260:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 260,
-    "expression": "def _move_window_down(self) -> None:",
-    "sha256": "9a3783d25207d2c08449686e8b29ce3ed16e92d3b4c2ee70a3d2ac18fa4f84ad"
+    "expression": "def _move_window_up(self) -> None:",
+    "sha256": "28b173ab0dc5f5fda4ed4acc409b76471f3d891b93aabdf2ce080dd18445154c"
   },
   "core/shortcut_manager.py:264:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 264,
-    "expression": "def _resize_by(self, dx: int, dy: int) -> None:",
-    "sha256": "95f9b397d3ff7bb102a2f1136bd157e92b0e48f875ecc346357e7e3416be62cc"
+    "expression": "def _move_window_down(self) -> None:",
+    "sha256": "9a3783d25207d2c08449686e8b29ce3ed16e92d3b4c2ee70a3d2ac18fa4f84ad"
   },
-  "core/shortcut_manager.py:295:routine": {
+  "core/shortcut_manager.py:268:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 295,
+    "line": 268,
+    "expression": "def _resize_by(self, dx: int, dy: int) -> None:",
+    "sha256": "baf61ca7caccb4230312d381e8fa9ea8d25c9651d9c1f1b901be73d4d959925a"
+  },
+  "core/shortcut_manager.py:285:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 285,
+    "expression": "def _apply_resize(self) -> None:",
+    "sha256": "ab789fc37cb8331d2ac26b2c72023e8d3a9d4ef2fd6eebad3d390ddc62d8e554"
+  },
+  "core/shortcut_manager.py:314:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 314,
     "expression": "def _resize_window_narrower(self) -> None:",
     "sha256": "273b33e618b9298d2d6130650eab54217fd4cfd00e5cce0f98fe347a849b4dce"
   },
-  "core/shortcut_manager.py:299:routine": {
+  "core/shortcut_manager.py:318:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 299,
+    "line": 318,
     "expression": "def _resize_window_wider(self) -> None:",
     "sha256": "be0b61856e1d9b272fc5e5bc3a8647d32ce5b5a2c80709cd9b50603191ab4b17"
   },
-  "core/shortcut_manager.py:303:routine": {
+  "core/shortcut_manager.py:322:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 303,
+    "line": 322,
     "expression": "def _resize_window_taller(self) -> None:",
     "sha256": "40d4854be7e1cc369af27f794bfc07608ac1c0f8a72e565dfcb721b2bd73fcd5"
   },
-  "core/shortcut_manager.py:307:routine": {
+  "core/shortcut_manager.py:326:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 307,
+    "line": 326,
     "expression": "def _resize_window_shorter(self) -> None:",
     "sha256": "21f4a938ec7976a362c969fcf1a5c40c15af26ae28f6f1b97826d21af46c5433"
   },
-  "core/shortcut_manager.py:311:routine": {
+  "core/shortcut_manager.py:330:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 311,
+    "line": 330,
     "expression": "def _scroll_up(self) -> None:",
     "sha256": "98da179ef3277fba32baa919420228706b4053e17e97ca13e9a5857264aa01e0"
   },
-  "core/shortcut_manager.py:315:routine": {
+  "core/shortcut_manager.py:334:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 315,
+    "line": 334,
     "expression": "def _scroll_down(self) -> None:",
     "sha256": "fded664fa995fef32af3cf23987d7de5014650a716044cb1c331a83df81dd774"
   },
-  "core/shortcut_manager.py:319:routine": {
+  "core/shortcut_manager.py:338:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 319,
+    "line": 338,
     "expression": "def _close_app(self) -> None:",
     "sha256": "e0dd838918c44353a37c53f6a46dfb6b98feec27ee0622e12464d40e3051cc69"
   },
-  "core/shortcut_manager.py:323:routine": {
+  "core/shortcut_manager.py:342:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 323,
+    "line": 342,
     "expression": "def _screenshot(self) -> None:",
     "sha256": "ae059e32fa867be977d9aaa04d17d61540f5263db9482dd01e132dcc44244571"
   },
-  "core/shortcut_manager.py:327:routine": {
+  "core/shortcut_manager.py:346:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 327,
+    "line": 346,
     "expression": "def _new_chat(self) -> None:",
     "sha256": "baa6e55a2903f874339a2a72c3ae2a6cfdb2be2bf815080389ac9aa948c6f4bc"
   },
-  "core/shortcut_manager.py:331:routine": {
+  "core/shortcut_manager.py:350:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 331,
+    "line": 350,
     "expression": "def _toggle_history(self) -> None:",
     "sha256": "36dbc0ccec57e2a253b5461eb949b7c75f9ad209fc107e8a5bd89c666fea2ad6"
   },
-  "core/shortcut_manager.py:335:routine": {
+  "core/shortcut_manager.py:354:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 335,
+    "line": 354,
     "expression": "def _stop_generation(self) -> None:",
     "sha256": "3f123a86695c0cb6a0bb2f6aa68a89efb996494186e22585c948a0ca4c9452d0"
   },
-  "core/shortcut_manager.py:339:routine": {
+  "core/shortcut_manager.py:358:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 339,
+    "line": 358,
     "expression": "def _toggle_recording(self) -> None:",
     "sha256": "03533358e6b631c10957249f1e0f26a1de813c28a46a63729f9a8cf8e95ecfda"
   },
-  "core/shortcut_manager.py:343:routine": {
+  "core/shortcut_manager.py:362:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 343,
+    "line": 362,
     "expression": "def _toggle_click_through(self) -> None:",
     "sha256": "c199a92bf83c96606187a6cb89e7052a5eb63a17f450925b464d679cfc1db840"
   },
-  "core/shortcut_manager.py:347:routine": {
+  "core/shortcut_manager.py:366:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 347,
+    "line": 366,
     "expression": "def _answer(self) -> None:",
     "sha256": "ec5e71dfe72109238e49186ab06908d13a49ea97b5e6bb7b547249841f531b1f"
   },
-  "core/shortcut_manager.py:352:routine": {
+  "core/shortcut_manager.py:371:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 352,
+    "line": 371,
     "expression": "def _dismiss_warnings(self) -> None:",
     "sha256": "9089936cf936dbfe340965503a1cb0e231079bec6a64a93457f8445230af0116"
   },
-  "core/shortcut_manager.py:108:branch": {
+  "core/shortcut_manager.py:112:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 108,
+    "line": 112,
     "expression": "if not self.hook_client.request_quit():",
     "sha256": "c7f4f6a5e0f7d614218590589be29b1743b9b1980961346ae1191f5bafea6884"
   },
-  "core/shortcut_manager.py:125:branch": {
+  "core/shortcut_manager.py:129:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 125,
+    "line": 129,
     "expression": "if watched is self.main_window and event is not None and (event.type() in (QEvent.Type.Show, QEvent.Type.Hide)):",
     "sha256": "5838178096a05cf41d40bc63d4284d2422ee9aae8f979ab34f2104acc46e4060"
   },
-  "core/shortcut_manager.py:140:branch": {
+  "core/shortcut_manager.py:144:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 140,
+    "line": 144,
     "expression": "if action is not None:",
     "sha256": "441cec461e8c86408ce9267442595af0877fe5e9a15399b75d482d472106e74f"
   },
-  "core/shortcut_manager.py:150:branch": {
+  "core/shortcut_manager.py:154:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 150,
+    "line": 154,
     "expression": "if not self.main_window.isVisible():",
     "sha256": "2960a393886c1b517eb6734abffd35002589ac813ac088db159c0cc8e8258c27"
   },
-  "core/shortcut_manager.py:191:branch": {
+  "core/shortcut_manager.py:195:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 191,
+    "line": 195,
     "expression": "if self.animation_progress >= 1.0:",
     "sha256": "5f717560cb6fa39830d49057af528a159a0f1e5f68dfbc83c107ef15b59b1e24"
   },
-  "core/shortcut_manager.py:222:branch": {
+  "core/shortcut_manager.py:226:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 222,
+    "line": 226,
     "expression": "if self.animation_active and self.animation_progress == 0.0:",
     "sha256": "eabeeb6ea9ce8b70eec0ab2da1ceb9c65157400cde2c2ebe42bfb651812c32c3"
+  },
+  "core/shortcut_manager.py:280:branch": {
+    "category": "branch",
+    "source": "core/shortcut_manager.py",
+    "line": 280,
+    "expression": "if not self.resize_pending:",
+    "sha256": "4c21bf2f864e26474bf09769b8d6e462cc3967ad82e3febab275a8a6b132dfef"
   },
   "core/shortcut_manager.py:92:background": {
     "category": "background",
@@ -3968,12 +3982,19 @@
     "expression": "QTimer()",
     "sha256": "75dfb01991366047c63a42fa38ed04f0892e42cbeb91338b4e3dc9cf929b505d"
   },
-  "core/shortcut_manager.py:226:branch": {
+  "core/shortcut_manager.py:230:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 226,
+    "line": 230,
     "expression": "if self.animation_active and self.animation_progress < 0.5:",
     "sha256": "992d67bd8a369cda832c02b5617e882a858d3c197748024320b17ccec8e9cf3d"
+  },
+  "core/shortcut_manager.py:283:background": {
+    "category": "background",
+    "source": "core/shortcut_manager.py",
+    "line": 283,
+    "expression": "QTimer.singleShot(0, self._apply_resize)",
+    "sha256": "ed5d5c518917f8849b194ef8ba9af9bbc9e99bbb938575041d7dc85099625bd1"
   },
   "core/transcriber.py:919:routine": {
     "category": "routine",
@@ -5480,129 +5501,164 @@
     "expression": "QTimer.singleShot(0, self._update_fade_visibility)",
     "sha256": "1d1744aa14d298bace064c1e41d5c4762198f6d5695276414c9109d33b0c330c"
   },
-  "ui/chat/chat_bubble.py:39:routine": {
+  "ui/chat/chat_bubble.py:38:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 39,
+    "line": 38,
     "expression": "def __init__(self, message: str, is_user: bool=False, transcript: str='', screenshots: tuple[str, ...]=()) -> None:",
     "sha256": "ba32c3f5d4261caf59a03f1328978eb185d4f464ba80bdf401ea38fdf486243d"
   },
-  "ui/chat/chat_bubble.py:55:routine": {
+  "ui/chat/chat_bubble.py:54:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 55,
+    "line": 54,
     "expression": "def set_bot_message(self, message: str) -> None:",
     "sha256": "4c38a2141443b0ca855a21a435a0ba9545afd038271cab9df2112aa0bc2fb08a"
   },
-  "ui/chat/chat_bubble.py:64:routine": {
+  "ui/chat/chat_bubble.py:63:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 64,
+    "line": 63,
     "expression": "def mark_stopped(self) -> None:",
     "sha256": "bb3c511584e6f652dbf261056ccfc6b05193bfed026abb4669679276a6e1966e"
   },
-  "ui/chat/chat_bubble.py:71:routine": {
+  "ui/chat/chat_bubble.py:70:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 71,
+    "line": 70,
     "expression": "def start_loading_animation(self) -> None:",
     "sha256": "7b6486e99134e9edd6a09369502009e8ebdb03f2228f79dedd2822319cbd0d92"
   },
-  "ui/chat/chat_bubble.py:79:routine": {
+  "ui/chat/chat_bubble.py:78:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 79,
+    "line": 78,
     "expression": "def stop_loading_animation(self) -> None:",
     "sha256": "a35693f90fe4959c62c68084abe0ece3e704702942da23b70aa54123848cfcb8"
   },
-  "ui/chat/chat_bubble.py:86:routine": {
+  "ui/chat/chat_bubble.py:85:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 86,
+    "line": 85,
     "expression": "def resizeEvent(self, event: QResizeEvent | None) -> None:",
     "sha256": "0729380545ccbc166a184a99babd856e256610c6345c57ff1c0bd42225cd58c3"
   },
-  "ui/chat/chat_bubble.py:96:routine": {
+  "ui/chat/chat_bubble.py:95:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 96,
+    "line": 95,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "21fda19b138d8173f4a844647edc0c997f4c1d29f6c75b3e62ff61bb1bc6c656"
+    "sha256": "e4342940d752b2ec939a4430f15e3ef885591731044d0130b683c8ecf39aa8ce"
   },
-  "ui/chat/chat_bubble.py:164:routine": {
+  "ui/chat/chat_bubble.py:162:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 164,
+    "line": 162,
     "expression": "def _fit_user_message(self, max_width: int) -> None:",
     "sha256": "aec0a02ced202caef5e7439e18b4aa70005c190a4b33d3ace62f176ff77300f5"
   },
-  "ui/chat/chat_bubble.py:176:routine": {
+  "ui/chat/chat_bubble.py:174:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 176,
+    "line": 174,
     "expression": "def _attachment_column(self, max_width: int) -> QVBoxLayout:",
     "sha256": "d84b99e9767693f4931ffc08299ba568f5c525edbef8cf386b55ab4ed56ec4e9"
   },
-  "ui/chat/chat_bubble.py:196:routine": {
+  "ui/chat/chat_bubble.py:194:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 196,
+    "line": 194,
     "expression": "def _screenshot_row(self, max_width: int) -> QHBoxLayout:",
     "sha256": "63d75aadcb2409cdd67a42b3b0cd536f6ecb73701fcc8d0471945f5365ac7805"
   },
-  "ui/chat/chat_bubble.py:229:routine": {
+  "ui/chat/chat_bubble.py:227:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 229,
+    "line": 227,
     "expression": "def _add_transcript(self, column: QVBoxLayout, max_width: int) -> None:",
     "sha256": "3a5d7e9e06ba3b7d0c36b27c97e59fb63d6d46a8d5d31c4b88d429fba0f25e32"
   },
-  "ui/chat/chat_bubble.py:268:routine": {
+  "ui/chat/chat_bubble.py:266:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 268,
+    "line": 266,
     "expression": "def _tick_loading(self) -> None:",
     "sha256": "bcceaddc85dbabe6ea5b771b5a414c80ede39920ba6ada42439aff3f46759a75"
   },
-  "ui/chat/chat_bubble.py:301:routine": {
+  "ui/chat/chat_bubble.py:303:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 301,
-    "expression": "def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:",
-    "sha256": "8fe1c8e0e3f700343fdf8d4d8607be8c526a8232184a8556326252a500d878bf"
+    "line": 303,
+    "expression": "def __init__(self, text: str) -> None:",
+    "sha256": "119a7bdfaf2939ac6f4fc58b8b07bf13bd73ee32d2662dca121ecac20d33f112"
+  },
+  "ui/chat/chat_bubble.py:307:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 307,
+    "expression": "def setText(self, text: str | None) -> None:",
+    "sha256": "e59e3968a25c48089b8e8aad89dbe9138f3164e740bcc1ea933668057e96fa11"
   },
   "ui/chat/chat_bubble.py:316:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
     "line": 316,
+    "expression": "def setWordWrap(self, on: bool) -> None:",
+    "sha256": "f5979690fdfaac7b6e9dbea5abc7d778a8ee46282fb4d3dd5262a803eb0ebdcc"
+  },
+  "ui/chat/chat_bubble.py:325:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 325,
+    "expression": "def heightForWidth(self, width: int) -> int:",
+    "sha256": "fd0273d878924280a204fbe868433f7ca4a2861e3afc0958aefc6e7096093e11"
+  },
+  "ui/chat/chat_bubble.py:338:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 338,
+    "expression": "def changeEvent(self, event: QEvent | None) -> None:",
+    "sha256": "5bc94d973fc0cacb409e94957b5000f0e8f9c83fb4e33f125b77dc60482cc709"
+  },
+  "ui/chat/chat_bubble.py:355:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 355,
+    "expression": "def __init__(self, path: str, hidden: int, chat_bubble: QWidget) -> None:",
+    "sha256": "8fe1c8e0e3f700343fdf8d4d8607be8c526a8232184a8556326252a500d878bf"
+  },
+  "ui/chat/chat_bubble.py:370:routine": {
+    "category": "routine",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 370,
     "expression": "def enterEvent(self, event: QEnterEvent | None) -> None:",
     "sha256": "7d283bb59a6a23c6ce92b8f14c58147525cf2c18fa5e9346fb3970acb124c6a8"
   },
-  "ui/chat/chat_bubble.py:326:routine": {
+  "ui/chat/chat_bubble.py:380:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 326,
+    "line": 380,
     "expression": "def leaveEvent(self, event: QEvent | None) -> None:",
     "sha256": "fe4d08af88018adbff70f0ffedd85d81a623e1b9ce633bf5196506f69917b824"
   },
-  "ui/chat/chat_bubble.py:336:routine": {
+  "ui/chat/chat_bubble.py:390:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 336,
+    "line": 390,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "3f00ac474232b05bb84eac607cf490aa6871de1e395dcf42c8273fe73bf1c693"
   },
-  "ui/chat/chat_bubble.py:81:branch": {
+  "ui/chat/chat_bubble.py:80:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 81,
+    "line": 80,
     "expression": "if hasattr(self, '_loading_timer') and self._loading_timer is not None:",
     "sha256": "6eb12172ad8743b1266f83e04a47a1365ca872a06ffcbc83e8a57e2f46f9ddb4"
   },
-  "ui/chat/chat_bubble.py:93:branch": {
+  "ui/chat/chat_bubble.py:92:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 93,
+    "line": 92,
     "expression": "if self.is_user:",
     "sha256": "e375c0c281a1fbef3c349a49ad9f56962bed81fd3faa260615fc86b4bcdb52de"
   },
@@ -5611,68 +5667,82 @@
     "source": "ui/chat/chat_bubble.py",
     "line": 118,
     "expression": "if self.is_user:",
-    "sha256": "cfa04047bd1d615eb830bda933a6afe4825009747ca842c0cfaf159b4d1d28ac"
+    "sha256": "b1eec61adc17dd3acb1185ac213c5586e9f708620ac9e24e3142f128c2d06e6c"
   },
-  "ui/chat/chat_bubble.py:173:branch": {
+  "ui/chat/chat_bubble.py:171:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 173,
+    "line": 171,
     "expression": "if self.transcript_label is not None:",
     "sha256": "3afbaacaab6da23ce49066d8572765cf5dfb826930dd13f4da9794e10feb654e"
   },
-  "ui/chat/chat_bubble.py:187:branch": {
+  "ui/chat/chat_bubble.py:185:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 187,
+    "line": 185,
     "expression": "if self.screenshots:",
     "sha256": "eb61c4a336967e9351f95cb645a7bac8b1cfe13fc4942cb40943f4c384c492fd"
   },
-  "ui/chat/chat_bubble.py:192:branch": {
+  "ui/chat/chat_bubble.py:190:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 192,
+    "line": 190,
     "expression": "if self.transcript:",
     "sha256": "72acb4a19c42d18136f09bafa45017b74eaa8e0723f1bd8803a35bdb9e7bd5f7"
   },
-  "ui/chat/chat_bubble.py:257:routine": {
+  "ui/chat/chat_bubble.py:255:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 257,
+    "line": 255,
     "expression": "def on_toggle() -> None:",
     "sha256": "5836c92a567fd00573f5f45146aa7ba31c9d8cbb98718be5fd5881657a073365"
   },
-  "ui/chat/chat_bubble.py:272:routine": {
+  "ui/chat/chat_bubble.py:270:routine": {
     "category": "routine",
     "source": "ui/chat/chat_bubble.py",
-    "line": 272,
+    "line": 270,
     "expression": "def dot_opacity(phase_offset: float) -> int:",
     "sha256": "53a1fd346bdd44fc8eff098d2e6557b7d66cec0e26c065472ed96c1cc28e5d39"
   },
-  "ui/chat/chat_bubble.py:308:branch": {
+  "ui/chat/chat_bubble.py:334:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 308,
-    "expression": "if not self.pixmap.isNull():",
-    "sha256": "43ecf76635e7476f59607469619431aa2a2e7fa4d49009694e72d86db43d2654"
+    "line": 334,
+    "expression": "if width not in self.heights:",
+    "sha256": "95e135db4e2cd2e66f9ea38f6bf000e98ff27103318536b5ea1209cc2fde80e2"
   },
   "ui/chat/chat_bubble.py:344:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
     "line": 344,
+    "expression": "if event is not None and event.type() in (QEvent.Type.FontChange, QEvent.Type.StyleChange):",
+    "sha256": "2d36e2a06594fd8a7db5a466ab2a0b685725c30233bb19552f6378edfce3aa55"
+  },
+  "ui/chat/chat_bubble.py:362:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 362,
+    "expression": "if not self.pixmap.isNull():",
+    "sha256": "43ecf76635e7476f59607469619431aa2a2e7fa4d49009694e72d86db43d2654"
+  },
+  "ui/chat/chat_bubble.py:398:branch": {
+    "category": "branch",
+    "source": "ui/chat/chat_bubble.py",
+    "line": 398,
     "expression": "if self.pixmap.isNull():",
     "sha256": "2d896dd45902f94030f91836a9f490d8f04701df972d250a816724b1f30dc9e0"
   },
-  "ui/chat/chat_bubble.py:354:branch": {
+  "ui/chat/chat_bubble.py:408:branch": {
     "category": "branch",
     "source": "ui/chat/chat_bubble.py",
-    "line": 354,
+    "line": 408,
     "expression": "if self.hidden:",
     "sha256": "0d8b9e7b6f4f7ef5ae34cfc2a6b354a43089f47b6987afecf0ac856629b66f39"
   },
-  "ui/chat/chat_bubble.py:74:background": {
+  "ui/chat/chat_bubble.py:73:background": {
     "category": "background",
     "source": "ui/chat/chat_bubble.py",
-    "line": 74,
+    "line": 73,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },

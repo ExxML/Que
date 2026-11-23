@@ -63,6 +63,24 @@ class ChatWrapTests(unittest.TestCase):
         self.assertEqual(wide[1], default[1])  # Short messages keep their natural size
         self.assertEqual(labels(550), default)
 
+        # Each message is laid out at its real width only, never at a degenerate zero width
+        for bubble in chat.chat_container.findChildren(ChatBubble):
+            self.assertTrue(all(width > 0 for width in bubble.message_label.heights))
+
+    def test_message_heights_are_measured_once_per_text(self) -> None:
+        """Reuse a measured height until the text changes."""
+        bubble = ChatBubble("")
+        bubble.set_bot_message("reply " * 300)
+        label = bubble.message_label
+        height = label.heightForWidth(500)
+        # A cached height is returned without laying the text out again
+        label.heights[500] = -1
+        self.assertEqual(label.heightForWidth(500), -1)
+        bubble.set_bot_message("reply " * 300)
+        self.assertEqual(label.heightForWidth(500), height)
+        bubble.set_bot_message("reply " * 600)
+        self.assertGreater(label.heightForWidth(500), height)
+
 
 if __name__ == "__main__":
     unittest.main()
