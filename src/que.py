@@ -46,6 +46,9 @@ if __name__ == "__main__":
 # nuitka-project: --include-package=google.genai
 # nuitka-project: --include-package=onnx_asr
 # nuitka-project: --include-package-data=onnx_asr
+# Hugging Face loads download helpers lazily. Its lock helpers also load SoftFileLock on Windows.
+# nuitka-project: --include-package=huggingface_hub.utils
+# nuitka-project: --include-module=filelock._soft
 # nuitka-project: --include-data-dir={MAIN_DIRECTORY}/assets=assets
 # nuitka-project: --include-data-files={MAIN_DIRECTORY}/assets/que_hook.dll=assets/que_hook.dll
 
