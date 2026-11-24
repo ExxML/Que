@@ -11,7 +11,15 @@ from PyQt6.QtCore import (
     QTimer,
     pyqtSignal,
 )
-from PyQt6.QtGui import QColor, QLinearGradient, QPainter, QPixmap, QWheelEvent
+from PyQt6.QtGui import (
+    QColor,
+    QLinearGradient,
+    QPainter,
+    QPixmap,
+    QResizeEvent,
+    QShowEvent,
+    QWheelEvent,
+)
 from PyQt6.QtWidgets import QGraphicsEffect, QScrollArea, QVBoxLayout, QWidget
 
 from ui.chat.chat_bubble import ChatBubble
@@ -52,6 +60,8 @@ class ChatArea(QScrollArea):
         super().__init__(main_window)
         self.streaming_bubble: ChatBubble | None = None
         self.streaming_text: str = ""
+        self.pending_reply_scroll: ChatBubble | None = None
+        self.reply_scroll_anchor: ChatBubble | None = None
         self.render_timer = QTimer(self)
         self.render_timer.setSingleShot(True)
         self.render_timer.setInterval(RENDER_INTERVAL)
@@ -75,6 +85,7 @@ class ChatArea(QScrollArea):
             transcript (str): Audio transcript sent with a user message.
             screenshots (tuple[str, ...]): Screenshot files sent with a user message.
         """
+        self.pending_reply_scroll = None
         # Remove the stretch before adding new message
         self.chat_layout.takeAt(self.chat_layout.count() - 1)
 
@@ -82,7 +93,7 @@ class ChatArea(QScrollArea):
         bubble = self._bubble(message, is_user, transcript, screenshots)
         self.chat_layout.addWidget(bubble)
 
-        # Pre-create the assistant loading bubble so it is visible when the chat scrolls down
+        # Pre-create the assistant bubble for loading and tool status
         if is_user:
             self.streaming_bubble = ChatBubble("", is_user=False)
             self.streaming_text = ""
@@ -91,10 +102,6 @@ class ChatArea(QScrollArea):
 
         # Add stretch back at the end
         self.chat_layout.addStretch()
-
-        # Force scroll to bottom after a delay
-        if is_user:
-            QTimer.singleShot(400, self._animate_to_bottom)
 
     def start_assistant_stream(self) -> None:
         """Create an assistant bubble to stream content into (not saved until finalized)."""
@@ -115,16 +122,18 @@ class ChatArea(QScrollArea):
         """
         if self.streaming_bubble is None:
             return
-        first = not self.streaming_text
+        first = not self.streaming_text or self.streaming_text.isspace()
         self.streaming_text += chunk_text
-        if first:
-            self.streaming_bubble.stop_loading_animation()
-        self.streaming_bubble.status = (
-            ""  # New text means the tool use it described is over
-        )
+        if first and not chunk_text.strip():
+            return
+
+        self.streaming_bubble.status = ""  # New text ends the current tool status
         # Show the first words at once, then redraw at most once per interval
         if first:
+            self.streaming_bubble.stop_loading_animation()
             self._render_stream()
+            self.pending_reply_scroll = self.streaming_bubble
+            QTimer.singleShot(0, self._scroll_to_reply_start)
         elif not self.render_timer.isActive():
             self.render_timer.start()
 
@@ -183,6 +192,9 @@ class ChatArea(QScrollArea):
         """Clear all messages from the chat area."""
         # Reset streaming state before deleting widgets to avoid dangling references
         self._reset_stream()
+        self.pending_reply_scroll = None
+        self.reply_scroll_anchor = None
+        self.chat_container.setMinimumHeight(0)
 
         # Remove all widgets except the stretch
         while self.chat_layout.count() > 1:
@@ -219,6 +231,18 @@ class ChatArea(QScrollArea):
         target = self.scrollbar.value() + amount
         duration = 100
         self._animate_to(target, duration)
+
+    def resizeEvent(self, event: QResizeEvent | None) -> None:
+        """Refit the reply's trailing space after the viewport relayout."""
+        super().resizeEvent(event)
+        if self.reply_scroll_anchor is not None:
+            QTimer.singleShot(0, self._refit_reply_scroll_space)
+
+    def showEvent(self, event: QShowEvent | None) -> None:
+        """Schedule any reply scroll that was waiting for the chat to become visible."""
+        super().showEvent(event)
+        if self.pending_reply_scroll is not None:
+            QTimer.singleShot(0, self._scroll_to_reply_start)
 
     def _init_UI(self) -> None:
         """Initialize the chat area UI layout, scroll settings, and styling."""
@@ -300,9 +324,47 @@ class ChatArea(QScrollArea):
         self.fade_effect.bottom_strength = min(1.0, max(0.0, bottom_dist / fade_start))
         self.fade_effect.update()
 
-    def _animate_to_bottom(self) -> None:
-        """Smoothly scroll to the newest message."""
-        self._animate_to(self.scrollbar.maximum(), 100)
+    def _scroll_to_reply_start(self) -> None:
+        """Place the first line of the latest reply just below the top fade."""
+        bubble = self.pending_reply_scroll
+        if bubble is None or not self.isVisible():
+            return
+        self.pending_reply_scroll = None
+        self.reply_scroll_anchor = bubble
+
+        # Measure at the natural layout height. The reply's current position can be
+        # stale or compressed until the container has space for the new content.
+        width = self.chat_container.width()
+        margins = self.chat_layout.contentsMargins()
+        reply_height = bubble.heightForWidth(width - margins.left() - margins.right())
+        reply_top = (
+            self.chat_layout.totalHeightForWidth(width)
+            - margins.bottom()
+            - reply_height
+        )
+        self.scroll_animation.stop()
+        self.scrollbar.setValue(self._reserve_reply_scroll_space(reply_top))
+
+    def _refit_reply_scroll_space(self) -> None:
+        """Adjust the reserved space after rewrapping the conversation."""
+        if self.reply_scroll_anchor is not None:
+            self.chat_layout.activate()
+            self._reserve_reply_scroll_space(self.reply_scroll_anchor.y())
+
+    def _reserve_reply_scroll_space(self, reply_top: int) -> int:
+        """Give the trailing stretch enough space for a short reply to reach the top.
+
+        Args:
+            reply_top (int): The reply's top edge in the chat layout.
+
+        Returns:
+            int: The scroll position that places the reply below the top fade.
+        """
+        viewport = self.viewport()
+        assert viewport is not None
+        target = max(0, reply_top - self.fade_effect.FADE_HEIGHT)
+        self.chat_container.setMinimumHeight(target + viewport.height())
+        return target
 
     def _jump_to_bottom(self) -> None:
         """Scroll to the newest message at once."""

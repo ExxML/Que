@@ -26,12 +26,13 @@ class DeferredUpdateTests(unittest.TestCase):
         chat = ChatArea(parent)
         chat.load_messages([("Saved", True, "", ())])
         chat.add_message("New", True)
+        chat.append_to_stream("Reply")
         field = InputField(parent)
         field.input_field._adjust_height()
         field.input_field.setPlainText("one\ntwo\nthree")
         field.input_field._adjust_height()  # Queues the height change
         sip.delete(parent)
-        wait(500)  # Past the delayed scroll to the newest message
+        wait(20)  # Let any queued scroll or resize callbacks run
         self.assertTrue(sip.isdeleted(chat))
         self.assertTrue(sip.isdeleted(field))
 
