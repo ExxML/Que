@@ -6,7 +6,7 @@ from PyQt6.QtCore import QEvent, QObject, QPoint, QTimer, pyqtSignal
 
 from core.hook_client import HookClient
 from core.hook_engine import ACTION_NAMES, PRESET_COUNT
-from core.interview_prompts import LABEL, PROMPT
+from core.prompts import INTERVIEW_LABEL, INTERVIEW_PROMPT
 from core.screenshot_manager import ScreenshotManager
 from ui.window.main_window import MainWindow
 
@@ -366,7 +366,7 @@ class ShortcutManager(QObject):
     def _answer(self) -> None:
         """Take a screenshot then answer the interview question, whatever kind it is."""
         self._screenshot()
-        self.prompt_signal.emit(LABEL, PROMPT)
+        self.prompt_signal.emit(INTERVIEW_LABEL, INTERVIEW_PROMPT)
 
     def _dismiss_warnings(self) -> None:
         """Dismiss the visible protection warnings on the Qt thread."""

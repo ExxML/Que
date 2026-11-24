@@ -9,26 +9,10 @@ from tempfile import NamedTemporaryFile
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.claude_bridge import ClaudeBridge
+from core.prompts import fact_sheet_request
 from core.settings import SettingsStore
 
 WORKERS = 3  # Fact sheets written at once
-PROMPT = """I'm preparing for interviews about this item on my resume:
-<resume_item>
-{name}
-</resume_item>
-
-Its files are in the current directory. Use your read-only tools to read the README and the files that explain the project: entry points, core modules, configuration and tests. Skip dependency, build and generated folders.
-
-Then write a dense fact sheet, at most about 900 words, that lets me answer detailed interview questions about this project without opening the files again. Cover:
-- What it does, who it is for and why it exists.
-- Architecture and data flow, naming the key components and their file paths.
-- Languages, frameworks, libraries and services used, and what each is used for.
-- Notable algorithms, design decisions and trade-offs.
-- Concrete numbers found in the files, such as sizes, counts, timings and test coverage, and whether they support the claims in the resume item.
-- Hard problems and how they were solved.
-- Testing, build and deployment.
-
-Use only facts from the files and say when something is not in them. Reply with only the fact sheet in Markdown, without a preamble."""
 
 
 class ResumeFacts(QObject):
@@ -123,7 +107,7 @@ class ResumeFacts(QObject):
         # Fingerprint first, so a change made while Claude reads marks the sheet out of date
         stamp = fingerprint(folder)
         text = self.claude_bridge.ask(
-            PROMPT.format(name=name or folder.name),
+            fact_sheet_request(name or folder.name),
             model,
             effort,
             folder,

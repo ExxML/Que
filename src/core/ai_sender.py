@@ -14,6 +14,22 @@ from google.genai import interactions
 from core.claude_bridge import ClaudeBridge, ClaudeTurn
 from core.document_text import extract_text
 from core.model_catalog import ModelOption
+from core.prompts import (
+    BROWSABLE_FOLDER,
+    CLOSED_FOLDER,
+    FACT_SHEET_FIRST,
+    FACT_SHEET_FIRST_STALE,
+    MISSING_DETAIL,
+    STALE_FACT_SHEET,
+    documents_block,
+    fact_sheet_detail,
+    instructions_block,
+    job_details_block,
+    readme_detail,
+    resume_details_block,
+    transcript_block,
+    unreadable_detail,
+)
 from core.resume_facts import facts_directory, load_sheet
 from core.settings import CONTEXT_DOCUMENTS, SettingsStore
 
@@ -52,12 +68,7 @@ class InteractionRequest:
         """
         prompt = self.message
         if self.transcript:
-            prompt = f"""Audio transcript recorded since my previous message. [You] is my microphone and [Them] is my computer's audio output. Lines run oldest to newest. It may be unrelated to my request.
-<transcript>
-{self.transcript}
-</transcript>
-
-{prompt}"""
+            prompt = transcript_block(self.transcript, prompt)
         # Documents lead so new conversations share a prefix the provider can cache
         context = self.context
         if self.previous_interaction_id is None and self.resume_details:
@@ -431,20 +442,10 @@ class AISender:
         parts: list[str] = []
         instruction = self.settings_store.instruction()
         if instruction:
-            parts.append(
-                f"""Follow my instructions for this whole conversation.
-<instructions>
-{instruction}
-</instructions>"""
-            )
+            parts.append(instructions_block(instruction))
         job_details = self.settings_store.job_details()
         if job_details:
-            parts.append(
-                f"""Details about the job I'm interviewing for. Tailor my answers to this role: connect my experience to what it asks for and use its terms. Don't mention these details unless I ask.
-<job_details>
-{job_details}
-</job_details>"""
-            )
+            parts.append(job_details_block(job_details))
         documents = self.settings_store.context_documents()
         sections = [
             f"<{kind}>\n{documents[kind][1]}\n</{kind}>"
@@ -452,11 +453,7 @@ class AISender:
             if kind in documents
         ]
         if sections:
-            joined = "\n".join(sections)
-            parts.append(
-                f"""Background documents about me. Tailor your answers to my real experience. When I'm asked an interview question, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
-{joined}"""
-            )
+            parts.append(documents_block("\n".join(sections)))
         return "\n\n".join(parts)
 
 
@@ -484,11 +481,11 @@ def _resume_details_context(
             else None
         )
         if not source.exists():
-            body = "Unavailable: this file or folder no longer exists."
+            body = MISSING_DETAIL
         elif sheet is not None:
             body = _fact_sheet_body(*sheet, browse)
         elif source.is_dir() and browse:
-            body = "A folder you can open with your read-only file tools. When asked about this item, read the files that explain it, starting with any README, before answering."
+            body = BROWSABLE_FOLDER
         elif source.is_dir():
             readme = next(
                 (
@@ -498,21 +495,13 @@ def _resume_details_context(
                 ),
                 None,
             )
-            body = (
-                f"The README of this folder:\n{_read_detail(readme)}"
-                if readme
-                else "A folder whose files you cannot open. Answer from my other context."
-            )
+            body = readme_detail(_read_detail(readme)) if readme else CLOSED_FOLDER
         else:
             body = _read_detail(source)
         sections.append(
             f'<detail name="{escape(name or source.name)}" path="{escape(path)}">\n{body}\n</detail>'
         )
-    joined = "\n".join(sections)
-    return f"""Sources behind items on my resume. When I'm asked about one of these items, explain it from its source with accurate, specific details.
-<resume_details>
-{joined}
-</resume_details>"""
+    return resume_details_block("\n".join(sections))
 
 
 def _fact_sheet_body(text: str, current: bool, browse: bool) -> str:
@@ -526,15 +515,11 @@ def _fact_sheet_body(text: str, current: bool, browse: bool) -> str:
     Returns:
         str: The detail body sent to the provider.
     """
-    body = f"A fact sheet about this folder:\n{text}"
+    body = fact_sheet_detail(text)
     if not current:
-        body = f"This fact sheet was written before the folder last changed, so some details may be out of date. {body}"
+        body = f"{STALE_FACT_SHEET} {body}"
     if browse:
-        body += (
-            "\n\nAnswer from this fact sheet. Open the folder with your read-only file tools "
-            "only when you need a specific detail the sheet lacks"
-            f"{'.' if current else ' or one that may have changed.'}"
-        )
+        body += f"\n\n{FACT_SHEET_FIRST}{'.' if current else FACT_SHEET_FIRST_STALE}"
     return body
 
 
@@ -550,4 +535,4 @@ def _read_detail(path: Path) -> str:
     try:
         return extract_text(path)
     except ValueError as error:
-        return f"Unavailable: {error}"
+        return unreadable_detail(str(error))

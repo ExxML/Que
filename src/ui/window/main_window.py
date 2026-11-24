@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
 from core.ai_receiver import AIReceiver
 from core.ai_sender import AISender, InteractionRequest
 from core.chat_history import ChatHistory, Conversation
+from core.prompts import shortcut_note
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.transcriber import Transcriber
@@ -200,7 +201,7 @@ class MainWindow(QWidget):
         """
         note = self.input_field.input_field.toPlainText().strip()
         if note:
-            prompt = f"{prompt}\n\nMy note: {note}"
+            prompt = shortcut_note(prompt, note)
             label = f"{label}: {note}"
             # Without a model nothing is sent, so the typed note stays in the input
             if self.ai_sender.model:

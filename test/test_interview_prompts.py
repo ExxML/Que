@@ -7,16 +7,16 @@ from unittest.mock import MagicMock
 
 from core.ai_sender import AISender
 from core.hook_engine import ACTION_NAMES
-from core.interview_prompts import (
-    CODE,
-    EVERYTHING_ELSE,
-    FOLLOW_UP,
-    KINDS,
-    PREAMBLE,
-    PROMPT,
-    SYSTEM_DESIGN,
-)
 from core.model_catalog import ModelOption
+from core.prompts import (
+    INTERVIEW_CODE,
+    INTERVIEW_EVERYTHING_ELSE,
+    INTERVIEW_FOLLOW_UP,
+    INTERVIEW_KINDS,
+    INTERVIEW_PREAMBLE,
+    INTERVIEW_PROMPT,
+    INTERVIEW_SYSTEM_DESIGN,
+)
 from core.settings import SettingsStore
 from ui.window.main_window import MainWindow
 
@@ -27,11 +27,17 @@ class InterviewPromptTests(unittest.TestCase):
     def test_one_shortcut_covers_every_kind(self) -> None:
         """Bind the answer action and send every kind's format in one prompt."""
         self.assertIn("answer", ACTION_NAMES)
-        self.assertTrue(PROMPT.startswith(PREAMBLE))
-        for part in (KINDS, FOLLOW_UP, CODE, SYSTEM_DESIGN, EVERYTHING_ELSE):
-            self.assertIn(part, PROMPT)
+        self.assertTrue(INTERVIEW_PROMPT.startswith(INTERVIEW_PREAMBLE))
+        for part in (
+            INTERVIEW_KINDS,
+            INTERVIEW_FOLLOW_UP,
+            INTERVIEW_CODE,
+            INTERVIEW_SYSTEM_DESIGN,
+            INTERVIEW_EVERYTHING_ELSE,
+        ):
+            self.assertIn(part, INTERVIEW_PROMPT)
         for kind in ("Follow-up", "Coding", "System design", "Everything else"):
-            self.assertIn(f"**{kind}**", KINDS)
+            self.assertIn(f"**{kind}**", INTERVIEW_KINDS)
 
     def test_display_label_is_never_sent(self) -> None:
         """Keep the chat label out of the prompt the provider receives."""

@@ -15,7 +15,7 @@ from qt_application import application
 
 from core.hook_client import HookClient
 from core.hook_engine import ACTION_NAMES, PRESET_COUNT
-from core.interview_prompts import LABEL, PROMPT
+from core.prompts import INTERVIEW_LABEL, INTERVIEW_PROMPT
 from core.shortcut_manager import ShortcutManager
 
 # shortcut: destroying a ShortcutManager's HookClient between tests aborts the process (0xC0000409);
@@ -112,7 +112,9 @@ class ActionTests(ShortcutTestCase):
         self.screenshots.take_screenshot.assert_called_with(int(self.window.winId()))
         self.manager._run_action("answer")
         self.assertEqual(self.screenshots.take_screenshot.call_count, 2)
-        self.window.send_prompt.assert_called_once_with(LABEL, PROMPT)
+        self.window.send_prompt.assert_called_once_with(
+            INTERVIEW_LABEL, INTERVIEW_PROMPT
+        )
 
     def test_presets_send_their_slot(self) -> None:
         """Apply preset N for each number shortcut."""

@@ -57,6 +57,7 @@ src/assets/ — Icons and images
 - `ui/input/input_router.py` — Delivers routed keys and clicks to Qt widgets without activating Que's windows
 - `core/win32_hook.py` — ctypes bindings for Win32 keyboard hook constants and types
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
+- `core/prompts.py` — All wording sent to the AI (interview shortcut, transcript and note wrappers, new-chat background, fact-sheet request); callers keep the logic that picks which pieces to send
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
 - `core/claude_bridge.py` — Runs the Claude Code CLI over stream-json; in the running app (`live=True`) it pre-starts the next turn's CLI so sending skips its startup, and reports tool use as a status line
 - `core/resume_facts.py` — Has Claude write a cached fact sheet per linked resume folder (`src/data/cache/resume_facts`, keyed by git commit or modification time) so new chats start from it instead of file-tool loops
