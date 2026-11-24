@@ -728,6 +728,13 @@
     "enabled": true
   },
   {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Write fact sheets for new or changed linked folders",
+    "parent_class": "QWidget",
+    "enabled": false
+  },
+  {
     "accessible": "You \u00b7 Microphone",
     "class": "_SettingsComboBox",
     "enabled": true,

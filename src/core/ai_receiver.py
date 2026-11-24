@@ -15,6 +15,9 @@ class AIReceiver(QObject):
     finished = pyqtSignal(str, int)
     error = pyqtSignal(str, int)
     progress = pyqtSignal(str, int)
+    status = pyqtSignal(
+        str, int
+    )  # What the AI is doing before its next text, such as reading a file
     turn_committed = pyqtSignal(object, str, str)  # request, interaction_id, response
     generating_changed = pyqtSignal(bool)  # Whether a reply is being generated
 
@@ -31,6 +34,7 @@ class AIReceiver(QObject):
 
         # Connect signals to response handlers once
         self.progress.connect(self._on_response_chunk)
+        self.status.connect(self._on_response_status)
         self.finished.connect(self._on_response_ready)
         self.error.connect(self._on_response_error)
 
@@ -101,6 +105,7 @@ class AIReceiver(QObject):
             1  # Discard any progress/finished/error signals already queued
         )
         self.generating_changed.emit(False)
+        self.ai_sender.prewarm()  # The stopped turn's CLI is closing, so ready one for the retry
 
     def _run(
         self,
@@ -120,6 +125,7 @@ class AIReceiver(QObject):
                 interaction_request,
                 lambda text: self._on_chunk(text, stream_id, stop_flag),
                 stop_flag,
+                lambda text: self._on_status(text, stream_id, stop_flag),
             )
             # Only emit finished if we weren't stopped
             if interaction_id is not None and not stop_flag.is_set():
@@ -140,6 +146,17 @@ class AIReceiver(QObject):
         """
         if text and not stop_flag.is_set():
             self.progress.emit(text, stream_id)
+
+    def _on_status(self, text: str, stream_id: int, stop_flag: threading.Event) -> None:
+        """Emit a tool-use status to the UI thread.
+
+        Args:
+            text (str): The status, such as the file being read.
+            stream_id (int): The generation ID for this stream invocation.
+            stop_flag (threading.Event): The cancellation flag for this stream.
+        """
+        if not stop_flag.is_set():
+            self.status.emit(text, stream_id)
 
     def _on_response_ready(self, interaction_id: str, stream_id: int) -> None:
         """Handle successful AI response.
@@ -174,6 +191,7 @@ class AIReceiver(QObject):
         self.generating_changed.emit(False)
         error_msg = f"Error generating response: {error}"
         self.chat_area.show_stream_error(error_msg)
+        self.ai_sender.prewarm()  # The failed turn used the waiting CLI, so ready one for the retry
 
     def _on_response_chunk(self, chunk: str, stream_id: int) -> None:
         """Stream chunk text into the current assistant bubble.
@@ -188,3 +206,16 @@ class AIReceiver(QObject):
         if self.chat_area.streaming_bubble is None:
             self.chat_area.start_assistant_stream()
         self.chat_area.append_to_stream(chunk)
+
+    def _on_response_status(self, status: str, stream_id: int) -> None:
+        """Show what the AI is doing in the current assistant bubble until its next text.
+
+        Args:
+            status (str): The status, such as the file being read.
+            stream_id (int): The generation ID that emitted this status.
+        """
+        if stream_id != self.stream_id:
+            return
+        if self.chat_area.streaming_bubble is None:
+            self.chat_area.start_assistant_stream()
+        self.chat_area.set_stream_status(status)

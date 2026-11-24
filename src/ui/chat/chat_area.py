@@ -16,6 +16,8 @@ from PyQt6.QtWidgets import QGraphicsEffect, QScrollArea, QVBoxLayout, QWidget
 
 from ui.chat.chat_bubble import ChatBubble
 
+RENDER_INTERVAL = 50  # Milliseconds between redraws of a streaming reply; laying out long replies is slow
+
 SCROLLBAR_STYLE = """
     QScrollBar:vertical {
         background-color: rgba(0, 0, 0, 0);
@@ -50,6 +52,10 @@ class ChatArea(QScrollArea):
         super().__init__(main_window)
         self.streaming_bubble: ChatBubble | None = None
         self.streaming_text: str = ""
+        self.render_timer = QTimer(self)
+        self.render_timer.setSingleShot(True)
+        self.render_timer.setInterval(RENDER_INTERVAL)
+        self.render_timer.timeout.connect(self._render_stream)
         self._init_UI()
         self._init_scroll_animation()
         self._reset_stream()
@@ -109,16 +115,42 @@ class ChatArea(QScrollArea):
         """
         if self.streaming_bubble is None:
             return
-        if not self.streaming_text:
-            self.streaming_bubble.stop_loading_animation()
+        first = not self.streaming_text
         self.streaming_text += chunk_text
-        self.streaming_bubble.set_bot_message(self.streaming_text)
+        if first:
+            self.streaming_bubble.stop_loading_animation()
+        self.streaming_bubble.status = (
+            ""  # New text means the tool use it described is over
+        )
+        # Show the first words at once, then redraw at most once per interval
+        if first:
+            self._render_stream()
+        elif not self.render_timer.isActive():
+            self.render_timer.start()
+
+    def set_stream_status(self, status: str) -> None:
+        """Show what the AI is doing below the streamed text until its next text arrives.
+
+        Args:
+            status (str): The status, such as the file being read.
+        """
+        if self.streaming_bubble is None:
+            return
+        self.streaming_bubble.status = status
+        # The loading animation draws the status with its next frame
+        if not self.streaming_bubble.loading:
+            self.render_timer.stop()
+            self.streaming_bubble.set_bot_message(self.streaming_text)
 
     def finalize_assistant_stream(self) -> None:
         """Finalize the streamed assistant message and clear streaming state."""
         if self.streaming_bubble is None:
             return
         self.streaming_bubble.stop_loading_animation()
+        status, self.streaming_bubble.status = self.streaming_bubble.status, ""
+        # Draw text still waiting for the redraw interval, and drop any finished tool status
+        if self.streaming_text or status:
+            self.streaming_bubble.set_bot_message(self.streaming_text)
         self._reset_stream()
 
     def stop_assistant_stream(self) -> None:
@@ -126,6 +158,8 @@ class ChatArea(QScrollArea):
         if self.streaming_bubble is None:
             return
         self.streaming_bubble.stop_loading_animation()
+        self.streaming_bubble.status = ""
+        self.streaming_bubble.message = self.streaming_text
         self.streaming_bubble.mark_stopped()
         self._reset_stream()
 
@@ -141,6 +175,7 @@ class ChatArea(QScrollArea):
             self.add_message(error_msg, is_user=False)
             return
         self.streaming_bubble.stop_loading_animation()
+        self.streaming_bubble.status = ""
         self.streaming_bubble.set_bot_message(error_msg)
         self._reset_stream()
 
@@ -275,8 +310,15 @@ class ChatArea(QScrollArea):
 
     def _reset_stream(self) -> None:
         """Reset the streaming bubble and accumulated text to a blank state."""
+        self.render_timer.stop()
         self.streaming_bubble = None
         self.streaming_text = ""
+
+    def _render_stream(self) -> None:
+        """Draw the streamed text received so far."""
+        self.render_timer.stop()
+        if self.streaming_bubble is not None and self.streaming_text:
+            self.streaming_bubble.set_bot_message(self.streaming_text)
 
     def _init_scroll_animation(self) -> None:
         """Initialize smooth scrolling animation."""

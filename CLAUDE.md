@@ -58,8 +58,10 @@ src/assets/ — Icons and images
 - `core/win32_hook.py` — ctypes bindings for Win32 keyboard hook constants and types
 - `core/ai_sender.py` — Gemini API client using `google-genai` with streaming; supports file attachments and thinking mode
 - `core/ai_receiver.py` — Bridges background `threading.Thread` AI generation with UI via `pyqtSignal`
+- `core/claude_bridge.py` — Runs the Claude Code CLI over stream-json; in the running app (`live=True`) it pre-starts the next turn's CLI so sending skips its startup, and reports tool use as a status line
+- `core/resume_facts.py` — Has Claude write a cached fact sheet per linked resume folder (`src/data/cache/resume_facts`, keyed by git commit or modification time) so new chats start from it instead of file-tool loops
 - `ui/window/main_window.py` — Frameless translucent `QWidget` with `WindowStaysOnTopHint | Tool`; re-raises itself every 1s via visibility timer
-- `ui/chat/ai_formatter.py` — Markdown→Qt rich text for `QLabel` (block parser for headings, nested lists, tables, quotes, fenced code; Pygments highlighting in VS Code Dark Modern colours from `theme.CODE_COLORS`); must handle half-streamed text since it re-renders every chunk
+- `ui/chat/ai_formatter.py` — Markdown→Qt rich text for `QLabel` (block parser for headings, nested lists, tables, quotes, fenced code; Pygments highlighting in VS Code Dark Modern colours from `theme.CODE_COLORS`); must handle half-streamed text since `ChatArea` re-renders the reply while it streams (at most every `RENDER_INTERVAL` ms)
 - `ui/chat/latex.py` — Renders LaTeX maths (`$…$`, `\(…\)`, `$$…$$`, `\[…\]`) as Unicode text in Cambria Math; display maths stacks fractions/limits with rich-text tables. No images, so maths stays selectable
 - `ui/theme.py` — Centralized color theming; all colors must come from here
 - `src/data/` — Runtime data: `chat_history.json`, `config.json`, `cache/`

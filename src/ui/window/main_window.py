@@ -611,6 +611,7 @@ class MainWindow(QWidget):
             directory (str): The directory Claude works in, or an empty string for no directory.
         """
         self.ai_sender.claude_directory = Path(directory) if directory else None
+        self.ai_sender.prewarm()
         self._show_claude_directory()
 
     def _show_claude_directory(self) -> None:

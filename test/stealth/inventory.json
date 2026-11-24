@@ -63,7 +63,8 @@
     "ui/window/config_panel.py:ConfigPanel.__init__/QPushButton/977af4c764/1": "QPushButton('Select all')",
     "ui/window/config_panel.py:ConfigPanel.__init__/QPushButton/bbac1d2796/1": "QPushButton('Import settings\u2026')",
     "ui/window/config_panel.py:ConfigPanel.__init__/QPushButton/ce9ef03313/1": "QPushButton('Import selected')",
-    "ui/window/config_panel.py:ConfigPanel._show_review/QCheckBox/1b56e10564/1": "QCheckBox(label)"
+    "ui/window/config_panel.py:ConfigPanel._show_review/QCheckBox/1b56e10564/1": "QCheckBox(label)",
+    "ui/window/settings_page.py:SettingsPage._init_UI/QPushButton/c6d3e78874/1": "QPushButton('Update fact sheets')"
   },
   "connections": [
     "core/ai_receiver.py:AIReceiver.__init__/self.error.connect(self._on_response_error)",
@@ -226,6 +227,10 @@
     "ui/window/transcript_panel.py:TranscriptPanel.__init__/transcriber.recording_changed.connect(lambda _recording: self._refresh())",
     "ui/window/transcript_panel.py:TranscriptPanel.__init__/transcriber.speaking_changed.connect(self._on_speaking_changed)",
     "ui/window/transcript_panel.py:TranscriptPanel.__init__/transcriber.status_changed.connect(self._on_status_changed)",
-    "ui/window/transcript_panel.py:TranscriptPanel._init_UI/self.toggle_button.clicked.connect(self._toggle_expanded)"
+    "ui/window/transcript_panel.py:TranscriptPanel._init_UI/self.toggle_button.clicked.connect(self._toggle_expanded)",
+    "core/ai_receiver.py:AIReceiver.__init__/self.status.connect(self._on_response_status)",
+    "ui/chat/chat_area.py:ChatArea.__init__/self.render_timer.timeout.connect(self._render_stream)",
+    "ui/window/settings_page.py:SettingsPage.__init__/self.resume_facts.progress.connect(self._show_fact_sheets)",
+    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_sheets_button.clicked.connect(self._update_fact_sheets)"
   ]
 }

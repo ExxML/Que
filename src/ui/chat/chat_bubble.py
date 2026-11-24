@@ -48,8 +48,19 @@ class ChatBubble(QWidget):
         self.transcript = transcript
         self.screenshots = list(screenshots)
         self._loading_timer: QTimer | None = None
+        # What the AI is doing, shown muted below the text until it writes again
+        self.status = ""
         self.transcript_label: QLabel | None = None
         self._init_UI()
+
+    @property
+    def loading(self) -> bool:
+        """Return whether the loading animation is running.
+
+        Returns:
+            bool: Whether the three-dot indicator is showing.
+        """
+        return self._loading_timer is not None
 
     def set_bot_message(self, message: str) -> None:
         """Format the bot message and set the text as the label.
@@ -58,7 +69,7 @@ class ChatBubble(QWidget):
             message (str): The raw bot message text to format and display.
         """
         self.message = message
-        self.message_label.setText(format_message(message))
+        self.message_label.setText(f"{format_message(message)}{self._status_html()}")
 
     def mark_stopped(self) -> None:
         """Show a muted note after the message that the reply was stopped before it finished."""
@@ -289,8 +300,18 @@ class ChatBubble(QWidget):
             f"&nbsp;"
             f"<span style='color: rgba(255, 255, 255, {o3}); font-size: 16px;'>&#9679;</span>"
         )
-        self.message_label.setText(html)
+        self.message_label.setText(f"{html}{self._status_html()}")
         self._loading_frame = (self._loading_frame + 1) % 20
+
+    def _status_html(self) -> str:
+        """Render the current status as a muted line, or nothing when there is none.
+
+        Returns:
+            str: The status markup.
+        """
+        if not self.status:
+            return ""
+        return f"<div style='color: {qss(PRIMARY_COLOR, 140)}; font-style: italic;'>{html.escape(self.status, quote=False)}</div>"
 
 
 class _MessageLabel(QLabel):

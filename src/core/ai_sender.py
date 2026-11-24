@@ -11,9 +11,10 @@ from uuid import uuid4
 from google import genai
 from google.genai import interactions
 
-from core.claude_bridge import ClaudeBridge
+from core.claude_bridge import ClaudeBridge, ClaudeTurn
 from core.document_text import extract_text
 from core.model_catalog import ModelOption
+from core.resume_facts import facts_directory, load_sheet
 from core.settings import CONTEXT_DOCUMENTS, SettingsStore
 
 
@@ -36,6 +37,9 @@ class InteractionRequest:
     context: str = ""
     resume_details: tuple[tuple[str, str], ...] = ()
     display: str = ""  # Shown and saved in the chat instead of the message; never sent
+    facts_directory: Path | None = (
+        None  # The cache of fact sheets about linked resume folders
+    )
 
     @property
     def prompt(self) -> str:
@@ -58,7 +62,7 @@ class InteractionRequest:
         context = self.context
         if self.previous_interaction_id is None and self.resume_details:
             details = _resume_details_context(
-                self.resume_details, self.provider == "claude"
+                self.resume_details, self.provider == "claude", self.facts_directory
             )
             context = f"{context}\n\n{details}" if context else details
         return f"{context}\n\n{prompt}" if context else prompt
@@ -82,6 +86,7 @@ class AISender:
         self,
         settings_store: SettingsStore | None = None,
         client: genai.Client | None = None,
+        live: bool = False,
     ) -> None:
         self.settings_store = settings_store or SettingsStore()
         self.api_key = self.settings_store.gemini_key()
@@ -89,7 +94,11 @@ class AISender:
             genai.Client(api_key=self.api_key) if self.api_key else None
         )
         self.provider = self.settings_store.provider()
-        self.claude_bridge = ClaudeBridge()
+        self.claude_bridge = ClaudeBridge(live=live)
+        self.facts_directory = facts_directory(self.settings_store)
+        self.next_session_id = str(
+            uuid4()
+        )  # Known ahead so a new chat's CLI can start early
         saved_directory = self.settings_store.claude_directory()
         self.claude_directory = Path(saved_directory) if saved_directory else None
         self.contexts: dict[str, str | None] = {"gemini": None, "claude": None}
@@ -120,6 +129,7 @@ class AISender:
         self.models = {}
         self.model = ""
         self.effort_level = "default"
+        self.prewarm()
 
     def set_models(self, models: tuple[ModelOption, ...]) -> None:
         """Install a discovered catalog on the Qt thread and select an available model.
@@ -131,6 +141,7 @@ class AISender:
         if not models:
             self.model = ""
             self.effort_level = "default"
+            self.prewarm()
         elif self.model not in self.models:
             self.set_model(models[0].model_id)
         else:
@@ -146,6 +157,7 @@ class AISender:
         self.model = model_id
         if self.effort_level not in levels:
             self.effort_level = levels[0]
+        self.prewarm()
 
     def set_effort_level(self, effort_level: str) -> None:
         """Select a supported reasoning effort for subsequent turns.
@@ -158,6 +170,28 @@ class AISender:
                 f"Unsupported effort level for {self.model}: {effort_level}"
             )
         self.effort_level = effort_level
+        self.prewarm()
+
+    def prewarm(self) -> None:
+        """Start Claude's CLI for the next turn ahead of time, or close it when the next turn is not Claude's."""
+        if self.provider != "claude" or not self.model:
+            self.claude_bridge.prewarm(None)
+            return
+        checkpoint = self.previous_interaction_id
+        self.claude_bridge.prewarm(
+            ClaudeTurn(
+                self.model,
+                self.effort_level,
+                self.claude_session_id if checkpoint else self.next_session_id,
+                checkpoint,
+                self.claude_directory,
+                tuple(
+                    Path(path)
+                    for _name, path in self.settings_store.resume_details()
+                    if Path(path).is_dir()
+                ),
+            )
+        )
 
     def invalidate_requests(self) -> None:
         """Invalidate outstanding requests on the Qt thread without losing context."""
@@ -169,6 +203,7 @@ class AISender:
         self.previous_interaction_id = None
         self.contexts = {"gemini": None, "claude": None}
         self.claude_session_id = ""
+        self.prewarm()
 
     def restore_chat(self, interaction_id: str | None, session_id: str) -> None:
         """Resume a saved conversation of the active provider.
@@ -181,6 +216,7 @@ class AISender:
         self.previous_interaction_id = interaction_id
         self.contexts[self.provider] = interaction_id
         self.claude_session_id = session_id
+        self.prewarm()
 
     def prepare_request(
         self,
@@ -207,6 +243,10 @@ class AISender:
                 "Models are not loaded. Open Settings to connect your AI provider."
             )
         self.invalidate_requests()
+        session_id = self.claude_session_id
+        if not self.previous_interaction_id:
+            # A retried first turn never resumes the session of an uncommitted one
+            session_id, self.next_session_id = self.next_session_id, str(uuid4())
         return InteractionRequest(
             message,
             tuple(attachments or []),
@@ -215,7 +255,7 @@ class AISender:
             self.previous_interaction_id,
             self.generation,
             self.provider,
-            self.claude_session_id if self.previous_interaction_id else str(uuid4()),
+            session_id,
             self.client,
             self.claude_directory,
             transcript,
@@ -225,6 +265,7 @@ class AISender:
             # Snapshotted every turn because Claude needs folder access after the first
             tuple(self.settings_store.resume_details()),
             display,
+            self.facts_directory,
         )
 
     def commit_interaction(
@@ -246,6 +287,7 @@ class AISender:
         if interaction_request.provider == "claude":
             self.claude_session_id = interaction_request.session_id
         self.invalidate_requests()
+        self.prewarm()
         return True
 
     def send_message(
@@ -253,6 +295,7 @@ class AISender:
         interaction_request: InteractionRequest,
         on_chunk: Callable[[str], None],
         stop_flag: threading.Event,
+        on_status: Callable[[str], None] | None = None,
     ) -> str | None:
         """Stream a captured turn without modifying shared conversation state.
 
@@ -260,6 +303,7 @@ class AISender:
             interaction_request (InteractionRequest): The captured turn and settings.
             on_chunk (Callable[[str], None]): Callback for visible response text.
             stop_flag (threading.Event): The request's cancellation flag.
+            on_status (Callable[[str], None], optional): Callback describing Claude's tool use.
 
         Returns:
             str | None: The completed interaction ID, or None when canceled.
@@ -279,6 +323,7 @@ class AISender:
                 on_chunk,
                 stop_flag,
                 request.folders,
+                on_status,
             )
         client = request.client
         if client is None:
@@ -407,12 +452,17 @@ class AISender:
         return "\n\n".join(parts)
 
 
-def _resume_details_context(details: tuple[tuple[str, str], ...], browse: bool) -> str:
+def _resume_details_context(
+    details: tuple[tuple[str, str], ...],
+    browse: bool,
+    facts_directory: Path | None = None,
+) -> str:
     """Read each linked resume detail fresh so edits to its notes apply to the next new chat.
 
     Args:
         details (tuple[tuple[str, str], ...]): The item name and file or folder path of each link.
         browse (bool): Whether the provider can open linked folders with file tools.
+        facts_directory (Path | None): The cache of fact sheets about linked folders, if any.
 
     Returns:
         str: The details wrapped as background for a new conversation.
@@ -420,8 +470,15 @@ def _resume_details_context(details: tuple[tuple[str, str], ...], browse: bool) 
     sections = []
     for name, path in details:
         source = Path(path)
+        sheet = (
+            load_sheet(facts_directory, source)
+            if facts_directory is not None and source.is_dir()
+            else None
+        )
         if not source.exists():
             body = "Unavailable: this file or folder no longer exists."
+        elif sheet is not None:
+            body = _fact_sheet_body(*sheet, browse)
         elif source.is_dir() and browse:
             body = "A folder you can open with your read-only file tools. When asked about this item, read the files that explain it, starting with any README, before answering."
         elif source.is_dir():
@@ -448,6 +505,29 @@ def _resume_details_context(details: tuple[tuple[str, str], ...], browse: bool) 
 <resume_details>
 {joined}
 </resume_details>"""
+
+
+def _fact_sheet_body(text: str, current: bool, browse: bool) -> str:
+    """Present a linked folder's fact sheet, warning when the folder changed after it was written.
+
+    Args:
+        text (str): The fact sheet.
+        current (bool): Whether the folder is unchanged since the sheet was written.
+        browse (bool): Whether the provider can open the folder with file tools.
+
+    Returns:
+        str: The detail body sent to the provider.
+    """
+    body = f"A fact sheet about this folder:\n{text}"
+    if not current:
+        body = f"This fact sheet was written before the folder last changed, so some details may be out of date. {body}"
+    if browse:
+        body += (
+            "\n\nAnswer from this fact sheet. Open the folder with your read-only file tools "
+            "only when you need a specific detail the sheet lacks"
+            f"{'.' if current else ' or one that may have changed.'}"
+        )
+    return body
 
 
 def _read_detail(path: Path) -> str:

@@ -28,6 +28,7 @@ from core.document_text import extract_text
 from core.hook_engine import PRESET_COUNT
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
+from core.resume_facts import ResumeFacts, facts_directory
 from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
@@ -66,6 +67,8 @@ class SettingsPage(QWidget):
         self.transcriber = transcriber
         transcriber.download_finished.connect(self._on_whisper_downloaded)
         self.catalog = ProviderCatalog(claude_bridge)
+        self.resume_facts = ResumeFacts(claude_bridge, facts_directory(settings_store))
+        self.resume_facts.progress.connect(self._show_fact_sheets)
         self.catalog.completed.connect(self._on_loaded)
         self.catalog.failed.connect(self._on_failed)
         self.revision = 0
@@ -111,6 +114,7 @@ class SettingsPage(QWidget):
         self.instruction_input.blockSignals(False)
         self._show_documents()
         self._show_resume_details()
+        self._show_fact_sheets()
         self._show_screenshots_size()
         self._on_settings_tab_changed(self.tab_bar.currentIndex())
         self._load_ai_settings()
@@ -405,12 +409,20 @@ class SettingsPage(QWidget):
         link_folder_button = QPushButton("Link folder…")
         link_folder_button.setAccessibleName("Link a folder to a resume item")
         link_folder_button.clicked.connect(lambda: self._link_resume_detail(True))
+        self.fact_sheets_button = QPushButton("Update fact sheets")
+        self.fact_sheets_button.setAccessibleName(
+            "Write fact sheets for new or changed linked folders"
+        )
+        self.fact_sheets_button.clicked.connect(self._update_fact_sheets)
         link_row = QHBoxLayout()
         link_row.addWidget(link_file_button)
         link_row.addWidget(link_folder_button)
+        link_row.addWidget(self.fact_sheets_button)
         link_row.addStretch(1)
+        self.fact_sheets_status = QLabel()
+        self.fact_sheets_status.setWordWrap(True)
         details_hint = QLabel(
-            "Files (PDF, Word, or text) are read again at the start of each new chat, so edits apply to your next new chat. Claude can browse linked folders; Gemini reads only a folder's README."
+            "Files (PDF, Word, or text) are read again at the start of each new chat, so edits apply to your next new chat. When you link a folder, Claude reads it once and writes a fact sheet that new chats start from, so answers rarely wait on file reads. Claude can still open linked folders, and Gemini uses the fact sheet or, without one, the folder's README."
         )
         details_hint.setWordWrap(True)
         details_group = QVBoxLayout()
@@ -419,6 +431,7 @@ class SettingsPage(QWidget):
         details_group.addWidget(details_description)
         details_group.addWidget(details_list)
         details_group.addLayout(link_row)
+        details_group.addWidget(self.fact_sheets_status)
         details_group.addWidget(details_hint)
         documents_layout.addLayout(details_group)
         documents_layout.addStretch(1)
@@ -603,6 +616,7 @@ class SettingsPage(QWidget):
             self._show_documents()
         if "resume_details" in selected:
             self._show_resume_details()
+            self._update_fact_sheets()
         if "whisper_model" in selected:
             self.keep_voice_preference = True
             self._select_whisper(store.whisper_model())
@@ -1038,10 +1052,37 @@ class SettingsPage(QWidget):
             return False
         if rebuild:
             self._show_resume_details()
+            self._update_fact_sheets()
         self.save_status.setText(
             "Changes saved automatically. They apply to new chats."
         )
         return True
+
+    def _update_fact_sheets(self) -> None:
+        """Have Claude write fact sheets for linked folders that have none or changed since."""
+        model, effort = self.settings_store.defaults("claude")
+        self.resume_facts.refresh(self.settings_store.resume_details(), model, effort)
+        self._show_fact_sheets()
+
+    def _show_fact_sheets(self) -> None:
+        """Show how many linked folders have a current fact sheet and offer to update the rest."""
+        current, total, writing, error = self.resume_facts.status(
+            self.settings_store.resume_details()
+        )
+        if not total:
+            text = ""
+        elif writing:
+            text = (
+                f"Writing fact sheets… {current} of {total} linked folders are ready."
+            )
+        else:
+            text = f"Fact sheets: {current} of {total} linked folders are up to date."
+            if error:
+                text += f" The last one failed: {error}"
+        self.fact_sheets_status.setText(text)
+        self.fact_sheets_status.setVisible(bool(text))
+        self.fact_sheets_button.setVisible(bool(total))
+        self.fact_sheets_button.setEnabled(not writing and current < total)
 
     def _resume_details(self) -> list[tuple[str, str]]:
         """Return the resume detail links as currently shown, including unsaved name edits.

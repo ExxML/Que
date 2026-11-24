@@ -23,7 +23,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window_policy = install_window_policy(app)
     screenshot_manager = ScreenshotManager()
-    ai_sender = AISender()
+    ai_sender = AISender(live=True)
     transcriber = Transcriber(ai_sender.settings_store)
     main_window = MainWindow(ai_sender, screenshot_manager, transcriber)
     app.aboutToQuit.connect(transcriber.stop)

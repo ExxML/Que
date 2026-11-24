@@ -186,6 +186,16 @@ Also check by eye, without an attempt:
 3. Expect in Que's transcript (operator reads it): a **You** line with the spoken phrase and a **Them** line with the page's phrase; no "silent" or "no speech" warnings; the caption shows the latest line. On the page: continuous audio samples, no mute/ended events.
 4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
 
+### 7.6 Claude CLI processes
+
+With Claude selected, Que keeps one hidden `claude.exe` started and waiting for the next message: after the models load, after each reply, and after changing model, effort, chat or directory. It closes after 10 idle minutes and when Que quits. Linking a folder in Settings → Context, or clicking **Update fact sheets**, starts up to three more hidden `claude.exe` processes that write fact sheets.
+
+| Test | Steps | Expect |
+|---|---|---|
+| Pre-started CLI stays invisible | `go("input.integrity.stage-1",30)`. Send a Claude message, wait for the reply, then wait 5 s. | No focus change, no key events, no new window, taskbar button or console flash. One `claude.exe` child of Que remains in the process list. |
+| Fact sheets stay invisible | `go("input.integrity.stage-1",60)`. In Settings → Context, click **Update fact sheets** with at least one new or changed folder linked. | Same as above while the sheets are written. The status line counts the sheets as they finish. |
+| Nothing lingers | Quit Que (Caps Lock+Alt+Shift+Q). | No `claude.exe` started by Que remains. |
+
 ## 8. Analyse
 
 Run from the repository root (substring arguments select attempts by scenario ID; numbers in the output are attempt order):
