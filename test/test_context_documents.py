@@ -249,6 +249,15 @@ class ResumeDetailsTests(unittest.TestCase):
         self.assertTrue(self.sender.commit_interaction(first, "first-id"))
         self.assertEqual(self.sender.prepare_request("Next").prompt, "Next")
 
+    def test_unreadable_linked_file_is_reported(self) -> None:
+        """Explain why a linked file cannot be read in a new conversation."""
+        broken = self.root / "notes.docx"
+        broken.write_bytes(b"corrupt document")
+        self.store.save_resume_details([("Notes", str(broken))])
+
+        prompt = self.sender.prepare_request("Explain my notes").prompt
+        self.assertIn("Unavailable: Could not read notes.docx.", prompt)
+
     def test_folders_by_provider(self) -> None:
         """Let Claude browse folders on every turn and give Gemini only the README."""
         self.store.save_resume_details([("Que", str(self.project))])

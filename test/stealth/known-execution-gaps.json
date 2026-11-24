@@ -1,7 +1,6 @@
 [
   "core/ai_receiver.py | If | if not self.ai_sender.commit_interaction(self.request, interaction_id):",
   "core/ai_receiver.py | If | if self.chat_area.streaming_bubble is not None:",
-  "core/ai_sender.py | ExceptHandler | except ValueError as error:",
   "core/ai_sender.py | If | if client is None:",
   "core/ai_sender.py | If | if isinstance(stream, interactions.Interaction):",
   "core/ai_sender.py | If | if kind not in ('image', 'audio', 'video'):",

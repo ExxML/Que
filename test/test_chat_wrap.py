@@ -114,10 +114,15 @@ class ChatWrapTests(unittest.TestCase):
         self.app.processEvents()
 
         for bubble in chat.chat_container.findChildren(ChatBubble):
-            label = bubble.message_label
-            document = label.findChild(QTextDocument)
-            assert document is not None
-            self.assertLessEqual(document.size().width(), label.contentsRect().width())
+            with self.subTest(message=bubble.message):
+                label = bubble.message_label
+                # Replies outside the viewport have not painted at their new width yet.
+                label.grab()
+                document = label.findChild(QTextDocument)
+                assert document is not None
+                self.assertLessEqual(
+                    document.size().width(), label.contentsRect().width()
+                )
 
     def test_message_heights_are_measured_once_per_text(self) -> None:
         """Reuse a measured height until the text changes."""
