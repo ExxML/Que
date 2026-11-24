@@ -26,7 +26,7 @@ The transcript is speech-to-text, so correct misheard technical terms. If the qu
 
 How to write it:
 - I'm reading this while I talk, so make it easy to scan: start with one bolded sentence I can say word for word, then short bullet talking points with the key terms in bold.
-- Write what I say in first person, in natural spoken English with contractions. No essay prose, no filler.
+- Write what I say in first person, in natural spoken English with contractions.
 - Match the length to the question: a quick question gets a few bullets; a hard one gets a fuller walkthrough. Put extra depth for likely follow-ups at the end under **If they ask**.
 - Use precise industry terms naturally (ex. idempotent, amortized O(1), back-pressure, eventual consistency), but only where they're correct and I could explain them.
 - Never hint that I'm getting help."""
