@@ -246,7 +246,7 @@ class FactSheetSettingsTests(unittest.TestCase):
     """Show fact sheet progress in Settings and write sheets when folders are linked."""
 
     def setUp(self) -> None:
-        """Create a settings page over isolated storage."""
+        """Create a settings page with isolated storage and offline discovery."""
         self.app = application()
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
@@ -255,9 +255,11 @@ class FactSheetSettingsTests(unittest.TestCase):
         self.store.save("claude", "sonnet", "high", "")
         self.window = QWidget()
         self.addCleanup(self.window.deleteLater)
+        bridge = MagicMock(spec=ClaudeBridge, live=False)
+        bridge.discover.side_effect = RuntimeError("Fixture Claude discovery failed.")
         self.page = SettingsPage(
             self.store,
-            ClaudeBridge(),
+            bridge,
             MagicMock(),
             ChatHistory(self.root / "chat_history.json"),
             self.window,

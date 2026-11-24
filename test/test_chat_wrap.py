@@ -4,7 +4,7 @@ import unittest
 from collections.abc import Callable
 from typing import cast
 
-from PyQt6.QtTest import QTest
+from PyQt6.QtTest import QSignalSpy, QTest
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from qt_application import application
 
@@ -147,8 +147,10 @@ class ChatScrollTests(unittest.TestCase):
         self.assertEqual(bubble.y() - start, self.chat.fade_effect.FADE_HEIGHT)
         self.assertEqual(bubble.message, "\n Hello")
 
+        range_changes = QSignalSpy(self.chat.scrollbar.rangeChanged)
         self.chat.append_to_stream(" more words" * 100)
-        wait(80)
+        if self.chat.scrollbar.maximum() <= start:
+            self.assertTrue(range_changes.wait(2000), "The streamed reply did not grow")
         self.assertGreater(self.chat.scrollbar.maximum(), start)
         self.assertEqual(self.chat.scrollbar.value(), start)
         manual_position = start // 2

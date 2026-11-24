@@ -245,14 +245,17 @@ class ControlledFailureTests(unittest.TestCase):
         """Observe malformed auth output and process termination errors without invoking Claude."""
         bridge = ClaudeBridge()
         with (
-            patch.object(bridge, "_command", return_value=["fixture"]),
+            patch("core.claude_bridge.shutil.which", return_value="fixture-claude.exe"),
             patch(
                 "core.claude_bridge.subprocess.run",
                 return_value=MagicMock(stdout="invalid JSON", returncode=0),
-            ),
-            self.assertRaises(RuntimeError),
+            ) as run,
+            self.assertRaisesRegex(RuntimeError, "Could not check Claude Code"),
         ):
             bridge.discover()
+        self.assertEqual(
+            run.call_args.args[0], ["fixture-claude.exe", "auth", "status"]
+        )
         process = MagicMock()
         process.poll.return_value = None
         process.terminate.side_effect = OSError("fixture termination failure")
