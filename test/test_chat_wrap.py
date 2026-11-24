@@ -4,6 +4,7 @@ import unittest
 from collections.abc import Callable
 from typing import cast
 
+from PyQt6.QtGui import QTextDocument
 from PyQt6.QtTest import QSignalSpy, QTest
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 from qt_application import application
@@ -85,6 +86,38 @@ class ChatWrapTests(unittest.TestCase):
 
         bubble.resize(300, 300)
         self.assertEqual(transcript.maximumWidth(), 225)
+
+    def test_long_words_wrap_instead_of_widening_replies(self) -> None:
+        """Break words wider than a narrow reply so no line, in a list or not, runs past the window."""
+        window = QWidget()
+        layout = QVBoxLayout(window)
+        layout.setContentsMargins(0, 0, 0, 0)
+        chat = ChatArea(window)
+        layout.addWidget(chat)
+        code = "`homePage.tapWorkoutsTab().tapFirstWorkout().assertTitle()`"
+        chat.load_messages(
+            [
+                (f"Then {code} chains calls.", False, "", ()),
+                (
+                    f"- **Structure:**\n  - Tests read like {code} so they stay short.",
+                    False,
+                    "",
+                    (),
+                ),
+                (f"| Call | Use |\n|---|---|\n| {code} | Chains |", False, "", ()),
+                ("https://example.com/" + "segment" * 30, True, "", ()),
+            ]
+        )
+        window.resize(300, 600)
+        window.show()
+        self.addCleanup(window.close)
+        self.app.processEvents()
+
+        for bubble in chat.chat_container.findChildren(ChatBubble):
+            label = bubble.message_label
+            document = label.findChild(QTextDocument)
+            assert document is not None
+            self.assertLessEqual(document.size().width(), label.contentsRect().width())
 
     def test_message_heights_are_measured_once_per_text(self) -> None:
         """Reuse a measured height until the text changes."""

@@ -11,6 +11,8 @@ from PyQt6.QtGui import (
     QPen,
     QPixmap,
     QResizeEvent,
+    QTextDocument,
+    QTextOption,
 )
 from PyQt6.QtWidgets import (
     QAbstractButton,
@@ -319,11 +321,17 @@ class _MessageLabel(QLabel):
 
     QLabel lays the whole rich text out again on every height query, and each resize step
     asks several times per message, so resizing a long chat lagged.
+
+    A word wider than the label, such as a long code span or URL, breaks anywhere instead of
+    overflowing. QLabel only breaks at spaces, which clipped such words and, inside a list,
+    widened the whole list past the window so every line in it was cut off.
     """
 
     def __init__(self, text: str) -> None:
         super().__init__(text)
         self.heights: dict[int, int] = {}
+        # QLabel puts back its own wrap mode whenever it lays out new text, font or style
+        self.wrap_pending = True
 
     def setText(self, text: str | None) -> None:
         """Show new text and forget the heights measured for the old one.
@@ -332,6 +340,7 @@ class _MessageLabel(QLabel):
             text (str | None): The rich text to show.
         """
         self.heights.clear()
+        self.wrap_pending = True
         super().setText(text)
 
     def setWordWrap(self, on: bool) -> None:
@@ -341,6 +350,7 @@ class _MessageLabel(QLabel):
             on (bool): Whether to wrap the text.
         """
         self.heights.clear()
+        self.wrap_pending = True
         super().setWordWrap(on)
 
     def heightForWidth(self, width: int) -> int:
@@ -353,6 +363,7 @@ class _MessageLabel(QLabel):
             int: The height the text needs.
         """
         if width not in self.heights:
+            self._break_long_words(width)
             self.heights[width] = super().heightForWidth(width)
         return self.heights[width]
 
@@ -365,9 +376,45 @@ class _MessageLabel(QLabel):
         if event is not None and event.type() in (
             QEvent.Type.FontChange,
             QEvent.Type.StyleChange,
+            QEvent.Type.ContentsRectChange,
         ):
             self.heights.clear()
+            self.wrap_pending = True
         super().changeEvent(event)
+
+    def resizeEvent(self, event: QResizeEvent | None) -> None:
+        """Break long words again after a resize, which makes QLabel lay its text out afresh.
+
+        Args:
+            event (QResizeEvent): The resize event.
+        """
+        self.wrap_pending = True
+        super().resizeEvent(event)
+
+    def paintEvent(self, event: QPaintEvent | None) -> None:
+        """Draw the text with long words broken, even if it changed since it was last measured.
+
+        Args:
+            event (QPaintEvent): The paint event.
+        """
+        self._break_long_words(self.width())
+        super().paintEvent(event)
+
+    def _break_long_words(self, width: int) -> None:
+        """Let a word too wide for the label break anywhere, once QLabel has applied its own wrap mode.
+
+        Args:
+            width (int): The width QLabel lays the text out at while applying its wrap mode.
+        """
+        if not self.wrap_pending or not self.wordWrap():
+            return
+        self.wrap_pending = False
+        # Let QLabel reset the wrap mode now rather than after this, then override it in its one document
+        super().heightForWidth(width)
+        for document in self.findChildren(QTextDocument):
+            option = document.defaultTextOption()
+            option.setWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+            document.setDefaultTextOption(option)
 
 
 class _ScreenshotPreview(QAbstractButton):
