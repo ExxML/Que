@@ -102,7 +102,7 @@ class ChatWrapTests(unittest.TestCase):
 
 
 class ChatScrollTests(unittest.TestCase):
-    """Check that each streamed reply jumps into view once."""
+    """Check scrolling for sent messages and the start of streamed replies."""
 
     def setUp(self) -> None:
         """Show a chat viewport and lay out its contents."""
@@ -117,12 +117,26 @@ class ChatScrollTests(unittest.TestCase):
         wait(20)
 
     def test_first_text_scrolls_once_and_keeps_manual_position(self) -> None:
-        """Wait for reply text, align it below the fade, and respect later manual scrolling."""
+        """Reveal the sent message, align the reply, and respect later manual scrolling."""
         self.chat.add_message("A long question " * 40, is_user=True)
+        item = self.chat.chat_layout.itemAt(0)
+        assert item is not None
+        sent_bubble = item.widget()
+        assert sent_bubble is not None
+        viewport = self.chat.viewport()
+        assert viewport is not None
+        wait(20)
+        sent_position = self.chat.scrollbar.value()
+        self.assertGreater(sent_position, 0)
+        self.assertEqual(
+            sent_bubble.y() + sent_bubble.height() - sent_position,
+            viewport.height() - self.chat.fade_effect.FADE_HEIGHT,
+        )
+
         self.chat.set_stream_status("Reading a file")
         self.chat.append_to_stream("\n ")
-        wait(450)
-        self.assertEqual(self.chat.scrollbar.value(), 0)
+        wait(100)
+        self.assertEqual(self.chat.scrollbar.value(), sent_position)
 
         self.chat.append_to_stream("Hello")
         bubble = self.chat.streaming_bubble
@@ -145,6 +159,8 @@ class ChatScrollTests(unittest.TestCase):
         self.assertEqual(self.chat.scrollbar.value(), manual_position)
         self.assertTrue(bubble.message.endswith(" End."))
 
+        scrolls: list[int] = []
+        self.chat.scrollbar.valueChanged.connect(scrolls.append)
         self.chat.add_message("Follow-up", is_user=True)
         self.chat.append_to_stream("Second reply")
         next_bubble = self.chat.streaming_bubble
@@ -154,6 +170,7 @@ class ChatScrollTests(unittest.TestCase):
             next_bubble.y() - self.chat.scrollbar.value(),
             self.chat.fade_effect.FADE_HEIGHT,
         )
+        self.assertEqual(len(scrolls), 1)
 
     def test_reply_finished_while_hidden_scrolls_when_shown(self) -> None:
         """Keep the scroll pending when a short reply finishes offscreen."""
@@ -170,6 +187,30 @@ class ChatScrollTests(unittest.TestCase):
         wait(20)
         self.assertEqual(
             bubble.y() - self.chat.scrollbar.value(), self.chat.fade_effect.FADE_HEIGHT
+        )
+
+    def test_sent_message_scrolls_when_shown_before_reply(self) -> None:
+        """Reveal a new message below existing history when the chat is reopened."""
+        self.chat.load_messages([("Previous reply " * 100, False, "", ())])
+        wait(20)
+        self.chat.scrollbar.setValue(0)
+        self.window.hide()
+        self.chat.add_message("Follow-up", is_user=True)
+        wait(20)
+        self.assertEqual(self.chat.scrollbar.value(), 0)
+
+        item = self.chat.chat_layout.itemAt(1)
+        assert item is not None
+        sent_bubble = item.widget()
+        assert sent_bubble is not None
+        viewport = self.chat.viewport()
+        assert viewport is not None
+        self.window.show()
+        wait(20)
+        self.assertGreater(self.chat.scrollbar.value(), 0)
+        self.assertEqual(
+            sent_bubble.y() + sent_bubble.height() - self.chat.scrollbar.value(),
+            viewport.height() - self.chat.fade_effect.FADE_HEIGHT,
         )
 
     def test_clear_cancels_queued_reply_scroll(self) -> None:
