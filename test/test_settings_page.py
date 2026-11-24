@@ -86,15 +86,25 @@ class SaveFailureTests(SettingsTestCase):
                 action()
                 self.assertIn(UNWRITABLE, self.status())
 
-    def test_instruction_saves_only_when_changed(self) -> None:
-        """Skip saving an unchanged instruction, and report a failed save."""
-        with patch.object(self.store, "save_instruction") as save:
-            self.page._save_instruction()
-        save.assert_not_called()
-        self.page.instruction_input.setPlainText("Be brief.")
+    def test_context_text_saves_only_when_changed(self) -> None:
+        """Skip saving unchanged text, and keep a failed save's message after a later success."""
+        for method, text_input in (
+            ("save_instruction", self.page.instruction_input),
+            ("save_job_details", self.page.job_details_input),
+        ):
+            with self.subTest(method=method):
+                with patch.object(self.store, method) as save:
+                    self.assertTrue(self.page._save_context_text())
+                save.assert_not_called()
+                text_input.setPlainText("Be brief.")
+                with patch.object(self.store, method, side_effect=OSError):
+                    self.assertFalse(self.page._save_context_text())
+                self.assertIn(UNWRITABLE, self.status())
+        self.page.instruction_input.setPlainText("Changed")
         with patch.object(self.store, "save_instruction", side_effect=OSError):
-            self.page._save_instruction()
-        self.assertIn(UNWRITABLE, self.status())
+            self.assertFalse(self.page._save_context_text())
+        self.assertIn("instruction could not be saved", self.status())
+        self.assertEqual(self.store.job_details(), "Be brief.")
 
     def test_audio_device_save_failure_restores_the_previous_choice(self) -> None:
         """Put the previous device back when the new choice cannot be saved."""

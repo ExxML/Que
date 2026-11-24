@@ -82,10 +82,10 @@ class SettingsPage(QWidget):
         self.key_timer.setSingleShot(True)
         self.key_timer.setInterval(500)
         self.key_timer.timeout.connect(lambda: self._refresh(False))
-        self.instruction_timer = QTimer(self)
-        self.instruction_timer.setSingleShot(True)
-        self.instruction_timer.setInterval(500)
-        self.instruction_timer.timeout.connect(self._save_instruction)
+        self.context_text_timer = QTimer(self)
+        self.context_text_timer.setSingleShot(True)
+        self.context_text_timer.setInterval(500)
+        self.context_text_timer.timeout.connect(self._save_context_text)
         self.details_timer = QTimer(self)
         self.details_timer.setSingleShot(True)
         self.details_timer.setInterval(500)
@@ -112,6 +112,9 @@ class SettingsPage(QWidget):
         self.instruction_input.blockSignals(True)
         self.instruction_input.setPlainText(self.settings_store.instruction())
         self.instruction_input.blockSignals(False)
+        with QSignalBlocker(self.job_details_input):
+            self.job_details_input.setPlainText(self.settings_store.job_details())
+        self._show_job_details_count()
         self._show_documents()
         self._show_resume_details()
         self._show_fact_sheets()
@@ -120,13 +123,13 @@ class SettingsPage(QWidget):
         self._load_ai_settings()
 
     def hideEvent(self, event: QHideEvent | None) -> None:
-        """Save pending instruction and resume detail edits when leaving settings or hiding Que.
+        """Save pending instruction, job detail and resume detail edits when leaving settings or hiding Que.
 
         Args:
             event (QHideEvent | None): The hide event.
         """
-        if self.instruction_timer.isActive():
-            self._save_instruction()
+        if self.context_text_timer.isActive():
+            self._save_context_text()
         if self.details_timer.isActive():
             self._save_detail_names()
         super().hideEvent(event)
@@ -340,7 +343,7 @@ class SettingsPage(QWidget):
         instruction_scrollbar = self.instruction_input.verticalScrollBar()
         assert instruction_scrollbar is not None
         instruction_scrollbar.setStyleSheet(SCROLLBAR_STYLE)
-        self.instruction_input.textChanged.connect(self.instruction_timer.start)
+        self.instruction_input.textChanged.connect(self.context_text_timer.start)
         instruction_label.setBuddy(self.instruction_input)
         instruction_hint = QLabel(
             "Sent once at the start of each new chat to tell the AI what the conversation is for, so changes apply to your next new chat."
@@ -353,6 +356,34 @@ class SettingsPage(QWidget):
         instruction_group.addWidget(self.instruction_input)
         instruction_group.addWidget(instruction_hint)
         documents_layout.addLayout(instruction_group)
+        job_details_label = QLabel("Job and interview details")
+        self.job_details_input = QPlainTextEdit()
+        self.job_details_input.setPlaceholderText(
+            "Paste the job description, plus anything else that helps, such as the company, team, interviewers, and interview format."
+        )
+        self.job_details_input.setAccessibleName("Job and interview details")
+        self.job_details_input.setTabChangesFocus(True)
+        self.job_details_input.setFixedHeight(160)
+        job_details_scrollbar = self.job_details_input.verticalScrollBar()
+        assert job_details_scrollbar is not None
+        job_details_scrollbar.setStyleSheet(SCROLLBAR_STYLE)
+        self.job_details_input.textChanged.connect(self.context_text_timer.start)
+        self.job_details_input.textChanged.connect(self._show_job_details_count)
+        job_details_label.setBuddy(self.job_details_input)
+        self.job_details_count = QLabel()
+        self.job_details_count.hide()
+        job_details_hint = QLabel(
+            "Sent once at the start of each new chat so answers fit the role, so changes apply to your next new chat."
+        )
+        job_details_hint.setWordWrap(True)
+        self.job_details_input.setAccessibleDescription(job_details_hint.text())
+        job_details_group = QVBoxLayout()
+        job_details_group.setSpacing(4)
+        job_details_group.addWidget(job_details_label)
+        job_details_group.addWidget(self.job_details_input)
+        job_details_group.addWidget(self.job_details_count)
+        job_details_group.addWidget(job_details_hint)
+        documents_layout.addLayout(job_details_group)
         documents_description = QLabel(
             "Add your resume, cover letter, and interview script so answers fit your experience, like during an interview."
         )
@@ -583,11 +614,11 @@ class SettingsPage(QWidget):
         """Persist buffered Context edits before reading or writing a backup.
 
         Returns:
-            bool: True if both Context fields are up to date.
+            bool: True if every Context field is up to date.
         """
-        instruction_saved = self._save_instruction()
+        text_saved = self._save_context_text()
         details_saved = self._save_detail_names()
-        return instruction_saved and details_saved
+        return text_saved and details_saved
 
     def _apply_imported_config(self, selected: set[str]) -> None:
         """Update only controls and runtime consumers affected by the import.
@@ -612,6 +643,10 @@ class SettingsPage(QWidget):
         if "instruction" in selected:
             with QSignalBlocker(self.instruction_input):
                 self.instruction_input.setPlainText(store.instruction())
+        if "job_details" in selected:
+            with QSignalBlocker(self.job_details_input):
+                self.job_details_input.setPlainText(store.job_details())
+            self._show_job_details_count()
         if any(key.startswith("context_documents.") for key in selected):
             self._show_documents()
         if "resume_details" in selected:
@@ -959,23 +994,50 @@ class SettingsPage(QWidget):
             "Changes saved automatically. They apply to new chats."
         )
 
-    def _save_instruction(self) -> bool:
-        """Save the typed instruction when it differs from the saved one."""
-        self.instruction_timer.stop()
-        instruction = self.instruction_input.toPlainText().strip()
-        if instruction == self.settings_store.instruction():
-            return True
-        try:
-            self.settings_store.save_instruction(instruction)
-        except OSError:
-            self.save_status.setText(
-                "The instruction could not be saved. Check that Que's data folder is writable."
-            )
-            return False
-        self.save_status.setText(
-            "Changes saved automatically. They apply to new chats."
-        )
-        return True
+    def _save_context_text(self) -> bool:
+        """Save the typed instruction and job details where they differ from the saved ones.
+
+        Returns:
+            bool: True if both fields are up to date.
+        """
+        self.context_text_timer.stop()
+        saved = True
+        for name, text_input, current, save in (
+            (
+                "instruction",
+                self.instruction_input,
+                self.settings_store.instruction,
+                self.settings_store.save_instruction,
+            ),
+            (
+                "job details",
+                self.job_details_input,
+                self.settings_store.job_details,
+                self.settings_store.save_job_details,
+            ),
+        ):
+            text = text_input.toPlainText().strip()
+            if text == current():
+                continue
+            try:
+                save(text)
+            except OSError:
+                self.save_status.setText(
+                    f"The {name} could not be saved. Check that Que's data folder is writable."
+                )
+                saved = False
+                continue
+            if saved:  # Keeps an earlier field's failure message visible
+                self.save_status.setText(
+                    "Changes saved automatically. They apply to new chats."
+                )
+        return saved
+
+    def _show_job_details_count(self) -> None:
+        """Show how many words the job details hold, hiding the count when they are empty."""
+        words = len(self.job_details_input.toPlainText().split())
+        self.job_details_count.setText(f"{words:,} word{'' if words == 1 else 's'}")
+        self.job_details_count.setVisible(bool(words))
 
     def _show_documents(self) -> None:
         """Display each saved document's name and size, and offer removal only when saved."""

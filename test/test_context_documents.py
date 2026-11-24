@@ -168,7 +168,7 @@ class ContextDocumentTests(unittest.TestCase):
         self.assertIn("<resume>", self.sender.prepare_request("New").prompt)
 
     def test_instruction_leads_documents_on_new_chats(self) -> None:
-        """Send the saved instruction before documents once per conversation."""
+        """Send the saved instruction, then job details, before documents once per conversation."""
         self.store.save_instruction("Answer concisely.")
         self.assertEqual(
             SettingsStore(self.store.path).instruction(), "Answer concisely."
@@ -178,9 +178,16 @@ class ContextDocumentTests(unittest.TestCase):
             "Follow my instructions for this whole conversation.\n<instructions>\nAnswer concisely.\n</instructions>\n\nHi",
         )
         self.store.save_context_document("resume", "cv.pdf", "Built Que")
+        self.store.save_job_details("Backend engineer at Acme")
         first = self.sender.prepare_request("Hi")
+        self.assertIn(
+            "<job_details>\nBackend engineer at Acme\n</job_details>", first.prompt
+        )
         self.assertLess(
-            first.prompt.index("</instructions>"), first.prompt.index("<resume>")
+            first.prompt.index("</instructions>"), first.prompt.index("<job_details>")
+        )
+        self.assertLess(
+            first.prompt.index("</job_details>"), first.prompt.index("<resume>")
         )
         self.assertTrue(self.sender.commit_interaction(first, "first-id"))
         self.assertEqual(self.sender.prepare_request("Next").prompt, "Next")
@@ -388,16 +395,40 @@ class SettingsDocumentsTests(unittest.TestCase):
     def test_instruction_saves_after_typing(self) -> None:
         """Save the trimmed instruction on hide, and reload it when settings reopen."""
         self.page.instruction_input.setPlainText("  Be brief.\n")
-        self.assertTrue(self.page.instruction_timer.isActive())
+        self.assertTrue(self.page.context_text_timer.isActive())
         self.page.hideEvent(None)
-        self.assertFalse(self.page.instruction_timer.isActive())
+        self.assertFalse(self.page.context_text_timer.isActive())
         self.assertEqual(SettingsStore(self.store.path).instruction(), "Be brief.")
         self.page.instruction_input.setPlainText("")
-        self.page.instruction_timer.stop()
+        self.page.context_text_timer.stop()
         self.page.open_settings()
         self.assertEqual(self.page.instruction_input.toPlainText(), "Be brief.")
         # Loading the saved instruction is not an edit
-        self.assertFalse(self.page.instruction_timer.isActive())
+        self.assertFalse(self.page.context_text_timer.isActive())
+
+    def test_job_details_save_after_typing_and_show_a_word_count(self) -> None:
+        """Save trimmed job details on hide, count their words, and reload them when settings reopen."""
+        self.assertTrue(self.page.job_details_count.isHidden())
+        self.page.job_details_input.setPlainText("  Backend engineer at Acme\n")
+        self.assertTrue(self.page.context_text_timer.isActive())
+        self.assertEqual(self.page.job_details_count.text(), "4 words")
+        self.assertFalse(self.page.job_details_count.isHidden())
+        self.page.hideEvent(None)
+        self.assertFalse(self.page.context_text_timer.isActive())
+        self.assertEqual(
+            SettingsStore(self.store.path).job_details(), "Backend engineer at Acme"
+        )
+        self.page.job_details_input.setPlainText("Engineer")
+        self.assertEqual(self.page.job_details_count.text(), "1 word")
+        self.page.job_details_input.setPlainText("")
+        self.assertTrue(self.page.job_details_count.isHidden())
+        self.page.context_text_timer.stop()
+        self.page.open_settings()
+        self.assertEqual(
+            self.page.job_details_input.toPlainText(), "Backend engineer at Acme"
+        )
+        self.assertEqual(self.page.job_details_count.text(), "4 words")
+        self.assertFalse(self.page.context_text_timer.isActive())
 
 
 if __name__ == "__main__":

@@ -553,6 +553,13 @@
     "enabled": true
   },
   {
+    "class": "QPlainTextEdit",
+    "name": "",
+    "accessible": "Job and interview details",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "QPushButton",
     "name": "",
     "accessible": "Link a file to a resume item",

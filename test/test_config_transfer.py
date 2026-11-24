@@ -155,6 +155,7 @@ class ConfigTransferTests(unittest.TestCase):
         self.write_backup(
             {
                 "instruction": "Imported",
+                "job_details": "Imported role",
                 "context_documents.resume": None,
                 "context_documents.cover_letter": {
                     "name": "new.txt",
@@ -200,6 +201,8 @@ class ConfigTransferTests(unittest.TestCase):
         write.assert_called_once()
         self.assertEqual(toggles, [True])
         self.assertEqual(self.page.instruction_input.toPlainText(), "Imported")
+        self.assertEqual(self.page.job_details_input.toPlainText(), "Imported role")
+        self.assertEqual(self.page.job_details_count.text(), "2 words")
         self.assertEqual(
             self.store.context_documents(), {"cover_letter": ("letter.txt", "Keep me")}
         )

@@ -30,6 +30,7 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
     },
     "Context": {
         "instruction": "Instruction",
+        "job_details": "Job and interview details",
         **{
             f"context_documents.{kind}": name
             for kind, name in CONTEXT_DOCUMENTS.items()
@@ -179,6 +180,14 @@ class SettingsStore:
             str: The instruction, or an empty string when unset.
         """
         return str(self.data.get("instruction", ""))
+
+    def job_details(self) -> str:
+        """Return the saved job description and interview details that start every new conversation.
+
+        Returns:
+            str: The details, or an empty string when unset.
+        """
+        return str(self.data.get("job_details", ""))
 
     def context_documents(self) -> dict[str, tuple[str, str]]:
         """Return the saved documents that give the AI context about the user.
@@ -336,6 +345,14 @@ class SettingsStore:
         """
         self._write({**self.data, "instruction": instruction})
 
+    def save_job_details(self, job_details: str) -> None:
+        """Atomically save the job description and interview details that start every new conversation.
+
+        Args:
+            job_details (str): The details, or an empty string to remove them.
+        """
+        self._write({**self.data, "job_details": job_details})
+
     def save_context_document(self, kind: str, name: str, text: str) -> None:
         """Atomically save a context document, or remove it when the text is empty.
 
@@ -392,6 +409,7 @@ class SettingsStore:
                 for slot, preset in enumerate(self.presets(provider))
             },
             "instruction": self.instruction(),
+            "job_details": self.job_details(),
             **{
                 f"context_documents.{kind}": dict(
                     zip(("name", "text"), documents[kind], strict=True)

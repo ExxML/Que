@@ -423,10 +423,10 @@ class AISender:
             raise
 
     def _context(self) -> str:
-        """Wrap the user's saved instruction and documents as background for a new conversation.
+        """Wrap the user's saved instruction, job details and documents as background for a new conversation.
 
         Returns:
-            str: The instruction and documents, or an empty string when neither is saved.
+            str: The instruction, job details and documents, or an empty string when none is saved.
         """
         parts: list[str] = []
         instruction = self.settings_store.instruction()
@@ -436,6 +436,14 @@ class AISender:
 <instructions>
 {instruction}
 </instructions>"""
+            )
+        job_details = self.settings_store.job_details()
+        if job_details:
+            parts.append(
+                f"""Details about the job I'm interviewing for. Tailor my answers to this role: connect my experience to what it asks for and use its terms. Don't mention these details unless I ask.
+<job_details>
+{job_details}
+</job_details>"""
             )
         documents = self.settings_store.context_documents()
         sections = [
