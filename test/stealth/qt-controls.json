@@ -343,6 +343,13 @@
     "enabled": true
   },
   {
+    "class": "_SendButton",
+    "name": "sendButton",
+    "accessible": "Answer",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "_SettingsComboBox",
     "name": "",
     "accessible": "Caps Lock+0 preset effort",

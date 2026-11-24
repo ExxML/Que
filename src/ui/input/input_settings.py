@@ -13,6 +13,7 @@ class InputSettings(QWidget):
     """Display matching model and effort selectors below the message input."""
 
     model_changed = pyqtSignal(str)
+    models_changed = pyqtSignal()
     effort_changed = pyqtSignal(str)
     reload_requested = pyqtSignal()
     directory_requested = pyqtSignal()
@@ -64,6 +65,7 @@ class InputSettings(QWidget):
             self._on_model_changed(self.model_dropdown.current_value)
         if effort:
             self.effort_dropdown.set_value(effort)
+        self.models_changed.emit()
 
     def set_directory(self, directory: str) -> None:
         """Show the three innermost directories Claude works in.
@@ -111,6 +113,7 @@ class InputSettings(QWidget):
         self.model_dropdown.blockSignals(False)
         self.model_dropdown.setEnabled(False)
         self.effort_dropdown.hide()
+        self.models_changed.emit()
 
     def show_model_error(self, error: str) -> None:
         """Offer a retry when discovery fails without inventing fallback models.

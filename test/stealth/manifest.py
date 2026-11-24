@@ -132,6 +132,12 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
             "keyboard",
         ),
         (
+            "input.send-button",
+            "Use the input action button with a synthetic conversation while the observer page has foreground focus and calibrated capture is running.",
+            "Confirm that Send submits the typed draft and that Answer captures the screen and sends the same prompt as Caps Lock+C. Record foreground focus, pointer capture, and captured frames for each action.",
+            "interaction",
+        ),
+        (
             "pointer.locks",
             "Acquire pointer lock and supported keyboard lock; move over Que, click and scroll; toggle click-through during a drag.",
             "Confirm locks and pointer movement; record losses and boundary interruptions.",

@@ -17,6 +17,10 @@ WORKFLOWS = {
         "type with AltGr",
         "compose with each installed IME",
     ),
+    "input.send-button": (
+        "click Send with a typed draft",
+        "click Answer with an empty draft",
+    ),
     "screenshot.lifecycle": (
         "capture once",
         "capture rapidly ten times",

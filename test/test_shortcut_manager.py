@@ -17,6 +17,7 @@ from core.hook_client import HookClient
 from core.hook_engine import ACTION_NAMES, PRESET_COUNT
 from core.prompts import INTERVIEW_LABEL, INTERVIEW_PROMPT
 from core.shortcut_manager import ShortcutManager
+from ui.input.input_field import InputField
 
 # shortcut: destroying a ShortcutManager's HookClient between tests aborts the process (0xC0000409);
 # the app never destroys them, so tests keep theirs alive. Find the PyQt teardown cause if more tests need it.
@@ -32,6 +33,7 @@ class FakeMainWindow(QWidget):
         self.ai_sender = MagicMock()
         self.ai_sender.settings_store.elevate_helper.return_value = False
         self.chat_area = MagicMock()
+        self.input_field = InputField(self)
         self.finish_quit = MagicMock()
         self.quit_requested = MagicMock()
         self.status_banner = MagicMock()
@@ -114,6 +116,20 @@ class ActionTests(ShortcutTestCase):
         self.assertEqual(self.screenshots.take_screenshot.call_count, 2)
         self.window.send_prompt.assert_called_once_with(
             INTERVIEW_LABEL, INTERVIEW_PROMPT
+        )
+
+    def test_answer_button_captures_before_sending_the_shortcut_prompt(self) -> None:
+        """Run the shortcut's capture-then-prompt sequence from the blank input button."""
+        events = MagicMock()
+        events.attach_mock(self.screenshots.take_screenshot, "capture")
+        events.attach_mock(self.window.send_prompt, "prompt")
+        self.window.input_field.send_button.click()
+        self.assertEqual(
+            [(event[0], event.args) for event in events.mock_calls],
+            [
+                ("capture", (int(self.window.winId()),)),
+                ("prompt", (INTERVIEW_LABEL, INTERVIEW_PROMPT)),
+            ],
         )
 
     def test_presets_send_their_slot(self) -> None:

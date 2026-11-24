@@ -4344,299 +4344,299 @@
     "source": "core/shortcut_manager.py",
     "line": 42,
     "expression": "def __init__(self, main_window: MainWindow, screenshot_manager: ScreenshotManager) -> None:",
-    "sha256": "130082e802bf395b5bdc2dc99a8220a9df0fcd2375a627a82fd43f365f316c79"
+    "sha256": "85ae2f27b353330e7c3703d64fcfa42abbbc574e3c3d028b8fb377ca935015f7"
   },
-  "core/shortcut_manager.py:110:routine": {
+  "core/shortcut_manager.py:111:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 110,
+    "line": 111,
     "expression": "def request_quit(self) -> None:",
     "sha256": "f2afa82e2608f4d1620eec676ab0ece7d70847d6a8d84f502c7623f1179abe8d"
   },
-  "core/shortcut_manager.py:115:routine": {
+  "core/shortcut_manager.py:116:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 115,
+    "line": 116,
     "expression": "def arm_input(self, armed: bool) -> None:",
     "sha256": "f2779cc3ccc6b58fae8a25359b0c26eebe7a414703246c80c1c4ed801cf8abe5"
   },
-  "core/shortcut_manager.py:123:routine": {
+  "core/shortcut_manager.py:124:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 123,
+    "line": 124,
     "expression": "def stop(self) -> None:",
     "sha256": "6bc79747f23a6fa0b7676c289c5ddcb4590c4680051ab0713bd7443352c742b0"
   },
-  "core/shortcut_manager.py:127:routine": {
+  "core/shortcut_manager.py:128:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 127,
+    "line": 128,
     "expression": "def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:",
     "sha256": "4b4d817c4e93f68dd107f1bedc0be326e7b8e0ab89d0b3c1a069528e65d5ba8e"
   },
-  "core/shortcut_manager.py:137:routine": {
+  "core/shortcut_manager.py:138:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 137,
+    "line": 138,
     "expression": "def _run_action(self, name: str) -> None:",
     "sha256": "716c0291b78eec62293cc37d56190bf3e844adcaf323eef040e895ec0605d671"
   },
-  "core/shortcut_manager.py:147:routine": {
+  "core/shortcut_manager.py:148:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 147,
+    "line": 148,
     "expression": "def _on_input_alert(self, message: str, lasting: bool=True) -> None:",
     "sha256": "c43c36f9ba3ec4724d432144f3283b205e3a6b22d721e88a872bc3c90a1e93af"
   },
-  "core/shortcut_manager.py:162:routine": {
+  "core/shortcut_manager.py:163:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 162,
+    "line": 163,
     "expression": "def _setup_movement_distances(self) -> None:",
     "sha256": "744892df6834d9b2706fc782068484d35a2a295e89d0a7a3b6274f00b8c2f56f"
   },
-  "core/shortcut_manager.py:176:routine": {
+  "core/shortcut_manager.py:177:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 176,
+    "line": 177,
     "expression": "def _start_animation(self, target_x: int, target_y: int) -> None:",
     "sha256": "5a77404813f001f2f4df39fbdb0ed6cebddad7918ecff19cd5a9457659dc9f70"
   },
-  "core/shortcut_manager.py:189:routine": {
+  "core/shortcut_manager.py:190:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 189,
+    "line": 190,
     "expression": "def _animate_step(self) -> None:",
     "sha256": "294bc634e70d2a944fd2102a4c82025ab6386e35eff5f7e8799629e1b0ee7a72"
   },
-  "core/shortcut_manager.py:215:routine": {
+  "core/shortcut_manager.py:216:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 215,
+    "line": 216,
     "expression": "def _toggle_window_visibility(self) -> None:",
     "sha256": "d89bdd9f635104373d9c30dc0484a9130c64bceb88ec2c7ffb9fae18b19712ae"
   },
-  "core/shortcut_manager.py:219:routine": {
+  "core/shortcut_manager.py:220:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 219,
+    "line": 220,
     "expression": "def _move_by_direction(self, dx: int, dy: int) -> None:",
     "sha256": "464e09303ef3f0eafba5189276b4f5f7b5452ca3be682f1d12f284352e78bd64"
   },
-  "core/shortcut_manager.py:252:routine": {
+  "core/shortcut_manager.py:253:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 252,
+    "line": 253,
     "expression": "def _move_window_left(self) -> None:",
     "sha256": "8dea2e25dabdcdac27fb9e097577b28cbce94bd6c36b414c270e02b64ec24f17"
   },
-  "core/shortcut_manager.py:256:routine": {
+  "core/shortcut_manager.py:257:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 256,
+    "line": 257,
     "expression": "def _move_window_right(self) -> None:",
     "sha256": "e581355db2a34e4458e767d1251fa22b01baae9c6c1484efe1a6e4ee5d4c662e"
   },
-  "core/shortcut_manager.py:260:routine": {
+  "core/shortcut_manager.py:261:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 260,
+    "line": 261,
     "expression": "def _move_window_up(self) -> None:",
     "sha256": "28b173ab0dc5f5fda4ed4acc409b76471f3d891b93aabdf2ce080dd18445154c"
   },
-  "core/shortcut_manager.py:264:routine": {
+  "core/shortcut_manager.py:265:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 264,
+    "line": 265,
     "expression": "def _move_window_down(self) -> None:",
     "sha256": "9a3783d25207d2c08449686e8b29ce3ed16e92d3b4c2ee70a3d2ac18fa4f84ad"
   },
-  "core/shortcut_manager.py:268:routine": {
+  "core/shortcut_manager.py:269:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 268,
+    "line": 269,
     "expression": "def _resize_by(self, dx: int, dy: int) -> None:",
     "sha256": "baf61ca7caccb4230312d381e8fa9ea8d25c9651d9c1f1b901be73d4d959925a"
   },
-  "core/shortcut_manager.py:285:routine": {
+  "core/shortcut_manager.py:286:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 285,
+    "line": 286,
     "expression": "def _apply_resize(self) -> None:",
     "sha256": "ab789fc37cb8331d2ac26b2c72023e8d3a9d4ef2fd6eebad3d390ddc62d8e554"
   },
-  "core/shortcut_manager.py:314:routine": {
+  "core/shortcut_manager.py:315:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 314,
+    "line": 315,
     "expression": "def _resize_window_narrower(self) -> None:",
     "sha256": "273b33e618b9298d2d6130650eab54217fd4cfd00e5cce0f98fe347a849b4dce"
   },
-  "core/shortcut_manager.py:318:routine": {
+  "core/shortcut_manager.py:319:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 318,
+    "line": 319,
     "expression": "def _resize_window_wider(self) -> None:",
     "sha256": "be0b61856e1d9b272fc5e5bc3a8647d32ce5b5a2c80709cd9b50603191ab4b17"
   },
-  "core/shortcut_manager.py:322:routine": {
+  "core/shortcut_manager.py:323:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 322,
+    "line": 323,
     "expression": "def _resize_window_taller(self) -> None:",
     "sha256": "40d4854be7e1cc369af27f794bfc07608ac1c0f8a72e565dfcb721b2bd73fcd5"
   },
-  "core/shortcut_manager.py:326:routine": {
+  "core/shortcut_manager.py:327:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 326,
+    "line": 327,
     "expression": "def _resize_window_shorter(self) -> None:",
     "sha256": "21f4a938ec7976a362c969fcf1a5c40c15af26ae28f6f1b97826d21af46c5433"
   },
-  "core/shortcut_manager.py:330:routine": {
+  "core/shortcut_manager.py:331:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 330,
+    "line": 331,
     "expression": "def _scroll_up(self) -> None:",
     "sha256": "98da179ef3277fba32baa919420228706b4053e17e97ca13e9a5857264aa01e0"
   },
-  "core/shortcut_manager.py:334:routine": {
+  "core/shortcut_manager.py:335:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 334,
+    "line": 335,
     "expression": "def _scroll_down(self) -> None:",
     "sha256": "fded664fa995fef32af3cf23987d7de5014650a716044cb1c331a83df81dd774"
   },
-  "core/shortcut_manager.py:338:routine": {
+  "core/shortcut_manager.py:339:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 338,
+    "line": 339,
     "expression": "def _close_app(self) -> None:",
     "sha256": "e0dd838918c44353a37c53f6a46dfb6b98feec27ee0622e12464d40e3051cc69"
   },
-  "core/shortcut_manager.py:342:routine": {
+  "core/shortcut_manager.py:343:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 342,
+    "line": 343,
     "expression": "def _screenshot(self) -> None:",
     "sha256": "ae059e32fa867be977d9aaa04d17d61540f5263db9482dd01e132dcc44244571"
   },
-  "core/shortcut_manager.py:346:routine": {
+  "core/shortcut_manager.py:347:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 346,
+    "line": 347,
     "expression": "def _new_chat(self) -> None:",
     "sha256": "baa6e55a2903f874339a2a72c3ae2a6cfdb2be2bf815080389ac9aa948c6f4bc"
   },
-  "core/shortcut_manager.py:350:routine": {
+  "core/shortcut_manager.py:351:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 350,
+    "line": 351,
     "expression": "def _toggle_history(self) -> None:",
     "sha256": "36dbc0ccec57e2a253b5461eb949b7c75f9ad209fc107e8a5bd89c666fea2ad6"
   },
-  "core/shortcut_manager.py:354:routine": {
+  "core/shortcut_manager.py:355:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 354,
+    "line": 355,
     "expression": "def _stop_generation(self) -> None:",
     "sha256": "3f123a86695c0cb6a0bb2f6aa68a89efb996494186e22585c948a0ca4c9452d0"
   },
-  "core/shortcut_manager.py:358:routine": {
+  "core/shortcut_manager.py:359:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 358,
+    "line": 359,
     "expression": "def _toggle_recording(self) -> None:",
     "sha256": "03533358e6b631c10957249f1e0f26a1de813c28a46a63729f9a8cf8e95ecfda"
   },
-  "core/shortcut_manager.py:362:routine": {
+  "core/shortcut_manager.py:363:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 362,
+    "line": 363,
     "expression": "def _toggle_click_through(self) -> None:",
     "sha256": "c199a92bf83c96606187a6cb89e7052a5eb63a17f450925b464d679cfc1db840"
   },
-  "core/shortcut_manager.py:366:routine": {
+  "core/shortcut_manager.py:367:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 366,
+    "line": 367,
     "expression": "def _answer(self) -> None:",
     "sha256": "4755011603409df2a78ccb7c19323647f6587d8a022a2c9b6915ac9c8950c2f1"
   },
-  "core/shortcut_manager.py:371:routine": {
+  "core/shortcut_manager.py:372:routine": {
     "category": "routine",
     "source": "core/shortcut_manager.py",
-    "line": 371,
+    "line": 372,
     "expression": "def _dismiss_warnings(self) -> None:",
     "sha256": "9089936cf936dbfe340965503a1cb0e231079bec6a64a93457f8445230af0116"
   },
-  "core/shortcut_manager.py:112:branch": {
+  "core/shortcut_manager.py:113:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 112,
+    "line": 113,
     "expression": "if not self.hook_client.request_quit():",
     "sha256": "c7f4f6a5e0f7d614218590589be29b1743b9b1980961346ae1191f5bafea6884"
   },
-  "core/shortcut_manager.py:129:branch": {
+  "core/shortcut_manager.py:130:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 129,
+    "line": 130,
     "expression": "if watched is self.main_window and event is not None and (event.type() in (QEvent.Type.Show, QEvent.Type.Hide)):",
     "sha256": "5838178096a05cf41d40bc63d4284d2422ee9aae8f979ab34f2104acc46e4060"
   },
-  "core/shortcut_manager.py:144:branch": {
+  "core/shortcut_manager.py:145:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 144,
+    "line": 145,
     "expression": "if action is not None:",
     "sha256": "441cec461e8c86408ce9267442595af0877fe5e9a15399b75d482d472106e74f"
   },
-  "core/shortcut_manager.py:154:branch": {
+  "core/shortcut_manager.py:155:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 154,
+    "line": 155,
     "expression": "if not self.main_window.isVisible():",
     "sha256": "2960a393886c1b517eb6734abffd35002589ac813ac088db159c0cc8e8258c27"
   },
-  "core/shortcut_manager.py:195:branch": {
+  "core/shortcut_manager.py:196:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 195,
+    "line": 196,
     "expression": "if self.animation_progress >= 1.0:",
     "sha256": "5f717560cb6fa39830d49057af528a159a0f1e5f68dfbc83c107ef15b59b1e24"
   },
-  "core/shortcut_manager.py:226:branch": {
+  "core/shortcut_manager.py:227:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 226,
+    "line": 227,
     "expression": "if self.animation_active and self.animation_progress == 0.0:",
     "sha256": "eabeeb6ea9ce8b70eec0ab2da1ceb9c65157400cde2c2ebe42bfb651812c32c3"
   },
-  "core/shortcut_manager.py:280:branch": {
+  "core/shortcut_manager.py:281:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 280,
+    "line": 281,
     "expression": "if not self.resize_pending:",
     "sha256": "4c21bf2f864e26474bf09769b8d6e462cc3967ad82e3febab275a8a6b132dfef"
   },
-  "core/shortcut_manager.py:92:background": {
+  "core/shortcut_manager.py:93:background": {
     "category": "background",
     "source": "core/shortcut_manager.py",
-    "line": 92,
+    "line": 93,
     "expression": "QTimer()",
     "sha256": "75dfb01991366047c63a42fa38ed04f0892e42cbeb91338b4e3dc9cf929b505d"
   },
-  "core/shortcut_manager.py:230:branch": {
+  "core/shortcut_manager.py:231:branch": {
     "category": "branch",
     "source": "core/shortcut_manager.py",
-    "line": 230,
+    "line": 231,
     "expression": "if self.animation_active and self.animation_progress < 0.5:",
     "sha256": "992d67bd8a369cda832c02b5617e882a858d3c197748024320b17ccec8e9cf3d"
   },
-  "core/shortcut_manager.py:283:background": {
+  "core/shortcut_manager.py:284:background": {
     "category": "background",
     "source": "core/shortcut_manager.py",
-    "line": 283,
+    "line": 284,
     "expression": "QTimer.singleShot(0, self._apply_resize)",
     "sha256": "ed5d5c518917f8849b194ef8ba9af9bbc9e99bbb938575041d7dc85099625bd1"
   },
@@ -7517,129 +7517,171 @@
     "expression": "if dialog.exec() != QFileDialog.DialogCode.Accepted or not dialog.selectedFiles():",
     "sha256": "672665f170bebdb555457a14c6c28f0662e08a8c2ba8832c075e831e23ed3a0b"
   },
-  "ui/input/input_field.py:189:routine": {
+  "ui/input/input_field.py:277:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 189,
+    "line": 277,
     "expression": "def _emit_later(widget: QWidget, signal: pyqtBoundSignal, value: int) -> None:",
     "sha256": "18c2ead534598bfe9fb384606eba9293557a990f250689281efe90b4df6f1738"
   },
-  "ui/input/input_field.py:18:routine": {
+  "ui/input/input_field.py:26:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 18,
+    "line": 26,
     "expression": "def __init__(self, main_window: QWidget) -> None:",
     "sha256": "7ad91cc42ef732f7e21adbf1d99b19bbae2b21f622c9fc6a00ca39b68ff66ffb"
   },
-  "ui/input/input_field.py:22:routine": {
+  "ui/input/input_field.py:30:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 22,
+    "line": 30,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "4d1a1657c33b066188a71e5e4ebd5cfcef103556d4e9c406339e497c52738535"
+    "sha256": "b01bb7a69311bfada6de8824778a75d177e150aca1861050b0b365f1fc00b633"
   },
-  "ui/input/input_field.py:105:routine": {
+  "ui/input/input_field.py:125:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 105,
-    "expression": "def _send_message(self) -> None:",
-    "sha256": "97c1ff1fb0eb97a0a194904259f8bf6a5939dcc94ff7be2a09b26877c022dca9"
+    "line": 125,
+    "expression": "def _update_send_button(self) -> None:",
+    "sha256": "9f5f4cc76eed882786b1c387e23bc4c85593264afa3acc5dd34cfdfd07316d52"
   },
-  "ui/input/input_field.py:114:routine": {
+  "ui/input/input_field.py:143:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 114,
+    "line": 143,
+    "expression": "def _send_message(self, *, answer_if_empty: bool=False) -> None:",
+    "sha256": "12448a782097041a26be9ffcc20190abb8379b01e697dd2e4409521f92a2e92d"
+  },
+  "ui/input/input_field.py:158:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 158,
     "expression": "def _set_enabled(self, enabled: bool) -> None:",
     "sha256": "2fda217759c7432eb97b5f7480c8c1ad245ff60f8d095f82f1a41f6868ef3777"
   },
-  "ui/input/input_field.py:131:routine": {
+  "ui/input/input_field.py:170:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 131,
-    "expression": "def __init__(self) -> None:",
-    "sha256": "82a784ff0ee69e49e56b720f5563111fcce722851e3728dbc898c920c2fd096b"
-  },
-  "ui/input/input_field.py:141:routine": {
-    "category": "routine",
-    "source": "ui/input/input_field.py",
-    "line": 141,
-    "expression": "def keyPressEvent(self, event: QKeyEvent | None) -> None:",
-    "sha256": "e1620fdbaabcc05351273e54bd62d00999419ae3e0d358082b0841553342ab0e"
-  },
-  "ui/input/input_field.py:157:routine": {
-    "category": "routine",
-    "source": "ui/input/input_field.py",
-    "line": 157,
-    "expression": "def insertFromMimeData(self, source: QMimeData | None) -> None:",
-    "sha256": "1461d0ca9a24ffe154d25268848aa2ecf3a142e10825166fef4391b27fc9810a"
-  },
-  "ui/input/input_field.py:166:routine": {
-    "category": "routine",
-    "source": "ui/input/input_field.py",
-    "line": 166,
-    "expression": "def _adjust_height(self) -> None:",
-    "sha256": "e36339b66c96e08627e112b144961f638a4ddd082d868d09cf7720193fd81407"
+    "line": 170,
+    "expression": "def __init__(self, parent: QWidget) -> None:",
+    "sha256": "9cffabd963513535b5c18ee7e3aae8988b980d36d827d143d7da48e116fcfd4b"
   },
   "ui/input/input_field.py:201:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
     "line": 201,
+    "expression": "def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:",
+    "sha256": "7cd3a9b5db77972d5903fa1b248b5d8a86783012281c158c9a437b2b37c33340"
+  },
+  "ui/input/input_field.py:219:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 219,
+    "expression": "def __init__(self) -> None:",
+    "sha256": "82a784ff0ee69e49e56b720f5563111fcce722851e3728dbc898c920c2fd096b"
+  },
+  "ui/input/input_field.py:229:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 229,
+    "expression": "def keyPressEvent(self, event: QKeyEvent | None) -> None:",
+    "sha256": "e1620fdbaabcc05351273e54bd62d00999419ae3e0d358082b0841553342ab0e"
+  },
+  "ui/input/input_field.py:245:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 245,
+    "expression": "def insertFromMimeData(self, source: QMimeData | None) -> None:",
+    "sha256": "1461d0ca9a24ffe154d25268848aa2ecf3a142e10825166fef4391b27fc9810a"
+  },
+  "ui/input/input_field.py:254:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 254,
+    "expression": "def _adjust_height(self) -> None:",
+    "sha256": "e36339b66c96e08627e112b144961f638a4ddd082d868d09cf7720193fd81407"
+  },
+  "ui/input/input_field.py:289:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 289,
     "expression": "def emit() -> None:",
     "sha256": "5f4a72cb543542011e1f3f76c814a5be32e02e9bffd7d59801484b7f08278337"
   },
-  "ui/input/input_field.py:108:branch": {
+  "ui/input/input_field.py:133:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 108,
-    "expression": "if message and self.input_settings.models:",
-    "sha256": "91576083a2b18d5f843b458eaa2bb8c154ea56c1cf1047e7bc5c459f29081657"
+    "line": 133,
+    "expression": "if has_message:",
+    "sha256": "6109abc859294ae505a82b108c334a13458a287d4edc8ec86e0e8c351dc115db"
   },
-  "ui/input/input_field.py:147:branch": {
+  "ui/input/input_field.py:150:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 147,
+    "line": 150,
+    "expression": "if message and self.input_settings.models:",
+    "sha256": "b0f680d42f4252e528715c20c489d3cff17ffe74325748447cbae36f50ce4b66"
+  },
+  "ui/input/input_field.py:207:branch": {
+    "category": "branch",
+    "source": "ui/input/input_field.py",
+    "line": 207,
+    "expression": "if event is not None:",
+    "sha256": "64e87ae7c57bdb4d1c5914f77c2606b950f87a2eff8e1591a28dd581df0cdd80"
+  },
+  "ui/input/input_field.py:235:branch": {
+    "category": "branch",
+    "source": "ui/input/input_field.py",
+    "line": 235,
     "expression": "if event is not None and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and (not event.modifiers() & Qt.KeyboardModifier.ShiftModifier):",
     "sha256": "8c017110ecffc42a72d83d692477fb980c05a82011d4e92f6690c73caad3d492"
   },
-  "ui/input/input_field.py:163:branch": {
+  "ui/input/input_field.py:251:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 163,
+    "line": 251,
     "expression": "if source is not None and source.hasText():",
     "sha256": "fa4e5064b90fb35913dd330a55b1601552cde694a108482c6a7e6389c8e2e9b5"
   },
-  "ui/input/input_field.py:182:branch": {
+  "ui/input/input_field.py:270:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 182,
+    "line": 270,
     "expression": "if self._prev_height != 0:",
     "sha256": "2dbed8c96f93734821206ae4dfd04b43a4715591b0db4b80f1bae62a6da9297b"
   },
-  "ui/input/input_field.py:203:branch": {
+  "ui/input/input_field.py:291:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 203,
+    "line": 291,
     "expression": "if not sip.isdeleted(widget):",
     "sha256": "798f103b5902ec7cf77de35c1fd3311804f8293143bf5b42124e0523fc0585cf"
   },
-  "ui/input/input_field.py:206:background": {
+  "ui/input/input_field.py:294:background": {
     "category": "background",
     "source": "ui/input/input_field.py",
-    "line": 206,
+    "line": 294,
     "expression": "QTimer.singleShot(0, emit)",
     "sha256": "e319e1da83fb3ca4310ad4c1a45e2ab29a8a50556899201b544aa0cbea6d624b"
   },
-  "ui/input/input_field.py:139:background": {
+  "ui/input/input_field.py:155:branch": {
+    "category": "branch",
+    "source": "ui/input/input_field.py",
+    "line": 155,
+    "expression": "if not message and answer_if_empty:",
+    "sha256": "6f73ad715e0f669a7fc9c08c6fea3953ed1c44a1153a8cc9b9c44d7bd1813a39"
+  },
+  "ui/input/input_field.py:227:background": {
     "category": "background",
     "source": "ui/input/input_field.py",
-    "line": 139,
+    "line": 227,
     "expression": "QTimer.singleShot(0, self._adjust_height)",
     "sha256": "248cb3002de8a370ab1d40b83de3fe21a4408a779f2a66683f321b37823cbc51"
   },
-  "ui/input/input_field.py:184:branch": {
+  "ui/input/input_field.py:272:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 184,
+    "line": 272,
     "expression": "if delta != 0:",
     "sha256": "0aef25e161fe91f0036a112dd8480550ae09efea4fab546151499fc3bc1381e2"
   },
@@ -8469,136 +8511,136 @@
     "expression": "if frame.isMaximized():",
     "sha256": "e83bb2ac55d5817d068c97990d4da1bbc08b7bf2f9c6b1df2f71b286182f5891"
   },
-  "ui/input/input_settings.py:21:routine": {
+  "ui/input/input_settings.py:22:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 21,
+    "line": 22,
     "expression": "def __init__(self, parent: QWidget) -> None:",
     "sha256": "f84d87c320517a60ce6b368eb000bf17449447671c16b5be3603902eebfe03f1"
   },
-  "ui/input/input_settings.py:45:routine": {
+  "ui/input/input_settings.py:46:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 45,
+    "line": 46,
     "expression": "def set_models(self, models: tuple[ModelOption, ...], model_id: str='', effort: str='') -> None:",
-    "sha256": "89c18d59df50106740439e19929a181dc24c3300d45b82dd1076706d4ea2fc16"
+    "sha256": "1d330586d84c7e61a4127847869f3d0d1cd566b1c002ac7cd01edf275a33c9e9"
   },
-  "ui/input/input_settings.py:68:routine": {
+  "ui/input/input_settings.py:70:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 68,
+    "line": 70,
     "expression": "def set_directory(self, directory: str) -> None:",
     "sha256": "bdae3de63cd2a9d2047781741c86e8c666bd5258cd1b502b7f3c1196c49e43ff"
   },
-  "ui/input/input_settings.py:91:routine": {
+  "ui/input/input_settings.py:93:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 91,
+    "line": 93,
     "expression": "def set_recording(self, recording: bool) -> None:",
     "sha256": "b36e2c13cbe28686d79881accda781e8ddd611af5d6fe87c8c567ee0e9e26192"
   },
-  "ui/input/input_settings.py:105:routine": {
+  "ui/input/input_settings.py:107:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 105,
+    "line": 107,
     "expression": "def show_loading(self) -> None:",
-    "sha256": "4ceb13dbd8fb9605b4bad3476a2228c036061993853363f3da546d8d6d4b19f6"
+    "sha256": "ee69c9b9e901000213988ba78d551e84c8946ef646ff773664fb9b8989c5075f"
   },
-  "ui/input/input_settings.py:115:routine": {
+  "ui/input/input_settings.py:118:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 115,
+    "line": 118,
     "expression": "def show_model_error(self, error: str) -> None:",
     "sha256": "f208fc00fc6c90fd0d67198a8750694777a54c627e4b363eb8fb21c5bf34e71c"
   },
-  "ui/input/input_settings.py:128:routine": {
+  "ui/input/input_settings.py:131:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 128,
+    "line": 131,
     "expression": "def close_popups(self) -> None:",
     "sha256": "3878f0cb782eee6d295b3ed0de33c425defa41018aa3a35e24b9e928188c60e2"
   },
-  "ui/input/input_settings.py:133:routine": {
+  "ui/input/input_settings.py:136:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 133,
+    "line": 136,
     "expression": "def reposition_popups(self, delta: int) -> None:",
     "sha256": "a824c533a6daceb47d813d367ea84d70d7a52bd6bbede44f94d0ca870ea4505e"
   },
-  "ui/input/input_settings.py:142:routine": {
+  "ui/input/input_settings.py:145:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 142,
+    "line": 145,
     "expression": "def _init_UI(self) -> None:",
     "sha256": "5cecef213e25f83b2d37aa08493038865531ea26aa1b4cdb3680e9895e4e2359"
   },
-  "ui/input/input_settings.py:173:routine": {
+  "ui/input/input_settings.py:176:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 173,
+    "line": 176,
     "expression": "def _on_model_changed(self, model_id: str) -> None:",
     "sha256": "3d3b89d13c4a9cb075f93a7580ef7d21bd1f14f6e3a3fe0344573513847b2473"
   },
-  "ui/input/input_settings.py:200:routine": {
+  "ui/input/input_settings.py:203:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 200,
+    "line": 203,
     "expression": "def __init__(self) -> None:",
     "sha256": "b21900a5c5a0c19b2273ec11b946de62e32ceded05860ff726e63482f06a0f2e"
   },
-  "ui/input/input_settings.py:208:routine": {
+  "ui/input/input_settings.py:211:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 208,
+    "line": 211,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "b7b08a8048675c0802b86da4afee6617c17232c428d25376270d9755bf4e0718"
   },
-  "ui/input/input_settings.py:233:routine": {
+  "ui/input/input_settings.py:236:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 233,
+    "line": 236,
     "expression": "def __init__(self) -> None:",
     "sha256": "7686c9ae96fbd1f2fde2b5710027bac1a17bc498e4fadd931ff6495dff0b7692"
   },
-  "ui/input/input_settings.py:241:routine": {
+  "ui/input/input_settings.py:244:routine": {
     "category": "routine",
     "source": "ui/input/input_settings.py",
-    "line": 241,
+    "line": 244,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "85de5510f9a99927b33ddfb39d363925c06a2771916b4d59d87d847c85ae8ecc"
   },
-  "ui/input/input_settings.py:61:branch": {
+  "ui/input/input_settings.py:62:branch": {
     "category": "branch",
     "source": "ui/input/input_settings.py",
-    "line": 61,
+    "line": 62,
     "expression": "if model_id:",
     "sha256": "8f721dfe8ca8299060b837e34c1c65e9838dccda3f10991bc1c6f953f437411f"
   },
-  "ui/input/input_settings.py:65:branch": {
+  "ui/input/input_settings.py:66:branch": {
     "category": "branch",
     "source": "ui/input/input_settings.py",
-    "line": 65,
+    "line": 66,
     "expression": "if effort:",
     "sha256": "d014207e91d616ae476bea60038b8007986043f4a8c90dd33c7d8765117af165"
   },
-  "ui/input/input_settings.py:179:branch": {
+  "ui/input/input_settings.py:182:branch": {
     "category": "branch",
     "source": "ui/input/input_settings.py",
-    "line": 179,
+    "line": 182,
     "expression": "if not model_id:",
     "sha256": "8b34346d8f56a1866d670c1443086589e196a095cbaa9c727d34c5feae27e177"
   },
-  "ui/input/input_settings.py:212:branch": {
+  "ui/input/input_settings.py:215:branch": {
     "category": "branch",
     "source": "ui/input/input_settings.py",
-    "line": 212,
+    "line": 215,
     "expression": "if self.isChecked():",
     "sha256": "c32a0c94771495e617b9c1240f3337c86800392227c5580c91d1179aab7a312a"
   },
-  "ui/input/input_settings.py:220:branch": {
+  "ui/input/input_settings.py:223:branch": {
     "category": "branch",
     "source": "ui/input/input_settings.py",
-    "line": 220,
+    "line": 223,
     "expression": "if self.isChecked():",
     "sha256": "bf7b26e6e9ea467406c730bc251c6e22dfc31e87de8bb3d8b68d6890d75b7e3c"
   },

@@ -65,6 +65,7 @@ class ShortcutManager(QObject):
         self.scroll_signal.connect(self.main_window.chat_area.shortcut_scroll)
         self.quit_signal.connect(self.main_window.finish_quit)
         self.main_window.quit_requested.connect(self.request_quit)
+        self.main_window.input_field.answer_requested.connect(self._answer)
         self.hook_failed.connect(self.main_window.status_banner.show_warning)
         self.move_direction.connect(self._move_by_direction)
         self.screenshot_signal.connect(self.screenshot_manager.take_screenshot)

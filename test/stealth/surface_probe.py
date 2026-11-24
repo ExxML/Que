@@ -377,6 +377,17 @@ def run() -> dict[str, object]:
             interactions.append("hover-tooltip")
             QToolTip.hideText()
 
+            surface = "send-button-tooltip"
+            send_button = window.input_field.send_button
+            tooltip_focus = native.GetForegroundWindow()
+            pointer(send_button, send_button.rect().center(), 0x200)
+            wait(750)
+            assert QToolTip.isVisible() and QToolTip.text() == send_button.toolTip()
+            assert native.GetForegroundWindow() == tooltip_focus
+            assert not native.GetCapture()
+            completed.append(surface)
+            QToolTip.hideText()
+
             menu = QMenu()
             selected = []
             action = menu.addAction("Fixture action")

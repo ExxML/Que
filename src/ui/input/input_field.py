@@ -1,16 +1,24 @@
 from PyQt6 import sip
 from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtBoundSignal, pyqtSignal
-from PyQt6.QtGui import QFont, QKeyEvent
-from PyQt6.QtWidgets import QHBoxLayout, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
+from PyQt6.QtGui import QFont, QKeyEvent, QMouseEvent
+from PyQt6.QtWidgets import (
+    QHBoxLayout,
+    QPushButton,
+    QSizePolicy,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ui.input.input_settings import InputSettings
-from ui.theme import PRIMARY_COLOR, qss
+from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
 
 
 class InputField(QWidget):
     """Render the input bar and message field."""
 
     message_sent = pyqtSignal(str)
+    answer_requested = pyqtSignal()
     model_changed = pyqtSignal(str)
     effort_changed = pyqtSignal(str)
     height_changed = pyqtSignal(int)
@@ -97,19 +105,55 @@ class InputField(QWidget):
         self.input_settings.effort_changed.connect(self.effort_changed)
         self.height_changed.connect(self.input_settings.reposition_popups)
 
+        self.send_button = _SendButton(self.input_container)
+        self.send_button.clicked.connect(
+            lambda: self._send_message(answer_if_empty=True)
+        )
+        self.input_field.textChanged.connect(self._update_send_button)
+        self.input_settings.models_changed.connect(self._update_send_button)
+        self._update_send_button()
+
+        footer = QHBoxLayout()
+        footer.setSpacing(8)
+        footer.addWidget(self.input_settings, 1)
+        footer.addWidget(self.send_button)
         input_container_layout.addWidget(self.input_field)
-        input_container_layout.addWidget(self.input_settings)
+        input_container_layout.addLayout(footer)
 
         root_layout.addWidget(self.input_container)
 
-    def _send_message(self) -> None:
-        """Send the current message and clear the input field."""
+    def _update_send_button(self) -> None:
+        """Show the action available for the current draft and model choices."""
+        has_message = bool(self.input_field.toPlainText().strip())
+        can_send = bool(self.input_settings.models)
+        label = "Send" if has_message else "Answer"
+        self.send_button.setText(label)
+        self.send_button.setAccessibleName(label)
+        self.send_button.setEnabled(not has_message or can_send)
+        if has_message:
+            tooltip = (
+                "Send message (Enter)"
+                if can_send
+                else "Load a model to send your message"
+            )
+        else:
+            tooltip = "Answer from a screenshot (Caps Lock+C)"
+        self.send_button.setToolTip(tooltip)
+
+    def _send_message(self, *, answer_if_empty: bool = False) -> None:
+        """Send the current message and clear the input field.
+
+        Args:
+            answer_if_empty (bool): Whether a blank draft runs the Answer shortcut.
+        """
         message = self.input_field.toPlainText().strip()
         if message and self.input_settings.models:
             self.input_settings.close_popups()
             self.message_sent.emit(message)
             self.input_field.clear()
             self.input_field.setFocus()
+        elif not message and answer_if_empty:
+            self.answer_requested.emit()
 
     def _set_enabled(self, enabled: bool) -> None:
         """Enable or disable the input field.
@@ -118,6 +162,50 @@ class InputField(QWidget):
             enabled (bool): Whether the input field should accept user input.
         """
         self.input_field.setEnabled(enabled)
+
+
+class _SendButton(QPushButton):
+    """Display the current composer action and accept single clicks."""
+
+    def __init__(self, parent: QWidget) -> None:
+        super().__init__("Answer", parent)
+        self.setObjectName("sendButton")
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        font = self.font()
+        font.setPixelSize(12)
+        font.setBold(True)
+        self.setFont(font)
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {qss(PRIMARY_COLOR)};
+                border: 1px solid {qss(PRIMARY_COLOR, 200)};
+                border-radius: 7px;
+                padding: 0 9px;
+            }}
+            QPushButton:hover {{
+                background: {qss(PRIMARY_COLOR)};
+                color: {qss(BG_COLOR)};
+            }}
+            QPushButton:pressed {{
+                background: {qss(BG_COLOR)};
+                color: {qss(PRIMARY_COLOR)};
+            }}
+            QPushButton:disabled {{
+                color: {qss(PRIMARY_COLOR, 128)};
+                border-color: {qss(PRIMARY_COLOR, 96)};
+            }}
+        """)
+        self.setFixedSize(max(62, self.sizeHint().width()), 24)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:
+        """Consume the second press so a double-click sends a single request.
+
+        Args:
+            event (QMouseEvent): The second press of a double-click.
+        """
+        if event is not None:
+            event.accept()
 
 
 class _AutoResizeTextEdit(QTextEdit):

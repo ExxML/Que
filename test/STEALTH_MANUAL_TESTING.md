@@ -158,6 +158,7 @@ Avoid Alt+F4 and F5 in this test.
 | Test | Steps | Expect |
 |---|---|---|
 | Clicking Que never takes focus (FOCUS-001) | `go(ids("AutoResizeTextEdit")[0],20)` (stage-1). Click Que's input, type `hello`. | No `blur`, `focus-poll` never `hasFocus: false`, no key events; `hello` in Que (operator). |
+| Input action button | Run `input.send-button.stage-1` with a synthetic draft and `input.send-button.stage-2` with the input blank. Click the button with the observer page in the foreground and calibrated capture running. | Send submits the draft. Answer captures the screen and submits the same prompt as Caps Lock+C. The page keeps focus, receives no click, and shows no Que pixels in the capture. |
 | The pointer never "leaves" the page over Que (POINTER-001) | Click-through off (default). `go("pointer.locks.stage-5",30)`. Move slowly across Que and out the far side 3 times; click once on Que's chat area; scroll over the chat. | No `pointerleave`/`pointerenter` at interior coordinates, no `click`/`pointerdown`/`wheel` reaching the page; continuous `pointermove` across Que's area. |
 | Config transfer | Run each `config.transfer` stage with a synthetic backup. Use pointer and keyboard in the file pickers and import review, then cancel or apply. | Foreground, focus, fullscreen, and ordinary page input remain stable. Only selected settings change after confirmation. |
 
@@ -170,7 +171,7 @@ For each attempt the expectation is the same: Que's windows never appear in the 
 | Settings combo popups | Open Que's Settings (AI tab) first. `go("capture.Qt combo popup.stage-1",40)`. Open the model combo ~2 s, Esc; effort combo ~2 s, Esc; Voice tab, transcription-model combo ~2 s, Esc. Leave Settings afterwards. |
 | Config pickers and review | Open Settings → Config. Run the `capture.Config export picker`, `capture.Config import picker`, and `capture.Config import review` scenarios. Use a synthetic backup with at least two changed settings. Record the first paint, review, and dismissal of each surface. |
 | Text context menu | `go("capture.text context menu.stage-1",20)`. Right-click in Que's input, wait 3 s, Esc. |
-| Tooltip | `go("capture.tooltip.stage-1",15)`. Hover the History icon ~3 s without clicking. |
+| Tooltip | `go("capture.tooltip.stage-1",15)`. Hover the History icon or the Send/Answer button for about 3 s without clicking. |
 | Tray menu | The taskbar is hidden in F11, so this needs a windowed layout and its own calibration. Right-click Que's tray icon (its icon is intentionally blank), wait 3 s, Esc. |
 | Main overlay show/hide | `go("capture.main overlay.stage-3",20)`. Caps Lock+E three times. |
 | Startup | Board under Que's default position (867,3)–(1692,903) on the reference display. `go("capture.startup.stage-1",30)`, then send `launch` during MEASURING. |

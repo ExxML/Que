@@ -22,7 +22,9 @@ from PyQt6.QtWidgets import (
 )
 from qt_application import application
 
+from core.model_catalog import ModelOption
 from core.window_policy import native
+from ui.input.input_field import InputField
 from ui.input.input_router import InputRouter, KeyTranslator
 
 WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP = 0x200, 0x201, 0x202
@@ -210,6 +212,65 @@ class KeyboardFocusTests(RouterTestCase):
         close.assert_called_once()
         self.assertIsNone(self.router.target)
         self.assertFalse(self.router.eventFilter(None, None))
+
+
+class SendButtonTests(RouterTestCase):
+    """Exercise both input actions through the overlay's pointer routing."""
+
+    def test_routed_send_and_answer(self) -> None:
+        """Send a draft and answer only on a separate click without arming typing."""
+        field = InputField(self.main_window)
+        edit = field.input_field
+        layout = QVBoxLayout(self.main_window)
+        layout.addWidget(field)
+        hwnd = self.window(self.main_window)
+        button = field.send_button
+        width = button.width()
+        sent, answered = MagicMock(), MagicMock()
+        field.message_sent.connect(sent)
+        field.answer_requested.connect(answered)
+
+        def click() -> None:
+            """Deliver a routed press and release at the button center."""
+            point = button.mapTo(self.main_window, button.rect().center())
+            scale = self.main_window.devicePixelRatioF()
+            x, y = round(point.x() * scale), round(point.y() * scale)
+            self.router.on_pointer(WM_LBUTTONDOWN, x, y, 0, hwnd)
+            self.router.on_pointer(WM_LBUTTONUP, x, y, 0, hwnd)
+
+        edit.setPlainText("  hello  ")
+        self.assertEqual(button.text(), "Send")
+        self.assertEqual(button.width(), width)
+        self.assertFalse(button.isEnabled())
+        click()
+        self.assertEqual(edit.toPlainText(), "  hello  ")
+        sent.assert_not_called()
+        answered.assert_not_called()
+
+        field.input_settings.set_models((ModelOption("test", "Test", ("default",)),))
+        self.assertTrue(button.isEnabled())
+        click()
+        # Force the next press at the same position to be a double-click.
+        with patch.object(QApplication, "doubleClickInterval", return_value=10_000):
+            click()
+        sent.assert_called_once_with("hello")
+        answered.assert_not_called()
+        self.assertEqual(edit.toPlainText(), "")
+        self.assertEqual(button.accessibleName(), "Answer")
+
+        edit.setPlainText("\n  ")
+        self.router._focus(edit)
+        self.key(0x0D)
+        answered.assert_not_called()
+        click()
+        answered.assert_called_once_with()
+        sent.assert_called_once_with("hello")
+        self.assertIsNone(self.router.target)
+
+        edit.setPlainText("draft during reload")
+        self.assertTrue(button.isEnabled())
+        field.input_settings.show_loading()
+        self.assertFalse(button.isEnabled())
 
 
 class PointerTests(RouterTestCase):
