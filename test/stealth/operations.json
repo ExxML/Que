@@ -7517,171 +7517,178 @@
     "expression": "if dialog.exec() != QFileDialog.DialogCode.Accepted or not dialog.selectedFiles():",
     "sha256": "672665f170bebdb555457a14c6c28f0662e08a8c2ba8832c075e831e23ed3a0b"
   },
-  "ui/input/input_field.py:277:routine": {
+  "ui/input/input_field.py:304:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 277,
+    "line": 304,
     "expression": "def _emit_later(widget: QWidget, signal: pyqtBoundSignal, value: int) -> None:",
     "sha256": "18c2ead534598bfe9fb384606eba9293557a990f250689281efe90b4df6f1738"
   },
-  "ui/input/input_field.py:26:routine": {
+  "ui/input/input_field.py:45:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 26,
+    "line": 45,
     "expression": "def __init__(self, main_window: QWidget) -> None:",
     "sha256": "7ad91cc42ef732f7e21adbf1d99b19bbae2b21f622c9fc6a00ca39b68ff66ffb"
   },
-  "ui/input/input_field.py:30:routine": {
+  "ui/input/input_field.py:49:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 30,
+    "line": 49,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "b01bb7a69311bfada6de8824778a75d177e150aca1861050b0b365f1fc00b633"
+    "sha256": "0da2a363b858f02936d6497e50661ecaa7a9c83c46bef76cbf6d221a8f6fbb09"
   },
-  "ui/input/input_field.py:125:routine": {
+  "ui/input/input_field.py:144:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 125,
+    "line": 144,
     "expression": "def _update_send_button(self) -> None:",
-    "sha256": "9f5f4cc76eed882786b1c387e23bc4c85593264afa3acc5dd34cfdfd07316d52"
+    "sha256": "3176187dee2a458dd7e62871be62aff6f89d4775b9643e363b0229a3f3712ad2"
   },
-  "ui/input/input_field.py:143:routine": {
+  "ui/input/input_field.py:160:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 143,
+    "line": 160,
     "expression": "def _send_message(self, *, answer_if_empty: bool=False) -> None:",
     "sha256": "12448a782097041a26be9ffcc20190abb8379b01e697dd2e4409521f92a2e92d"
   },
-  "ui/input/input_field.py:158:routine": {
+  "ui/input/input_field.py:175:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 158,
+    "line": 175,
     "expression": "def _set_enabled(self, enabled: bool) -> None:",
     "sha256": "2fda217759c7432eb97b5f7480c8c1ad245ff60f8d095f82f1a41f6868ef3777"
   },
-  "ui/input/input_field.py:170:routine": {
+  "ui/input/input_field.py:187:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 170,
+    "line": 187,
     "expression": "def __init__(self, parent: QWidget) -> None:",
-    "sha256": "9cffabd963513535b5c18ee7e3aae8988b980d36d827d143d7da48e116fcfd4b"
+    "sha256": "5fda6dccbab71442b9681d40eef82f29d68968fbf043e54c0f667a03b43f4090"
   },
-  "ui/input/input_field.py:201:routine": {
+  "ui/input/input_field.py:194:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 201,
+    "line": 194,
+    "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
+    "sha256": "3252d2e98865801d1450c7bca35128d94c4437b03b607b1c2ae99f8cdfd1584b"
+  },
+  "ui/input/input_field.py:228:routine": {
+    "category": "routine",
+    "source": "ui/input/input_field.py",
+    "line": 228,
     "expression": "def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:",
     "sha256": "7cd3a9b5db77972d5903fa1b248b5d8a86783012281c158c9a437b2b37c33340"
   },
-  "ui/input/input_field.py:219:routine": {
+  "ui/input/input_field.py:246:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 219,
+    "line": 246,
     "expression": "def __init__(self) -> None:",
     "sha256": "82a784ff0ee69e49e56b720f5563111fcce722851e3728dbc898c920c2fd096b"
   },
-  "ui/input/input_field.py:229:routine": {
+  "ui/input/input_field.py:256:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 229,
+    "line": 256,
     "expression": "def keyPressEvent(self, event: QKeyEvent | None) -> None:",
     "sha256": "e1620fdbaabcc05351273e54bd62d00999419ae3e0d358082b0841553342ab0e"
   },
-  "ui/input/input_field.py:245:routine": {
+  "ui/input/input_field.py:272:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 245,
+    "line": 272,
     "expression": "def insertFromMimeData(self, source: QMimeData | None) -> None:",
     "sha256": "1461d0ca9a24ffe154d25268848aa2ecf3a142e10825166fef4391b27fc9810a"
   },
-  "ui/input/input_field.py:254:routine": {
+  "ui/input/input_field.py:281:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 254,
+    "line": 281,
     "expression": "def _adjust_height(self) -> None:",
     "sha256": "e36339b66c96e08627e112b144961f638a4ddd082d868d09cf7720193fd81407"
   },
-  "ui/input/input_field.py:289:routine": {
+  "ui/input/input_field.py:316:routine": {
     "category": "routine",
     "source": "ui/input/input_field.py",
-    "line": 289,
+    "line": 316,
     "expression": "def emit() -> None:",
     "sha256": "5f4a72cb543542011e1f3f76c814a5be32e02e9bffd7d59801484b7f08278337"
-  },
-  "ui/input/input_field.py:133:branch": {
-    "category": "branch",
-    "source": "ui/input/input_field.py",
-    "line": 133,
-    "expression": "if has_message:",
-    "sha256": "6109abc859294ae505a82b108c334a13458a287d4edc8ec86e0e8c351dc115db"
   },
   "ui/input/input_field.py:150:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
     "line": 150,
+    "expression": "if has_message:",
+    "sha256": "6109abc859294ae505a82b108c334a13458a287d4edc8ec86e0e8c351dc115db"
+  },
+  "ui/input/input_field.py:167:branch": {
+    "category": "branch",
+    "source": "ui/input/input_field.py",
+    "line": 167,
     "expression": "if message and self.input_settings.models:",
     "sha256": "b0f680d42f4252e528715c20c489d3cff17ffe74325748447cbae36f50ce4b66"
   },
-  "ui/input/input_field.py:207:branch": {
+  "ui/input/input_field.py:234:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 207,
+    "line": 234,
     "expression": "if event is not None:",
     "sha256": "64e87ae7c57bdb4d1c5914f77c2606b950f87a2eff8e1591a28dd581df0cdd80"
   },
-  "ui/input/input_field.py:235:branch": {
+  "ui/input/input_field.py:262:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 235,
+    "line": 262,
     "expression": "if event is not None and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and (not event.modifiers() & Qt.KeyboardModifier.ShiftModifier):",
     "sha256": "8c017110ecffc42a72d83d692477fb980c05a82011d4e92f6690c73caad3d492"
   },
-  "ui/input/input_field.py:251:branch": {
+  "ui/input/input_field.py:278:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 251,
+    "line": 278,
     "expression": "if source is not None and source.hasText():",
     "sha256": "fa4e5064b90fb35913dd330a55b1601552cde694a108482c6a7e6389c8e2e9b5"
   },
-  "ui/input/input_field.py:270:branch": {
+  "ui/input/input_field.py:297:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 270,
+    "line": 297,
     "expression": "if self._prev_height != 0:",
     "sha256": "2dbed8c96f93734821206ae4dfd04b43a4715591b0db4b80f1bae62a6da9297b"
   },
-  "ui/input/input_field.py:291:branch": {
+  "ui/input/input_field.py:318:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 291,
+    "line": 318,
     "expression": "if not sip.isdeleted(widget):",
     "sha256": "798f103b5902ec7cf77de35c1fd3311804f8293143bf5b42124e0523fc0585cf"
   },
-  "ui/input/input_field.py:294:background": {
+  "ui/input/input_field.py:321:background": {
     "category": "background",
     "source": "ui/input/input_field.py",
-    "line": 294,
+    "line": 321,
     "expression": "QTimer.singleShot(0, emit)",
     "sha256": "e319e1da83fb3ca4310ad4c1a45e2ab29a8a50556899201b544aa0cbea6d624b"
   },
-  "ui/input/input_field.py:155:branch": {
+  "ui/input/input_field.py:172:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 155,
+    "line": 172,
     "expression": "if not message and answer_if_empty:",
     "sha256": "6f73ad715e0f669a7fc9c08c6fea3953ed1c44a1153a8cc9b9c44d7bd1813a39"
   },
-  "ui/input/input_field.py:227:background": {
+  "ui/input/input_field.py:254:background": {
     "category": "background",
     "source": "ui/input/input_field.py",
-    "line": 227,
+    "line": 254,
     "expression": "QTimer.singleShot(0, self._adjust_height)",
     "sha256": "248cb3002de8a370ab1d40b83de3fe21a4408a779f2a66683f321b37823cbc51"
   },
-  "ui/input/input_field.py:272:branch": {
+  "ui/input/input_field.py:299:branch": {
     "category": "branch",
     "source": "ui/input/input_field.py",
-    "line": 272,
+    "line": 299,
     "expression": "if delta != 0:",
     "sha256": "0aef25e161fe91f0036a112dd8480550ae09efea4fab546151499fc3bc1381e2"
   },

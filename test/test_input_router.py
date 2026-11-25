@@ -222,10 +222,26 @@ class SendButtonTests(RouterTestCase):
         field = InputField(self.main_window)
         edit = field.input_field
         layout = QVBoxLayout(self.main_window)
+        layout.addStretch()
         layout.addWidget(field)
         hwnd = self.window(self.main_window)
+        self.app.processEvents()
         button = field.send_button
-        width = button.width()
+        icon = button.grab().toImage()
+        self.assertEqual(button.size(), field.input_settings.record_button.size())
+        self.assertEqual(button.accessibleName(), "Answer")
+        self.assertEqual(button.text(), "")
+        bounds = button.geometry()
+        container = field.input_container.rect()
+        self.assertEqual(
+            (
+                bounds.top() - edit.geometry().bottom() - 1,
+                bounds.left() - field.input_settings.geometry().right() - 1,
+                container.right() - bounds.right(),
+                container.bottom() - bounds.bottom(),
+            ),
+            (8, 8, 8, 8),
+        )
         sent, answered = MagicMock(), MagicMock()
         field.message_sent.connect(sent)
         field.answer_requested.connect(answered)
@@ -239,8 +255,8 @@ class SendButtonTests(RouterTestCase):
             self.router.on_pointer(WM_LBUTTONUP, x, y, 0, hwnd)
 
         edit.setPlainText("  hello  ")
-        self.assertEqual(button.text(), "Send")
-        self.assertEqual(button.width(), width)
+        self.assertEqual(button.accessibleName(), "Send")
+        self.assertEqual(button.text(), "")
         self.assertFalse(button.isEnabled())
         click()
         self.assertEqual(edit.toPlainText(), "  hello  ")
@@ -249,6 +265,7 @@ class SendButtonTests(RouterTestCase):
 
         field.input_settings.set_models((ModelOption("test", "Test", ("default",)),))
         self.assertTrue(button.isEnabled())
+        self.assertEqual(button.grab().toImage(), icon)
         click()
         # Force the next press at the same position to be a double-click.
         with patch.object(QApplication, "doubleClickInterval", return_value=10_000):

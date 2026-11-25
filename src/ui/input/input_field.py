@@ -1,6 +1,22 @@
 from PyQt6 import sip
-from PyQt6.QtCore import QMimeData, Qt, QTimer, pyqtBoundSignal, pyqtSignal
-from PyQt6.QtGui import QFont, QKeyEvent, QMouseEvent
+from PyQt6.QtCore import (
+    QMimeData,
+    QPointF,
+    QRectF,
+    Qt,
+    QTimer,
+    pyqtBoundSignal,
+    pyqtSignal,
+)
+from PyQt6.QtGui import (
+    QFont,
+    QKeyEvent,
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPen,
+    QPolygonF,
+)
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
@@ -11,7 +27,10 @@ from PyQt6.QtWidgets import (
 )
 
 from ui.input.input_settings import InputSettings
-from ui.theme import BG_COLOR, PRIMARY_COLOR, qss
+from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
+
+INPUT_CORNER_RADIUS = 8
+INPUT_SPACING = 8
 
 
 class InputField(QWidget):
@@ -44,15 +63,15 @@ class InputField(QWidget):
             QWidget#inputContainer {{
                 background-color: transparent;
                 border: 1px solid {qss(PRIMARY_COLOR, 200)};
-                border-radius: 14px;
+                border-radius: {INPUT_CORNER_RADIUS}px;
             }}
         """)
 
         input_container_layout = QVBoxLayout(self.input_container)
         input_container_layout.setContentsMargins(
-            8, 8, 8, 5
-        )  # Smaller bottom margin due to vertically centered InputSettings row
-        input_container_layout.setSpacing(0)
+            INPUT_SPACING, INPUT_SPACING, INPUT_SPACING, INPUT_SPACING
+        )
+        input_container_layout.setSpacing(INPUT_SPACING)
 
         self.input_field = _AutoResizeTextEdit()
         self.input_field.setPlaceholderText("How can I help you?")
@@ -114,7 +133,7 @@ class InputField(QWidget):
         self._update_send_button()
 
         footer = QHBoxLayout()
-        footer.setSpacing(8)
+        footer.setSpacing(INPUT_SPACING)
         footer.addWidget(self.input_settings, 1)
         footer.addWidget(self.send_button)
         input_container_layout.addWidget(self.input_field)
@@ -126,9 +145,7 @@ class InputField(QWidget):
         """Show the action available for the current draft and model choices."""
         has_message = bool(self.input_field.toPlainText().strip())
         can_send = bool(self.input_settings.models)
-        label = "Send" if has_message else "Answer"
-        self.send_button.setText(label)
-        self.send_button.setAccessibleName(label)
+        self.send_button.setAccessibleName("Send" if has_message else "Answer")
         self.send_button.setEnabled(not has_message or can_send)
         if has_message:
             tooltip = (
@@ -165,38 +182,48 @@ class InputField(QWidget):
 
 
 class _SendButton(QPushButton):
-    """Display the current composer action and accept single clicks."""
+    """Draw an upward arrow inside a rounded square."""
 
     def __init__(self, parent: QWidget) -> None:
-        super().__init__("Answer", parent)
+        super().__init__(parent)
         self.setObjectName("sendButton")
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        font = self.font()
-        font.setPixelSize(12)
-        font.setBold(True)
-        self.setFont(font)
-        self.setStyleSheet(f"""
-            QPushButton {{
-                background: transparent;
-                color: {qss(PRIMARY_COLOR)};
-                border: 1px solid {qss(PRIMARY_COLOR, 200)};
-                border-radius: 7px;
-                padding: 0 9px;
-            }}
-            QPushButton:hover {{
-                background: {qss(PRIMARY_COLOR)};
-                color: {qss(BG_COLOR)};
-            }}
-            QPushButton:pressed {{
-                background: {qss(BG_COLOR)};
-                color: {qss(PRIMARY_COLOR)};
-            }}
-            QPushButton:disabled {{
-                color: {qss(PRIMARY_COLOR, 128)};
-                border-color: {qss(PRIMARY_COLOR, 96)};
-            }}
-        """)
-        self.setFixedSize(max(62, self.sizeHint().width()), 24)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover)
+        self.setFixedSize(24, 24)
+
+    def paintEvent(self, _event: QPaintEvent | None) -> None:
+        """Paint the outline and arrow in the current interaction colors."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        enabled = self.isEnabled()
+        pressed = self.isDown()
+        highlighted = enabled and self.underMouse() and not pressed
+        painter.setPen(QPen(qcolor(PRIMARY_COLOR, 200 if enabled else 96), 1))
+        painter.setBrush(
+            qcolor(PRIMARY_COLOR if highlighted else BG_COLOR)
+            if highlighted or pressed
+            else Qt.BrushStyle.NoBrush
+        )
+        outline = QRectF(self.rect()).adjusted(0.5, 0.5, -0.5, -0.5)
+        radius = (
+            INPUT_CORNER_RADIUS - 0.5
+        )  # Account for the outward half of the stroke.
+        painter.drawRoundedRect(outline, radius, radius)
+
+        glyph_color = (
+            qcolor(BG_COLOR)
+            if highlighted
+            else qcolor(PRIMARY_COLOR, 255 if enabled else 128)
+        )
+        pen = QPen(glyph_color, 1)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        painter.setPen(pen)
+        painter.translate(self.width() / 2, self.height() / 2)
+        painter.drawLine(QPointF(0, 6), QPointF(0, -6))
+        painter.drawPolyline(
+            QPolygonF([QPointF(-4.5, -1.5), QPointF(0, -6), QPointF(4.5, -1.5)])
+        )
 
     def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:
         """Consume the second press so a double-click sends a single request.
