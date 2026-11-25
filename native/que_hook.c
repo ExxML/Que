@@ -546,23 +546,11 @@ static void emit_pointer(QueEngine *e, int message, int x, int y, uint32_t data,
 }
 
 static int process_pointer(QueEngine *e, int code, WPARAM message, int x, int y, uint32_t data,
-                           int flags, uint32_t tick) {
+                           int flags, uint32_t event_time, uint32_t tick) {
     if (code < 0) {
         return PASS;
     }
-    if (flags & LLMHF_INJECTED_FLAG) {
-        return PASS;
-    }
-    int64_t target = 0;
-    if (e->routing_enabled) {
-        for (int i = 0; i < e->region_count; i++) {
-            const QueRegion *r = &e->regions[i];
-            if (r->left <= x && x < r->right && r->top <= y && y < r->bottom) {
-                target = r->hwnd;
-                break;
-            }
-        }
-    }
+    int injected = (flags & LLMHF_INJECTED_FLAG) != 0;
     int button = 0;
     int down = 0;
     switch (message) {
@@ -582,9 +570,24 @@ static int process_pointer(QueEngine *e, int code, WPARAM message, int x, int y,
     int wheel = message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL;
     if (e->observe) {
         if (button) {
-            push_event(e, EVENT_OBSERVE_BUTTON, button, 0, 0, (uint32_t)down, 0, 0, tick);
+            push_event(e, EVENT_OBSERVE_BUTTON, button, injected, (int32_t)event_time,
+                       (uint32_t)down, 0, 0, tick);
         } else if (wheel) {
-            push_event(e, EVENT_OBSERVE_WHEEL, (int32_t)message, 0, 0, 0, 0, 0, tick);
+            push_event(e, EVENT_OBSERVE_WHEEL, (int32_t)message, injected, (int32_t)event_time,
+                       0, 0, 0, tick);
+        }
+    }
+    if (injected) {
+        return PASS;
+    }
+    int64_t target = 0;
+    if (e->routing_enabled) {
+        for (int i = 0; i < e->region_count; i++) {
+            const QueRegion *r = &e->regions[i];
+            if (r->left <= x && x < r->right && r->top <= y && y < r->bottom) {
+                target = r->hwnd;
+                break;
+            }
         }
     }
     if (button) {
@@ -691,9 +694,9 @@ static int handle_key(QueEngine *e, int code, WPARAM message, int vk, int scan, 
 
 /* Decide one mouse event; the live callback and the tests share this path. */
 static int handle_pointer(QueEngine *e, int code, WPARAM message, int x, int y, uint32_t data,
-                          int flags) {
+                          int flags, uint32_t event_time) {
     apply_commands(e);
-    int result = process_pointer(e, code, message, x, y, data, flags, GetTickCount());
+    int result = process_pointer(e, code, message, x, y, data, flags, event_time, GetTickCount());
     publish_state(e);
     return result;
 }
@@ -719,8 +722,8 @@ static LRESULT CALLBACK mouse_proc(int code, WPARAM message, LPARAM address) {
     if (message != WM_MOUSEMOVE) {
         note_lateness(e, data->time);
     }
-    int result =
-        handle_pointer(e, code, message, data->pt.x, data->pt.y, data->mouseData, (int)data->flags);
+    int result = handle_pointer(e, code, message, data->pt.x, data->pt.y, data->mouseData,
+                                (int)data->flags, data->time);
     return result == CONSUME ? 1 : CallNextHookEx(NULL, code, message, address);
 }
 
@@ -1005,8 +1008,8 @@ QUE_API int que_test_key(QueEngine *e, int code, int message, int vk, int scan, 
 }
 
 QUE_API int que_test_pointer(QueEngine *e, int code, int message, int x, int y, uint32_t data,
-                             int flags) {
-    return handle_pointer(e, code, (WPARAM)message, x, y, data, flags);
+                             int flags, uint32_t event_time) {
+    return handle_pointer(e, code, (WPARAM)message, x, y, data, flags, event_time);
 }
 
 /* Replace SendInput (tests): the sender records replays and re-enters the engine as Windows does. */

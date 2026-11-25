@@ -21,6 +21,7 @@ from core.hook_engine import (
     HOTKEYS,
     QUE_KEY,
     SYSTEM_CHORDS,
+    TICK_MASK,
     WINDOWS_KEYS,
     InputMonitor,
     key_identity,
@@ -213,7 +214,14 @@ class NativeHookEngine:
         return result
 
     def process_pointer(
-        self, code: int, message: int, x: int, y: int, data: int, flags: int
+        self,
+        code: int,
+        message: int,
+        x: int,
+        y: int,
+        data: int,
+        flags: int,
+        event_tick: int = 0,
     ) -> int:
         """Decide one mouse event on this thread (only before `start`).
 
@@ -224,12 +232,15 @@ class NativeHookEngine:
             y (int): The physical desktop y coordinate.
             data (int): The wheel delta or extra-button identifier.
             flags (int): The low-level hook flags.
+            event_tick (int): The timestamp Windows put on the hook event.
 
         Returns:
             int: One for consumed input, otherwise zero.
         """
         result = int(
-            self.library.que_test_pointer(self.handle, code, message, x, y, data, flags)
+            self.library.que_test_pointer(
+                self.handle, code, message, x, y, data, flags, event_tick
+            )
         )
         self.drain()
         return result
@@ -373,12 +384,19 @@ class NativeHookEngine:
             self.emit({"type": "quit_ready"})
         elif self._monitor is not None:
             if event.type == EVENT_OBSERVE_KEY:
-                identity = key_identity(event.a, event.b, bool(event.c), bool(event.d))
-            elif event.type == EVENT_OBSERVE_BUTTON:
-                identity = frozenset({("button", event.a, bool(event.d))})
+                self._monitor.record_hook(
+                    key_identity(event.a, event.b, bool(event.c), bool(event.d)),
+                    event.tick,
+                )
             else:
-                identity = frozenset({("wheel", event.a)})
-            self._monitor.record_hook(identity, event.tick)
+                key = (
+                    ("button", event.a, bool(event.d))
+                    if event.type == EVENT_OBSERVE_BUTTON
+                    else ("wheel", event.a)
+                )
+                self._monitor.record_mouse_hook(
+                    key, event.tick, event.c & TICK_MASK, bool(event.b)
+                )
 
 
 def _declare(library: ctypes.CDLL) -> None:
@@ -411,7 +429,13 @@ def _declare(library: ctypes.CDLL) -> None:
         "que_test_key": (ctypes.c_int, [handle, *[ctypes.c_int] * 5]),
         "que_test_pointer": (
             ctypes.c_int,
-            [handle, *[ctypes.c_int] * 4, ctypes.c_uint32, ctypes.c_int],
+            [
+                handle,
+                *[ctypes.c_int] * 4,
+                ctypes.c_uint32,
+                ctypes.c_int,
+                ctypes.c_uint32,
+            ],
         ),
         "que_test_set_sender": (None, [handle, _SENDER]),
         "que_test_state": (

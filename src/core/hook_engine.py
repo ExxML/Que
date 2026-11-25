@@ -389,7 +389,20 @@ class HookEngine:
         if code < 0:
             return self._next_mouse(code, message, address)
         data = ctypes.cast(address, ctypes.POINTER(_MouseData)).contents
-        if data.flags & LLMHF_INJECTED:
+        injected = bool(data.flags & LLMHF_INJECTED)
+        button, down = BUTTON_MESSAGES.get(message, (0, False))
+        if button == 8:
+            button = 8 if data.mouseData >> 16 == 1 else 16
+        if self.monitor is not None and (
+            button or message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL)
+        ):
+            self.monitor.record_mouse_hook(
+                ("button", button, down) if button else ("wheel", message),
+                int(kernel32.GetTickCount()),
+                int(data.time),
+                injected,
+            )
+        if injected:
             return self._next_mouse(code, message, address)
         x, y = int(data.pt.x), int(data.pt.y)
         target = (
@@ -404,15 +417,6 @@ class HookEngine:
             if self.routing_enabled
             else 0
         )
-        button, down = BUTTON_MESSAGES.get(message, (0, False))
-        if button == 8:
-            button = 8 if data.mouseData >> 16 == 1 else 16
-        if self.monitor is not None and (
-            button or message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL)
-        ):
-            self._observe(
-                frozenset({("button", button, down) if button else ("wheel", message)})
-            )
         if button:
             if down:
                 self.press_seq += 1
@@ -657,6 +661,35 @@ class InputMonitor:
                 del self.hook_seen[index]
                 return
         self.raw_pending.append((key, tick, name))
+
+    def record_mouse_hook(
+        self, key: tuple[Any, ...], tick: int, event_tick: int, injected: bool
+    ) -> None:
+        """Record a mouse callback, requiring an exact event time for injected input.
+
+        Windows can mark touchpad clicks as injected even when Raw Input reports a device.
+        An injected callback may also have no Raw Input partner, so link it by event time.
+
+        Args:
+            key (tuple[Any, ...]): The mouse button or wheel identity.
+            tick (int): The current system tick count.
+            event_tick (int): The timestamp Windows put on the hook event.
+            injected (bool): Whether the hook marked the event as injected.
+        """
+        self.record_hook(frozenset({(*key, event_tick) if injected else key}), tick)
+
+    def record_mouse_raw(
+        self, key: tuple[Any, ...], tick: int, event_tick: int, name: str
+    ) -> None:
+        """Allow a raw mouse event to match a physical or precisely timed injected callback.
+
+        Args:
+            key (tuple[Any, ...]): The mouse button or wheel identity.
+            tick (int): The current system tick count.
+            event_tick (int): The timestamp Windows put on the Raw Input message.
+            name (str): A readable description for the user if the hook missed it.
+        """
+        self.record_raw(frozenset({key, (*key, event_tick)}), tick, name)
 
     def expire(self, tick: int) -> list[str]:
         """Return descriptions of physical events the hook never observed.

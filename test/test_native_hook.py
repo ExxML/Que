@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 from stealth.hooks import EXTENDED_MODIFIERS, chord_groups
 
-from core.hook_engine import HOTKEYS, HookEngine, _MouseData
+from core.hook_engine import HOTKEYS, HookEngine, InputMonitor, _MouseData
 from core.native_hook import (
     STATUS_KEYBOARD,
     STATUS_MEMORY_LOCKED,
@@ -58,10 +58,11 @@ BUTTONS = (
 )
 
 
-class Recorder:
+class Recorder(InputMonitor):
     """Collect what one engine emits and observes."""
 
     def __init__(self) -> None:
+        super().__init__()
         self.events: list[dict[str, Any]] = []
         self.observed: list[frozenset[tuple[Any, ...]]] = []
 
@@ -79,8 +80,8 @@ class DualDriver:
         self.python = HookEngine(self.python_out.events.append)
         self.native = NativeHookEngine(self.native_out.events.append)
         if observe:
-            self.python.monitor = self.python_out  # type: ignore[assignment]
-            self.native.monitor = self.native_out  # type: ignore[assignment]
+            self.python.monitor = self.python_out
+            self.native.monitor = self.native_out
         self.api = MagicMock()
         self.api.CallNextHookEx.return_value = 0
         # Windows re-enters the hook for each injected key before the send returns; mirror it

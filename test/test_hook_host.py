@@ -12,8 +12,14 @@ import winreg
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from core import hook_host
-from core.hook_engine import key_identity
+from core import hook_engine, hook_host
+from core.hook_engine import (
+    LLMHF_INJECTED,
+    TICK_MASK,
+    InputMonitor,
+    _MouseData,
+    key_identity,
+)
 from core.hook_host import (
     HOOK_TIMEOUT_MS,
     RI_KEY_BREAK,
@@ -34,9 +40,11 @@ from core.hook_host import (
     _RawMouse,
     run_hook_host,
 )
-from core.native_hook import STATUS_KEYBOARD
+from core.native_hook import STATUS_KEYBOARD, NativeHookEngine
 
 LEFT_DOWN, LEFT_UP, WHEEL = 0x0001, 0x0002, 0x0400
+MIDDLE_DOWN, MIDDLE_UP = 0x0010, 0x0020
+WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MOUSEWHEEL = 0x0207, 0x0208, 0x020A
 
 
 class FakeUser32:
@@ -47,6 +55,7 @@ class FakeUser32:
         self.short_read = False
         self.quit_posted = False
         self.raw_devices: list[tuple[int, int, int]] = []
+        self.message_time = 0
 
     def GetRawInputData(
         self, _handle: int, _command: int, buffer: Any, size: Any, _header: int
@@ -73,6 +82,14 @@ class FakeUser32:
             int: Zero characters.
         """
         return 0
+
+    def GetMessageTime(self) -> int:
+        """Return the timestamp Windows put on the current message.
+
+        Returns:
+            int: The message timestamp as a signed 32-bit value.
+        """
+        return self.message_time
 
     def PostQuitMessage(self, _code: int) -> None:
         """Record that the message loop was asked to stop."""
@@ -239,12 +256,79 @@ class RawInputLeakTests(HookHostTestCase):
             ["left mouse button press", "mouse wheel", "left mouse button release"],
         )
 
+    def test_trackpad_click_passes_through_without_a_false_leak(self) -> None:
+        """Pair injected mouse callbacks with device-backed Raw Input in either order."""
+        for engine in (self.host.fallback, NativeHookEngine(self.host.outbox.put)):
+            if isinstance(engine, NativeHookEngine):
+                self.addCleanup(engine.close)
+            with self.subTest(engine=type(engine).__name__):
+                self.host.engine = engine
+                engine.monitor = InputMonitor()
+                engine.apply({"type": "routing", "value": True})
+                engine.apply({"type": "regions", "value": [(1, 0, 0, 100, 100)]})
+                self.raw(mouse_record(0))  # Movement alone is not tracked
+                self.raw(mouse_record(LEFT_DOWN, device=0))  # No device to compare
+                for message, raw_flag, raw_first in (
+                    (WM_MBUTTONDOWN, MIDDLE_DOWN, True),
+                    (WM_MBUTTONUP, MIDDLE_UP, False),
+                    (WM_MOUSEWHEEL, WHEEL, True),
+                ):
+                    self.user32.message_time = -0x7FFFFFFF + message
+                    if raw_first:
+                        self.raw(mouse_record(raw_flag))
+                    self.injected_mouse(message)
+                    if not raw_first:
+                        self.raw(mouse_record(raw_flag))
+                self.tick += 1000
+                self.host._on_timer()
+                self.assertEqual(engine.monitor.raw_events, 3)
+                self.assertEqual(engine.monitor.missed_events, 0)
+                self.assertEqual(self.events(), [])
+                self.assertEqual(self.hooks.SetWindowsHookExW.call_count, 2)
+
+    def test_unrelated_injected_click_does_not_mask_missed_click(self) -> None:
+        """Report a missed click even after an injected callback for the same button."""
+        self.user32.message_time = 1234
+        self.injected_mouse(WM_MBUTTONDOWN)
+        self.user32.message_time += 16
+        self.raw(mouse_record(MIDDLE_DOWN))
+        self.tick += 1000
+        self.host._on_timer()
+        self.assertEqual(
+            self.events(),
+            [
+                {
+                    "type": "leak",
+                    "events": ["middle mouse button press"],
+                    "restored": True,
+                }
+            ],
+        )
+
     def test_without_raw_input_nothing_is_recorded(self) -> None:
         """Skip Raw Input when leak detection is unavailable."""
         self.host.engine.monitor = None
         self.raw(keyboard_record(0x41, 0x1E))
         self.host._on_timer()
         self.assertFalse(self.events())
+
+    def injected_mouse(self, message: int) -> None:
+        """Deliver an injected mouse callback and check it passes through the hook.
+
+        Args:
+            message (int): The mouse button or wheel message.
+        """
+        tick = self.user32.message_time & TICK_MASK
+        engine = self.host.engine
+        if isinstance(engine, NativeHookEngine):
+            result = engine.process_pointer(0, message, 10, 10, 0, LLMHF_INJECTED, tick)
+        else:
+            event = _MouseData(flags=LLMHF_INJECTED, time=tick)
+            event.pt.x = event.pt.y = 10
+            self.hooks.CallNextHookEx.return_value = 0
+            with patch.object(hook_engine, "user32", self.hooks):
+                result = engine._mouse_proc(0, message, ctypes.addressof(event))
+        self.assertEqual(result, 0)
 
 
 class TimerAndWindowTests(HookHostTestCase):

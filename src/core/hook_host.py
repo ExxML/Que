@@ -23,7 +23,7 @@ from multiprocessing.connection import Client, Connection, PipeConnection
 from pathlib import Path
 from typing import Any
 
-from core.hook_engine import QUE_KEY, HookEngine, InputMonitor, key_identity
+from core.hook_engine import QUE_KEY, TICK_MASK, HookEngine, InputMonitor, key_identity
 from core.native_hook import (
     LIBRARY_PATH,
     STATUS_KEYBOARD,
@@ -353,7 +353,7 @@ class HookHost:
             return
         header = _RawInputHeader.from_buffer(buffer)
         if not header.hDevice:
-            return  # Injected input (including Que's own replays) has no physical device
+            return  # Raw Input can omit the device, e.g. for precision touchpads
         tick = int(kernel32.GetTickCount())
         if header.dwType == RIM_TYPEKEYBOARD:
             keyboard = _RawKeyboard.from_buffer(buffer, header_size)
@@ -373,18 +373,22 @@ class HookHost:
             )
         elif header.dwType == RIM_TYPEMOUSE:
             mouse = _RawMouse.from_buffer(buffer, header_size)
+            if not mouse.usButtonFlags:
+                return
+            event_tick = int(native.GetMessageTime()) & TICK_MASK
             for flag, (button, down) in RAW_BUTTONS.items():
                 if mouse.usButtonFlags & flag:
-                    monitor.record_raw(
-                        frozenset({("button", button, down)}),
+                    monitor.record_mouse_raw(
+                        ("button", button, down),
                         tick,
+                        event_tick,
                         f"{BUTTON_NAMES[button]} mouse button "
                         f"{'press' if down else 'release'}",
                     )
             for flag, wheel in RAW_WHEELS.items():
                 if mouse.usButtonFlags & flag:
-                    monitor.record_raw(
-                        frozenset({("wheel", wheel)}), tick, "mouse wheel"
+                    monitor.record_mouse_raw(
+                        ("wheel", wheel), tick, event_tick, "mouse wheel"
                     )
 
     def _on_timer(self) -> None:
@@ -619,6 +623,8 @@ native.DefWindowProcW.argtypes = [
     ctypes.wintypes.LPARAM,
 ]
 native.DefWindowProcW.restype = ctypes.wintypes.LPARAM
+native.GetMessageTime.argtypes = []
+native.GetMessageTime.restype = ctypes.wintypes.LONG
 native.RegisterRawInputDevices.argtypes = [
     ctypes.POINTER(_RawInputDevice),
     ctypes.wintypes.UINT,
