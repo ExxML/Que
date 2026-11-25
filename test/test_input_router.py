@@ -214,8 +214,30 @@ class KeyboardFocusTests(RouterTestCase):
         self.assertFalse(self.router.eventFilter(None, None))
 
 
-class SendButtonTests(RouterTestCase):
-    """Exercise both input actions through the overlay's pointer routing."""
+class InputFieldTests(RouterTestCase):
+    """Exercise composer resizing and routed input actions."""
+
+    def test_multiline_draft_emits_height_change(self) -> None:
+        """Forward the editor's height increase on the Qt event loop."""
+        field = InputField(self.main_window)
+        edit = field.input_field
+        layout = QVBoxLayout(self.main_window)
+        layout.addWidget(field)
+        self.main_window.show()
+        self.app.processEvents()
+        self.app.processEvents()
+
+        changed = MagicMock()
+        field.height_changed.connect(changed)
+        original_height = edit.height()
+        edit.setPlainText("first line\nsecond line\nthird line")
+        delta = edit.height() - original_height
+        self.assertGreater(delta, 0)
+        changed.assert_not_called()
+
+        self.app.processEvents()  # Deliver the editor's queued signal.
+        self.app.processEvents()  # Deliver the composer's forwarded signal.
+        changed.assert_called_once_with(delta)
 
     def test_routed_send_and_answer(self) -> None:
         """Send a draft and answer only on a separate click without arming typing."""

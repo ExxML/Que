@@ -131,7 +131,6 @@
   "ui/chat/latex.py | If | if token in ('}', '&'):",
   "ui/directory_picker.py | FunctionDef | def choose_directory(parent: QWidget, current: str, title: str=\"Choose Claude's directory\") -> str:",
   "ui/input/input_field.py | FunctionDef | def _set_enabled(self, enabled: bool) -> None:",
-  "ui/input/input_field.py | If | if not sip.isdeleted(widget):",
   "ui/input/input_router.py | If | if candidate is None:",
   "ui/input/input_settings.py | FunctionDef | def paintEvent(self, _event: QPaintEvent | None) -> None:",
   "ui/input/input_settings.py | If | if not model_id:",
