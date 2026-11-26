@@ -723,6 +723,13 @@
   {
     "class": "_SettingsSlider",
     "name": "",
+    "accessible": "Speech speed",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "_SettingsSlider",
+    "name": "",
     "accessible": "Speech volume",
     "parent_class": "QWidget",
     "enabled": true
@@ -733,6 +740,13 @@
     "accessible": "Stop generating",
     "parent_class": "InputSettings",
     "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Test voice",
+    "parent_class": "QWidget",
+    "enabled": false
   },
   {
     "accessible": "Them \u00b7 Playback device",

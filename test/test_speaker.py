@@ -77,6 +77,7 @@ class FakeStream:
         self.frames = frames
         self.sound = 0  # Non-silent frames played
         self.silence = 0
+        self.peak = 0.0
         self.running = True
         self.thread = threading.Thread(target=self._pull, daemon=True)
         self.thread.start()
@@ -96,6 +97,7 @@ class FakeStream:
             samples = np.frombuffer(data, np.float32)
             if samples.any():
                 self.sound += 1
+                self.peak = max(self.peak, float(np.abs(samples).max()))
             else:
                 self.silence += 1
             time.sleep(0.001)
@@ -156,6 +158,7 @@ class SpeakerTestCase(unittest.TestCase):
         self.store = MagicMock()
         self.store.audio_device.return_value = ""
         self.store.speech_volume.return_value = 100
+        self.store.speech_speed.return_value = 100
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.speaker = Speaker(self.store, Path(directory.name))

@@ -16,6 +16,7 @@ from PyQt6.QtGui import QKeyEvent, QWheelEvent
 from PyQt6.QtWidgets import QApplication, QWidget
 from qt_application import application
 from test_main_window import WindowTestCase
+from test_speaker import OUTPUT, FakeAudio
 
 from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
@@ -24,7 +25,9 @@ from core.speaker import (
     DOWNLOADING_VOICE_STATUS,
     MISSING_VOICE_STATUS,
     MODEL_FILE,
+    VOICE,
     VOICE_RATE,
+    VOICE_SAMPLE,
     VOICES_FILE,
     _Output,
 )
@@ -239,8 +242,8 @@ class AudioSettingsTests(unittest.TestCase):
         self.fail("The audio device list did not refresh.")
 
 
-class SpeechVolumeTests(WindowTestCase):
-    """Change speech volume through Voice settings with no physical audio device."""
+class SpeechSettingsTests(WindowTestCase):
+    """Configure and preview speech through Voice settings with no physical audio device."""
 
     def test_volume_saves_on_release_without_starting_playback(self) -> None:
         """Preview the percentage as the slider moves, then persist the released value."""
@@ -314,6 +317,75 @@ class SpeechVolumeTests(WindowTestCase):
             self.assertTrue(output.drained())
             audio.open.assert_called_once()
 
+    def test_speed_saves_on_release_and_restores_on_failure(self) -> None:
+        """Show the chosen multiplier and save only a committed change."""
+        page = self.window.settings_page
+        slider = page.speech_speed_slider
+        self.assertEqual((slider.minimum(), slider.maximum()), (50, 200))
+        self.assertEqual(slider.value(), 100)
+        self.assertEqual(page.speech_speed_value.text(), "1.00×")
+        with patch("core.speaker.pyaudiowpatch.PyAudio") as audio:
+            slider.setSliderDown(True)
+            slider.setSliderPosition(150)
+            self.assertEqual(page.speech_speed_value.text(), "1.50×")
+            self.assertEqual(self.store.speech_speed(), 100)
+            slider.setSliderDown(False)
+            self.assertEqual(SettingsStore(self.store.path).speech_speed(), 150)
+
+            with patch.object(self.store, "save_speech_speed", side_effect=OSError):
+                slider.setValue(200)
+            self.assertEqual(slider.value(), 150)
+            self.assertEqual(page.speech_speed_value.text(), "1.50×")
+            self.assertIn("speech speed could not be saved", page.save_status.text())
+
+            self.store.save_speech_speed(50)
+            page.open_settings()
+            self.assertEqual(slider.value(), 50)
+            self.assertEqual(page.speech_speed_value.text(), "0.50×")
+            audio.assert_not_called()
+        self.assertIsNone(self.window.speaker.speech_thread)
+
+    def test_sample_uses_the_configured_speed_volume_and_output(self) -> None:
+        """Play one sentence on the chosen device with the configured speech settings."""
+        speaker = self.window.speaker
+        speaker.cache_dir.mkdir()
+        for name in (MODEL_FILE, VOICES_FILE):
+            (speaker.cache_dir / name).touch()
+        voice = MagicMock()
+        voice.create.return_value = (np.full(240, 0.5, np.float32), VOICE_RATE)
+        speaker.voice = voice
+        self.store.save_audio_device("speaker", str(OUTPUT["name"]))
+        page = self.window.settings_page
+        page.open_settings()
+        tab = page.tab_bar
+        tab.setCurrentIndex(
+            next(i for i in range(tab.count()) if tab.tabText(i) == "Voice")
+        )
+        voice_tab = page.tab_pages.currentWidget()
+        assert voice_tab is not None
+        self.assertTrue(voice_tab.isAncestorOf(page.speech_speed_slider))
+        self.assertTrue(voice_tab.isAncestorOf(page.voice_test_button))
+        self.assertTrue(page.voice_test_button.isEnabled())
+        page.speech_speed_slider.setValue(135)
+        page.speech_volume_slider.setValue(50)
+
+        with (
+            patch.object(FakeAudio, "instances", []),
+            patch("core.speaker.pyaudiowpatch.PyAudio", FakeAudio),
+        ):
+            page.voice_test_button.click()
+            for _ in range(200):
+                if FakeAudio.instances and FakeAudio.instances[0].terminated:
+                    break
+                time.sleep(0.01)
+            (audio,) = FakeAudio.instances
+            self.assertTrue(audio.terminated)
+            self.assertEqual(audio.opened[0]["output_device_index"], OUTPUT["index"])
+            self.assertEqual(audio.streams[0].peak, 0.25)
+        voice.create.assert_called_once_with(
+            VOICE_SAMPLE, voice=VOICE, speed=1.35, lang="en-us"
+        )
+
 
 class VoiceDownloadTests(WindowTestCase):
     """Exercise the cold voice flow through chat and Voice settings without real I/O."""
@@ -334,6 +406,8 @@ class VoiceDownloadTests(WindowTestCase):
         self.assertTrue(voice_tab.isAncestorOf(button))
         self.assertIs(page.speaker, window.speaker)
         self.assertEqual(button.text(), "Download")
+        test_button = page.voice_test_button
+        self.assertFalse(test_button.isEnabled())
 
         def download(_repo: str, **options: Any) -> None:
             """Write the pinned files into the test cache."""
@@ -349,6 +423,7 @@ class VoiceDownloadTests(WindowTestCase):
             patch("core.speaker.pyaudiowpatch.PyAudio") as audio,
             patch("onnxruntime.InferenceSession") as session,
         ):
+            test_button.click()
             window.speak_latest()
             self.assertEqual(window.voice_notice, MISSING_VOICE_STATUS)
             self.assertTrue(window.voice_notice_timer.isActive())
@@ -360,17 +435,20 @@ class VoiceDownloadTests(WindowTestCase):
             page.open_settings()
             self.assertEqual(button.text(), "Downloading…")
             self.assertFalse(button.isEnabled())
+            self.assertFalse(test_button.isEnabled())
             window.speak_latest()
             self.assertEqual(window.voice_notice, DOWNLOADING_VOICE_STATUS)
             self._wait_for_download()
             self.assertIn("offline", page.voice_download_status.text())
             self.assertTrue(button.isEnabled())
+            self.assertFalse(test_button.isEnabled())
 
             snapshot.side_effect = download
             button.click()
             self._wait_for_download()
             self.assertEqual(button.text(), "Downloaded")
             self.assertFalse(button.isEnabled())
+            self.assertTrue(test_button.isEnabled())
             self.assertEqual(
                 page.voice_download_status.text(), "Downloaded Que's voice."
             )

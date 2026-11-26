@@ -20,7 +20,7 @@ MODEL_FILE = "kokoro-v1.0.onnx"
 VOICES_FILE = "voices-v1.0.bin"
 VOICE = "af_heart"
 VOICE_RATE = 24000  # Kokoro's sample rate
-SPEED = 1.0
+VOICE_SAMPLE = "This is how Que will read your replies aloud."
 WAIT_SECONDS = (
     0.05  # How often the speech thread rechecks the stream and the playback queue
 )
@@ -59,7 +59,7 @@ class Speaker(QObject):
         self.downloading = False
         self.download_finished.connect(self._on_download_finished)
         self.condition = threading.Condition()
-        self.reply: object | None = None  # The bubble being read; Qt thread only
+        self.reply: object | None = None  # Request identity, Qt thread only
         # Shared with the speech thread under the condition
         self.text = ""
         self.complete = True
@@ -123,6 +123,10 @@ class Speaker(QObject):
         if self.speech_thread is None or not self.speech_thread.is_alive():
             self.speech_thread = threading.Thread(target=self._run, daemon=True)
             self.speech_thread.start()
+
+    def speak_sample(self) -> None:
+        """Read a sample sentence using the current speech settings."""
+        self.speak(object(), VOICE_SAMPLE, True)
 
     def update(self, reply: object, text: str, complete: bool) -> None:
         """Pass new streamed text of the reply being read to the speech thread.
@@ -241,7 +245,10 @@ class Speaker(QObject):
         """
         try:
             samples, _rate = voice.create(
-                unit.text, voice=VOICE, speed=SPEED, lang="en-us"
+                unit.text,
+                voice=VOICE,
+                speed=self.settings_store.speech_speed() / 100,
+                lang="en-us",
             )
         except Exception:  # noqa: BLE001  # A sentence the phonemizer rejects is skipped, not fatal
             return np.zeros(0, np.float32)

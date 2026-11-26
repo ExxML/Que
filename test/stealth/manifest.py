@@ -202,7 +202,7 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
         (
             "audio.speech",
             "Use a cold speech cache for download stages and Settings → Voice to start the download. For playback stages with the model installed, exercise Caps Lock+V, Caps Lock+Space and Caps Lock+click while the browser captures audio and Que records. Repeat on a nondefault Speech output device and while Que is hidden.",
-            "Verify missing and downloading notices, inline download results, and idle audio until a new playback request. For playback, verify speech on the selected output, first streamed words, pause/resume, restart from the clicked line and session closure. For the volume stage, adjust Settings → Voice → Volume while reading, confirm silence at 0%, and confirm the selected volume survives reopening Settings. Record browser audio continuity, page focus and key events, and the Them transcript.",
+            "Verify missing and downloading notices, inline download results, and idle audio until a new playback request. For playback, verify speech on the selected output, first streamed words, pause/resume, restart from the clicked line and session closure. Adjust Settings → Voice → Volume while reading and confirm silence at 0%. Change Speed and verify it on the next reply. With the model downloaded, use Test voice to play one sentence at different speeds and volumes. Confirm the saved settings survive reopening. Record browser audio continuity, page focus and key events, and the Them transcript.",
             "audio",
         ),
         (

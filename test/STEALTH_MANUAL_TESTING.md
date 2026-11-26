@@ -200,7 +200,8 @@ Que's voice is real audio, so another program can capture it. Only automated tes
 3. Press Caps Lock+Space twice while it reads (it pauses, then resumes), Caps Lock+V again (it restarts), and Caps Lock+click a wrapped line (it reads from that line). Confirm a code block is never read.
 4. Open the Windows Volume Mixer while Que reads, then after it finishes. Que should appear only while it reads.
 5. Record (Caps Lock+Shift+R) with Speech output set to the same device as **Them**, and let Que read. The transcript must not show Que's own words as Them lines.
-6. **Known limit:** a meeting app sharing "computer sound" from the same device as Speech output captures Que's voice. Windows cannot exclude one app's playback from another app's loopback capture. Never share computer sound on the Speech output device.
+6. In Settings → Voice, set **Speed** to **0.50×** and click **Test voice**. Raise the speed to **2.00×** and test again. Confirm the same sentence plays faster on the selected output. Repeat at **0%** volume to confirm silence, then restore your preferred volume and read a reply at the selected speed.
+7. **Known limit:** a meeting app sharing "computer sound" from the same device as Speech output captures Que's voice. Windows cannot exclude one app's playback from another app's loopback capture. Never share computer sound on the Speech output device.
 
 ### 7.6 Claude CLI processes
 

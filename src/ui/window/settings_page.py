@@ -30,7 +30,13 @@ from core.hook_engine import PRESET_COUNT
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.resume_facts import ResumeFacts, facts_directory
-from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
+from core.settings import (
+    CONTEXT_DOCUMENTS,
+    SPEECH_SPEED_MAX,
+    SPEECH_SPEED_MIN,
+    WHISPER_MODELS,
+    SettingsStore,
+)
 from core.speaker import Speaker
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
@@ -110,8 +116,9 @@ class SettingsPage(QWidget):
             or self.transcriber.active_model()
             or WHISPER_MODELS[0]
         )
-        self._refresh_voice_download()
+        self._refresh_voice_buttons()
         self._refresh_speech_volume()
+        self._refresh_speech_speed()
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
@@ -511,7 +518,7 @@ class SettingsPage(QWidget):
         )
         transcription_hint.setWordWrap(True)
         voice_layout.addWidget(transcription_hint)
-        self._init_voice_download(voice_layout)
+        self._init_speech_settings(voice_layout)
         voice_layout.addStretch(1)
         self._init_audio_tab()
         window_layout = self._add_tab("Window")
@@ -680,6 +687,8 @@ class SettingsPage(QWidget):
             )
         if "speech_volume" in selected:
             self._refresh_speech_volume()
+        if "speech_speed" in selected:
+            self._refresh_speech_speed()
         if (
             selected & {"audio_device_you", "audio_device_them", "audio_device_speaker"}
             and self.audio_refresh.isEnabled()
@@ -717,8 +726,8 @@ class SettingsPage(QWidget):
                 signal.emit(value)
         self.save_status.setText("Imported settings saved.")
 
-    def _init_voice_download(self, layout: QVBoxLayout) -> None:
-        """Add the local speech model download to Voice settings.
+    def _init_speech_settings(self, layout: QVBoxLayout) -> None:
+        """Add the speech model download, playback sliders and sample to Voice settings.
 
         Args:
             layout (QVBoxLayout): The Voice tab layout.
@@ -732,6 +741,14 @@ class SettingsPage(QWidget):
         form = QFormLayout()
         form.addRow("Speech", row)
         self._init_speech_volume(form)
+        self._init_speech_speed(form)
+        self.voice_test_button = QPushButton("Test voice")
+        self.voice_test_button.setAccessibleName("Test voice")
+        self.voice_test_button.clicked.connect(self.speaker.speak_sample)
+        test_row = QHBoxLayout()
+        test_row.addStretch()
+        test_row.addWidget(self.voice_test_button)
+        form.addRow("", test_row)
         layout.addLayout(form)
         self.voice_download_status = QLabel()
         self.voice_download_status.setTextFormat(Qt.TextFormat.PlainText)
@@ -743,7 +760,7 @@ class SettingsPage(QWidget):
         hint.setWordWrap(True)
         layout.addWidget(hint)
         self.speaker.download_finished.connect(self._on_voice_downloaded)
-        self._refresh_voice_download()
+        self._refresh_voice_buttons()
 
     def _init_speech_volume(self, form: QFormLayout) -> None:
         """Add the playback volume slider below the speech model.
@@ -751,24 +768,58 @@ class SettingsPage(QWidget):
         Args:
             form (QFormLayout): The speech settings form.
         """
-        label = QLabel("Volume")
         self.speech_volume_slider = _SettingsSlider(Qt.Orientation.Horizontal)
-        self.speech_volume_slider.setAccessibleName("Speech volume")
         self.speech_volume_slider.setRange(0, 100)
-        self.speech_volume_slider.setTracking(False)
-        label.setBuddy(self.speech_volume_slider)
-        self.speech_volume_value = QLabel()
-        self.speech_volume_value.setMinimumWidth(
-            self.speech_volume_value.fontMetrics().horizontalAdvance("100%")
+        self.speech_volume_value = self._add_speech_slider(
+            form, "Volume", self.speech_volume_slider
         )
-        self.speech_volume_value.setAlignment(Qt.AlignmentFlag.AlignRight)
-        row = QHBoxLayout()
-        row.addWidget(self.speech_volume_slider, 1)
-        row.addWidget(self.speech_volume_value)
-        form.addRow(label, row)
         self._refresh_speech_volume()
         self.speech_volume_slider.sliderMoved.connect(self._show_speech_volume_value)
         self.speech_volume_slider.valueChanged.connect(self._save_speech_volume)
+
+    def _init_speech_speed(self, form: QFormLayout) -> None:
+        """Add the speech speed slider below the volume slider.
+
+        Args:
+            form (QFormLayout): The speech settings form.
+        """
+        self.speech_speed_slider = _SettingsSlider(Qt.Orientation.Horizontal)
+        self.speech_speed_slider.setRange(SPEECH_SPEED_MIN, SPEECH_SPEED_MAX)
+        self.speech_speed_value = self._add_speech_slider(
+            form, "Speed", self.speech_speed_slider
+        )
+        self._refresh_speech_speed()
+        self.speech_speed_slider.sliderMoved.connect(self._show_speech_speed_value)
+        self.speech_speed_slider.valueChanged.connect(self._save_speech_speed)
+
+    def _add_speech_slider(
+        self, form: QFormLayout, name: str, slider: QSlider
+    ) -> QLabel:
+        """Add an aligned speech control with a label and room for its value.
+
+        Args:
+            form (QFormLayout): The speech settings form.
+            name (str): The name shown beside the slider.
+            slider (QSlider): The slider to add to the form.
+
+        Returns:
+            QLabel: The readout beside the slider.
+        """
+        label = QLabel(name)
+        label.setBuddy(slider)
+        slider.setAccessibleName(f"Speech {name.lower()}")
+        slider.setTracking(False)
+        value = QLabel()
+        metrics = value.fontMetrics()
+        value.setMinimumWidth(
+            max(metrics.horizontalAdvance("100%"), metrics.horizontalAdvance("2.00×"))
+        )
+        value.setAlignment(Qt.AlignmentFlag.AlignRight)
+        row = QHBoxLayout()
+        row.addWidget(slider, 1)
+        row.addWidget(value)
+        form.addRow(label, row)
+        return value
 
     def _init_audio_tab(self) -> None:
         """Build the two independent recording source selectors and the speech output selector."""
@@ -1419,11 +1470,12 @@ class SettingsPage(QWidget):
         self.download_status.setText(text)
         self.download_status.show()
 
-    def _refresh_voice_download(self) -> None:
-        """Keep the speech model download button in sync with the cache and worker."""
+    def _refresh_voice_buttons(self) -> None:
+        """Keep the download and sample buttons in sync with the cache and worker."""
         downloading = self.speaker.downloading
         downloaded = self.speaker.model_downloaded()
         self.voice_download_button.setEnabled(not downloading and not downloaded)
+        self.voice_test_button.setEnabled(downloaded and not downloading)
         self.voice_download_button.setText(
             "Downloading…"
             if downloading
@@ -1439,7 +1491,7 @@ class SettingsPage(QWidget):
                 "Downloading Que's voice. You can keep using Que meanwhile."
             )
             self.voice_download_status.show()
-        self._refresh_voice_download()
+        self._refresh_voice_buttons()
 
     def _on_voice_downloaded(self, error: str) -> None:
         """Report the speech model download result.
@@ -1453,7 +1505,7 @@ class SettingsPage(QWidget):
             else "Downloaded Que's voice."
         )
         self.voice_download_status.show()
-        self._refresh_voice_download()
+        self._refresh_voice_buttons()
 
     def _refresh_speech_volume(self) -> None:
         """Restore the slider and percentage from the saved volume."""
@@ -1485,6 +1537,38 @@ class SettingsPage(QWidget):
             )
             return
         self._show_speech_volume_value(volume)
+        self.save_status.setText("Changes saved automatically.")
+
+    def _refresh_speech_speed(self) -> None:
+        """Restore the slider and multiplier from the saved speed."""
+        speed = self.settings_store.speech_speed()
+        with QSignalBlocker(self.speech_speed_slider):
+            self.speech_speed_slider.setValue(speed)
+        self._show_speech_speed_value(speed)
+
+    def _show_speech_speed_value(self, speed: int) -> None:
+        """Show the slider's speed multiplier.
+
+        Args:
+            speed (int): The selected speed as a percentage.
+        """
+        self.speech_speed_value.setText(f"{speed / 100:.2f}×")
+
+    def _save_speech_speed(self, speed: int) -> None:
+        """Save the speed selection or restore the previous value on failure.
+
+        Args:
+            speed (int): The selected speed as a percentage.
+        """
+        try:
+            self.settings_store.save_speech_speed(speed)
+        except OSError:
+            self._refresh_speech_speed()
+            self.save_status.setText(
+                "The speech speed could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self._show_speech_speed_value(speed)
         self.save_status.setText("Changes saved automatically.")
 
     def _save_whisper_model(self, model: str) -> None:
@@ -1805,7 +1889,7 @@ class _SettingsComboBox(QComboBox):
 
 
 class _SettingsSlider(QSlider):
-    """Keep scrolling the settings page from changing the speech volume."""
+    """Keep scrolling the settings page from changing the slider value."""
 
     def wheelEvent(self, event: QWheelEvent | None) -> None:
         """Pass the wheel event to the settings page.

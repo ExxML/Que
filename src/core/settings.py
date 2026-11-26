@@ -10,6 +10,9 @@ import win32crypt  # type: ignore[import-untyped]
 from core.hook_engine import PRESET_COUNT
 
 WHISPER_MODELS: tuple[str, ...] = ("parakeet-tdt-0.6b-v2",)  # Transcription models
+# Kokoro accepts multipliers from 0.5 to 2.0; store them as whole percentages.
+SPEECH_SPEED_MIN = 50
+SPEECH_SPEED_MAX = 200
 CONTEXT_DOCUMENTS: dict[str, str] = {
     "resume": "Resume",
     "cover_letter": "Cover letter",
@@ -37,7 +40,11 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
         },
         "resume_details": "Resume detail links",
     },
-    "Voice": {"whisper_model": "Transcription model", "speech_volume": "Speech volume"},
+    "Voice": {
+        "whisper_model": "Transcription model",
+        "speech_volume": "Speech volume",
+        "speech_speed": "Speech speed",
+    },
     "Audio": {
         "audio_device_you": "Microphone",
         "audio_device_them": "Playback device",
@@ -134,6 +141,15 @@ class SettingsStore:
         """Return the saved speech volume percentage, defaulting to 100."""
         volume = self.data.get("speech_volume")
         return volume if type(volume) is int and 0 <= volume <= 100 else 100
+
+    def speech_speed(self) -> int:
+        """Return the saved speech speed percentage, defaulting to 100."""
+        speed = self.data.get("speech_speed")
+        return (
+            speed
+            if type(speed) is int and SPEECH_SPEED_MIN <= speed <= SPEECH_SPEED_MAX
+            else 100
+        )
 
     def audio_device(self, source: str) -> str:
         """Return the saved WASAPI device name or an empty string for the Windows default.
@@ -310,6 +326,14 @@ class SettingsStore:
         """
         self._write({**self.data, "speech_volume": volume})
 
+    def save_speech_speed(self, speed: int) -> None:
+        """Atomically save the speech speed.
+
+        Args:
+            speed (int): The synthesis speed as a percentage of the normal speed.
+        """
+        self._write({**self.data, "speech_speed": speed})
+
     def save_audio_device(self, source: str, name: str) -> None:
         """Atomically save one transcript source's or the speech output's audio device.
 
@@ -437,6 +461,7 @@ class SettingsStore:
             ],
             "whisper_model": self.whisper_model(),
             "speech_volume": self.speech_volume(),
+            "speech_speed": self.speech_speed(),
             "audio_device_you": self.audio_device("you"),
             "audio_device_them": self.audio_device("them"),
             "audio_device_speaker": self.audio_device("speaker"),
@@ -576,6 +601,8 @@ def _valid_config_value(key: str, value: Any) -> bool:
         return value in WHISPER_MODELS
     if key == "speech_volume":
         return type(value) is int and 0 <= value <= 100
+    if key == "speech_speed":
+        return type(value) is int and SPEECH_SPEED_MIN <= value <= SPEECH_SPEED_MAX
     if key in CONFIG_GROUPS["Window"]:
         return isinstance(value, bool)
     if key in ("gemini", "claude") or key.startswith("presets."):
