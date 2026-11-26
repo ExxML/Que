@@ -4752,1487 +4752,1697 @@
     "expression": "QTimer.singleShot(0, self._apply_resize)",
     "sha256": "ed5d5c518917f8849b194ef8ba9af9bbc9e99bbb938575041d7dc85099625bd1"
   },
-  "core/speaker.py:582:routine": {
+  "core/speaker.py:759:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 582,
+    "line": 759,
+    "expression": "def _opening_pieces(unit: SpeechUnit) -> list[SpeechUnit]:",
+    "sha256": "eb819e646b2d37c233e45eac825ecdcbf836076767b61c6710dd13eff860d2ea"
+  },
+  "core/speaker.py:807:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 807,
+    "expression": "def _device_key(name: str) -> tuple[str, int, str]:",
+    "sha256": "1186202acf4954b6b2480ac2ff6415d1f17f696177c7286ef24718c97bee51f4"
+  },
+  "core/speaker.py:830:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 830,
     "expression": "def _output_device(audio: Any, name: str) -> dict[str, Any]:",
     "sha256": "94c630e924c3eca7533b24f6394eea0382db401de11386cb0c32197ce84af439"
   },
-  "core/speaker.py:66:routine": {
+  "core/speaker.py:92:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 66,
+    "line": 92,
     "expression": "def __init__(self, settings_store: SettingsStore, cache_dir: Path | None=None) -> None:",
-    "sha256": "4c4064b1e3f6e18abc7edc44d5011c7c5ecc086e34e7c64942c1a437abfc0335"
+    "sha256": "67e64b408c972a8de0167feaeb8c19518b8e14360e2f9c6db1643983640b80c3"
   },
-  "core/speaker.py:101:routine": {
+  "core/speaker.py:134:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 101,
+    "line": 134,
     "expression": "def model_downloaded(self) -> bool:",
     "sha256": "c0f8b25cc7fc54b6bd9c0d4c6a17460a32ee7fa4d4fc19c30419acea90555ed3"
   },
-  "core/speaker.py:111:routine": {
+  "core/speaker.py:144:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 111,
+    "line": 144,
+    "expression": "def preload(self) -> None:",
+    "sha256": "da7211056f2874a4474c02b376303601aed65acdfeae0ffd76ae7b45d72327e0"
+  },
+  "core/speaker.py:149:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 149,
     "expression": "def download(self) -> bool:",
     "sha256": "c1ad9280fd666a70ff78723afbf8801163e70fe263738ca4d6b999ab4c49df13"
   },
-  "core/speaker.py:123:routine": {
+  "core/speaker.py:161:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 123,
+    "line": 161,
     "expression": "def speak(self, reply: object, text: str, complete: bool, offset: int=0) -> None:",
     "sha256": "7296c9acb1ab653dcc4a48d1d260342c39512af2b94ab7848aada9b34e3fef41"
   },
-  "core/speaker.py:155:routine": {
+  "core/speaker.py:193:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 155,
+    "line": 193,
     "expression": "def speak_sample(self) -> None:",
     "sha256": "5b196f7deb6aaa6ce63d4ff113e9dcaf720489a8feb240d646ffddceb91a3a0f"
   },
-  "core/speaker.py:159:routine": {
+  "core/speaker.py:197:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 159,
+    "line": 197,
     "expression": "def update(self, reply: object, text: str, complete: bool) -> None:",
     "sha256": "bd0bf90cba2dbfd921394034bf8161204f98ce76d865d36bc12b048493841971"
   },
-  "core/speaker.py:174:routine": {
+  "core/speaker.py:212:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 174,
+    "line": 212,
     "expression": "def toggle_pause(self) -> None:",
     "sha256": "303130caa6a29c98c9929bec0afcad0b8f36e8d4e2b79faae142e4ee3fc40cc1"
   },
-  "core/speaker.py:189:routine": {
+  "core/speaker.py:227:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 189,
+    "line": 227,
     "expression": "def stop(self) -> None:",
-    "sha256": "d5227df8228febd25d3c27ca1ff6ced498441e4ddb48779c8b5ad4dd36b64724"
+    "sha256": "c867c66bed74e6ffddc0fb8a3f38a762097b5090879f6d0e0a92108a5b968c17"
   },
-  "core/speaker.py:203:routine": {
+  "core/speaker.py:241:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 203,
+    "line": 241,
+    "expression": "def release_idle_output(self) -> None:",
+    "sha256": "053560962543c7522665ec67eab26c50061713cc5c9489caf749a5d7be155a4a"
+  },
+  "core/speaker.py:251:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 251,
+    "expression": "def close(self) -> None:",
+    "sha256": "ea63470b87101dabdbfb4cf584418a1be0811a271d43881cfd7d715b205e6080"
+  },
+  "core/speaker.py:260:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 260,
     "expression": "def _run(self) -> None:",
-    "sha256": "10f30c7b2108146896183f0d125bacefe5be4e70cfd530a660b5c3bc14c80414"
+    "sha256": "54a35d44c4406b2b2caa947e8f02d548fa5a79509915e98eb9a2faa59daa6c41"
   },
-  "core/speaker.py:226:routine": {
+  "core/speaker.py:280:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 226,
+    "line": 280,
     "expression": "def _read(self, voice: Any) -> int | None:",
-    "sha256": "56a33ecb5a791224e27521d8a8c6571fa153b5ff474fc421ef49170834561b42"
-  },
-  "core/speaker.py:287:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 287,
-    "expression": "def _synthesize(self, voice: Any, unit: SpeechUnit) -> tuple[NDArray[np.float32], tuple[AudioCue, ...]]:",
-    "sha256": "fb81427a50ef35fc36ccb26d339a9f42edad2a32d4f0d1007c90fd500845e1f4"
-  },
-  "core/speaker.py:306:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 306,
-    "expression": "def _download(self) -> None:",
-    "sha256": "9a47a03d832c9f1669fe94896437b4454333f90dfe373ee8521290f68bf0e680"
-  },
-  "core/speaker.py:326:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 326,
-    "expression": "def _on_download_finished(self, _error: str) -> None:",
-    "sha256": "5756306ef3a5cc6ac37abdcbc1490d44af4cfd30caf7ef6b82de52c8f6a05b88"
-  },
-  "core/speaker.py:330:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 330,
-    "expression": "def _load_voice(self) -> Any:",
-    "sha256": "4cc60059250ee371330ad24777c4b33900c04e89db98a017bd935131b4d63606"
+    "sha256": "d68805c96d0ead55ceef895601bcd50d85e665f640fcdcaddcccbd44a4d0fa21"
   },
   "core/speaker.py:346:routine": {
     "category": "routine",
     "source": "core/speaker.py",
     "line": 346,
-    "expression": "def _finish(self, generation: int, message: str) -> None:",
-    "sha256": "fd71cb88c512617a618845cc2e8d1441e79f85b6fd84599aad70ac3f5da85d3c"
-  },
-  "core/speaker.py:360:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 360,
-    "expression": "def _reset_reading_position(self) -> None:",
-    "sha256": "00343d227dcbcbab59f954b61d3bf08a9d7e610bcfda40180998709213e58397"
-  },
-  "core/speaker.py:366:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 366,
-    "expression": "def _on_reading_ended(self, generation: int) -> None:",
-    "sha256": "dc00ca12de849223153ac304a76b6332c21c84e1e691d8ee60947a79d89774b8"
+    "expression": "def _start_synthesis(self, voice: Any, unit: SpeechUnit, generation: int) -> list[tuple[NDArray[np.float32], tuple[AudioCue, ...]]]:",
+    "sha256": "78d45527f773efa9f03babdfad06d6ea8f7319f51021ab039254d68e48789277"
   },
   "core/speaker.py:373:routine": {
     "category": "routine",
     "source": "core/speaker.py",
     "line": 373,
+    "expression": "def _submit_synthesis(self, job: Callable[[], None]) -> None:",
+    "sha256": "161ad906baadb9c9951d5baa55d5c67e0359d7ccf7e9aa9ba14a40bb1138abf8"
+  },
+  "core/speaker.py:389:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 389,
+    "expression": "def _work(self) -> None:",
+    "sha256": "701f5e97faa5d2236f941e16e6cacdda5d31f9f309256c9648e7bbf6cb251df8"
+  },
+  "core/speaker.py:394:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 394,
+    "expression": "def _claim_output(self) -> '_Output':",
+    "sha256": "49d630e73f5c548db8762765255d7ebbf995958278a573e9e46702c6cd0883f9"
+  },
+  "core/speaker.py:427:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 427,
+    "expression": "def _park_output(self) -> None:",
+    "sha256": "8eb7e6eacfac64e05984117c784f0a6b711e6a761f9faed9b29cd48eb19bb88c"
+  },
+  "core/speaker.py:443:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 443,
+    "expression": "def _synthesize(self, voice: Any, unit: SpeechUnit) -> tuple[NDArray[np.float32], tuple[AudioCue, ...]]:",
+    "sha256": "fb81427a50ef35fc36ccb26d339a9f42edad2a32d4f0d1007c90fd500845e1f4"
+  },
+  "core/speaker.py:462:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 462,
+    "expression": "def _download(self) -> None:",
+    "sha256": "9a47a03d832c9f1669fe94896437b4454333f90dfe373ee8521290f68bf0e680"
+  },
+  "core/speaker.py:482:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 482,
+    "expression": "def _on_download_finished(self, _error: str) -> None:",
+    "sha256": "5756306ef3a5cc6ac37abdcbc1490d44af4cfd30caf7ef6b82de52c8f6a05b88"
+  },
+  "core/speaker.py:486:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 486,
+    "expression": "def _load_voice(self) -> Any:",
+    "sha256": "631c876f96048f39ccc39c90870760dd04d5e8053524e063b37b4de9fb43e311"
+  },
+  "core/speaker.py:503:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 503,
+    "expression": "def _preload(self) -> None:",
+    "sha256": "8b9f09986d9b3875fd49e33322e3aec948f2928ee608708756b89e6d648d779c"
+  },
+  "core/speaker.py:521:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 521,
+    "expression": "def _finish(self, generation: int, message: str) -> None:",
+    "sha256": "fd71cb88c512617a618845cc2e8d1441e79f85b6fd84599aad70ac3f5da85d3c"
+  },
+  "core/speaker.py:535:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 535,
+    "expression": "def _reset_reading_position(self) -> None:",
+    "sha256": "00343d227dcbcbab59f954b61d3bf08a9d7e610bcfda40180998709213e58397"
+  },
+  "core/speaker.py:541:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 541,
+    "expression": "def _on_reading_ended(self, generation: int) -> None:",
+    "sha256": "dc00ca12de849223153ac304a76b6332c21c84e1e691d8ee60947a79d89774b8"
+  },
+  "core/speaker.py:548:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 548,
     "expression": "def _on_playback_events(self, generation: int, revision: int, events: tuple[_PlaybackEvent, ...]) -> None:",
     "sha256": "aca97e3ebc891ca59de82e609aa4153400b0429b101996431c8238db2130f9de"
   },
-  "core/speaker.py:387:routine": {
+  "core/speaker.py:562:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 387,
+    "line": 562,
     "expression": "def _advance_reading_position(self) -> None:",
     "sha256": "34f95122891ec5200ea48ff9fe682152854a5dceff67ac0d71c5902b71461029"
   },
-  "core/speaker.py:413:routine": {
+  "core/speaker.py:588:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 413,
+    "line": 588,
     "expression": "def __init__(self, speaker: Speaker) -> None:",
-    "sha256": "95f2b9824a829618ce8e47270013d1aa5f44b0c9a08076cb22c792e1b71e1c4f"
+    "sha256": "b8a10d4479c3f451c5bcc1b72fa1c934533551c52b969cf917d48728837c09d5"
   },
-  "core/speaker.py:445:routine": {
+  "core/speaker.py:622:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 445,
+    "line": 622,
     "expression": "def push(self, samples: NDArray[np.float32], pause: float, cues: tuple[AudioCue, ...]=(), generation: int=0) -> None:",
     "sha256": "e74456ce179f31079dfa5ebe2817c00f5706072a4ac954fa10a74b037da5610e"
   },
-  "core/speaker.py:476:routine": {
+  "core/speaker.py:653:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 476,
+    "line": 653,
     "expression": "def queued(self) -> int:",
     "sha256": "1ce7ea71f50a62eaaf6e9da577cc5c8197b9409223c665e3fccd04e52da8b9ec"
   },
-  "core/speaker.py:485:routine": {
+  "core/speaker.py:662:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 485,
+    "line": 662,
     "expression": "def drained(self) -> bool:",
     "sha256": "98c1f21a3f5e8d7316afe43deabe5f560d60ec2c3bb4f8c3cbb5ca4a111953d8"
   },
-  "core/speaker.py:493:routine": {
+  "core/speaker.py:670:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 493,
+    "line": 670,
     "expression": "def clear(self) -> None:",
     "sha256": "5ec7ff94e2f9f29d20d290b949c7de98d25a94505cdd317ae1487d1745cdd877"
   },
-  "core/speaker.py:501:routine": {
+  "core/speaker.py:678:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 501,
+    "line": 678,
     "expression": "def close(self) -> None:",
     "sha256": "5188354bd0f49cbfbf8d5b92dfb0bf11dfd1c083bdd17bafca23869a434f750a"
   },
-  "core/speaker.py:510:routine": {
+  "core/speaker.py:687:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 510,
+    "line": 687,
     "expression": "def _fill(self, _data: bytes | None, frames: int, time_info: Any, _status: int) -> tuple[bytes, int]:",
     "sha256": "835846776f1395da170cde03c8457dc5f9e4bb18e3a5113a3c23a0bfcd599506"
   },
-  "core/speaker.py:556:routine": {
+  "core/speaker.py:733:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 556,
+    "line": 733,
     "expression": "def _collect_cues(self, clip: _Clip, filled: int, end: int, revision: int, events: list[AudioCue]) -> None:",
     "sha256": "db618963f8d963e34fe55c011a932efdfb0743206aecc07dcd8469946b14db9c"
   },
-  "core/speaker.py:571:routine": {
+  "core/speaker.py:748:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 571,
+    "line": 748,
     "expression": "def _output_time(self, time_info: Any) -> float:",
     "sha256": "5948ad297754759b7efac15e19157e7f0ee5d36e61193eaa23e1a79d553bb8cf"
   },
-  "core/speaker.py:592:branch": {
+  "core/speaker.py:787:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 592,
+    "line": 787,
+    "expression": "if len(cuts) == 1:",
+    "sha256": "1bcb38a76075519a1255789cb0af9a8cc89fbcbb0ee99ec87ca917b1e07ed16f"
+  },
+  "core/speaker.py:840:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 840,
     "expression": "if name:",
     "sha256": "1f885866e9834ffc377f924c366fa405200a020d0e4d2e3dd03f312fb8100b98"
   },
-  "core/speaker.py:117:branch": {
+  "core/speaker.py:146:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 117,
+    "line": 146,
+    "expression": "if self.voice is None and self.model_downloaded():",
+    "sha256": "b2235982060a365f008540e1dbb3a8dcb0eff0a8e381f28430b5292a5a27dce3"
+  },
+  "core/speaker.py:155:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 155,
     "expression": "if self.downloading or self.model_downloaded():",
     "sha256": "5fc050201ab6e22158fad8d74cd8293016945a3c5456f8b597d3eb9f1aee1852"
   },
-  "core/speaker.py:132:branch": {
+  "core/speaker.py:170:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 132,
+    "line": 170,
     "expression": "if self.voice is None and (not self.model_downloaded()):",
     "sha256": "a7e497ae185ba7fc4988da797c401ff9517decea6c72e802ddf6869bc2ad3ae4"
   },
-  "core/speaker.py:151:branch": {
+  "core/speaker.py:189:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 151,
+    "line": 189,
     "expression": "if self.speech_thread is None or not self.speech_thread.is_alive():",
     "sha256": "dd342cad7a75ee2b74ae6545370798b3e04bd1bab293d2f33729ea8a18336a18"
   },
-  "core/speaker.py:167:branch": {
+  "core/speaker.py:205:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 167,
+    "line": 205,
     "expression": "if reply is not self.reply:",
     "sha256": "fdf93f57da332bf680a08eab5e92baefe4336b70adde2445031cf99b99587e5b"
   },
-  "core/speaker.py:336:branch": {
-    "category": "branch",
+  "core/speaker.py:361:routine": {
+    "category": "routine",
     "source": "core/speaker.py",
-    "line": 336,
-    "expression": "if self.voice is not None:",
-    "sha256": "956a90d78d3a037a79425f5bf083c9ef7501a4f84bb889e2154faf2dd4508871"
+    "line": 361,
+    "expression": "def job() -> None:",
+    "sha256": "1a12f115acdf2fd2a1a14c537fa070b0bbbd7a25d0a94a8862ec6f28962e2ca8"
   },
-  "core/speaker.py:368:branch": {
+  "core/speaker.py:512:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 512,
+    "expression": "def warm_up() -> None:",
+    "sha256": "b90aac4f0803fc816097eb6f162bfaa80929fdaea86a2c20b904fa9700ddb986"
+  },
+  "core/speaker.py:543:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 368,
+    "line": 543,
     "expression": "if generation == self.generation:",
     "sha256": "2d824a343dc75fcaaeecb92c230804ff13a4f68225975b441530c88eb9567cbc"
   },
-  "core/speaker.py:377:branch": {
+  "core/speaker.py:552:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 377,
+    "line": 552,
     "expression": "if not self.reading_open or generation != self.generation or revision != self.playback_revision or self.paused:",
     "sha256": "94d3ec866c4d8c2731a00fb91da9dd85ec6cf452e12706f0ead052dd9dcc4776"
   },
-  "core/speaker.py:393:branch": {
+  "core/speaker.py:568:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 393,
+    "line": 568,
     "expression": "if position != self.reading_position:",
     "sha256": "287b2f2539eb0f038e267243de2c50a09927860a0fa86b987decfbc6f226950f"
   },
-  "core/speaker.py:396:branch": {
+  "core/speaker.py:571:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 396,
+    "line": 571,
     "expression": "if self.playback_events:",
     "sha256": "f6c7ce78c0010a2edea18f553c28af9d72cd68759063f7e6eb096c1c7e57a741"
   },
-  "core/speaker.py:542:branch": {
+  "core/speaker.py:719:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 542,
+    "line": 719,
     "expression": "if events:",
     "sha256": "f5034406836572c63a5b9a86bd786be82c04d9eaaad26037fb3ffa7cd96fa439"
   },
-  "core/speaker.py:560:branch": {
+  "core/speaker.py:737:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 560,
+    "line": 737,
     "expression": "if revision != self.cue_revision:",
     "sha256": "b020bfa124a0074f34c64cf16cc440b3a3567eb100e6411cc583b677d5a8ba35"
   },
-  "core/speaker.py:574:branch": {
+  "core/speaker.py:751:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 574,
+    "line": 751,
     "expression": "if isinstance(time_info, dict):",
     "sha256": "a254dacbdeb10c264d4f33a37defca01a821577f4bebce3bcee38082a7a76955"
   },
-  "core/speaker.py:598:branch": {
+  "core/speaker.py:771:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 598,
+    "line": 771,
+    "expression": "if len(rest) <= limit + MIN_PIECE_CHARS:",
+    "sha256": "81fee5106be81660a8fcc74f342abb2ba0e0140cfb309049f99d04240d861012"
+  },
+  "core/speaker.py:779:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 779,
+    "expression": "if clauses:",
+    "sha256": "ce443f196fdaf096762416ded5b11c1602864081ddc2ba707102e45c155f8577"
+  },
+  "core/speaker.py:784:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 784,
+    "expression": "if cut < MIN_PIECE_CHARS:",
+    "sha256": "08625f8da84dd58162da7ee9876f2244ba266b55eb92eca711d1810921eb6b7f"
+  },
+  "core/speaker.py:846:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 846,
     "expression": "if len(matches) != 1:",
     "sha256": "e8e356265c817af828205275f3ce7628f0c3f364b353cbda29d2e7b14a00c912"
   },
-  "core/speaker.py:94:background": {
+  "core/speaker.py:127:background": {
     "category": "background",
     "source": "core/speaker.py",
-    "line": 94,
+    "line": 127,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
-  "core/speaker.py:145:branch": {
+  "core/speaker.py:183:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 145,
+    "line": 183,
     "expression": "if self.output is not None:",
     "sha256": "28a408e914b827a41ce009f7104c540971e4fa18682f60e3c2aef154f2be1b23"
   },
-  "core/speaker.py:177:branch": {
+  "core/speaker.py:215:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 177,
+    "line": 215,
     "expression": "if not self.active:",
     "sha256": "d3ee8094a80e5f40191308ddbc3f61a3143629825753b4240e0cf27691aa2a0b"
   },
-  "core/speaker.py:196:branch": {
+  "core/speaker.py:234:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 196,
+    "line": 234,
     "expression": "if self.output is not None:",
     "sha256": "28a408e914b827a41ce009f7104c540971e4fa18682f60e3c2aef154f2be1b23"
-  },
-  "core/speaker.py:223:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 223,
-    "expression": "if ended is not None:",
-    "sha256": "36e26137a9ac6465aa24117834efbcd564c5b0aefb14b03b26dd0d6e230e17a1"
-  },
-  "core/speaker.py:260:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 260,
-    "expression": "if output is None:",
-    "sha256": "d66c099500ace8a2fdd02dcb417eba1371fe667d9c794a69276d6ca89ebcd3e6"
-  },
-  "core/speaker.py:276:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 276,
-    "expression": "if samples.size:",
-    "sha256": "40dfc5ae18d4acd4d0b729cc508f11119a06aeb63a4a15d6e68e8e6168d5217e"
-  },
-  "core/speaker.py:303:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 303,
-    "expression": "except Exception:",
-    "sha256": "b2579e3ba347cebebfed612e7670328e99fab3de7878c777d92184b779a0e340"
-  },
-  "core/speaker.py:319:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 319,
-    "expression": "if not self.model_downloaded():",
-    "sha256": "c3aed04e48626eb97cc6fcfd193fd291c313b7ccbb36365544ce1472609b76f4"
-  },
-  "core/speaker.py:321:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 321,
-    "expression": "except Exception as error:",
-    "sha256": "507a202b7f62f35ebe71039863ed1ccf1d994b410e28070e4137dcf86177fc75"
-  },
-  "core/speaker.py:342:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 342,
-    "expression": "except Exception as error:",
-    "sha256": "b47fc5f54a91cf573f6d7f072d2738e2b47227abe3533412cbb3a4b77e551a49"
-  },
-  "core/speaker.py:354:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 354,
-    "expression": "if generation != self.generation:",
-    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
-  },
-  "core/speaker.py:527:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 527,
-    "expression": "if not self.speaker.paused:",
-    "sha256": "f0db2dec3100d3b6277ba4ff38c6c4ffe59a492fec769de108b7f0b59f56e9e8"
-  },
-  "core/speaker.py:562:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 562,
-    "expression": "if self.cue_index:",
-    "sha256": "cdae9d9938bd13648b7d29931783c21f4da079fc12bdaf8e381663719915dd4c"
-  },
-  "core/speaker.py:566:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 566,
-    "expression": "if sample >= end:",
-    "sha256": "1510fc473b4cb4ce61e86eff59e3bb2ffa269b7690a19342631e955afa630067"
-  },
-  "core/speaker.py:577:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 577,
-    "expression": "if output > 0.0 and isfinite(output - current):",
-    "sha256": "3838d31d9d1ca80dbdeca25be70447dc4eb887a3d70dcbfb80a6db0d8c624009"
-  },
-  "core/speaker.py:152:background": {
-    "category": "background",
-    "source": "core/speaker.py",
-    "line": 152,
-    "expression": "threading.Thread(target=self._run, daemon=True)",
-    "sha256": "4e764971b48f4c1952d7148251037703ba9129f6940bc550286bd79f788107e9"
-  },
-  "core/speaker.py:212:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 212,
-    "expression": "except Exception as error:",
-    "sha256": "e66aaac536f1f4f865b58d2dff33bc19ce6e6718ea4a605a8b44c51c6c0c72c5"
-  },
-  "core/speaker.py:221:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 221,
-    "expression": "if output is not None:",
-    "sha256": "5439c8eb9e19e69ce5c41d1cf9b3a9e0608f125b413938d4a6481e2175b5e2bb"
-  },
-  "core/speaker.py:237:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 237,
-    "expression": "if not self.active:",
-    "sha256": "3d2110f91c2786fd687e2dbb88b2ee620b1e8d2212c2e37b96e446d689a601f0"
-  },
-  "core/speaker.py:244:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 244,
-    "expression": "if not units:",
-    "sha256": "9240b74bdb054b2b360ec141e24fd27771492552840b13eeb9834f9044a95a74"
-  },
-  "core/speaker.py:251:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 251,
-    "expression": "if unit.open and (not drained):",
-    "sha256": "b695a488b37ae62cb16dfe9b7903d4b498e5aea72b34cc6987e6d057f089a664"
-  },
-  "core/speaker.py:257:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 257,
-    "expression": "if generation != self.generation or not self.active:",
-    "sha256": "41eafbaf415582025c453392f14706765c12b1b0b9fe61f28a1a02fedf10215b"
-  },
-  "core/speaker.py:271:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 271,
-    "expression": "if generation != self.generation:",
-    "sha256": "9183cd961908a7bf0c14663df88cd1341ff8c3c848c02271393a29bb705b849b"
-  },
-  "core/speaker.py:274:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 274,
-    "expression": "if samples.size:",
-    "sha256": "495612410bd0348c03dda016055f3fcfbd04b6700338ab43d2d2ec7a3b8f459f"
-  },
-  "core/speaker.py:441:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 441,
-    "expression": "except Exception as error:",
-    "sha256": "131a6faa78e0f7a9a68bea69c60965df06f167def1303d7b8f91b3bc313b8444"
-  },
-  "core/speaker.py:120:background": {
-    "category": "background",
-    "source": "core/speaker.py",
-    "line": 120,
-    "expression": "threading.Thread(target=self._download, daemon=True)",
-    "sha256": "f461c2ab42262c3a649351998b85751785d05cb4c9c42bbfda7ecfd38ecd340b"
   },
   "core/speaker.py:245:branch": {
     "category": "branch",
     "source": "core/speaker.py",
     "line": 245,
+    "expression": "if output is None or output.claimed:",
+    "sha256": "000f50c6204ddd89feb3b8a31291d9561a433aaec40f2f2e292885daf367cf00"
+  },
+  "core/speaker.py:257:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 257,
+    "expression": "if output is not None:",
+    "sha256": "5439c8eb9e19e69ce5c41d1cf9b3a9e0608f125b413938d4a6481e2175b5e2bb"
+  },
+  "core/speaker.py:277:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 277,
+    "expression": "if ended is not None:",
+    "sha256": "36e26137a9ac6465aa24117834efbcd564c5b0aefb14b03b26dd0d6e230e17a1"
+  },
+  "core/speaker.py:363:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 363,
+    "expression": "if generation != self.generation:",
+    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
+  },
+  "core/speaker.py:380:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 380,
+    "expression": "if not self.synthesis_threads:",
+    "sha256": "9bfe7c547f3dcdfd9c34a49fc1053c8f3c81f51e98f6669ad0c652dbb9b77f88"
+  },
+  "core/speaker.py:402:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 402,
+    "expression": "if output is not None:",
+    "sha256": "e449df0f49fdcf80581156f22d80dda1931a1f7988f0fa4f38c005a3f12cbd4f"
+  },
+  "core/speaker.py:431:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 431,
+    "expression": "if output is None:",
+    "sha256": "b7f925f33321a82ed5169049e0b65f932c323897145ce1766fe9a7b5f36c30c8"
+  },
+  "core/speaker.py:459:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 459,
+    "expression": "except Exception:",
+    "sha256": "b2579e3ba347cebebfed612e7670328e99fab3de7878c777d92184b779a0e340"
+  },
+  "core/speaker.py:475:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 475,
+    "expression": "if not self.model_downloaded():",
+    "sha256": "c3aed04e48626eb97cc6fcfd193fd291c313b7ccbb36365544ce1472609b76f4"
+  },
+  "core/speaker.py:477:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 477,
+    "expression": "except Exception as error:",
+    "sha256": "507a202b7f62f35ebe71039863ed1ccf1d994b410e28070e4137dcf86177fc75"
+  },
+  "core/speaker.py:493:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 493,
+    "expression": "if self.voice is not None:",
+    "sha256": "956a90d78d3a037a79425f5bf083c9ef7501a4f84bb889e2154faf2dd4508871"
+  },
+  "core/speaker.py:507:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 507,
+    "expression": "except RuntimeError:",
+    "sha256": "bbd38a6a81121f422dc350c44ee9126c72f8765c197c5799e3280ed8aa26c8ae"
+  },
+  "core/speaker.py:529:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 529,
+    "expression": "if generation != self.generation:",
+    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
+  },
+  "core/speaker.py:704:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 704,
+    "expression": "if not self.speaker.paused:",
+    "sha256": "f0db2dec3100d3b6277ba4ff38c6c4ffe59a492fec769de108b7f0b59f56e9e8"
+  },
+  "core/speaker.py:739:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 739,
+    "expression": "if self.cue_index:",
+    "sha256": "cdae9d9938bd13648b7d29931783c21f4da079fc12bdaf8e381663719915dd4c"
+  },
+  "core/speaker.py:743:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 743,
+    "expression": "if sample >= end:",
+    "sha256": "1510fc473b4cb4ce61e86eff59e3bb2ffa269b7690a19342631e955afa630067"
+  },
+  "core/speaker.py:754:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 754,
+    "expression": "if output > 0.0 and isfinite(output - current):",
+    "sha256": "3838d31d9d1ca80dbdeca25be70447dc4eb887a3d70dcbfb80a6db0d8c624009"
+  },
+  "core/speaker.py:190:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 190,
+    "expression": "threading.Thread(target=self._run, daemon=True)",
+    "sha256": "4e764971b48f4c1952d7148251037703ba9129f6940bc550286bd79f788107e9"
+  },
+  "core/speaker.py:269:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 269,
+    "expression": "except Exception as error:",
+    "sha256": "e66aaac536f1f4f865b58d2dff33bc19ce6e6718ea4a605a8b44c51c6c0c72c5"
+  },
+  "core/speaker.py:294:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 294,
+    "expression": "if not self.active:",
+    "sha256": "3d2110f91c2786fd687e2dbb88b2ee620b1e8d2212c2e37b96e446d689a601f0"
+  },
+  "core/speaker.py:301:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 301,
+    "expression": "if not units:",
+    "sha256": "9240b74bdb054b2b360ec141e24fd27771492552840b13eeb9834f9044a95a74"
+  },
+  "core/speaker.py:308:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 308,
+    "expression": "if unit.open and (not drained):",
+    "sha256": "b695a488b37ae62cb16dfe9b7903d4b498e5aea72b34cc6987e6d057f089a664"
+  },
+  "core/speaker.py:335:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 335,
+    "expression": "if samples.size and (not number):",
+    "sha256": "15256cb463bf5716278400cb98172a0be12df67c9d0e4e91f0d73434f3e96acb"
+  },
+  "core/speaker.py:403:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 403,
+    "expression": "if output.claimed:",
+    "sha256": "0fd8ed5b33316591ee53bedcb50a00020330fd786892d4b168ba98f7ff02ea49"
+  },
+  "core/speaker.py:420:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 420,
+    "expression": "except OSError:",
+    "sha256": "274b81c34a279116143394b0afd92f1145628c29d51016fb579d9a97de8437d9"
+  },
+  "core/speaker.py:435:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 435,
+    "expression": "except OSError:",
+    "sha256": "9492673ea6192ec8098da0d7bb3fd6b1665aa2cc4ff54343ef1dac30eb74ad21"
+  },
+  "core/speaker.py:499:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 499,
+    "expression": "except Exception as error:",
+    "sha256": "b47fc5f54a91cf573f6d7f072d2738e2b47227abe3533412cbb3a4b77e551a49"
+  },
+  "core/speaker.py:618:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 618,
+    "expression": "except Exception as error:",
+    "sha256": "131a6faa78e0f7a9a68bea69c60965df06f167def1303d7b8f91b3bc313b8444"
+  },
+  "core/speaker.py:158:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 158,
+    "expression": "threading.Thread(target=self._download, daemon=True)",
+    "sha256": "f461c2ab42262c3a649351998b85751785d05cb4c9c42bbfda7ecfd38ecd340b"
+  },
+  "core/speaker.py:302:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 302,
     "expression": "if self.complete and drained:",
     "sha256": "9d65909607d088d04b43235e31d7cb67cb8e67f4539853397e4942ee2f7003e6"
   },
-  "core/speaker.py:264:failure": {
+  "core/speaker.py:320:failure": {
     "category": "failure",
     "source": "core/speaker.py",
-    "line": 264,
+    "line": 320,
     "expression": "except OSError:",
     "sha256": "dca211c6cdc1e03c9ca92b7ce75f6449f11d3c6215a75b4b90f0f312b825908a"
   },
-  "core/speaker.py:534:branch": {
+  "core/speaker.py:327:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 534,
+    "line": 327,
+    "expression": "if generation != self.generation or not self.active:",
+    "sha256": "8241ecab923408afe0d3c6c1cc74435485836e5edc9fa36ddd2b93ea5c900c8b"
+  },
+  "core/speaker.py:331:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 331,
+    "expression": "if number == len(pieces) - 1:",
+    "sha256": "87bfcd88482bb401dbf960042dc94b535c24e8df6fbec3413a8043c769acc25c"
+  },
+  "core/speaker.py:333:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 333,
+    "expression": "if samples.size:",
+    "sha256": "b014ed017241dfa9e0958f30eb4194619f68098c14c4de33d9f65bf57a15f046"
+  },
+  "core/speaker.py:406:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 406,
+    "expression": "if output.key == _device_key(self.settings_store.audio_device('speaker')):",
+    "sha256": "ff402bf5c660b28e436c9372e4f04a84eb14ac2fc9e3667655fd862504eb5633"
+  },
+  "core/speaker.py:412:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 412,
+    "expression": "except OSError:",
+    "sha256": "7f0320ddfb262a364a6457b76c793cbf9204c146b5641c34e39bc845314bf469"
+  },
+  "core/speaker.py:711:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 711,
     "expression": "if clip.generation == generation:",
     "sha256": "8f129bd5abb5843191bbf41df4f76b7fb514e43445b4b0d02b1a65a6314afcf7"
   },
-  "core/speaker.py:538:branch": {
+  "core/speaker.py:715:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 538,
+    "line": 715,
     "expression": "if self.position >= len(clip.samples):",
     "sha256": "cc07fe58b88c72b742bbfd7269ee8f0628eef471c31ce7d462c026cffe8decb4"
   },
-  "core/speech_timing.py:31:routine": {
+  "core/speaker.py:147:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 147,
+    "expression": "threading.Thread(target=self._preload, daemon=True)",
+    "sha256": "0c9821bde1c322f45cb4656bce7338cdc7416f6dd959a87ac3e2a540af61ff57"
+  },
+  "core/speaker.py:382:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 382,
+    "expression": "threading.Thread(target=self._work, daemon=True)",
+    "sha256": "6f743cbf39f271089f3ad7f199407f67427b95ee15888cdaaf74c12905831c52"
+  },
+  "core/speech_timing.py:34:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 31,
+    "line": 34,
     "expression": "def load_voice(model: Path, voices: Path, threads: int) -> Any:",
     "sha256": "d7e3256e4fde301c82ad0157905e9d76f50943602250320ee08df8a2e96f190f"
   },
-  "core/speech_timing.py:62:routine": {
+  "core/speech_timing.py:65:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 62,
+    "line": 65,
     "expression": "def synthesize(voice: Any, unit: SpeechUnit, voice_name: str, speed: float) -> tuple[NDArray[np.float32], tuple[AudioCue, ...]]:",
-    "sha256": "6400e20a0d978776bb4ac4987819d775b474fc8a23aa9587cd61f5eead41a4cd"
+    "sha256": "dc3082c6651bcc4d5b37e5744834072726828323a888a5b673345889ef0e0fde"
   },
-  "core/speech_timing.py:114:routine": {
+  "core/speech_timing.py:121:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 114,
+    "line": 121,
     "expression": "def _add_duration_output(model: Path) -> bytes:",
     "sha256": "e7ed2f3f8b7083ba9137bf1e8557323d67945ed75c3675120114ce80570cdce8"
   },
-  "core/speech_timing.py:134:routine": {
+  "core/speech_timing.py:141:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 134,
+    "line": 141,
     "expression": "def _phonetic_key(run: str) -> str:",
     "sha256": "edd67abd342d347223eeb5dc057efc9fa65a8adb42091eb5be8c4f00f3e4d206"
   },
-  "core/speech_timing.py:139:routine": {
+  "core/speech_timing.py:146:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 139,
+    "line": 146,
     "expression": "def _phoneme_runs(timings: list[_Phoneme], batch_lengths: list[int]) -> list[_Run]:",
     "sha256": "94155d716be52e66791765e0b9448a8144c7030b7519baf2cea66a7bebceec13"
   },
-  "core/speech_timing.py:166:routine": {
+  "core/speech_timing.py:173:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 166,
+    "line": 173,
     "expression": "def _word_cues(unit: SpeechUnit, heard: list[_Run], voice: Any, sample_count: int) -> tuple[AudioCue, ...]:",
     "sha256": "f97d5a1c1dba34104ec6ebbb4adb46eee93077af26e1c5161743c39c20481911"
   },
-  "core/speech_timing.py:222:routine": {
+  "core/speech_timing.py:229:routine": {
     "category": "routine",
     "source": "core/speech_timing.py",
-    "line": 222,
+    "line": 229,
     "expression": "def _unit_cues(unit: SpeechUnit, sample_count: int) -> tuple[AudioCue, ...]:",
     "sha256": "1f06e10659e662d6b23d96a4ecdbf8d8e6b841703a47c339810899f282180178"
   },
-  "core/speech_timing.py:76:branch": {
+  "core/speech_timing.py:79:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 76,
+    "line": 79,
     "expression": "if not unit.words or getattr(voice, 'has_timings', False) is not True:",
-    "sha256": "a62c0929b26e7e2ab6e649e891464a485b815131e6aad8cae9d59d5c01f56363"
+    "sha256": "d119bc8f4f86e1f28fad0ae58308c45473e8b5cbe2eda6258c5d3bc102675e5e"
   },
-  "core/speech_timing.py:119:branch": {
+  "core/speech_timing.py:126:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 119,
+    "line": 126,
     "expression": "if any((output.name == 'duration' for output in graph.graph.output)):",
     "sha256": "508f6e98959030fa0b6d21bd9981bf6b964d8ca83b4d74040aff1f2ddbaf2ea6"
   },
-  "core/speech_timing.py:121:branch": {
+  "core/speech_timing.py:128:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 121,
+    "line": 128,
     "expression": "if not any((_DURATION_TENSOR in node.output for node in graph.graph.node)):",
     "sha256": "d20177ccf80a9694ddf508638437fe58463fc886dc19eef792613239f0166118"
   },
-  "core/speech_timing.py:179:branch": {
+  "core/speech_timing.py:186:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 179,
+    "line": 186,
     "expression": "if not expected or not heard:",
     "sha256": "4209859c64e40295311c796bf290256aba97145e9490952e34b360aa62c90d08"
   },
-  "core/speech_timing.py:224:branch": {
+  "core/speech_timing.py:231:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 224,
+    "line": 231,
     "expression": "if not sample_count:",
     "sha256": "0c72c7f01f1a721d8548e033ebecee04a369cd6860563179e1d389026feae1d0"
   },
-  "core/speech_timing.py:57:failure": {
+  "core/speech_timing.py:60:failure": {
     "category": "failure",
     "source": "core/speech_timing.py",
-    "line": 57,
+    "line": 60,
     "expression": "except Exception:",
     "sha256": "9e3b06370c38cf08821f93e5e255c701107f2206e3e29e21ad3db868c3a91bab"
   },
-  "core/speech_timing.py:94:failure": {
+  "core/speech_timing.py:101:failure": {
     "category": "failure",
     "source": "core/speech_timing.py",
-    "line": 94,
+    "line": 101,
     "expression": "except Exception:",
     "sha256": "b28b349d2732cb0eede9574e55a60c059bf4fffbdb937b0c97800de7fe6ebd4e"
   },
-  "core/speech_timing.py:159:branch": {
+  "core/speech_timing.py:166:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 159,
+    "line": 166,
     "expression": "if word:",
     "sha256": "200fa3c680d388ebaaa7c0bb6ef7a6e3854620a9d2ed40de95717fd0d45790df"
   },
-  "core/speech_timing.py:174:branch": {
+  "core/speech_timing.py:181:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 174,
+    "line": 181,
     "expression": "if keys is None:",
     "sha256": "8ee40224793497a8da0d3fb50b9bfe3bd5f36fcdc47da43156b77a4907d7e3e0"
   },
-  "core/speech_timing.py:187:branch": {
+  "core/speech_timing.py:194:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 187,
+    "line": 194,
     "expression": "if operation == 'equal' or (operation == 'replace' and right - left == end - start):",
     "sha256": "51f0fd0e025fa24ded4bf74b849fa4b7f34a3f1ce2486a406c3e468f384cc516"
   },
-  "core/speech_timing.py:203:branch": {
+  "core/speech_timing.py:210:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 203,
+    "line": 210,
     "expression": "if index + 1 < len(heard):",
     "sha256": "e203b92da95d6437516c3fffeb08d9911ff4447c8c06d43e85c2a891c90767c4"
   },
-  "core/speech_timing.py:211:branch": {
+  "core/speech_timing.py:218:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 211,
+    "line": 218,
     "expression": "if end_sample <= start_sample:",
     "sha256": "1d88b3b11bbb1a457881221d7f89151a1a1b21c53131d18055ccb719a6ff5a3d"
   },
-  "core/speech_timing.py:214:branch": {
+  "core/speech_timing.py:221:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 214,
+    "line": 221,
     "expression": "if positions and positions[-1][0] == start_sample:",
     "sha256": "eb03df4c4b78729dd5bbb544630d99d80d0864cacfdd5a499f084640639f76d7"
   },
-  "core/speech_timing.py:216:branch": {
+  "core/speech_timing.py:223:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 216,
+    "line": 223,
     "expression": "if not positions or positions[-1][1] != position:",
     "sha256": "92b787e588837f645711a4d80dc1bf0fbc1c0b441c92462de0be34c7521c477b"
   },
-  "core/speech_timing.py:148:branch": {
+  "core/speech_timing.py:155:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 148,
+    "line": 155,
     "expression": "if phoneme.phoneme.isspace() and word:",
     "sha256": "c9d7d216640a88792ba468641f0f366058b841d4763b230953f719214ed7dc6e"
   },
-  "core/speech_timing.py:157:branch": {
+  "core/speech_timing.py:164:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 157,
+    "line": 164,
     "expression": "if (key := _phonetic_key(phoneme.phoneme)):",
     "sha256": "7725fe126e20667104d204efc83fe64c5c7eb113ce3c593178db5ed1288c16f3"
   },
-  "core/speech_timing.py:193:branch": {
+  "core/speech_timing.py:200:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 193,
+    "line": 200,
     "expression": "if operation == 'replace' and len({source for _, source in expected[left:right]}) == 1:",
     "sha256": "a1be4937f71d685a3e9513d3a001dd770069e1aa28d33fa45cac852f3c5afad8"
   },
-  "core/speech_timing.py:205:branch": {
+  "core/speech_timing.py:212:branch": {
     "category": "branch",
     "source": "core/speech_timing.py",
-    "line": 205,
+    "line": 212,
     "expression": "if source is not None and source == sources[index + 1] or next_run.start - run.end < _WORD_GAP:",
     "sha256": "e2f15dd3fa785bd356ea4368abb14ffb7629249e712aad5e125ae66ea64eb136"
   },
-  "core/transcriber.py:949:routine": {
+  "core/transcriber.py:954:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 949,
+    "line": 954,
     "expression": "def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:",
     "sha256": "fdcab89949644a2392ca94cba7a1e9c29fa59a4f06be91537a97b759de9b986c"
   },
-  "core/transcriber.py:973:routine": {
+  "core/transcriber.py:978:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 973,
+    "line": 978,
     "expression": "def _recent_echo(spoken: str, heard: str, similarity: float) -> bool:",
     "sha256": "d20d69610b1fb099bd66e80ce2e974f2e62efc28469bc7d6dc33d1e03bf719d8"
   },
-  "core/transcriber.py:1000:routine": {
+  "core/transcriber.py:1005:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 1000,
+    "line": 1005,
     "expression": "def _to_mono_16k(data: bytes, channels: int, resampler: _Resampler) -> NDArray[np.float32]:",
     "sha256": "edc4513d9d2e2a5807fb947d9a73e678d65eb4d2e171f5458079b2f4c363157c"
   },
-  "core/transcriber.py:97:routine": {
+  "core/transcriber.py:98:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 97,
+    "line": 98,
     "expression": "def __init__(self, settings_store: SettingsStore) -> None:",
-    "sha256": "a0d2a38e02dccadf1dfda2042327e06fa28354816cba22f1be826a4b3e68558f"
+    "sha256": "f9399b1dbade39fb92b9e27467d47feb396f4a7a703392e63eae3eb28cb023ba"
   },
-  "core/transcriber.py:130:routine": {
+  "core/transcriber.py:133:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 130,
+    "line": 133,
     "expression": "def toggle(self) -> None:",
     "sha256": "df2867aebcc703a21b4ab32fde0c2e57d2e9144c23c382cc0d87200d5dbeb3ee"
   },
-  "core/transcriber.py:137:routine": {
+  "core/transcriber.py:140:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 137,
+    "line": 140,
     "expression": "def start(self) -> None:",
     "sha256": "a68db8351596c2b9791ac1c91a79f0d0ea299dbec145e42cb48879d5a3968767"
   },
-  "core/transcriber.py:175:routine": {
+  "core/transcriber.py:178:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 175,
+    "line": 178,
     "expression": "def stop(self) -> None:",
     "sha256": "03a0a3da0d5b5e555fab73a702ba4ab5207db8fc74b27240591099fa61950ee0"
   },
-  "core/transcriber.py:185:routine": {
+  "core/transcriber.py:188:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 185,
+    "line": 188,
     "expression": "def refresh_audio_devices(self) -> None:",
     "sha256": "11755411edc6efbf337514921608ac0aa48a9baee635a5801692015b2e68fe69"
   },
-  "core/transcriber.py:189:routine": {
+  "core/transcriber.py:192:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 189,
+    "line": 192,
     "expression": "def downloaded_models(self) -> list[str]:",
     "sha256": "c42457056c3060bbb0ebe5f85b602b99482cab5154288c307f5c0fc0b8b4953f"
   },
-  "core/transcriber.py:204:routine": {
+  "core/transcriber.py:207:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 204,
+    "line": 207,
     "expression": "def active_model(self) -> str:",
     "sha256": "d8c9eb02a393c0ff25d3e0d110d94d71398889b19f59cc3dd9e14f52ed2072c3"
   },
-  "core/transcriber.py:216:routine": {
+  "core/transcriber.py:219:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 216,
+    "line": 219,
     "expression": "def download(self, model: str) -> None:",
     "sha256": "915056a4440693bcfd922b86a486f463136bc5876414878a9a48c9b15509340f"
   },
-  "core/transcriber.py:227:routine": {
+  "core/transcriber.py:230:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 227,
+    "line": 230,
     "expression": "def pending(self) -> tuple[str, int]:",
     "sha256": "b4bebb31e3ef17513022512f0955257df644953c949f30f61f3008538fa7d044"
   },
-  "core/transcriber.py:239:routine": {
+  "core/transcriber.py:242:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 239,
+    "line": 242,
     "expression": "def mark_sent(self, seq: int) -> None:",
     "sha256": "2eb203518f7bfc18fef69d445fe52543c1323d14cced63b0ff128cc94518b49e"
   },
-  "core/transcriber.py:249:routine": {
+  "core/transcriber.py:252:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 249,
+    "line": 252,
     "expression": "def clear(self) -> None:",
     "sha256": "e47ccbae64af37ddbddee6bbb4a099023fa94ceacd93511b15e63bc3ad12a252"
   },
-  "core/transcriber.py:255:routine": {
+  "core/transcriber.py:258:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 255,
+    "line": 258,
     "expression": "def note_spoken(self, text: str) -> None:",
     "sha256": "732dbe659159a92d000d58a468d3f589cd1d453b0352ae08ccdc63cb13c2f20b"
   },
-  "core/transcriber.py:266:routine": {
+  "core/transcriber.py:269:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 266,
+    "line": 269,
     "expression": "def _on_transcribed(self, source: str, text: str, session: object) -> None:",
     "sha256": "b21609278e71cdfc44613354d84434768fdb6f2d1f132e2d67e1198ec4c2e37a"
   },
-  "core/transcriber.py:309:routine": {
+  "core/transcriber.py:312:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 309,
+    "line": 312,
     "expression": "def _on_notice_timeout(self) -> None:",
     "sha256": "bcfac78936364157467c7ce0179655233794f827c459e500dac96cd51a05644b"
   },
-  "core/transcriber.py:314:routine": {
+  "core/transcriber.py:317:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 314,
+    "line": 317,
     "expression": "def _on_download_finished(self, _model: str, error: str) -> None:",
     "sha256": "b4d1ae59a0c349b63e138c874099e94aefe5f31038c1bd56b4edec8cd0684eb7"
   },
-  "core/transcriber.py:325:routine": {
+  "core/transcriber.py:328:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 325,
+    "line": 328,
     "expression": "def _on_failed(self, message: str, fatal: bool) -> None:",
     "sha256": "90a8f111bd678bafc485676c89fc52a582111426ad19ce46e23ad118a9260fc0"
   },
-  "core/transcriber.py:336:routine": {
+  "core/transcriber.py:339:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 336,
+    "line": 339,
     "expression": "def _on_source_status(self, source: str, status: str, session: object) -> None:",
     "sha256": "59a2efc29333f63476a9f935cf08dd19701743065a040b11b80f98b64cc41a69"
   },
-  "core/transcriber.py:351:routine": {
+  "core/transcriber.py:354:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 351,
+    "line": 354,
     "expression": "def _on_session_failed(self, message: str, fatal: bool, session: object) -> None:",
     "sha256": "eb8bc94a469cb457fd85e85dd3c5cc735e28afcedd453bdc6fed7f37598215bb"
   },
-  "core/transcriber.py:362:routine": {
+  "core/transcriber.py:365:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 362,
+    "line": 365,
     "expression": "def _scan_audio_devices(self) -> None:",
-    "sha256": "c691e83132f3bcfa9a7c9858b2e116abc4eb29f382afd9c1c41908c1b6b83028"
+    "sha256": "0985ac416f61733350c748fad9c5441d62ea9c3e3c02394f35307031a67b3162"
   },
-  "core/transcriber.py:380:routine": {
+  "core/transcriber.py:384:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 380,
+    "line": 384,
     "expression": "def _capture(self, source: str, stop_event: threading.Event, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None]) -> None:",
     "sha256": "cbad7ac14b632c05e5634f81cb8b6804fa4eb1d4c7d528ed10e5dd077e646951"
   },
-  "core/transcriber.py:395:routine": {
+  "core/transcriber.py:399:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 395,
+    "line": 399,
     "expression": "def _capture_sources(self, sources: tuple[str, ...], stop_event: threading.Event, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None], devices: dict[str, str] | None=None) -> None:",
-    "sha256": "8508613a383825794a232bb6f2daaffc64bb899a5f2f2ebdf14f75bd0853e3a7"
+    "sha256": "86168a63c7065a6746905e445c7c4f7439834ad43b5a90a1e380ce2f6fdaa38d"
   },
-  "core/transcriber.py:467:routine": {
+  "core/transcriber.py:472:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 467,
+    "line": 472,
     "expression": "def _open_source(self, audio: Any, source: str, name: str) -> '_CaptureState':",
     "sha256": "9f0949fbecc11bcda1e91a40de715118fa1bdc024f629892d0b9b4e67305b559"
   },
-  "core/transcriber.py:524:routine": {
+  "core/transcriber.py:529:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 524,
+    "line": 529,
     "expression": "def _poll_source(self, capture: '_CaptureState', stop_event: threading.Event, timeout: float=CHUNK_SECONDS) -> NDArray[np.float32] | None:",
     "sha256": "43bef91fe592501da24b5a768310df67e9180361818b4672e305e923313970c7"
   },
-  "core/transcriber.py:572:routine": {
+  "core/transcriber.py:577:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 572,
+    "line": 577,
     "expression": "def _close_source(self, capture: '_CaptureState', utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None]) -> None:",
     "sha256": "2a35aadd70ca783dbe57daae5829cfef462f9461044d28b99436d7d6967c92dd"
   },
-  "core/transcriber.py:596:routine": {
+  "core/transcriber.py:601:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 596,
+    "line": 601,
     "expression": "def _report_source_failure(self, source: str, error: Exception, stop_event: threading.Event) -> None:",
     "sha256": "e33803bf563b47eaa87d2bdcd5979ac99420e3bc94b5b4c44a937d6821962190"
   },
-  "core/transcriber.py:610:routine": {
+  "core/transcriber.py:615:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 610,
+    "line": 615,
     "expression": "def _emit_speaking(self, source: str, segmenter: '_Segmenter') -> None:",
     "sha256": "1914096e92fe3b119d40af48918c7a8c7e19b29e85f49687b39fce95cf866e4f"
   },
-  "core/transcriber.py:621:routine": {
+  "core/transcriber.py:626:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 621,
+    "line": 626,
     "expression": "def _transcribe_loop(self, utterances: queue.Queue[tuple[str, NDArray[np.float32]] | None], model_size: str, stop_event: threading.Event) -> None:",
     "sha256": "68c52fad3fd66d42d1769ddae9e2c3bc9b7ee7b384b932a0df2ce35ce054c1a0"
   },
-  "core/transcriber.py:669:routine": {
+  "core/transcriber.py:674:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 669,
+    "line": 674,
     "expression": "def _download(self, model: str) -> None:",
     "sha256": "ce026bc6e229041633adf52a7430bbe7f4f3cf74e9f3176d9c5981ef55015d05"
   },
-  "core/transcriber.py:696:routine": {
+  "core/transcriber.py:701:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 696,
+    "line": 701,
     "expression": "def _load_model(self, model_size: str) -> Any:",
     "sha256": "5ce467c845806143f5ca2faf20879a3977aab379408c35025832a27e0f199258"
   },
-  "core/transcriber.py:734:routine": {
+  "core/transcriber.py:739:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 734,
+    "line": 739,
     "expression": "def _vad(self) -> '_SileroVad | None':",
     "sha256": "568de9c05e4b573b5f67273e794c62cdf3f034d5a46404fa0647d701ddcbfe41"
   },
-  "core/transcriber.py:759:routine": {
+  "core/transcriber.py:764:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 759,
+    "line": 764,
     "expression": "def __init__(self, source: str, channels: int, rate: int, vad: '_SileroVad | None'=None) -> None:",
     "sha256": "ca0dd9e286cfd30d82beb61d8ae9b89dce87bcbf96048d9b1b296b44c1371ccd"
   },
-  "core/transcriber.py:776:routine": {
+  "core/transcriber.py:781:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 776,
+    "line": 781,
     "expression": "def __init__(self, vad: '_SileroVad | None'=None) -> None:",
     "sha256": "93787a177eb8e141c362cd6269618ada78d93a347dc7a742c9b3fc18dd2ab544"
   },
-  "core/transcriber.py:788:routine": {
+  "core/transcriber.py:793:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 788,
+    "line": 793,
     "expression": "def feed(self, samples: NDArray[np.float32], quiet_seconds: float=0.0) -> NDArray[np.float32] | None:",
     "sha256": "6e8096def7c0e4fe2e8e5c4c8b75ffe5ee2aeb6465b6017fcb27789ee359ed12"
   },
-  "core/transcriber.py:825:routine": {
+  "core/transcriber.py:830:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 825,
+    "line": 830,
     "expression": "def flush(self) -> NDArray[np.float32] | None:",
     "sha256": "4d0f142b5b480a6d81490aaf08015204eacd3ba5d5652146e7ed494d621475eb"
   },
-  "core/transcriber.py:839:routine": {
+  "core/transcriber.py:844:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 839,
+    "line": 844,
     "expression": "def _score(self, samples: NDArray[np.float32]) -> float:",
     "sha256": "380810c515f7754ec726b3935328f29e7cbdff324ab1bb89afbb834e13df2160"
   },
-  "core/transcriber.py:854:routine": {
+  "core/transcriber.py:859:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 854,
+    "line": 859,
     "expression": "def _split(self) -> NDArray[np.float32] | None:",
     "sha256": "43815fc143254f17e5144f558e7e36fe12acfe3478072059e1d11c279a853ef0"
   },
-  "core/transcriber.py:872:routine": {
+  "core/transcriber.py:877:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 872,
+    "line": 877,
     "expression": "def __init__(self, session: Any) -> None:",
     "sha256": "c64f44d3d07e43ce35b9db331ace55c8b0e713dce8fadc4f1ed4273916f0bba9"
   },
-  "core/transcriber.py:879:routine": {
+  "core/transcriber.py:884:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 879,
+    "line": 884,
     "expression": "def score(self, samples: NDArray[np.float32]) -> float:",
     "sha256": "e6c13e45ba0a335242d38c26ec71b4f739a2eb2590d55a93e6c6083343e23c68"
   },
-  "core/transcriber.py:913:routine": {
+  "core/transcriber.py:918:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 913,
+    "line": 918,
     "expression": "def __init__(self, rate: int) -> None:",
     "sha256": "2fe051e071b68718365170651d2c21bdf2355d78c5e5852827da757d185b6f61"
   },
-  "core/transcriber.py:926:routine": {
+  "core/transcriber.py:931:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 926,
+    "line": 931,
     "expression": "def resample(self, mono: NDArray[np.float32]) -> NDArray[np.float32]:",
     "sha256": "7ebd45e72d3b14d3a0cfd3cb270cc0b341f969d642a9d194175a6e32b58aca59"
   },
-  "core/transcriber.py:986:branch": {
+  "core/transcriber.py:991:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 986,
+    "line": 991,
     "expression": "if not heard_words or not spoken_words:",
     "sha256": "b0b0ecb054624cb3b828ca8f9dfc403fbdc541e07502456c80063b9ada02ba48"
   },
-  "core/transcriber.py:132:branch": {
+  "core/transcriber.py:135:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 132,
+    "line": 135,
     "expression": "if self.recording:",
     "sha256": "61153921636f2d6f83cac0ae7876c2fd01fe8a5d7f582269bbe7e9a25b6362b4"
-  },
-  "core/transcriber.py:139:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 139,
-    "expression": "if self.recording:",
-    "sha256": "c2061c1352145cbd69f48f21e469f1c2c140250b6ff04b9a33042020aa1d2fe3"
   },
   "core/transcriber.py:142:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
     "line": 142,
+    "expression": "if self.recording:",
+    "sha256": "c2061c1352145cbd69f48f21e469f1c2c140250b6ff04b9a33042020aa1d2fe3"
+  },
+  "core/transcriber.py:145:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 145,
     "expression": "if not model:",
     "sha256": "7608c73a37414e0540b00157dfeb46bab6fda43e05857ed7cbcb71f20ac7931f"
   },
-  "core/transcriber.py:177:branch": {
+  "core/transcriber.py:180:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 177,
+    "line": 180,
     "expression": "if not self.recording:",
     "sha256": "9e5b047b40c66531f1e690bc4f59f1645a64ac623a6e58e3a8bedefc11c0beb9"
   },
-  "core/transcriber.py:196:branch": {
+  "core/transcriber.py:199:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 196,
+    "line": 199,
     "expression": "if not (self.cache_dir / VAD_DIR / VAD_FILE).is_file():",
     "sha256": "daaf091da7e93b032ac9d6d7c7095b5df8ed2068ae50bcd7928033e2a73b23fa"
   },
-  "core/transcriber.py:212:branch": {
+  "core/transcriber.py:215:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 212,
+    "line": 215,
     "expression": "if saved in downloaded:",
     "sha256": "9b7042391d91d4028a9b1e9bbcf845b8d6792f602bac929a7a304a74c1022996"
   },
-  "core/transcriber.py:222:branch": {
+  "core/transcriber.py:225:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 222,
+    "line": 225,
     "expression": "if self.downloading:",
     "sha256": "7ffd1bef3f45df80b37cc26a4ede8c62b237ccb17a328878d878f1cf0d2db1ac"
   },
-  "core/transcriber.py:245:branch": {
+  "core/transcriber.py:248:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 245,
+    "line": 248,
     "expression": "if seq > self.sent_seq:",
     "sha256": "78fe9ef69b902220439a7dcf9d75dd16396e720c1ae1e18c5a8b90b910fb3a75"
   },
-  "core/transcriber.py:274:branch": {
+  "core/transcriber.py:277:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 274,
+    "line": 277,
     "expression": "if not self.recording or session is not self.stop_event:",
     "sha256": "ddc5d0dfdb7bb628faa08fdead1e89215d28683c947c8e8ff7f155941832f087"
   },
-  "core/transcriber.py:279:branch": {
+  "core/transcriber.py:282:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 279,
+    "line": 282,
     "expression": "if source == 'them' and _recent_echo(' '.join((spoken for when, spoken in self.spoken if now - when <= SPOKEN_ECHO_SECONDS)), text, ECHO_SIMILARITY):",
     "sha256": "54016ddc9da18a866945928b5577fa10810ee7f26dc34604d8d16fd1bd434e1e"
   },
-  "core/transcriber.py:321:branch": {
+  "core/transcriber.py:324:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 321,
+    "line": 324,
     "expression": "if not error and self.missing_model:",
     "sha256": "4e4d77e5f8824a95e48542843b6f3238a36c1bf130b4370146cc17aded1a2508"
   },
-  "core/transcriber.py:332:branch": {
+  "core/transcriber.py:335:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 332,
+    "line": 335,
     "expression": "if fatal:",
     "sha256": "5fed51a5dd48fe1553bacf0d980d34d8363ad9f9bbfce8f601183dee23e90678"
   },
-  "core/transcriber.py:344:branch": {
+  "core/transcriber.py:347:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 344,
+    "line": 347,
     "expression": "if session is not self.stop_event or not self.recording:",
     "sha256": "ac24b3dbe9177215c58c403bae75f02acc738b3583b8f30d488fac31106a8341"
   },
-  "core/transcriber.py:359:branch": {
+  "core/transcriber.py:362:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 359,
+    "line": 362,
     "expression": "if not self.recording or session is self.stop_event:",
     "sha256": "89959e7c54cf9c4ad884551a2caaa75424bcab8929543d70c6ae351badad4290"
   },
-  "core/transcriber.py:478:branch": {
+  "core/transcriber.py:483:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 478,
+    "line": 483,
     "expression": "if name:",
     "sha256": "21c2740f4948cf841797d7a67a697d095e7eab5338e9946747f932f572537b77"
   },
-  "core/transcriber.py:501:routine": {
+  "core/transcriber.py:506:routine": {
     "category": "routine",
     "source": "core/transcriber.py",
-    "line": 501,
+    "line": 506,
     "expression": "def on_audio(data: bytes, *_args: Any) -> tuple[None, int]:",
     "sha256": "6a04238783e04888bff81957e3d61ab1e7c4cb0c5633cffa3f8858026dd8ee4d"
   },
-  "core/transcriber.py:540:branch": {
+  "core/transcriber.py:545:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 540,
+    "line": 545,
     "expression": "if not capture.stream.is_active():",
     "sha256": "e015b9d66eea79f3ca87bac9ea5d95e8db6c0a1ec396381ac3702832fc47fe36"
   },
-  "core/transcriber.py:566:branch": {
+  "core/transcriber.py:571:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 566,
+    "line": 571,
     "expression": "if status != capture.health:",
     "sha256": "5914c4e7efd53824b49012c129d93b581cc396d2e2c8019b97edd999cfeff785"
   },
-  "core/transcriber.py:617:branch": {
+  "core/transcriber.py:622:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 617,
+    "line": 622,
     "expression": "if segmenter.speaking != segmenter.reported:",
     "sha256": "5a76535ecba22eed75a6fca5c3a91da70cb11d6d8aac63c8e3e359a5367ebeb1"
-  },
-  "core/transcriber.py:634:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 634,
-    "expression": "if stop_event.is_set():",
-    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
-  },
-  "core/transcriber.py:742:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 742,
-    "expression": "if self.vad_session is None and path.is_file():",
-    "sha256": "32ed3a2204ee4673de166846ffb3a068d96c0b9c3b4a352f05547fbd7d1c7915"
-  },
-  "core/transcriber.py:802:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 802,
-    "expression": "if not self.speaking:",
-    "sha256": "f2f8ef695d2948399dd881823564315974b163469aed3d4a3862b8de8b1df5e6"
-  },
-  "core/transcriber.py:813:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 813,
-    "expression": "if samples.size:",
-    "sha256": "c84e35c598c6ec1d7873e657184413222c141ffac4e372fab3953e5bb9716438"
-  },
-  "core/transcriber.py:819:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 819,
-    "expression": "if self.quiet >= pause:",
-    "sha256": "41c19e1ff728e784cedd73735a68a99fd43f56a7424aae3b25ff6fa862cdffbd"
-  },
-  "core/transcriber.py:821:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 821,
-    "expression": "if self.length >= MAX_UTTERANCE_SECONDS:",
-    "sha256": "66f03783a8675c869140fc41038ae9c463efc7152e3164290933b957bac5c653"
-  },
-  "core/transcriber.py:831:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 831,
-    "expression": "if not self.speaking:",
-    "sha256": "ebd2c576a61a4197ba9ef0bfc81029da8ff43036dd23b8790d4c1d09e2818ddc"
-  },
-  "core/transcriber.py:848:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 848,
-    "expression": "if not samples.size:",
-    "sha256": "041d9d115aafc22b29a3e6f2f6e18d7a70a55167612b734ec64852cb3a417aa6"
-  },
-  "core/transcriber.py:850:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 850,
-    "expression": "if self.vad is not None:",
-    "sha256": "223e907d572497670bd1ed6cdbaabb1b445247f5858c7c09704772a32e058d5b"
-  },
-  "core/transcriber.py:891:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 891,
-    "expression": "if frames:",
-    "sha256": "bc8fd5eafeff9b4d51a81ebb8af88d7a8bacbb6d04ac9814f306d8b6e7c99ad7"
-  },
-  "core/transcriber.py:935:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 935,
-    "expression": "if self.rate == SAMPLE_RATE:",
-    "sha256": "92cb6be71387e01c1cc8040614ed63038c9b37ea007f3a7a390e5dafe427ec1e"
-  },
-  "core/transcriber.py:938:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 938,
-    "expression": "if self.rate > SAMPLE_RATE:",
-    "sha256": "00e351c411e54754b1b9f363339a92ffb02abfd6e979c23c17dead14f36ecb50"
-  },
-  "core/transcriber.py:965:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 965,
-    "expression": "if device['maxInputChannels'] > 0:",
-    "sha256": "c2a24d0a62f9b9407ae52ec3032b283150ced08888abbcaf89bd7fcd4b16380f"
-  },
-  "core/transcriber.py:120:background": {
-    "category": "background",
-    "source": "core/transcriber.py",
-    "line": 120,
-    "expression": "QTimer(self)",
-    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
-  },
-  "core/transcriber.py:293:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 293,
-    "expression": "if index < 0:",
-    "sha256": "63ea02c0206154f3c91c4430be1b24c3e341c24262da64db7f2aa019a13435a4"
-  },
-  "core/transcriber.py:296:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 296,
-    "expression": "if segment.source != source and SequenceMatcher(None, segment.text.lower(), text.lower()).ratio() >= ECHO_SIMILARITY:",
-    "sha256": "73937bf741bd55a55e848905fc75da5a1998c468ba68861462a2b01a71f1a3ec"
-  },
-  "core/transcriber.py:367:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 367,
-    "expression": "except (OSError, ValueError):",
-    "sha256": "886b9b92caa235a5873470b228be8ade0f6c149a826acea924a91d562ceabce2"
-  },
-  "core/transcriber.py:447:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 447,
-    "expression": "except Exception as error:",
-    "sha256": "be267233403fedae66936f25672d2102ece8d7a7b96bf29da4cbcbe5e3cbc900"
-  },
-  "core/transcriber.py:463:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 463,
-    "expression": "if audio is not None:",
-    "sha256": "d67c5b2d0742e8d432bba7c8f380481f86192e04cf0a4383f3852e124c86fdb2"
-  },
-  "core/transcriber.py:484:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 484,
-    "expression": "if len(matches) != 1:",
-    "sha256": "5f50720cdf9bf9621e9af613598d0bcb7cc1b2d779e72075a68d963fc39465f7"
-  },
-  "core/transcriber.py:489:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 489,
-    "expression": "if source == 'them':",
-    "sha256": "b03a5bf48cb5668c0743365cb4e289c70d4f1b99b986e5a04611d85169bed750"
-  },
-  "core/transcriber.py:547:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 547,
-    "expression": "except queue.Empty:",
-    "sha256": "2ececa5b6001e1f63a07ce58f7faf9f2c7a447d8de4f136797b124fddab1025b"
-  },
-  "core/transcriber.py:554:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 554,
-    "expression": "if samples.size:",
-    "sha256": "f0e5fd96faa04dc9fe4bb52df090c2bf5544f4fef6b07f49adecdd4a0ffdb760"
-  },
-  "core/transcriber.py:585:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 585,
-    "expression": "if utterance is not None:",
-    "sha256": "9ee950533724cb63610dc3c3c6027db4655cdf009bd8b6a0dd958c27205120c2"
-  },
-  "core/transcriber.py:638:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 638,
-    "expression": "except Exception as exc:",
-    "sha256": "f0dcb7b98038fd5ef9a0a0caf589044c9bf262014ca0297e5575d40616f5d7c1"
-  },
-  "core/transcriber.py:649:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 649,
-    "expression": "if stop_event.is_set():",
-    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
-  },
-  "core/transcriber.py:651:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 651,
-    "expression": "if item is None:",
-    "sha256": "ee8cfc9e1e667ba3771a25bd6597e3839192a6cb971dfc99e456abaed91be267"
-  },
-  "core/transcriber.py:666:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 666,
-    "expression": "if text and (not stop_event.is_set()):",
-    "sha256": "42e88ce461dfb1257e1e469660c3a5bff6b084b3aad03529ccc8b6c411b895f9"
-  },
-  "core/transcriber.py:691:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 691,
-    "expression": "except Exception as exc:",
-    "sha256": "fece02ba78918a05ca2962956d3fadf00b4db3e692bef7d68382afdf656e070b"
-  },
-  "core/transcriber.py:706:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 706,
-    "expression": "if self.model_size != model_size:",
-    "sha256": "bb72e9c7526a23734fb98740adad5f3d36eddd598659157899b1d0313b8b9683"
-  },
-  "core/transcriber.py:803:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 803,
-    "expression": "if score < SPEECH_START:",
-    "sha256": "93206c126213775df97ed991adb532c007359ecad60c247806bcea79edb03fd7"
-  },
-  "core/transcriber.py:968:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 968,
-    "expression": "if device.get('maxOutputChannels', 0) > 0 and (not device['isLoopbackDevice']):",
-    "sha256": "ba053177285be2a691118ab4e9cc84ba8db529e1264f7d8c9b7c9bd8a92374b8"
-  },
-  "core/transcriber.py:301:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 301,
-    "expression": "if segment.source == 'you' and segment.seq > self.sent_seq:",
-    "sha256": "b2a747130683b51918760dac3397e8661821198992b99d532b82200e94a910a0"
-  },
-  "core/transcriber.py:460:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 460,
-    "expression": "if source not in finished:",
-    "sha256": "b432a775ea6be48b9aa7febdd9a425e8ec31c3456c782a4c3535e18d51dd14ab"
   },
   "core/transcriber.py:639:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
     "line": 639,
-    "expression": "if not stop_event.is_set():",
-    "sha256": "71fc4451ea7498af0d21f68f1d8b091070fd6ba10217133bf1e3e9e2408db5a0"
-  },
-  "core/transcriber.py:657:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 657,
-    "expression": "except Exception as exc:",
-    "sha256": "8c3e6ed2a0333be3366205541285f2086b84f514d6ff17b7a09fd3538dcc851c"
-  },
-  "core/transcriber.py:710:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 710,
-    "expression": "if not path.is_dir():",
-    "sha256": "d53ab7041d29c6137ea6c6452beadc0903d8696f20f8a4d79b77e94043ef5caf"
-  },
-  "core/transcriber.py:804:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 804,
-    "expression": "if samples.size:",
-    "sha256": "b333861007a9231229b4df037cf075354339c10770e0187a93a994c666405d7f"
-  },
-  "core/transcriber.py:162:background": {
-    "category": "background",
-    "source": "core/transcriber.py",
-    "line": 162,
-    "expression": "threading.Thread(target=self._transcribe_loop, args=(utterances, model, self.stop_event), daemon=True)",
-    "sha256": "9b94114d3bc92847583c6067a1fc8572b3ac46e1c674ffa93e29ac38f3c87e11"
-  },
-  "core/transcriber.py:167:background": {
-    "category": "background",
-    "source": "core/transcriber.py",
-    "line": 167,
-    "expression": "threading.Thread(target=self._capture_sources, args=(tuple(SOURCE_LABELS), self.stop_event, utterances, devices), daemon=True)",
-    "sha256": "ea0088bce047a55d25967edfe33ba98d70a0fd44985e9565529e9765d56a42b9"
-  },
-  "core/transcriber.py:187:background": {
-    "category": "background",
-    "source": "core/transcriber.py",
-    "line": 187,
-    "expression": "threading.Thread(target=self._scan_audio_devices, daemon=True)",
-    "sha256": "9f01b68d3c13c3195625616cca698d5485a5defd0dac4d385d9368330e5f3726"
-  },
-  "core/transcriber.py:225:background": {
-    "category": "background",
-    "source": "core/transcriber.py",
-    "line": 225,
-    "expression": "threading.Thread(target=self._download, args=(model,), daemon=True)",
-    "sha256": "fd12f9d1d81e37d9b57a4857d2c5e41b25e2e955b7d621849e32820e0047a534"
-  },
-  "core/transcriber.py:423:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 423,
-    "expression": "except Exception as error:",
-    "sha256": "1c9b84f81b54001d62d319a0001ed2bd230be8dfc043756a95dcc55878e70ddf"
-  },
-  "core/transcriber.py:449:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 449,
-    "expression": "if source not in finished:",
-    "sha256": "f2bd70e88f2988dd0a317ba5cb255b0e5bd46c8c8e8911fe3cf6b72461919ae3"
-  },
-  "core/transcriber.py:455:failure": {
-    "category": "failure",
-    "source": "core/transcriber.py",
-    "line": 455,
-    "expression": "except Exception as error:",
-    "sha256": "046d1687792324769b54e33317b5ba6f95e848c6dddd315f03f88793979e86d8"
-  },
-  "core/transcriber.py:658:branch": {
-    "category": "branch",
-    "source": "core/transcriber.py",
-    "line": 658,
     "expression": "if stop_event.is_set():",
     "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
   },
-  "core/transcriber.py:895:background": {
+  "core/transcriber.py:747:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 747,
+    "expression": "if self.vad_session is None and path.is_file():",
+    "sha256": "32ed3a2204ee4673de166846ffb3a068d96c0b9c3b4a352f05547fbd7d1c7915"
+  },
+  "core/transcriber.py:807:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 807,
+    "expression": "if not self.speaking:",
+    "sha256": "f2f8ef695d2948399dd881823564315974b163469aed3d4a3862b8de8b1df5e6"
+  },
+  "core/transcriber.py:818:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 818,
+    "expression": "if samples.size:",
+    "sha256": "c84e35c598c6ec1d7873e657184413222c141ffac4e372fab3953e5bb9716438"
+  },
+  "core/transcriber.py:824:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 824,
+    "expression": "if self.quiet >= pause:",
+    "sha256": "41c19e1ff728e784cedd73735a68a99fd43f56a7424aae3b25ff6fa862cdffbd"
+  },
+  "core/transcriber.py:826:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 826,
+    "expression": "if self.length >= MAX_UTTERANCE_SECONDS:",
+    "sha256": "66f03783a8675c869140fc41038ae9c463efc7152e3164290933b957bac5c653"
+  },
+  "core/transcriber.py:836:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 836,
+    "expression": "if not self.speaking:",
+    "sha256": "ebd2c576a61a4197ba9ef0bfc81029da8ff43036dd23b8790d4c1d09e2818ddc"
+  },
+  "core/transcriber.py:853:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 853,
+    "expression": "if not samples.size:",
+    "sha256": "041d9d115aafc22b29a3e6f2f6e18d7a70a55167612b734ec64852cb3a417aa6"
+  },
+  "core/transcriber.py:855:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 855,
+    "expression": "if self.vad is not None:",
+    "sha256": "223e907d572497670bd1ed6cdbaabb1b445247f5858c7c09704772a32e058d5b"
+  },
+  "core/transcriber.py:896:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 896,
+    "expression": "if frames:",
+    "sha256": "bc8fd5eafeff9b4d51a81ebb8af88d7a8bacbb6d04ac9814f306d8b6e7c99ad7"
+  },
+  "core/transcriber.py:940:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 940,
+    "expression": "if self.rate == SAMPLE_RATE:",
+    "sha256": "92cb6be71387e01c1cc8040614ed63038c9b37ea007f3a7a390e5dafe427ec1e"
+  },
+  "core/transcriber.py:943:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 943,
+    "expression": "if self.rate > SAMPLE_RATE:",
+    "sha256": "00e351c411e54754b1b9f363339a92ffb02abfd6e979c23c17dead14f36ecb50"
+  },
+  "core/transcriber.py:970:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 970,
+    "expression": "if device['maxInputChannels'] > 0:",
+    "sha256": "c2a24d0a62f9b9407ae52ec3032b283150ced08888abbcaf89bd7fcd4b16380f"
+  },
+  "core/transcriber.py:123:background": {
     "category": "background",
     "source": "core/transcriber.py",
-    "line": 895,
+    "line": 123,
+    "expression": "QTimer(self)",
+    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+  },
+  "core/transcriber.py:296:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 296,
+    "expression": "if index < 0:",
+    "sha256": "63ea02c0206154f3c91c4430be1b24c3e341c24262da64db7f2aa019a13435a4"
+  },
+  "core/transcriber.py:299:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 299,
+    "expression": "if segment.source != source and SequenceMatcher(None, segment.text.lower(), text.lower()).ratio() >= ECHO_SIMILARITY:",
+    "sha256": "73937bf741bd55a55e848905fc75da5a1998c468ba68861462a2b01a71f1a3ec"
+  },
+  "core/transcriber.py:371:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 371,
+    "expression": "except (OSError, ValueError):",
+    "sha256": "886b9b92caa235a5873470b228be8ade0f6c149a826acea924a91d562ceabce2"
+  },
+  "core/transcriber.py:452:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 452,
+    "expression": "except Exception as error:",
+    "sha256": "be267233403fedae66936f25672d2102ece8d7a7b96bf29da4cbcbe5e3cbc900"
+  },
+  "core/transcriber.py:468:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 468,
+    "expression": "if audio is not None:",
+    "sha256": "d67c5b2d0742e8d432bba7c8f380481f86192e04cf0a4383f3852e124c86fdb2"
+  },
+  "core/transcriber.py:489:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 489,
+    "expression": "if len(matches) != 1:",
+    "sha256": "5f50720cdf9bf9621e9af613598d0bcb7cc1b2d779e72075a68d963fc39465f7"
+  },
+  "core/transcriber.py:494:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 494,
+    "expression": "if source == 'them':",
+    "sha256": "b03a5bf48cb5668c0743365cb4e289c70d4f1b99b986e5a04611d85169bed750"
+  },
+  "core/transcriber.py:552:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 552,
+    "expression": "except queue.Empty:",
+    "sha256": "2ececa5b6001e1f63a07ce58f7faf9f2c7a447d8de4f136797b124fddab1025b"
+  },
+  "core/transcriber.py:559:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 559,
+    "expression": "if samples.size:",
+    "sha256": "f0e5fd96faa04dc9fe4bb52df090c2bf5544f4fef6b07f49adecdd4a0ffdb760"
+  },
+  "core/transcriber.py:590:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 590,
+    "expression": "if utterance is not None:",
+    "sha256": "9ee950533724cb63610dc3c3c6027db4655cdf009bd8b6a0dd958c27205120c2"
+  },
+  "core/transcriber.py:643:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 643,
+    "expression": "except Exception as exc:",
+    "sha256": "f0dcb7b98038fd5ef9a0a0caf589044c9bf262014ca0297e5575d40616f5d7c1"
+  },
+  "core/transcriber.py:654:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 654,
+    "expression": "if stop_event.is_set():",
+    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
+  },
+  "core/transcriber.py:656:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 656,
+    "expression": "if item is None:",
+    "sha256": "ee8cfc9e1e667ba3771a25bd6597e3839192a6cb971dfc99e456abaed91be267"
+  },
+  "core/transcriber.py:671:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 671,
+    "expression": "if text and (not stop_event.is_set()):",
+    "sha256": "42e88ce461dfb1257e1e469660c3a5bff6b084b3aad03529ccc8b6c411b895f9"
+  },
+  "core/transcriber.py:696:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 696,
+    "expression": "except Exception as exc:",
+    "sha256": "fece02ba78918a05ca2962956d3fadf00b4db3e692bef7d68382afdf656e070b"
+  },
+  "core/transcriber.py:711:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 711,
+    "expression": "if self.model_size != model_size:",
+    "sha256": "bb72e9c7526a23734fb98740adad5f3d36eddd598659157899b1d0313b8b9683"
+  },
+  "core/transcriber.py:808:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 808,
+    "expression": "if score < SPEECH_START:",
+    "sha256": "93206c126213775df97ed991adb532c007359ecad60c247806bcea79edb03fd7"
+  },
+  "core/transcriber.py:973:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 973,
+    "expression": "if device.get('maxOutputChannels', 0) > 0 and (not device['isLoopbackDevice']):",
+    "sha256": "ba053177285be2a691118ab4e9cc84ba8db529e1264f7d8c9b7c9bd8a92374b8"
+  },
+  "core/transcriber.py:304:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 304,
+    "expression": "if segment.source == 'you' and segment.seq > self.sent_seq:",
+    "sha256": "b2a747130683b51918760dac3397e8661821198992b99d532b82200e94a910a0"
+  },
+  "core/transcriber.py:465:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 465,
+    "expression": "if source not in finished:",
+    "sha256": "b432a775ea6be48b9aa7febdd9a425e8ec31c3456c782a4c3535e18d51dd14ab"
+  },
+  "core/transcriber.py:644:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 644,
+    "expression": "if not stop_event.is_set():",
+    "sha256": "71fc4451ea7498af0d21f68f1d8b091070fd6ba10217133bf1e3e9e2408db5a0"
+  },
+  "core/transcriber.py:662:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 662,
+    "expression": "except Exception as exc:",
+    "sha256": "8c3e6ed2a0333be3366205541285f2086b84f514d6ff17b7a09fd3538dcc851c"
+  },
+  "core/transcriber.py:715:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 715,
+    "expression": "if not path.is_dir():",
+    "sha256": "d53ab7041d29c6137ea6c6452beadc0903d8696f20f8a4d79b77e94043ef5caf"
+  },
+  "core/transcriber.py:809:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 809,
+    "expression": "if samples.size:",
+    "sha256": "b333861007a9231229b4df037cf075354339c10770e0187a93a994c666405d7f"
+  },
+  "core/transcriber.py:165:background": {
+    "category": "background",
+    "source": "core/transcriber.py",
+    "line": 165,
+    "expression": "threading.Thread(target=self._transcribe_loop, args=(utterances, model, self.stop_event), daemon=True)",
+    "sha256": "9b94114d3bc92847583c6067a1fc8572b3ac46e1c674ffa93e29ac38f3c87e11"
+  },
+  "core/transcriber.py:170:background": {
+    "category": "background",
+    "source": "core/transcriber.py",
+    "line": 170,
+    "expression": "threading.Thread(target=self._capture_sources, args=(tuple(SOURCE_LABELS), self.stop_event, utterances, devices), daemon=True)",
+    "sha256": "ea0088bce047a55d25967edfe33ba98d70a0fd44985e9565529e9765d56a42b9"
+  },
+  "core/transcriber.py:190:background": {
+    "category": "background",
+    "source": "core/transcriber.py",
+    "line": 190,
+    "expression": "threading.Thread(target=self._scan_audio_devices, daemon=True)",
+    "sha256": "9f01b68d3c13c3195625616cca698d5485a5defd0dac4d385d9368330e5f3726"
+  },
+  "core/transcriber.py:228:background": {
+    "category": "background",
+    "source": "core/transcriber.py",
+    "line": 228,
+    "expression": "threading.Thread(target=self._download, args=(model,), daemon=True)",
+    "sha256": "fd12f9d1d81e37d9b57a4857d2c5e41b25e2e955b7d621849e32820e0047a534"
+  },
+  "core/transcriber.py:428:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 428,
+    "expression": "except Exception as error:",
+    "sha256": "1c9b84f81b54001d62d319a0001ed2bd230be8dfc043756a95dcc55878e70ddf"
+  },
+  "core/transcriber.py:454:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 454,
+    "expression": "if source not in finished:",
+    "sha256": "f2bd70e88f2988dd0a317ba5cb255b0e5bd46c8c8e8911fe3cf6b72461919ae3"
+  },
+  "core/transcriber.py:460:failure": {
+    "category": "failure",
+    "source": "core/transcriber.py",
+    "line": 460,
+    "expression": "except Exception as error:",
+    "sha256": "046d1687792324769b54e33317b5ba6f95e848c6dddd315f03f88793979e86d8"
+  },
+  "core/transcriber.py:663:branch": {
+    "category": "branch",
+    "source": "core/transcriber.py",
+    "line": 663,
+    "expression": "if stop_event.is_set():",
+    "sha256": "45c3430ac57191a471b66623aaf2a26b4813c0582b84f8740cf86d1554033ea4"
+  },
+  "core/transcriber.py:900:background": {
+    "category": "background",
+    "source": "core/transcriber.py",
+    "line": 900,
     "expression": "self.session.run(['output', 'stateN'], {'input': np.concatenate((self.context, frame))[None], 'state': self.state, 'sr': np.array(SAMPLE_RATE, np.int64)})",
     "sha256": "11ddac5250d610a3b762bed63887691ef9954bce8f80a32acc66bde74edd7505"
   },
-  "core/transcriber.py:437:branch": {
+  "core/transcriber.py:442:branch": {
     "category": "branch",
     "source": "core/transcriber.py",
-    "line": 437,
+    "line": 442,
     "expression": "if utterance is not None:",
     "sha256": "df0f916d771858ab8e0bf3b827ba6c92cfdae92341045886a92aa9dce1579211"
   },
-  "core/transcriber.py:439:failure": {
+  "core/transcriber.py:444:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 439,
+    "line": 444,
     "expression": "except Exception as error:",
     "sha256": "55cb5af424849b30d44215ef87fe0ebca3135b63a25a88c2c3d8400857cfb7f5"
   },
-  "core/transcriber.py:445:failure": {
+  "core/transcriber.py:450:failure": {
     "category": "failure",
     "source": "core/transcriber.py",
-    "line": 445,
+    "line": 450,
     "expression": "except Exception as close_error:",
     "sha256": "77c08560e32f544b0fa7aef6e91b17c0334bc2781dec286b833f275cadad2ea9"
   },
@@ -6612,7 +6822,7 @@
     "source": "que.py",
     "line": 21,
     "expression": "if __name__ == '__main__':",
-    "sha256": "71cbd7c491519c35b2183c4c03fe81303c74611861f2bb2a1ef606931f495171"
+    "sha256": "4e973ec6ffa01aaf6e3425c697f4f473d471c74da20f4b1ffc382973306317dd"
   },
   "ui/chat/ai_formatter.py:143:routine": {
     "category": "routine",
@@ -11855,719 +12065,719 @@
     "source": "ui/window/main_window.py",
     "line": 55,
     "expression": "def __init__(self, ai_sender: AISender, screenshot_manager: ScreenshotManager, transcriber: Transcriber | None=None, speaker: Speaker | None=None) -> None:",
-    "sha256": "066f3be00ae95f3c8bc8553db97970f7da47663a0d377481c31625a2f59d97de"
+    "sha256": "2e1f8b2f30e24910ef345c1dd7e0a67c9fe132ba5f72da35c71ea0f6cf6e522d"
   },
-  "ui/window/main_window.py:141:routine": {
+  "ui/window/main_window.py:143:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 141,
+    "line": 143,
     "expression": "def toggle_window_visibility(self) -> None:",
     "sha256": "8e3c08580cc26b21bd3dabfefe87ec4510b287ec36c78d315373195789590cbf"
   },
-  "ui/window/main_window.py:149:routine": {
+  "ui/window/main_window.py:151:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 149,
+    "line": 151,
     "expression": "def on_window_policy_failed(self, message: str) -> None:",
     "sha256": "16441df1bdbbb57b71fb7c0f6564d7bad8458f37dbe984a204bfce5825b4d56f"
   },
-  "ui/window/main_window.py:159:routine": {
+  "ui/window/main_window.py:161:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 159,
+    "line": 161,
     "expression": "def hide(self) -> None:",
     "sha256": "b6e116864480cbebd383a0376e3f2192c5849e67ecff545c771c32626db01944"
   },
-  "ui/window/main_window.py:178:routine": {
+  "ui/window/main_window.py:180:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 178,
+    "line": 180,
     "expression": "def set_capture_hidden(self, hidden: bool) -> None:",
     "sha256": "9bf217a7a92d9278f0e7e7ec62f405ef4750889ba0575de781713968f524094e"
   },
-  "ui/window/main_window.py:189:routine": {
+  "ui/window/main_window.py:191:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 189,
+    "line": 191,
     "expression": "def set_click_through(self, enabled: bool) -> None:",
     "sha256": "920e27a81b363347dec24a11588e7613e2ec44efcc5a6fb9e71e8384940a8566"
   },
-  "ui/window/main_window.py:197:routine": {
+  "ui/window/main_window.py:199:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 197,
+    "line": 199,
     "expression": "def speak_latest(self) -> None:",
     "sha256": "5063e79ba2c48e9e89e2ce7466828462df2caf5b7a16d619d5075974d1a31853"
   },
-  "ui/window/main_window.py:203:routine": {
+  "ui/window/main_window.py:205:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 203,
+    "line": 205,
     "expression": "def speak_from(self, chat_bubble: ChatBubble, global_position: QPoint) -> None:",
     "sha256": "4076e8812005cf4a7b4b504c498083879ebe697a4d72487f1a71ed833ef8cfff"
   },
-  "ui/window/main_window.py:216:routine": {
+  "ui/window/main_window.py:218:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 216,
+    "line": 218,
     "expression": "def send_message(self, message: str, display: str='') -> None:",
     "sha256": "ae4b0b4f7c4f069f4712a476cc32ad1b56e6079815d7d53422b79c025e7751ea"
   },
-  "ui/window/main_window.py:239:routine": {
+  "ui/window/main_window.py:241:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 239,
+    "line": 241,
     "expression": "def send_prompt(self, label: str, prompt: str) -> None:",
     "sha256": "94af8c9622a7a986c4cb5acf2a464516ef7b6b0d1e6e38a558f7663edafa6fd3"
   },
-  "ui/window/main_window.py:255:routine": {
+  "ui/window/main_window.py:257:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 255,
+    "line": 257,
     "expression": "def apply_preset(self, slot: int) -> None:",
     "sha256": "9d28089bc7c992c37146a16073e5818a5fd554f2802434db57edfbe4fe6d3dbf"
   },
-  "ui/window/main_window.py:285:routine": {
+  "ui/window/main_window.py:287:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 285,
+    "line": 287,
     "expression": "def toggle_history(self) -> None:",
     "sha256": "7435360b78312586da0c0857d5214916776da91060d512082676ef02fd18b5c0"
   },
-  "ui/window/main_window.py:294:routine": {
+  "ui/window/main_window.py:296:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 294,
+    "line": 296,
     "expression": "def show_settings(self) -> None:",
     "sha256": "bfbf96f1732685db079cf064d4ec15a46d1293b321867e118b39068dfcc3da5c"
   },
-  "ui/window/main_window.py:309:routine": {
+  "ui/window/main_window.py:311:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 309,
+    "line": 311,
     "expression": "def quit_app(self) -> None:",
     "sha256": "d7f3d6899d6d01f05e11038eea3cac21ecda31c46a65ec1d24e40c57048c109d"
   },
-  "ui/window/main_window.py:313:routine": {
+  "ui/window/main_window.py:315:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 313,
+    "line": 315,
     "expression": "def finish_quit(self) -> None:",
     "sha256": "54b8ddd460a05cde8f1756f369aa26f34b2e4e9f8a0ee4ef2692b85ac13d6084"
   },
-  "ui/window/main_window.py:328:routine": {
+  "ui/window/main_window.py:330:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 328,
+    "line": 330,
     "expression": "def resizeEvent(self, event: QResizeEvent | None) -> None:",
     "sha256": "d035847ca959dedf7f732d428863b4382d9c7749520f9ce8a551376599ca6df8"
   },
-  "ui/window/main_window.py:341:routine": {
+  "ui/window/main_window.py:343:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 341,
+    "line": 343,
     "expression": "def mousePressEvent(self, event: QMouseEvent | None) -> None:",
     "sha256": "c56d07065a3d731e0aeae40e6640be343e39b7370319e2dbddc9966226fe9c28"
   },
-  "ui/window/main_window.py:352:routine": {
+  "ui/window/main_window.py:354:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 352,
+    "line": 354,
     "expression": "def paintEvent(self, _event: QPaintEvent | None) -> None:",
     "sha256": "33c05fbf2f4dcb6723f83c224dd59fb693569ce42d3952f483726ba6ae930a4b"
   },
-  "ui/window/main_window.py:357:routine": {
+  "ui/window/main_window.py:359:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 357,
+    "line": 359,
     "expression": "def _init_UI(self) -> None:",
     "sha256": "54db9a5adf001011fedc48279fa413ce835bf27f60baeca2565d4dedd84f5063"
   },
-  "ui/window/main_window.py:548:routine": {
+  "ui/window/main_window.py:550:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 548,
+    "line": 550,
     "expression": "def _show_voice_notice(self, message: str) -> None:",
     "sha256": "e4c675867032af05b361ad914f9826fdafca2b12aa6786f69c39d631f80153e4"
   },
-  "ui/window/main_window.py:560:routine": {
+  "ui/window/main_window.py:562:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 560,
+    "line": 562,
     "expression": "def _clear_voice_notice(self) -> None:",
     "sha256": "9613a7304e0993cc548bf60c3b40e21020330ef07149a42a3592af422901f807"
   },
-  "ui/window/main_window.py:566:routine": {
+  "ui/window/main_window.py:568:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 566,
+    "line": 568,
     "expression": "def _on_voice_download_finished(self, error: str) -> None:",
     "sha256": "ea5ef85adaa8a49d6aae967314bf876664864b1d895043764f14af65625523a7"
   },
-  "ui/window/main_window.py:575:routine": {
+  "ui/window/main_window.py:577:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 575,
+    "line": 577,
     "expression": "def _on_speech_failed(self, message: str) -> None:",
     "sha256": "bcc41c46643cf67fb2476007887570241f55629817aafd9fd9a0d66335660d0d"
   },
-  "ui/window/main_window.py:583:routine": {
+  "ui/window/main_window.py:585:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 583,
+    "line": 585,
     "expression": "def _on_models_loaded(self, revision: int, result: ProviderResult) -> None:",
     "sha256": "b588f37b6d3a1a967c96564c3ab41d1f04e946e072333110d2170439020e5f16"
   },
-  "ui/window/main_window.py:597:routine": {
+  "ui/window/main_window.py:599:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 597,
+    "line": 599,
     "expression": "def _on_models_failed(self, revision: int, error: str) -> None:",
     "sha256": "f7e057c1aac1e0aa63769262e2ef8bae8b23e2738d0e83b64b84b2facfd17ec4"
   },
-  "ui/window/main_window.py:607:routine": {
+  "ui/window/main_window.py:609:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 607,
+    "line": 609,
     "expression": "def _refresh_models(self) -> None:",
     "sha256": "8c8e23b9a9b3ade8aac9182ebb06ab178a6c8bcb8a9eed523daa14bbe9b55b15"
   },
-  "ui/window/main_window.py:614:routine": {
+  "ui/window/main_window.py:616:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 614,
+    "line": 616,
     "expression": "def _apply_models(self, result: ProviderResult, use_defaults: bool=True) -> None:",
     "sha256": "3bffba4fb0bc7aaa7b769346ea447a2250bb1f06216d3016d194af53be393da2"
   },
-  "ui/window/main_window.py:637:routine": {
+  "ui/window/main_window.py:639:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 637,
+    "line": 639,
     "expression": "def _on_settings_saved(self, result: ProviderResult) -> None:",
     "sha256": "42629737ff3d94dd1ec66f724c88aca7aa1bbc509946fc27055287248d5a0ce4"
   },
-  "ui/window/main_window.py:647:routine": {
+  "ui/window/main_window.py:649:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 647,
+    "line": 649,
     "expression": "def _on_config_ai_saved(self, selected: set[str]) -> None:",
     "sha256": "3b8b8f02e3a32244ac0ccf5a2410e0ac7c0db8ff7ed2407e2e342b182db74cad"
   },
-  "ui/window/main_window.py:669:routine": {
+  "ui/window/main_window.py:671:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 669,
+    "line": 671,
     "expression": "def _apply_saved_connection(self, provider: str) -> bool:",
     "sha256": "c84acd75198147e0b718aff16841bde38f05bae6318a04b47c858e986a9b6ee2"
   },
-  "ui/window/main_window.py:680:routine": {
+  "ui/window/main_window.py:682:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 680,
+    "line": 682,
     "expression": "def _choose_claude_directory(self) -> None:",
     "sha256": "85c5eb9cc136f7461d19b1d9df8e65e690fec037b19a9e6fef7b6838bf27aca2"
   },
-  "ui/window/main_window.py:689:routine": {
+  "ui/window/main_window.py:691:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 689,
+    "line": 691,
     "expression": "def _set_claude_directory(self, directory: str) -> None:",
     "sha256": "5ee305c5234278a6cbb75735491743093fe8aa9049168388a09faf73d8aeb2d8"
   },
-  "ui/window/main_window.py:699:routine": {
+  "ui/window/main_window.py:701:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 699,
+    "line": 701,
     "expression": "def _show_claude_directory(self) -> None:",
     "sha256": "50395a3da63f045beae5df958c88f9dd3b1fbe53a933666588d56bf4d2642aa8"
   },
-  "ui/window/main_window.py:706:routine": {
+  "ui/window/main_window.py:708:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 706,
+    "line": 708,
     "expression": "def _close_settings(self) -> None:",
     "sha256": "085a5d76ee11fdf0bc500435e4c3b3afa796f0141da3aa84e2b2d2cfe2a650ec"
   },
-  "ui/window/main_window.py:719:routine": {
+  "ui/window/main_window.py:721:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 719,
+    "line": 721,
     "expression": "def _new_chat(self) -> None:",
     "sha256": "9b0aece907d6aaad7da88aa242bb4454a8e03235cf0344d7ca401d676ccb4710"
   },
-  "ui/window/main_window.py:725:routine": {
+  "ui/window/main_window.py:727:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 725,
+    "line": 727,
     "expression": "def _clear_all_chat(self) -> None:",
     "sha256": "8581d240f99d71bff5253919ac73423a48e18d4145a08d53d485b1e5fe0ee84c"
   },
-  "ui/window/main_window.py:743:routine": {
+  "ui/window/main_window.py:745:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 743,
+    "line": 745,
     "expression": "def _position_screenshot_tray(self) -> None:",
     "sha256": "41b4559fdbfafe6fb64b217dbaa248deead0795009edd2bd9df965554eb61781"
   },
-  "ui/window/main_window.py:761:routine": {
+  "ui/window/main_window.py:763:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 761,
+    "line": 763,
     "expression": "def _sync_transcript_panel(self) -> None:",
     "sha256": "6192e40adac546e359be2d1a7ed22a9ed7b767282836d0f0a8fa126340374da5"
   },
-  "ui/window/main_window.py:776:routine": {
+  "ui/window/main_window.py:778:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 776,
+    "line": 778,
     "expression": "def _sync_status_banner(self) -> None:",
     "sha256": "1183e6d1f592a2eb49e61a396b8e939fcd589c8b4d643afbacf8a55c1aab8ff6"
   },
-  "ui/window/main_window.py:787:routine": {
+  "ui/window/main_window.py:789:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 787,
+    "line": 789,
     "expression": "def _paint_frame(self, painter: QPainter) -> None:",
     "sha256": "a6bdbcc88197f059309e536bf750d21cfa232c24235326b8bec1f66cd629c180"
   },
-  "ui/window/main_window.py:814:routine": {
+  "ui/window/main_window.py:816:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 814,
+    "line": 816,
     "expression": "def _position_history_sidebar(self) -> None:",
     "sha256": "ae27d84deba1256801a6bbfc1e45988ca243970a6b0ba8401bfad058a487648f"
   },
-  "ui/window/main_window.py:821:routine": {
+  "ui/window/main_window.py:823:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 821,
+    "line": 823,
     "expression": "def _position_screenshot_viewer(self) -> None:",
     "sha256": "e49ef48fce149c59ff31d7a7d3e80866f8a6167501aaec63b6729b3735602f91"
   },
-  "ui/window/main_window.py:826:routine": {
+  "ui/window/main_window.py:828:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 826,
+    "line": 828,
     "expression": "def _open_screenshots(self, paths: list[str], index: int) -> None:",
     "sha256": "4a10c2b71ae65c93a3855f63e2300accb9820cc9c14b14b1dc7e875cf987dd67"
   },
-  "ui/window/main_window.py:838:routine": {
+  "ui/window/main_window.py:840:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 838,
+    "line": 840,
     "expression": "def _refresh_history(self) -> None:",
     "sha256": "9ae2bf0e955cd71bd49abe607608993f0931596f6ee19bfd15612e8bf7c12a3d"
   },
-  "ui/window/main_window.py:846:routine": {
+  "ui/window/main_window.py:848:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 846,
+    "line": 848,
     "expression": "def _on_history_closed(self) -> None:",
     "sha256": "57e9739a390e748e9c6a6156c500d7966c999096169106fa0ac52b8d0d595ca1"
   },
-  "ui/window/main_window.py:851:routine": {
+  "ui/window/main_window.py:853:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 851,
+    "line": 853,
     "expression": "def _on_turn_committed(self, interaction_request: InteractionRequest, interaction_id: str, response: str) -> None:",
     "sha256": "7fe1f341f1b649fcea09182cd1f58138a7067263251c3565f2ac366f67532940"
   },
-  "ui/window/main_window.py:897:routine": {
+  "ui/window/main_window.py:899:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 897,
+    "line": 899,
     "expression": "def _open_conversation(self, conversation_id: str) -> None:",
     "sha256": "1e60c9e2b7925b49763e8f10d75010022fe174517f3613757e7deb13f4f6a96c"
   },
-  "ui/window/main_window.py:935:routine": {
+  "ui/window/main_window.py:937:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 935,
+    "line": 937,
     "expression": "def _delete_conversation(self, conversation_id: str) -> None:",
     "sha256": "a316acaf8fa5dcf96157f7279f8997cb54e01bd6df94e63c49c2c996e21bc2e3"
   },
-  "ui/window/main_window.py:953:routine": {
+  "ui/window/main_window.py:955:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 953,
+    "line": 955,
     "expression": "def _unset_cursor_recursive(self, widget: QWidget) -> None:",
     "sha256": "3334937ac5c41d9a46c08373e42bc6764d44f8cc4d01e9dca79aa93a4efd4bde"
   },
-  "ui/window/main_window.py:965:routine": {
+  "ui/window/main_window.py:967:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 965,
+    "line": 967,
     "expression": "def _on_input_height_changed(self, delta_height: int) -> None:",
     "sha256": "e2da17bbd9d5c9bf44f09448040a19662d3f52217d0387b0d781f58596e16acf"
   },
-  "ui/window/main_window.py:973:routine": {
+  "ui/window/main_window.py:975:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 973,
+    "line": 975,
     "expression": "def _ensure_window_visible(self) -> None:",
     "sha256": "1ad972d39dba160dcbb990101d55752a551f1e0289b69e3d59d57ecfd213de2f"
   },
-  "ui/window/main_window.py:978:routine": {
+  "ui/window/main_window.py:980:routine": {
     "category": "routine",
     "source": "ui/window/main_window.py",
-    "line": 978,
+    "line": 980,
     "expression": "def _is_topmost_window(self) -> bool | None:",
     "sha256": "eacbb9d05e3185dbe7941fd816c9b5ddac33019a01c209130ea6505c8a78af03"
   },
-  "ui/window/main_window.py:135:branch": {
+  "ui/window/main_window.py:137:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 135,
+    "line": 137,
     "expression": "if self.ai_sender.provider == 'gemini' and (not self.ai_sender.api_key):",
     "sha256": "26ea57b6ffe73b30950907082eb3710bfa71dfe3ccacf7c3dbc53de06c6e4155"
   },
-  "ui/window/main_window.py:143:branch": {
+  "ui/window/main_window.py:145:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 143,
+    "line": 145,
     "expression": "if self.isVisible():",
     "sha256": "e230e188853e1a358fa27300ab798ea13415a42e54fafdfb164e3f08c363a1b7"
   },
-  "ui/window/main_window.py:161:branch": {
+  "ui/window/main_window.py:163:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 161,
+    "line": 163,
     "expression": "if hasattr(self, 'input_field'):",
     "sha256": "df882663d7ba3fee24eccfbbca2ee7eba942684a841bfe660e52c793e4be1586"
   },
-  "ui/window/main_window.py:200:branch": {
+  "ui/window/main_window.py:202:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 200,
+    "line": 202,
     "expression": "if reply is not None:",
     "sha256": "f88c3d403bdd232e82b4692a4734f3c12ffe765897c257d9911871a8c8220e49"
   },
-  "ui/window/main_window.py:211:branch": {
+  "ui/window/main_window.py:213:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 211,
+    "line": 213,
     "expression": "if line is None:",
     "sha256": "53040b49a264fcfa697f49ecdf88f9176bbdb6e9fc30b57dcf2daee83a5f2cc8"
   },
-  "ui/window/main_window.py:223:branch": {
+  "ui/window/main_window.py:225:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 223,
+    "line": 225,
     "expression": "if not self.ai_sender.model:",
     "sha256": "c3e9dfa8544b946e3b09bdbe4791fabaafba55c1c0b259d534c4ad2fbd4bec40"
   },
-  "ui/window/main_window.py:247:branch": {
+  "ui/window/main_window.py:249:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 247,
+    "line": 249,
     "expression": "if note:",
     "sha256": "fa39ceadcdbfc3824211cc23a45a6b7af87a4d574c9669dc4e54a1fcc019fd13"
-  },
-  "ui/window/main_window.py:267:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 267,
-    "expression": "if not model:",
-    "sha256": "03a2b8f5f0977154cacf76fdee0d2d689ce44741337d8252cc932042aa6d43db"
-  },
-  "ui/window/main_window.py:287:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 287,
-    "expression": "if not self.history_sidebar.opened:",
-    "sha256": "041a3ec5b3d997f272d7455186a92f0c5610cefe9b3cd884c6516b73832ba14c"
-  },
-  "ui/window/main_window.py:298:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 298,
-    "expression": "if self.pages.currentIndex() == 1:",
-    "sha256": "cdea1636adb6ae449a715f5e1b0badee6d53399f51b8771b6f5ae007dd629085"
-  },
-  "ui/window/main_window.py:316:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 316,
-    "expression": "if self.worker is not None:",
-    "sha256": "a5ad60410db08e8577740de63f7d5afb94704de0a5349511ecbe2af4bab085f9"
-  },
-  "ui/window/main_window.py:325:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 325,
-    "expression": "if app is not None:",
-    "sha256": "9f8f15521dd304c43199add447899cb356397a0a7942367a456baf257187166e"
-  },
-  "ui/window/main_window.py:347:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 347,
-    "expression": "if self.pages.currentIndex() == 0:",
-    "sha256": "64b1abf58a1d023576367eea5930dc44ed2c36603dde5fa4590768e8f3651fee"
-  },
-  "ui/window/main_window.py:554:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 554,
-    "expression": "if message != self.voice_notice:",
-    "sha256": "39e3fb94d11d2b5958a86e9c3795ca99510339566a36f0a02c97576a5f0ad545"
-  },
-  "ui/window/main_window.py:572:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 572,
-    "expression": "if not error:",
-    "sha256": "cc4d800d3c4658d4f4974029778d4885898d3d5e1702d4d8398a7ce8f7c0a6d2"
-  },
-  "ui/window/main_window.py:590:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 590,
-    "expression": "if revision != self.catalog_revision or result.provider != self.ai_sender.provider:",
-    "sha256": "e11ce1c44a19036e28da446d97c30b7ea4e7565cea9cbe98080c6f57e44ac27d"
-  },
-  "ui/window/main_window.py:604:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 604,
-    "expression": "if revision == self.catalog_revision:",
-    "sha256": "8ea20290a4e8352283adafe00e4f117d075c9e0fc29ce6457a09e19957062a1c"
-  },
-  "ui/window/main_window.py:623:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 623,
-    "expression": "if use_defaults and model in self.ai_sender.models:",
-    "sha256": "c06c9251832857458da1b3a5f356c03d30941f3b7ce021044d3da921f0c81a43"
-  },
-  "ui/window/main_window.py:625:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 625,
-    "expression": "if use_defaults and effort in self.ai_sender.models[self.ai_sender.model].effort_levels:",
-    "sha256": "7f6706e342ef900280d33be491ed972fe3b0507987591cfc511905776e993ce3"
-  },
-  "ui/window/main_window.py:662:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 662,
-    "expression": "if connection_changed and self._apply_saved_connection(provider):",
-    "sha256": "41b01f1734cb1449877e276ce1d58168208132b90898ff45786bffed00c5f647"
-  },
-  "ui/window/main_window.py:672:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 672,
-    "expression": "if provider == self.ai_sender.provider and api_key == self.ai_sender.api_key:",
-    "sha256": "c8acd497ce9935ad1e05849be4ad530e3736c200d1a46474d164c615ef6fc398"
-  },
-  "ui/window/main_window.py:686:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 686,
-    "expression": "if directory:",
-    "sha256": "ac6a8cd6712f048b467c75deab991ea59bae302cd013e2600738f315ce88c193"
-  },
-  "ui/window/main_window.py:736:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 736,
-    "expression": "if self.ai_sender.models:",
-    "sha256": "c009c5af6fd810267a261a15399f11fc2f7d91e9e1d04e0c8d1baa5fce960107"
-  },
-  "ui/window/main_window.py:746:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 746,
-    "expression": "if self.pages.currentIndex() == 1:",
-    "sha256": "01bcc443aded5001f6fdb21783d5b32c40d034824b958093457c4cd0c0294e06"
-  },
-  "ui/window/main_window.py:772:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 772,
-    "expression": "if delta:",
-    "sha256": "512e83f59cb1b012db347e896ab603113111890a4cc3d59fbedacc57ec830cf7"
-  },
-  "ui/window/main_window.py:784:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 784,
-    "expression": "if delta:",
-    "sha256": "512e83f59cb1b012db347e896ab603113111890a4cc3d59fbedacc57ec830cf7"
-  },
-  "ui/window/main_window.py:848:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 848,
-    "expression": "if self.pages.currentIndex() == 0:",
-    "sha256": "64b1abf58a1d023576367eea5930dc44ed2c36603dde5fa4590768e8f3651fee"
-  },
-  "ui/window/main_window.py:867:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 867,
-    "expression": "if conversation is None:",
-    "sha256": "ec3ffcf5221a8bf7998eb3a65aa5334c08a2d9009f8671cd4bd802956dcc02b5"
-  },
-  "ui/window/main_window.py:876:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 876,
-    "expression": "if interaction_request.transcript:",
-    "sha256": "f64a785b9ccb0450d63a750d4b0a8ebd20c04366c5ad673f0a16b69be7826639"
-  },
-  "ui/window/main_window.py:881:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 881,
-    "expression": "if screenshots:",
-    "sha256": "61dc2a67cbafb8ae9d922369468e00e709d2e5c48cb77e44e967776d6a404ce6"
-  },
-  "ui/window/main_window.py:894:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 894,
-    "expression": "if self.history_sidebar.opened:",
-    "sha256": "5b6a050f0f61404a87d503aad068f63c8cae061fc82b1d48ce25b431ade95b93"
-  },
-  "ui/window/main_window.py:905:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 905,
-    "expression": "if self.pages.currentIndex() == 1:",
-    "sha256": "f258fa6029b5f42f8a042a4415e9a1df9ec85ad53068b06ccb4dd4c28d71a947"
-  },
-  "ui/window/main_window.py:908:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 908,
-    "expression": "if conversation is None or conversation in self.conversations.values():",
-    "sha256": "5ecdc42960833a4163735c112c83421921118528f2b7aa778e930f1b57b2eb8e"
-  },
-  "ui/window/main_window.py:911:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 911,
-    "expression": "if conversation.provider != self.ai_sender.provider:",
-    "sha256": "5ff95ea1e1c23402e10678f4fec35c8ea557a43f3cfa123830029ed119d72974"
-  },
-  "ui/window/main_window.py:945:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 945,
-    "expression": "if any((conversation is not None and conversation.conversation_id == conversation_id for conversation in self.conversations.values())):",
-    "sha256": "9c1376e446ad620ec023a0cff99174a7e1f1739358b0c71ecaa6601031da5c2d"
-  },
-  "ui/window/main_window.py:975:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 975,
-    "expression": "if self.isVisible() and self._is_topmost_window() is False:",
-    "sha256": "97b41d318fa96104f2130bb647d73698403da50fd5bedd23ef42d421bdf6419f"
-  },
-  "ui/window/main_window.py:127:background": {
-    "category": "background",
-    "source": "ui/window/main_window.py",
-    "line": 127,
-    "expression": "QTimer(self)",
-    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
-  },
-  "ui/window/main_window.py:155:background": {
-    "category": "background",
-    "source": "ui/window/main_window.py",
-    "line": 155,
-    "expression": "QTimer.singleShot(0, lambda: self.status_banner.show_warning(message, critical=True))",
-    "sha256": "af651fa32e5b8eca30b12f7099ff3f5b2a058afcc5dc755ec3b8748b8915bac7"
-  },
-  "ui/window/main_window.py:172:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 172,
-    "expression": "if hasattr(self, 'screenshot_viewer'):",
-    "sha256": "8bb5803ae76239fac9d80f0c264e12a6cbd0438e367af2f99219fcdb9ee38eb6"
-  },
-  "ui/window/main_window.py:251:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 251,
-    "expression": "if self.ai_sender.model:",
-    "sha256": "a9414a46d72f3b2a510c7c18e96f34639c7696f8f555231885b168ce9d3a79c3"
   },
   "ui/window/main_window.py:269:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
     "line": 269,
-    "expression": "if not input_settings.models:",
-    "sha256": "d4d045d1009f33ae735b3fd29e4663c82a39d2544e2b65441949503568db361f"
+    "expression": "if not model:",
+    "sha256": "03a2b8f5f0977154cacf76fdee0d2d689ce44741337d8252cc932042aa6d43db"
   },
-  "ui/window/main_window.py:543:background": {
-    "category": "background",
+  "ui/window/main_window.py:289:branch": {
+    "category": "branch",
     "source": "ui/window/main_window.py",
-    "line": 543,
-    "expression": "QTimer(self)",
-    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+    "line": 289,
+    "expression": "if not self.history_sidebar.opened:",
+    "sha256": "041a3ec5b3d997f272d7455186a92f0c5610cefe9b3cd884c6516b73832ba14c"
+  },
+  "ui/window/main_window.py:300:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 300,
+    "expression": "if self.pages.currentIndex() == 1:",
+    "sha256": "cdea1636adb6ae449a715f5e1b0badee6d53399f51b8771b6f5ae007dd629085"
+  },
+  "ui/window/main_window.py:318:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 318,
+    "expression": "if self.worker is not None:",
+    "sha256": "a5ad60410db08e8577740de63f7d5afb94704de0a5349511ecbe2af4bab085f9"
+  },
+  "ui/window/main_window.py:327:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 327,
+    "expression": "if app is not None:",
+    "sha256": "9f8f15521dd304c43199add447899cb356397a0a7942367a456baf257187166e"
+  },
+  "ui/window/main_window.py:349:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 349,
+    "expression": "if self.pages.currentIndex() == 0:",
+    "sha256": "64b1abf58a1d023576367eea5930dc44ed2c36603dde5fa4590768e8f3651fee"
+  },
+  "ui/window/main_window.py:556:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 556,
+    "expression": "if message != self.voice_notice:",
+    "sha256": "39e3fb94d11d2b5958a86e9c3795ca99510339566a36f0a02c97576a5f0ad545"
+  },
+  "ui/window/main_window.py:574:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 574,
+    "expression": "if not error:",
+    "sha256": "cc4d800d3c4658d4f4974029778d4885898d3d5e1702d4d8398a7ce8f7c0a6d2"
+  },
+  "ui/window/main_window.py:592:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 592,
+    "expression": "if revision != self.catalog_revision or result.provider != self.ai_sender.provider:",
+    "sha256": "e11ce1c44a19036e28da446d97c30b7ea4e7565cea9cbe98080c6f57e44ac27d"
+  },
+  "ui/window/main_window.py:606:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 606,
+    "expression": "if revision == self.catalog_revision:",
+    "sha256": "8ea20290a4e8352283adafe00e4f117d075c9e0fc29ce6457a09e19957062a1c"
+  },
+  "ui/window/main_window.py:625:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 625,
+    "expression": "if use_defaults and model in self.ai_sender.models:",
+    "sha256": "c06c9251832857458da1b3a5f356c03d30941f3b7ce021044d3da921f0c81a43"
+  },
+  "ui/window/main_window.py:627:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 627,
+    "expression": "if use_defaults and effort in self.ai_sender.models[self.ai_sender.model].effort_levels:",
+    "sha256": "7f6706e342ef900280d33be491ed972fe3b0507987591cfc511905776e993ce3"
   },
   "ui/window/main_window.py:664:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
     "line": 664,
+    "expression": "if connection_changed and self._apply_saved_connection(provider):",
+    "sha256": "41b01f1734cb1449877e276ce1d58168208132b90898ff45786bffed00c5f647"
+  },
+  "ui/window/main_window.py:674:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 674,
+    "expression": "if provider == self.ai_sender.provider and api_key == self.ai_sender.api_key:",
+    "sha256": "c8acd497ce9935ad1e05849be4ad530e3736c200d1a46474d164c615ef6fc398"
+  },
+  "ui/window/main_window.py:688:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 688,
+    "expression": "if directory:",
+    "sha256": "ac6a8cd6712f048b467c75deab991ea59bae302cd013e2600738f315ce88c193"
+  },
+  "ui/window/main_window.py:738:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 738,
+    "expression": "if self.ai_sender.models:",
+    "sha256": "c009c5af6fd810267a261a15399f11fc2f7d91e9e1d04e0c8d1baa5fce960107"
+  },
+  "ui/window/main_window.py:748:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 748,
+    "expression": "if self.pages.currentIndex() == 1:",
+    "sha256": "01bcc443aded5001f6fdb21783d5b32c40d034824b958093457c4cd0c0294e06"
+  },
+  "ui/window/main_window.py:774:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 774,
+    "expression": "if delta:",
+    "sha256": "512e83f59cb1b012db347e896ab603113111890a4cc3d59fbedacc57ec830cf7"
+  },
+  "ui/window/main_window.py:786:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 786,
+    "expression": "if delta:",
+    "sha256": "512e83f59cb1b012db347e896ab603113111890a4cc3d59fbedacc57ec830cf7"
+  },
+  "ui/window/main_window.py:850:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 850,
+    "expression": "if self.pages.currentIndex() == 0:",
+    "sha256": "64b1abf58a1d023576367eea5930dc44ed2c36603dde5fa4590768e8f3651fee"
+  },
+  "ui/window/main_window.py:869:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 869,
+    "expression": "if conversation is None:",
+    "sha256": "ec3ffcf5221a8bf7998eb3a65aa5334c08a2d9009f8671cd4bd802956dcc02b5"
+  },
+  "ui/window/main_window.py:878:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 878,
+    "expression": "if interaction_request.transcript:",
+    "sha256": "f64a785b9ccb0450d63a750d4b0a8ebd20c04366c5ad673f0a16b69be7826639"
+  },
+  "ui/window/main_window.py:883:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 883,
+    "expression": "if screenshots:",
+    "sha256": "61dc2a67cbafb8ae9d922369468e00e709d2e5c48cb77e44e967776d6a404ce6"
+  },
+  "ui/window/main_window.py:896:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 896,
+    "expression": "if self.history_sidebar.opened:",
+    "sha256": "5b6a050f0f61404a87d503aad068f63c8cae061fc82b1d48ce25b431ade95b93"
+  },
+  "ui/window/main_window.py:907:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 907,
+    "expression": "if self.pages.currentIndex() == 1:",
+    "sha256": "f258fa6029b5f42f8a042a4415e9a1df9ec85ad53068b06ccb4dd4c28d71a947"
+  },
+  "ui/window/main_window.py:910:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 910,
+    "expression": "if conversation is None or conversation in self.conversations.values():",
+    "sha256": "5ecdc42960833a4163735c112c83421921118528f2b7aa778e930f1b57b2eb8e"
+  },
+  "ui/window/main_window.py:913:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 913,
+    "expression": "if conversation.provider != self.ai_sender.provider:",
+    "sha256": "5ff95ea1e1c23402e10678f4fec35c8ea557a43f3cfa123830029ed119d72974"
+  },
+  "ui/window/main_window.py:947:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 947,
+    "expression": "if any((conversation is not None and conversation.conversation_id == conversation_id for conversation in self.conversations.values())):",
+    "sha256": "9c1376e446ad620ec023a0cff99174a7e1f1739358b0c71ecaa6601031da5c2d"
+  },
+  "ui/window/main_window.py:977:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 977,
+    "expression": "if self.isVisible() and self._is_topmost_window() is False:",
+    "sha256": "97b41d318fa96104f2130bb647d73698403da50fd5bedd23ef42d421bdf6419f"
+  },
+  "ui/window/main_window.py:129:background": {
+    "category": "background",
+    "source": "ui/window/main_window.py",
+    "line": 129,
+    "expression": "QTimer(self)",
+    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+  },
+  "ui/window/main_window.py:157:background": {
+    "category": "background",
+    "source": "ui/window/main_window.py",
+    "line": 157,
+    "expression": "QTimer.singleShot(0, lambda: self.status_banner.show_warning(message, critical=True))",
+    "sha256": "af651fa32e5b8eca30b12f7099ff3f5b2a058afcc5dc755ec3b8748b8915bac7"
+  },
+  "ui/window/main_window.py:174:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 174,
+    "expression": "if hasattr(self, 'screenshot_viewer'):",
+    "sha256": "8bb5803ae76239fac9d80f0c264e12a6cbd0438e367af2f99219fcdb9ee38eb6"
+  },
+  "ui/window/main_window.py:253:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 253,
+    "expression": "if self.ai_sender.model:",
+    "sha256": "a9414a46d72f3b2a510c7c18e96f34639c7696f8f555231885b168ce9d3a79c3"
+  },
+  "ui/window/main_window.py:271:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 271,
+    "expression": "if not input_settings.models:",
+    "sha256": "d4d045d1009f33ae735b3fd29e4663c82a39d2544e2b65441949503568db361f"
+  },
+  "ui/window/main_window.py:545:background": {
+    "category": "background",
+    "source": "ui/window/main_window.py",
+    "line": 545,
+    "expression": "QTimer(self)",
+    "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
+  },
+  "ui/window/main_window.py:666:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 666,
     "expression": "if provider in selected and self.ai_sender.models:",
     "sha256": "41224e52616996ba685843fc76bb7eb2dd1c2e743e6437125db202160b11387c"
   },
-  "ui/window/main_window.py:892:failure": {
+  "ui/window/main_window.py:894:failure": {
     "category": "failure",
     "source": "ui/window/main_window.py",
-    "line": 892,
+    "line": 894,
     "expression": "except OSError as e:",
     "sha256": "2cf5ff96cca80cc7475630380bad3e7ba58a4e980c21a8478068002f1c7b35a6"
   },
-  "ui/window/main_window.py:943:failure": {
+  "ui/window/main_window.py:945:failure": {
     "category": "failure",
     "source": "ui/window/main_window.py",
-    "line": 943,
+    "line": 945,
     "expression": "except OSError as e:",
     "sha256": "2cf5ff96cca80cc7475630380bad3e7ba58a4e980c21a8478068002f1c7b35a6"
+  },
+  "ui/window/main_window.py:1020:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 1020,
+    "expression": "if self.topmost_error:",
+    "sha256": "cec17613e08b9a68efd3a7543505cb517bdde9d0178449634633a86afd286c75"
+  },
+  "ui/window/main_window.py:1024:failure": {
+    "category": "failure",
+    "source": "ui/window/main_window.py",
+    "line": 1024,
+    "expression": "except Exception as error:",
+    "sha256": "7c1cb994403c8fe9a01c509f316adfa89fc1b57b3f8bb9b07a5b6ece6f7b2af7"
+  },
+  "ui/window/main_window.py:275:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 275,
+    "expression": "if model not in input_settings.models or effort not in input_settings.models[model].effort_levels:",
+    "sha256": "b145aca4824786356bcbe1a1cb14c7982eb334120496442f3bbc5793c66b470a"
+  },
+  "ui/window/main_window.py:1014:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 1014,
+    "expression": "if hwnd_at_pt:",
+    "sha256": "7d4be610f1bc308cbcbe67b1c6aa413e8fbdc27b888d739303f0da8543227209"
+  },
+  "ui/window/main_window.py:1026:branch": {
+    "category": "branch",
+    "source": "ui/window/main_window.py",
+    "line": 1026,
+    "expression": "if self.topmost_error != message:",
+    "sha256": "b2a4db73a801078743996a1c171fe80240d060b8f1c6bbbb10fa89f1414aeb6f"
   },
   "ui/window/main_window.py:1018:branch": {
     "category": "branch",
     "source": "ui/window/main_window.py",
     "line": 1018,
-    "expression": "if self.topmost_error:",
-    "sha256": "cec17613e08b9a68efd3a7543505cb517bdde9d0178449634633a86afd286c75"
-  },
-  "ui/window/main_window.py:1022:failure": {
-    "category": "failure",
-    "source": "ui/window/main_window.py",
-    "line": 1022,
-    "expression": "except Exception as error:",
-    "sha256": "7c1cb994403c8fe9a01c509f316adfa89fc1b57b3f8bb9b07a5b6ece6f7b2af7"
-  },
-  "ui/window/main_window.py:273:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 273,
-    "expression": "if model not in input_settings.models or effort not in input_settings.models[model].effort_levels:",
-    "sha256": "b145aca4824786356bcbe1a1cb14c7982eb334120496442f3bbc5793c66b470a"
-  },
-  "ui/window/main_window.py:1012:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 1012,
-    "expression": "if hwnd_at_pt:",
-    "sha256": "7d4be610f1bc308cbcbe67b1c6aa413e8fbdc27b888d739303f0da8543227209"
-  },
-  "ui/window/main_window.py:1024:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 1024,
-    "expression": "if self.topmost_error != message:",
-    "sha256": "b2a4db73a801078743996a1c171fe80240d060b8f1c6bbbb10fa89f1414aeb6f"
-  },
-  "ui/window/main_window.py:1016:branch": {
-    "category": "branch",
-    "source": "ui/window/main_window.py",
-    "line": 1016,
     "expression": "if int(target_root) in windows_above:",
     "sha256": "d832c73f021c7bb5a45f769988c89d599b8ff5d6cd65acf6398ef858d7dc7baf"
   },

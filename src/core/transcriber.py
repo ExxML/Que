@@ -4,6 +4,7 @@ import re
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -97,6 +98,8 @@ class Transcriber(QObject):
     def __init__(self, settings_store: SettingsStore) -> None:
         super().__init__()
         self.settings_store = settings_store
+        # The speaker replaces this to drop the output it holds before PortAudio lists devices
+        self.release_idle_output: Callable[[], None] = lambda: None
         self.cache_dir = (
             Path(__file__).resolve().parent.parent / "data" / "cache" / "transcription"
         )
@@ -362,6 +365,7 @@ class Transcriber(QObject):
     def _scan_audio_devices(self) -> None:
         """Enumerate the available devices and deliver their names to the Qt thread."""
         try:
+            self.release_idle_output()
             with PORTAUDIO_LOCK, pyaudiowpatch.PyAudio() as audio:
                 devices = _wasapi_devices(audio)
         except (OSError, ValueError):
@@ -412,6 +416,7 @@ class Transcriber(QObject):
         captures: dict[str, _CaptureState] = {}
         finished: set[str] = set()
         try:
+            self.release_idle_output()
             with PORTAUDIO_LOCK:
                 audio = pyaudiowpatch.PyAudio()
             for source in sources:

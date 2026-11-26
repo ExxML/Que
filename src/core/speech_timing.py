@@ -1,5 +1,6 @@
 """Recover word positions from the same Kokoro inference that produces the audio."""
 
+import threading
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, NamedTuple, Protocol, cast
@@ -16,6 +17,8 @@ _DURATION_TENSOR = (
 )
 _WORD_GAP = 0.15  # Hold the tint across brief gaps between words
 _STRESS_MARKS = frozenset("ˈˌːˑ")
+# espeak is not thread-safe, and a replaced sentence may still be synthesizing beside its successor
+_PHONEMIZER_LOCK = threading.Lock()
 
 
 class ReadingPosition(NamedTuple):
@@ -74,23 +77,27 @@ def synthesize(
         tuple[NDArray[np.float32], tuple[AudioCue, ...]]: Mono samples and their cues.
     """
     if not unit.words or getattr(voice, "has_timings", False) is not True:
-        samples, _rate = voice.create(
-            unit.text, voice=voice_name, speed=speed, lang="en-us"
-        )
+        # shortcut: this fallback locks inference too, so a restart waits for it; split it if timings go away
+        with _PHONEMIZER_LOCK:
+            samples, _rate = voice.create(
+                unit.text, voice=voice_name, speed=speed, lang="en-us"
+            )
         audio = np.asarray(samples, np.float32).ravel()
         return audio, _unit_cues(unit, len(audio))
 
     # Use the same batch preparation and trimming as Kokoro.create. Its public
     # create_timed also inserts extra punctuation pauses when it has durations.
-    style, _phonemes, batches = voice._prepare(
-        unit.text, voice_name, speed, "en-us", False, 0.25, 0.1
-    )
+    with _PHONEMIZER_LOCK:
+        style, _phonemes, batches = voice._prepare(
+            unit.text, voice_name, speed, "en-us", False, 0.25, 0.1
+        )
     samples, timings = voice._create_batches(batches, style, speed, True)
     audio = np.asarray(samples, np.float32).ravel()
     try:
         lengths = [len(voice.tokenizer.known(batch)) for batch, _pause in batches]
         heard = _phoneme_runs(cast(list[_Phoneme], timings), lengths)
-        return audio, _word_cues(unit, heard, voice, len(audio))
+        with _PHONEMIZER_LOCK:
+            return audio, _word_cues(unit, heard, voice, len(audio))
     except Exception:  # noqa: BLE001  # A failed alignment must still play the sentence
         return audio, _unit_cues(unit, len(audio))
 

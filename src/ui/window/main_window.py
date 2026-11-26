@@ -123,6 +123,8 @@ class MainWindow(QWidget):
         self.chat_area.messages_cleared.connect(self.speaker.stop)
         self.speaker.reading_changed.connect(self.chat_area.set_reading_state)
         self.speaker.spoken.connect(self.transcriber.note_spoken)
+        # A held speech output would freeze PortAudio's device list for recording and Settings
+        self.transcriber.release_idle_output = self.speaker.release_idle_output
         self.voice_notice = ""
         self.voice_notice_timer = QTimer(self)
         self.voice_notice_timer.setSingleShot(True)

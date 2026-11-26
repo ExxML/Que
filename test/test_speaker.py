@@ -28,7 +28,9 @@ from core.speaker import (
     VOICE_REVISION,
     VOICES_FILE,
     Speaker,
+    _opening_pieces,
 )
+from ui.chat.speech_text import speech_units
 
 OUTPUT = {
     "index": 3,
@@ -78,6 +80,14 @@ class FakeStream:
         self.sound = 0  # Non-silent frames played
         self.silence = 0
         self.peak = 0.0
+        self.running = False
+        self.fail_start = False
+        self.thread: threading.Thread | None = None
+
+    def start_stream(self) -> None:
+        """Start pulling audio."""
+        if self.fail_start:
+            raise OSError("The device went away.")
         self.running = True
         self.thread = threading.Thread(target=self._pull, daemon=True)
         self.thread.start()
@@ -85,7 +95,8 @@ class FakeStream:
     def stop_stream(self) -> None:
         """Stop pulling audio."""
         self.running = False
-        self.thread.join()
+        if self.thread is not None:
+            self.thread.join()
 
     def close(self) -> None:
         """Release nothing; the fake holds no device."""
@@ -191,21 +202,28 @@ class SpeakerTestCase(unittest.TestCase):
         self.fail(message)
 
     def finished(self) -> bool:
-        """Report whether reading ended and released the device.
+        """Report whether reading ended and stopped the device.
 
         Returns:
-            bool: Whether nothing is being read and every opened host was released.
+            bool: Whether nothing is being read and no stream is playing.
         """
-        return not self.speaker.active and all(
-            audio.terminated for audio in FakeAudio.instances
+        output = self.speaker.output
+        return (
+            not self.speaker.active
+            and (output is None or not output.claimed)
+            and not any(
+                stream.running
+                for audio in FakeAudio.instances
+                for stream in audio.streams
+            )
         )
 
 
 class ReadingTests(SpeakerTestCase):
     """Read replies as they stream."""
 
-    def test_reads_a_finished_reply_and_releases_the_device(self) -> None:
-        """Read every sentence once on the default output, then close it."""
+    def test_reads_a_finished_reply_and_stops_the_device(self) -> None:
+        """Read every sentence once on the default output, then stop it."""
         self.speaker.speak(self.reply, "One. Two.\n\n```\ncode\n```\nThree.", True)
         self.wait_until(self.finished, "Reading never finished.")
         self.app.processEvents()
@@ -311,18 +329,52 @@ class ControlTests(SpeakerTestCase):
         self.voice.create = stop_then_create  # type: ignore[method-assign]
         self.speaker.speak(self.reply, "Dropped.", True)
         self.wait_until(lambda: not self.speaker.active, "Reading never stopped.")
+        self.wait_until(self.finished, "Stopping left the device playing.")
         time.sleep(0.05)
         self.app.processEvents()
         self.assertEqual(self.spoken, [])
-        self.assertEqual(FakeAudio.instances, [])
+        self.assertEqual(
+            sum(
+                stream.sound
+                for audio in FakeAudio.instances
+                for stream in audio.streams
+            ),
+            0,
+        )
 
     def test_pause_does_nothing_when_idle(self) -> None:
         """Ignore pause while nothing is being read."""
         self.speaker.toggle_pause()
         self.assertFalse(self.speaker.paused)
 
-    def test_stop_silences_and_releases_the_device(self) -> None:
-        """Drop queued audio and close the device at once."""
+    def test_restart_does_not_wait_for_the_replaced_sentence(self) -> None:
+        """Read the new line while the old sentence is still being synthesized."""
+        release = threading.Event()
+        self.addCleanup(release.set)
+        # The pinned voice reports timings, so only its phonemizing step is serialized
+        voice = MagicMock(has_timings=True)
+        voice._prepare.side_effect = lambda text, *_args: (None, "", [(text, 0.0)])
+
+        def create_batches(
+            batches: list[tuple[str, float]], *_args: Any
+        ) -> tuple[NDArray[np.float32], list[Any]]:
+            """Hold the first sentence until the test releases it."""
+            if batches[0][0] == "Slow.":
+                release.wait(5)
+            return np.full(240, 0.5, np.float32), []
+
+        voice._create_batches.side_effect = create_batches
+        self.speaker.voice = voice
+        self.speaker.speak(self.reply, "Slow.", True)
+        self.wait_until(
+            lambda: self.speaker.output is not None, "Reading never started."
+        )
+        self.speaker.speak(self.reply, "Fast.", True)
+        self.wait_until(self.finished, "The old sentence blocked the new one.")
+        self.assertEqual(self.spoken, ["Fast."])
+
+    def test_stop_silences_and_stops_the_device(self) -> None:
+        """Drop queued audio and stop the device at once."""
         self.speaker.speak(self.reply, "One sentence. Another one. ", False)
         self.wait_until(lambda: bool(self.voice.texts), "Reading never started.")
         self.speaker.stop()
@@ -331,6 +383,131 @@ class ControlTests(SpeakerTestCase):
             self.reply, "More text.", True
         )  # A stopped reply is no longer followed
         self.assertFalse(self.speaker.active)
+
+
+class OpeningTests(SpeakerTestCase):
+    """Start sound before a long first sentence is wholly synthesized."""
+
+    def test_long_first_sentence_is_read_in_pieces(self) -> None:
+        """Cut only the first sentence, after a clause, and report it once."""
+        first = (
+            "As you walk, store each index so that every new element can check in constant "
+            "time whether the complement it needs has already appeared earlier in the list "
+            "you are walking through."
+        )
+        second = "Then return both positions, which takes linear time and linear space overall."
+        self.speaker.speak(self.reply, f"{first} {second}", True)
+        self.wait_until(self.finished, "Reading never finished.")
+        self.app.processEvents()
+        pieces = self.voice.texts[:-1]
+        self.assertEqual(pieces[0], "As you walk,")
+        self.assertGreater(len(pieces), 2)
+        self.assertLessEqual(len(pieces[1]), 60)
+        self.assertLessEqual(len(pieces[2]), 150)
+        self.assertEqual(" ".join(pieces), first)
+        self.assertEqual(self.voice.texts[-1], second)
+        self.assertEqual(self.spoken, [first, second])
+
+    def test_pieces_keep_their_words_and_the_closing_pause(self) -> None:
+        """Divide the highlighted words between pieces and pause only after the last."""
+        unit = speech_units(
+            "Walk the list one time while remembering every value that you have seen.",
+            True,
+        )[0]
+        pieces = _opening_pieces(unit)
+        self.assertGreater(len(pieces), 1)
+        self.assertEqual(
+            tuple(word for piece in pieces for word in piece.words), unit.words
+        )
+        for piece in pieces:
+            self.assertTrue(piece.text.startswith(piece.words[0].text))
+            self.assertEqual((piece.start, piece.end), (unit.start, unit.end))
+        self.assertEqual(
+            [piece.pause for piece in pieces],
+            [0.0] * (len(pieces) - 1) + [unit.pause],
+        )
+
+    def test_unbroken_text_stays_whole(self) -> None:
+        """Leave a sentence alone when it has nowhere to cut."""
+        unit = speech_units(f"{'a' * 90}.", True)[0]
+        self.assertEqual(_opening_pieces(unit), [unit])
+
+
+class HeldOutputTests(SpeakerTestCase):
+    """Keep the output opened, stopped, between reads."""
+
+    def read(self) -> None:
+        """Read one sentence to the end."""
+        self.speaker.speak(self.reply, "Hello.", True)
+        self.wait_until(self.finished, "Reading never finished.")
+
+    def test_next_read_reuses_the_output(self) -> None:
+        """Open the device once for two reads."""
+        self.read()
+        self.read()
+        self.assertEqual(len(FakeAudio.instances), 1)
+        self.assertFalse(FakeAudio.instances[0].terminated)
+
+    def test_changed_default_device_reopens(self) -> None:
+        """Follow Windows to a new default output."""
+        with patch("core.speaker._device_key", return_value=("", 1, "speakers")):
+            self.read()
+        with patch("core.speaker._device_key", return_value=("", 2, "earbuds")):
+            self.read()
+        self.assertEqual(len(FakeAudio.instances), 2)
+        self.assertTrue(FakeAudio.instances[0].terminated)
+
+    def test_held_output_that_will_not_start_reopens(self) -> None:
+        """Replace an output whose device went away."""
+        self.read()
+        FakeAudio.instances[0].streams[0].fail_start = True
+        self.read()
+        self.assertEqual(len(FakeAudio.instances), 2)
+        self.assertTrue(FakeAudio.instances[0].terminated)
+        self.assertEqual(self.failures, [])
+
+    def test_new_output_that_will_not_start_reports_the_failure(self) -> None:
+        """Close and explain an output that opens but cannot start."""
+        with patch.object(FakeStream, "start_stream", side_effect=OSError()):
+            self.speaker.speak(self.reply, "Hello.", True)
+            self.wait_until(
+                lambda: self.failures == [DEVICE_FAILED], "No failure shown."
+            )
+        self.assertTrue(FakeAudio.instances[0].terminated)
+
+    def test_output_that_will_not_stop_is_released(self) -> None:
+        """Drop an output that fails while being parked."""
+        with patch.object(FakeStream, "stop_stream", side_effect=OSError()):
+            self.speaker.speak(self.reply, "Hello.", True)
+            self.wait_until(
+                lambda: (
+                    bool(FakeAudio.instances)
+                    and self.speaker.output is None
+                    and not self.speaker.active
+                ),
+                "The output was kept.",
+            )
+        FakeAudio.instances[0].streams[0].running = False
+
+    def test_release_only_drops_an_idle_output(self) -> None:
+        """Let PortAudio rescan between reads without cutting off a read."""
+        self.speaker.release_idle_output()
+        self.speaker.speak(self.reply, "Waiting. ", False)
+        self.wait_until(lambda: bool(self.spoken), "Reading never started.")
+        self.speaker.release_idle_output()
+        self.assertFalse(FakeAudio.instances[0].terminated)
+        self.speaker.stop()
+        self.wait_until(self.finished, "Stopping left the device playing.")
+        self.speaker.release_idle_output()
+        self.assertTrue(FakeAudio.instances[0].terminated)
+        self.assertIsNone(self.speaker.output)
+
+    def test_close_releases_the_device(self) -> None:
+        """Release the held output on exit."""
+        self.read()
+        self.speaker.close()
+        self.assertTrue(FakeAudio.instances[0].terminated)
+        self.assertIsNone(self.speaker.output)
 
 
 class DeviceTests(SpeakerTestCase):
@@ -427,6 +604,26 @@ class VoiceTests(SpeakerTestCase):
         self.assertEqual(session.call_count, 1)
         self.assertEqual(load.call_count, 1)
         self.assertEqual(self.voice.texts, ["Hello.", "Again."])
+
+    def test_preload_loads_a_downloaded_voice_without_opening_a_device(self) -> None:
+        """Warm the voice at launch, silently, and only when it is downloaded."""
+        with patch("core.speaker.load_voice", return_value=self.voice) as load:
+            self.speaker.preload()
+            load.assert_not_called()
+            for name in (MODEL_FILE, VOICES_FILE):
+                (self.speaker.cache_dir / name).write_bytes(b"")
+            self.speaker.preload()
+            self.wait_until(lambda: self.voice.texts == ["Ready."] * 2, "No preload.")
+        self.assertEqual(load.call_count, 1)
+        self.assertEqual(FakeAudio.instances, [])
+        self.assertEqual(self.spoken, [])
+
+    def test_failed_preload_stays_quiet(self) -> None:
+        """Leave the error for the next read to report."""
+        with patch("core.speaker.load_voice", side_effect=ValueError()):
+            self.speaker._preload()
+        self.app.processEvents()
+        self.assertEqual(self.failures, [])
 
     def test_download_failure_is_reported(self) -> None:
         """Surface download errors and allow another attempt with an incomplete cache."""

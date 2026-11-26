@@ -1,8 +1,13 @@
 """Read replies aloud with a local neural voice, following a reply while it streams."""
 
+import contextlib
+import ctypes
+import queue
+import re
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from math import ceil, isfinite
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -33,12 +38,33 @@ WAIT_SECONDS = (
     0.05  # How often the speech thread rechecks the stream and the playback queue
 )
 BUFFER_SECONDS = 0.02  # Audio handed to Windows per callback
+# Longest leading pieces of the first sentence read, so sound starts before the whole sentence is made.
+# Each is short enough to be synthesized while the one before it plays.
+OPENING_LIMITS = (20, 60, 150)
+MIN_PIECE_CHARS = 12
+# Reused because a thread's first inference is far slower; two, so a replaced read never delays the next
+SYNTHESIS_WORKERS = 2
+WARM_UP_SECONDS = 10
+CLAUSE_END_RE = re.compile(r"[,;:](?=\s)")
 MISSING_VOICE_STATUS = "No speech model yet. Download Que's voice in Settings → Voice."
 DOWNLOADING_VOICE_STATUS = (
     "Que's voice is still downloading. Start speech once it finishes."
 )
 LOAD_FAILED = "Could not load Que's voice. Try again, or restart Que."
 DEVICE_FAILED = "Could not play speech. Reconnect the speech output device or choose another in Settings → Audio."
+
+WAVE_MAPPER = 0xFFFFFFFF
+DRVM_MAPPER_PREFERRED_GET = 0x2015
+DRV_QUERYDEVICEINTERFACE = 0x80C
+DRV_QUERYDEVICEINTERFACESIZE = 0x80D
+
+_winmm = ctypes.WinDLL("winmm")
+_winmm.waveOutMessage.argtypes = [
+    ctypes.c_size_t,  # A device number, passed where Windows also accepts an open handle
+    ctypes.c_uint,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 type _PlaybackEvent = tuple[float, ReadingPosition | None]
 
@@ -88,6 +114,13 @@ class Speaker(QObject):
             None  # The loaded Kokoro voice, kept for the rest of the session
         )
         self.speech_thread: threading.Thread | None = None
+        self.synthesis_jobs: queue.SimpleQueue[Callable[[], None]] = queue.SimpleQueue()
+        self.synthesis_threads: list[threading.Thread] = []
+        self.synthesis_lock = threading.Lock()
+        self.voice_lock = threading.Lock()
+        self.device_lock = (
+            threading.Lock()
+        )  # Guards opening, parking and closing output
         self.playback_events: deque[_PlaybackEvent] = deque()
         self.reading_position: ReadingPosition | None = None
         self.reading_open = False
@@ -107,6 +140,11 @@ class Speaker(QObject):
         return (self.cache_dir / MODEL_FILE).is_file() and (
             self.cache_dir / VOICES_FILE
         ).is_file()
+
+    def preload(self) -> None:
+        """Load a downloaded voice in the background so the first read need not wait for it."""
+        if self.voice is None and self.model_downloaded():
+            threading.Thread(target=self._preload, daemon=True).start()
 
     def download(self) -> bool:
         """Download the model on demand in a background thread.
@@ -187,7 +225,7 @@ class Speaker(QObject):
         )
 
     def stop(self) -> None:
-        """Stop reading at once and release the output device."""
+        """Stop reading at once."""
         self.reply = None
         with self.condition:
             self.generation += 1
@@ -199,6 +237,25 @@ class Speaker(QObject):
         self._reset_reading_position()
         self.reading_open = False
         self.reading_changed.emit(None, "finish", None)
+
+    def release_idle_output(self) -> None:
+        """Release the output held between reads, so PortAudio can list the devices afresh."""
+        with self.device_lock:
+            output = self.output
+            if output is None or output.claimed:
+                return
+            with self.condition:
+                self.output = None
+            output.close()
+
+    def close(self) -> None:
+        """Stop reading and release the output device."""
+        self.stop()
+        with self.device_lock:
+            with self.condition:
+                output, self.output = self.output, None
+            if output is not None:
+                output.close()
 
     def _run(self) -> None:
         """Read whatever the Qt thread asks for, for the rest of the session."""
@@ -216,10 +273,7 @@ class Speaker(QObject):
             try:
                 ended = self._read(voice)
             finally:
-                with self.condition:
-                    output, self.output = self.output, None
-                if output is not None:
-                    output.close()
+                self._park_output()
             if ended is not None:
                 self._reading_ended.emit(ended)
 
@@ -232,6 +286,9 @@ class Speaker(QObject):
         Returns:
             int | None: The generation that finished naturally, if it reached the end.
         """
+        opened = (
+            None  # The reading whose first sentence has already been cut into pieces
+        )
         while True:
             with self.condition:
                 if not self.active:
@@ -252,37 +309,136 @@ class Speaker(QObject):
                     # Finish what is playing before reading a sentence the stream may still extend
                     self.condition.wait(WAIT_SECONDS)
                     continue
-            samples, cues = self._synthesize(voice, unit)
-            with self.condition:
-                if generation != self.generation or not self.active:
-                    continue  # Stopped or restarted while this sentence was synthesized
-            output = self.output
-            if output is None:
-                # Opened outside the condition so a slow device never blocks the Qt thread
+            pieces = [unit] if opened == generation else _opening_pieces(unit)
+            opened = generation
+            for number, piece in enumerate(pieces):
+                result = self._start_synthesis(voice, piece, generation)
+                # Opened while the sentence is made, and outside the condition so a slow
+                # device never blocks the Qt thread
                 try:
-                    output = _Output(self)
+                    output = self._claim_output()
                 except OSError:
                     self._finish(generation, DEVICE_FAILED)
                     return None
                 with self.condition:
-                    self.output = output
+                    # A restart or stop abandons this sentence without waiting for it
+                    while not result and generation == self.generation and self.active:
+                        self.condition.wait(WAIT_SECONDS)
+                    if generation != self.generation or not self.active:
+                        break
+                    # Queued under the condition so a restart cannot be followed by stale audio
+                    samples, cues = result[0]
+                    if number == len(pieces) - 1:
+                        self.cursor = unit.end
+                    if samples.size:
+                        output.push(samples, piece.pause, cues, generation)
+                if samples.size and not number:
+                    self.spoken.emit(unit.text)
+                with self.condition:
+                    # Stay one sentence ahead of the one playing
+                    while (
+                        self.active
+                        and generation == self.generation
+                        and output.queued() > 1
+                    ):
+                        self.condition.wait(WAIT_SECONDS)
+
+    def _start_synthesis(
+        self, voice: Any, unit: SpeechUnit, generation: int
+    ) -> list[tuple[NDArray[np.float32], tuple[AudioCue, ...]]]:
+        """Queue a sentence for a synthesis worker.
+
+        Args:
+            voice (Any): The loaded Kokoro voice.
+            unit (SpeechUnit): The sentence.
+            generation (int): The reading that wants it.
+
+        Returns:
+            list[tuple[NDArray[np.float32], tuple[AudioCue, ...]]]: Receives the audio when ready.
+        """
+        result: list[tuple[NDArray[np.float32], tuple[AudioCue, ...]]] = []
+
+        def job() -> None:
+            """Deliver the audio and wake the speech thread, unless the reading was replaced."""
+            if generation != self.generation:
+                return
+            audio = self._synthesize(voice, unit)
             with self.condition:
-                # Queued under the condition so a restart cannot be followed by stale audio
-                if generation != self.generation:
-                    continue
-                self.cursor = unit.end
-                if samples.size:
-                    output.push(samples, unit.pause, cues, generation)
-            if samples.size:
-                self.spoken.emit(unit.text)
+                result.append(audio)
+                self.condition.notify_all()
+
+        self._submit_synthesis(job)
+        return result
+
+    def _submit_synthesis(self, job: Callable[[], None]) -> None:
+        """Hand a job to the synthesis workers, starting them on first use.
+
+        Args:
+            job (Callable[[], None]): The work to run.
+        """
+        with self.synthesis_lock:
+            if not self.synthesis_threads:
+                self.synthesis_threads = [
+                    threading.Thread(target=self._work, daemon=True)
+                    for _ in range(SYNTHESIS_WORKERS)
+                ]
+                for thread in self.synthesis_threads:
+                    thread.start()
+        self.synthesis_jobs.put(job)
+
+    def _work(self) -> None:
+        """Run synthesis jobs for the rest of the session."""
+        while True:
+            self.synthesis_jobs.get()()
+
+    def _claim_output(self) -> "_Output":
+        """Return a running output on the current device, reusing the one held between reads.
+
+        Returns:
+            _Output: The output, which stays claimed until reading ends.
+        """
+        with self.device_lock:
+            output = self.output
+            if output is not None:
+                if output.claimed:
+                    return output
+                try:
+                    if output.key == _device_key(
+                        self.settings_store.audio_device("speaker")
+                    ):
+                        output.stream.start_stream()
+                        output.claimed = True
+                        return output
+                except OSError:
+                    pass  # The device went away while held; open the current one
+                with self.condition:
+                    self.output = None
+                output.close()
+            output = _Output(self)
+            try:
+                output.stream.start_stream()
+            except OSError:
+                output.close()
+                raise
             with self.condition:
-                # Stay one sentence ahead of the one playing
-                while (
-                    self.active
-                    and generation == self.generation
-                    and output.queued() > 1
-                ):
-                    self.condition.wait(WAIT_SECONDS)
+                self.output = output
+            return output
+
+    def _park_output(self) -> None:
+        """Stop the output between reads but keep the device open for the next one."""
+        with self.device_lock:
+            output = self.output
+            if output is None:
+                return
+            try:
+                output.stream.stop_stream()
+            except OSError:
+                with self.condition:
+                    self.output = None
+                output.close()
+                return
+            output.clear()
+            output.claimed = False
 
     def _synthesize(
         self, voice: Any, unit: SpeechUnit
@@ -333,15 +489,34 @@ class Speaker(QObject):
         Returns:
             Any: The Kokoro voice.
         """
-        if self.voice is not None:
+        with self.voice_lock:
+            if self.voice is not None:
+                return self.voice
+            model = self.cache_dir / MODEL_FILE
+            voices = self.cache_dir / VOICES_FILE
+            try:
+                self.voice = load_voice(model, voices, ONNX_THREADS)
+            except Exception as error:
+                raise RuntimeError(LOAD_FAILED) from error
             return self.voice
-        model = self.cache_dir / MODEL_FILE
-        voices = self.cache_dir / VOICES_FILE
+
+    def _preload(self) -> None:
+        """Load the voice and have each synthesis worker make one unheard word."""
         try:
-            self.voice = load_voice(model, voices, ONNX_THREADS)
-        except Exception as error:
-            raise RuntimeError(LOAD_FAILED) from error
-        return self.voice
+            voice = self._load_voice()
+        except RuntimeError:
+            return  # The next read tries again and reports the failure
+        # Holds each worker until all have a warm-up job, so none takes two
+        barrier = threading.Barrier(SYNTHESIS_WORKERS)
+
+        def warm_up() -> None:
+            """Pay this thread's slow first inference before the user asks for speech."""
+            self._synthesize(voice, SpeechUnit("Ready.", 0, 0, 0.0, False))
+            with contextlib.suppress(threading.BrokenBarrierError):
+                barrier.wait(WARM_UP_SECONDS)
+
+        for _ in range(SYNTHESIS_WORKERS):
+            self._submit_synthesis(warm_up)
 
     def _finish(self, generation: int, message: str) -> None:
         """End reading after a failure and tell the user why.
@@ -412,6 +587,7 @@ class _Output:
 
     def __init__(self, speaker: Speaker) -> None:
         self.speaker = speaker
+        self.claimed = True  # False while held, stopped, between reads
         self.lock = threading.Lock()
         self.clips: deque[_Clip] = deque()
         self.position = 0  # Samples of the first clip already played
@@ -421,9 +597,9 @@ class _Output:
         with PORTAUDIO_LOCK:
             self.audio = pyaudiowpatch.PyAudio()
             try:
-                device = _output_device(
-                    self.audio, speaker.settings_store.audio_device("speaker")
-                )
+                name = speaker.settings_store.audio_device("speaker")
+                self.key = _device_key(name)
+                device = _output_device(self.audio, name)
                 self.rate = int(device["defaultSampleRate"])
                 self.channels = int(device["maxOutputChannels"])
                 self.stream = self.audio.open(
@@ -434,6 +610,7 @@ class _Output:
                     output_device_index=int(device["index"]),
                     frames_per_buffer=int(self.rate * BUFFER_SECONDS),
                     stream_callback=self._fill,
+                    start=False,
                 )
                 self.latency = float(
                     getattr(self.stream, "get_output_latency", lambda: 0.0)()
@@ -577,6 +754,77 @@ class _Output:
             if output > 0.0 and isfinite(output - current):
                 latency = max(0.0, output - current)
         return time.monotonic() + latency
+
+
+def _opening_pieces(unit: SpeechUnit) -> list[SpeechUnit]:
+    """Cut the first sentence read into short pieces, preferring to cut after a clause.
+
+    Args:
+        unit (SpeechUnit): The sentence.
+
+    Returns:
+        list[SpeechUnit]: The pieces in order, all highlighting within the whole sentence.
+    """
+    cuts = [0]
+    for limit in OPENING_LIMITS:
+        rest = unit.text[cuts[-1] :]
+        if len(rest) <= limit + MIN_PIECE_CHARS:
+            break
+        window = rest[: limit + 1]
+        clauses = [
+            match.end()
+            for match in CLAUSE_END_RE.finditer(window)
+            if match.end() >= MIN_PIECE_CHARS
+        ]
+        if clauses:
+            # The opening takes the earliest clause to start sooner; the next takes the latest
+            cut = clauses[0] if len(cuts) == 1 else clauses[-1]
+        else:
+            cut = window.rfind(" ")
+        if cut < MIN_PIECE_CHARS:
+            break
+        cuts.append(cuts[-1] + cut)
+    if len(cuts) == 1:
+        return [unit]
+    # Each word belongs to the piece that holds its place in the sentence
+    placed = []
+    position = 0
+    for word in unit.words:
+        position = unit.text.index(word.text, position)
+        placed.append((position, word))
+        position += len(word.text)
+    ends = [*cuts[1:], len(unit.text)]
+    return [
+        unit._replace(
+            text=unit.text[begin:end].strip(),
+            pause=unit.pause if end == len(unit.text) else 0.0,
+            words=tuple(word for place, word in placed if begin <= place < end),
+        )
+        for begin, end in zip(cuts, ends, strict=True)
+    ]
+
+
+def _device_key(name: str) -> tuple[str, int, str]:
+    """Describe the outputs Windows offers now, which PortAudio cannot see while a host is open.
+
+    Args:
+        name (str): The saved speech output, or an empty string for the Windows default.
+
+    Returns:
+        tuple[str, int, str]: The saved name, the output count and the default output's identity.
+    """
+    send = _winmm.waveOutMessage
+    default, flags, size = ctypes.c_uint(), ctypes.c_uint(), ctypes.c_ulong()
+    send(
+        WAVE_MAPPER,
+        DRVM_MAPPER_PREFERRED_GET,
+        ctypes.byref(default),
+        ctypes.byref(flags),
+    )
+    send(default.value, DRV_QUERYDEVICEINTERFACESIZE, ctypes.byref(size), None)
+    identity = ctypes.create_unicode_buffer(size.value // 2 + 1)
+    send(default.value, DRV_QUERYDEVICEINTERFACE, identity, size.value)
+    return name, int(_winmm.waveOutGetNumDevs()), identity.value
 
 
 def _output_device(audio: Any, name: str) -> dict[str, Any]:

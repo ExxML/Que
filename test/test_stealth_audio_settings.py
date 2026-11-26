@@ -395,16 +395,23 @@ class SpeechSettingsTests(WindowTestCase):
         ):
             page.voice_test_button.click()
             for _ in range(200):
-                if FakeAudio.instances and FakeAudio.instances[0].terminated:
+                output = speaker.output
+                if output is not None and not output.claimed:
                     break
                 time.sleep(0.01)
             (audio,) = FakeAudio.instances
+            self.assertFalse(audio.streams[0].running)
+            speaker.close()
             self.assertTrue(audio.terminated)
             self.assertEqual(audio.opened[0]["output_device_index"], OUTPUT["index"])
             self.assertEqual(audio.streams[0].peak, 0.25)
-        voice.create.assert_called_once_with(
-            VOICE_SAMPLE, voice=VOICE, speed=1.35, lang="en-us"
-        )
+        # The sample opens with a short piece, like any reply, so sound starts sooner
+        calls = voice.create.call_args_list
+        self.assertEqual(" ".join(call.args[0] for call in calls), VOICE_SAMPLE)
+        for call in calls:
+            self.assertEqual(
+                call.kwargs, {"voice": VOICE, "speed": 1.35, "lang": "en-us"}
+            )
 
 
 class VoiceDownloadTests(WindowTestCase):
