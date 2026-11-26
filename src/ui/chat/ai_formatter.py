@@ -8,6 +8,7 @@ from pygments.token import Token, _TokenType, is_token_subtype
 from pygments.util import ClassNotFound
 
 from ui.chat.latex import render_math
+from ui.chat.source_text import RenderedSources, SourceText
 from ui.theme import (
     BRACKET_COLORS,
     CODE_BG_ALPHA,
@@ -139,7 +140,7 @@ TOKEN_ROLES: dict[_TokenType, str] = {
 }
 
 
-def format_message(message: str) -> str:
+def format_message(message: str, sources: RenderedSources | None = None) -> str:
     """Convert a Markdown message from any model into rich text for a QLabel.
 
     Handles headings, paragraphs, nested and task lists, block quotes, tables, rules, fenced code
@@ -148,14 +149,15 @@ def format_message(message: str) -> str:
 
     Args:
         message (str): The raw Markdown message text to format.
+        sources (RenderedSources | None): Collect source offsets in a side copy of the HTML.
 
     Returns:
         str: HTML-formatted message string ready for a QLabel.
     """
-    lines = message.replace("\r\n", "\n").expandtabs(4).split("\n")
+    lines = _source_lines(message, sources is not None)
     return (
         f"<div style='font-family: {BODY_FONT}; font-size: {BODY_PT}pt; white-space: pre-wrap;'>"
-        f"{_render_blocks(lines, BLOCK_GAP)}</div>"
+        f"{_render_blocks(lines, BLOCK_GAP, sources=sources)}</div>"
     )
 
 
@@ -207,20 +209,68 @@ def table_cells(row: str) -> list[str]:
     Returns:
         list[str]: The cell texts.
     """
+    return [cell.text for cell in table_cell_sources(SourceText(row))]
+
+
+def table_cell_sources(row: SourceText) -> list[SourceText]:
+    """Split a table row and preserve each cell's original Markdown offsets."""
     row = row.strip()
-    row = row.removeprefix("|")
-    if row.endswith("|") and not row.endswith("\\|"):
+    if row.text.startswith("|"):
+        row = row[1:]
+    if row.text.endswith("|") and not row.text.endswith("\\|"):
         row = row[:-1]
-    return [cell.strip().replace("\\|", "|") for cell in re.split(r"(?<!\\)\|", row)]
+    parts = re.split(r"(?<!\\)\|", row.text)
+    start = 0
+    cells = []
+    for part in parts:
+        cell = row[start : start + len(part)].strip()
+        cells.append(cell.sub_group(re.compile(r"\\(\|)"), 1))
+        start += len(part) + 1
+    return cells
 
 
-def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
+def _source_lines(message: str, mapped: bool) -> list[SourceText]:
+    """Expand tabs and normalize newlines, retaining the original offsets when requested."""
+    if not mapped:
+        return [
+            SourceText(line)
+            for line in message.replace("\r\n", "\n").expandtabs(4).split("\n")
+        ]
+    lines = []
+    start = 0
+    raw_lines = message.split("\n")
+    for index, line in enumerate(raw_lines):
+        body = line.removesuffix("\r") if index < len(raw_lines) - 1 else line
+        source = SourceText.original(body, start)
+        start += len(line) + 1
+        if "\t" not in body:
+            lines.append(source)
+            continue
+        column = 0
+        parts = []
+        for position, char in enumerate(body):
+            part = source[position : position + 1]
+            if char == "\t":
+                part = part.replace_with(" " * (4 - column % 4))
+            parts.append(part)
+            column = 0 if char == "\r" else column + len(part.text)
+        lines.append(SourceText.join(parts))
+    return lines
+
+
+def _render_blocks(
+    lines: list[SourceText],
+    gap: int,
+    depth: int = 0,
+    sources: RenderedSources | None = None,
+) -> str:
     """Render a run of Markdown lines as a sequence of block elements.
 
     Args:
-        lines (list[str]): The lines to render, already stripped of any enclosing indentation.
+        lines (list[SourceText]): The lines to render, stripped of any enclosing indentation.
         gap (int): Pixels between consecutive blocks.
         depth (int): How many lists enclose the lines.
+        sources (RenderedSources | None): Collect source offsets for the rendered runs.
 
     Returns:
         str: The blocks as rich text.
@@ -229,7 +279,8 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
     after_heading = False
     i = 0
     while i < len(lines):
-        line = lines[i]
+        source = lines[i]
+        line = source.text
         top = (HEADING_GAP if after_heading else gap) if blocks else 0
         after_heading = bool(HEADING_RE.match(line)) or (
             after_heading and not line.strip()
@@ -241,8 +292,8 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
             closing = re.compile(rf"^\s*{re.escape(marker[0])}{{{len(marker)},}}\s*$")
             code: list[str] = []
             i += 1
-            while i < len(lines) and not closing.match(lines[i]):
-                code.append(_dedent(lines[i], len(indent)))
+            while i < len(lines) and not closing.match(lines[i].text):
+                code.append(_dedent(lines[i], len(indent)).text)
                 i += 1
             i += 1  # Skip the closing fence; a stream may not have sent it yet
             blocks.append(
@@ -250,24 +301,27 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
             )
         elif math := display_math(line):
             closer = "$$" if math.group(1) == "$$" else "\\]"
-            body = [math.group(2)]
+            body = [source[math.start(2) : math.end(2)]]
             i += 1
-            while closer not in body[-1] and i < len(lines):
+            while closer not in body[-1].text and i < len(lines):
+                body.append(SourceText("\n"))
                 body.append(lines[i])
                 i += 1
-            tex = "\n".join(body).split(closer)[
-                0
-            ]  # A stream may not have sent the closer yet
+            expression = SourceText.join(body)
+            tex = expression.text.split(closer)[0]
+            rendered = render_math(tex, display=True)
+            if sources is not None:
+                rendered = sources.mark(expression[: len(tex)].replace_with(rendered))
             blocks.append(
                 f"<table width='100%' cellspacing='0' cellpadding='0' style='margin-top: {top}px;'>"
-                f"<tr><td align='center'>{render_math(tex, display=True)}</td></tr></table>"
+                f"<tr><td align='center'>{rendered}</td></tr></table>"
             )
         elif heading := HEADING_RE.match(line):
             level = len(heading.group(1))
             size, heading_gap = HEADING_STYLES[level]
             blocks.append(
                 f"<p style='margin: {heading_gap if blocks else 0}px 0 0 0; font-size: {size}pt; "
-                f"font-weight: bold;'>{_inline(heading.group(2))}</p>"
+                f"font-weight: bold;'>{_inline(source[heading.start(2) : heading.end(2)], sources)}</p>"
             )
             i += 1
         elif RULE_RE.match(line):
@@ -277,49 +331,56 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
             )
             i += 1
         elif QUOTE_RE.match(line):
-            quoted: list[str] = []
-            while i < len(lines) and (quote := QUOTE_RE.match(lines[i])):
-                quoted.append(quote.group(1))
+            quoted: list[SourceText] = []
+            while i < len(lines) and (quote := QUOTE_RE.match(lines[i].text)):
+                quoted.append(lines[i][quote.start(1) : quote.end(1)])
                 i += 1
             blocks.append(
                 f"<table cellspacing='0' cellpadding='0' style='margin-top: {top}px;'><tr>"
                 f"<td width='3' style='background-color: {RULE}; font-size: 1pt;'>&nbsp;</td>"
-                f"<td style='padding-left: 10px; color: {MUTED};'>{_render_blocks(quoted, gap, depth)}</td>"
+                f"<td style='padding-left: 10px; color: {MUTED};'>{_render_blocks(quoted, gap, depth, sources)}</td>"
                 "</tr></table>"
             )
         elif LIST_RE.match(line):
             items, i = _collect_list(lines, i)
-            blocks.append(_list(items, top, depth))
-        elif is_table_start(lines, i):
-            rows, separator = [lines[i]], lines[i + 1]
+            blocks.append(_list(items, top, depth, sources))
+        elif _table_start(lines, i):
+            rows, separator = [source], lines[i + 1].text
             i += 2
-            while i < len(lines) and "|" in lines[i] and lines[i].strip():
+            while i < len(lines) and "|" in lines[i].text and lines[i].text.strip():
                 rows.append(lines[i])
                 i += 1
-            blocks.append(_table(rows, separator, top))
+            blocks.append(_table(rows, separator, top, sources))
         else:
-            paragraph = [line.strip()]
+            paragraph = [source.strip()]
             i += 1
-            while i < len(lines) and lines[i].strip() and not _starts_block(lines, i):
+            while (
+                i < len(lines) and lines[i].text.strip() and not _starts_block(lines, i)
+            ):
                 paragraph.append(lines[i].strip())
                 i += 1
             blocks.append(
-                f"<p style='margin: {top}px 0 0 0;'>{'<br>'.join(_inline(text) for text in paragraph)}</p>"
+                f"<p style='margin: {top}px 0 0 0;'>{'<br>'.join(_inline(text, sources) for text in paragraph)}</p>"
             )
     return "".join(blocks)
 
 
-def _starts_block(lines: list[str], i: int) -> bool:
+def _table_start(lines: list[SourceText], index: int) -> bool:
+    """Recognize a table using its header and separator."""
+    return is_table_start([line.text for line in lines[index : index + 2]], 0)
+
+
+def _starts_block(lines: list[SourceText], i: int) -> bool:
     """Check whether a line begins a block other than a paragraph.
 
     Args:
-        lines (list[str]): The lines being rendered.
+        lines (list[SourceText]): The lines being rendered.
         i (int): The index of the line to check.
 
     Returns:
         bool: Whether the line interrupts a paragraph.
     """
-    line = lines[i]
+    line = lines[i].text
     return bool(
         FENCE_RE.match(line)
         or display_math(line)
@@ -327,21 +388,21 @@ def _starts_block(lines: list[str], i: int) -> bool:
         or RULE_RE.match(line)
         or QUOTE_RE.match(line)
         or LIST_RE.match(line)
-        or is_table_start(lines, i)
+        or _table_start(lines, i)
     )
 
 
-def _dedent(line: str, width: int) -> str:
+def _dedent(line: SourceText, width: int) -> SourceText:
     """Remove up to a number of leading spaces from a line.
 
     Args:
-        line (str): The line to dedent.
+        line (SourceText): The line to dedent.
         width (int): The most spaces to remove.
 
     Returns:
-        str: The dedented line.
+        SourceText: The dedented line.
     """
-    return line[min(width, len(line) - len(line.lstrip(" "))) :]
+    return line[min(width, len(line.text) - len(line.text.lstrip(" "))) :]
 
 
 def _two_space_indent(lines: list[str]) -> list[str]:
@@ -368,62 +429,71 @@ def _two_space_indent(lines: list[str]) -> list[str]:
 
 
 def _collect_list(
-    lines: list[str], start: int
-) -> tuple[list[tuple[str, list[str]]], int]:
+    lines: list[SourceText], start: int
+) -> tuple[list[tuple[str, list[SourceText]]], int]:
     """Gather the items of the list that starts at a line, each with its dedented content lines.
 
     Args:
-        lines (list[str]): The lines being rendered.
+        lines (list[SourceText]): The lines being rendered.
         start (int): The index of the list's first item.
 
     Returns:
-        tuple[list[tuple[str, list[str]]], int]: Each item's marker and content lines, and the
+        tuple[list[tuple[str, list[SourceText]]], int]: Each item's marker and content lines, and the
             index of the first line after the list.
     """
-    first = LIST_RE.match(lines[start])
+    first = LIST_RE.match(lines[start].text)
     assert first is not None
     indent = len(first.group(1))
     ordered = first.group(2)[0].isdigit()
-    items: list[tuple[str, list[str]]] = []
+    items: list[tuple[str, list[SourceText]]] = []
     content_indent = 0
     i = start
     while i < len(lines):
-        line = lines[i]
+        source = lines[i]
+        line = source.text
         line_indent = len(line) - len(line.lstrip(" "))
         item = LIST_RE.match(line)
         if item and line_indent < indent + 2:
             if item.group(2)[0].isdigit() != ordered:
                 break  # A different kind of list starts here
-            items.append((item.group(2), [item.group(3)]))
+            items.append((item.group(2), [source[item.start(3) : item.end(3)]]))
             content_indent = line_indent + len(item.group(2)) + 1
         elif not line.strip():
-            following = next((text for text in lines[i + 1 :] if text.strip()), "")
+            following = next(
+                (part.text for part in lines[i + 1 :] if part.text.strip()), ""
+            )
             following_indent = len(following) - len(following.lstrip(" "))
             if not following or (
                 following_indent < indent + 2 and not LIST_RE.match(following)
             ):
                 break
-            items[-1][1].append("")
+            items[-1][1].append(SourceText(""))
         elif line_indent >= indent + 2 or (
-            items[-1][1][-1].strip() and not _starts_block(lines, i)
+            items[-1][1][-1].text.strip() and not _starts_block(lines, i)
         ):
             # Indented content belongs to the item; so does an unindented line that continues its text
-            items[-1][1].append(_dedent(line, content_indent))
+            items[-1][1].append(_dedent(source, content_indent))
         else:
             break
         i += 1
     return items, i
 
 
-def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:
+def _list(
+    items: list[tuple[str, list[SourceText]]],
+    top: int,
+    depth: int,
+    sources: RenderedSources | None,
+) -> str:
     """Render list items as a table so wrapped lines hang under the text, not the marker.
 
     Ordered items are numbered on from the first item's number, as Markdown does.
 
     Args:
-        items (list[tuple[str, list[str]]]): Each item's marker and content lines.
+        items (list[tuple[str, list[SourceText]]]): Each item's marker and content lines.
         top (int): Pixels above the list.
         depth (int): How many lists enclose this one.
+        sources (RenderedSources | None): Collect source offsets for the rendered runs.
 
     Returns:
         str: The list as rich text.
@@ -433,7 +503,7 @@ def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:
     width = 10 + 8 * len(str(start + len(items))) if ordered else 18
     rows: list[str] = []
     for index, (marker, content) in enumerate(items):
-        if task := TASK_RE.match(content[0]):
+        if task := TASK_RE.match(content[0].text):
             marker = "☐" if task.group(1) == " " else "☑"
             content = [content[0][task.end() :], *content[1:]]
         elif ordered:
@@ -444,18 +514,21 @@ def _list(items: list[tuple[str, list[str]]], top: int, depth: int) -> str:
         rows.append(
             f"<tr><td width='{width}' align='right' valign='top' "
             f"style='padding: {padding}px 6px 0 0;{'' if ordered else f' color: {MUTED};'}'>{marker}</td>"
-            f"<td valign='top' style='padding-top: {padding}px;'>{_render_blocks(content, ITEM_GAP + 2, depth + 1)}</td></tr>"
+            f"<td valign='top' style='padding-top: {padding}px;'>{_render_blocks(content, ITEM_GAP + 2, depth + 1, sources)}</td></tr>"
         )
     return f"<table cellspacing='0' cellpadding='0' style='margin-top: {top}px;'>{''.join(rows)}</table>"
 
 
-def _table(rows: list[str], separator: str, top: int) -> str:
+def _table(
+    rows: list[SourceText], separator: str, top: int, sources: RenderedSources | None
+) -> str:
     """Render a GitHub-style table with a shaded header row and its column alignments.
 
     Args:
-        rows (list[str]): The header row followed by the body rows.
+        rows (list[SourceText]): The header row followed by the body rows.
         separator (str): The separator row, whose colons set each column's alignment.
         top (int): Pixels above the table.
+        sources (RenderedSources | None): Collect source offsets for the rendered runs.
 
     Returns:
         str: The table as rich text.
@@ -471,13 +544,13 @@ def _table(rows: list[str], separator: str, top: int) -> str:
     html_rows: list[str] = []
     for index, row in enumerate(rows):
         cells: list[str] = []
-        for column, cell in enumerate(table_cells(row)):
+        for column, cell in enumerate(table_cell_sources(row)):
             align = alignments[column] if column < len(alignments) else "left"
             style = f"padding: 4px 10px; border: 1px solid {RULE};"
             if index == 0:
                 style += f" background-color: {CODE_BG}; font-weight: 600;"
             cells.append(
-                f"<td align='{align}' valign='top' style='{style}'>{_inline(cell)}</td>"
+                f"<td align='{align}' valign='top' style='{style}'>{_inline(cell, sources)}</td>"
             )
         html_rows.append(f"<tr>{''.join(cells)}</tr>")
     return (
@@ -486,57 +559,72 @@ def _table(rows: list[str], separator: str, top: int) -> str:
     )
 
 
-def _inline(text: str) -> str:
+def _inline(text: SourceText, sources: RenderedSources | None) -> str:
     """Render inline Markdown (code, maths, links, emphasis) in one line of text.
 
     Args:
-        text (str): The raw text.
+        text (SourceText): The raw text.
+        sources (RenderedSources | None): Collect source offsets for the rendered runs.
 
     Returns:
         str: The text as rich text.
     """
-    protected: list[str] = []
+    protected: list[SourceText] = []
 
-    def protect(fragment: str) -> str:
+    def protect(fragment: SourceText) -> SourceText:
         """Hide a finished fragment from later rules behind a placeholder.
 
         Args:
-            fragment (str): The rich text to hide.
+            fragment (SourceText): The rich text to hide.
 
         Returns:
-            str: The placeholder.
+            SourceText: The placeholder.
         """
         protected.append(fragment)
-        return f"\x00{len(protected) - 1}\x00"
+        return SourceText(f"\x00{len(protected) - 1}\x00")
 
-    text = CODE_SPAN_RE.sub(
+    text = text.sub(
+        CODE_SPAN_RE,
         lambda match: protect(
-            f"<span style='font-family: {CODE_FONT}; font-size: {CODE_PT}pt; color: {qss(CODE_COLORS['text'])}; "
-            f"background-color: {CODE_BG};'>{html.escape(match.group(2).strip(), quote=False)}</span>"
-        ),
-        text,
-    )
-    text = INLINE_MATH_RE.sub(
-        lambda match: protect(
-            render_math(
-                next(tex for tex in match.groups() if tex is not None), display=False
+            text[match.start() : match.end()].replace_with(
+                f"<span style='font-family: {CODE_FONT}; font-size: {CODE_PT}pt; color: {qss(CODE_COLORS['text'])}; "
+                f"background-color: {CODE_BG};'>{html.escape(match.group(2).strip(), quote=False)}</span>"
             )
         ),
-        text,
     )
-    text = ESCAPED_RE.sub(
-        lambda match: protect(html.escape(match.group(1), quote=False)), text
+    text = text.sub(
+        INLINE_MATH_RE,
+        lambda match: protect(
+            text[match.start() : match.end()].replace_with(
+                render_math(
+                    next(tex for tex in match.groups() if tex is not None),
+                    display=False,
+                )
+            )
+        ),
     )
-    text = html.escape(text, quote=False)
-    text = LINE_BREAK_TAG_RE.sub(lambda _match: protect("<br>"), text)
+    text = text.sub(
+        ESCAPED_RE,
+        lambda match: protect(text[match.start(1) : match.end(1)].escape_html()),
+    )
+    text = text.escape_html()
+    text = text.sub(LINE_BREAK_TAG_RE, lambda _match: protect(SourceText("<br>")))
     # Links show only their coloured text: the overlay never opens them or changes the cursor over them
-    text = LINK_RE.sub(
-        lambda match: f"{protect(LINK_OPEN)}{match.group(1)}</span>",
-        text,
+    text = text.sub(
+        LINK_RE,
+        lambda match: SourceText.join(
+            (
+                protect(SourceText(LINK_OPEN)),
+                text[match.start(1) : match.end(1)],
+                SourceText("</span>"),
+            )
+        ),
     )
     for pattern, replacement in EMPHASIS_RULES:
-        text = pattern.sub(replacement, text)
-    return PLACEHOLDER_RE.sub(lambda match: protected[int(match.group(1))], text)
+        before, after = replacement.split(r"\1")
+        text = text.sub_group(pattern, 1, before, after)
+    text = text.sub(PLACEHOLDER_RE, lambda match: protected[int(match.group(1))])
+    return sources.mark(text) if sources is not None else text.text
 
 
 def _code_block(code: str, language: str, top: int) -> str:

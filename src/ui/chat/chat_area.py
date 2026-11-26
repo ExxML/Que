@@ -13,6 +13,7 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QColor,
+    QHideEvent,
     QLinearGradient,
     QPainter,
     QPixmap,
@@ -22,7 +23,9 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import QGraphicsEffect, QScrollArea, QVBoxLayout, QWidget
 
+from core.speech_timing import ReadingPosition
 from ui.chat.chat_bubble import ChatBubble
+from ui.chat.source_text import SourceSpan
 
 RENDER_INTERVAL = 50  # Milliseconds between redraws of a streaming reply; laying out long replies is slow
 
@@ -66,6 +69,13 @@ class ChatArea(QScrollArea):
         self.streaming_text: str = ""
         self.pending_message_scroll: ChatBubble | None = None
         self.reply_scroll_anchor: ChatBubble | None = None
+        self.reading_bubble: ChatBubble | None = None
+        self.reading_position: ReadingPosition | None = None
+        self.reading_paused = False
+        self.follow_suspended = False
+        self.last_reading_position: ReadingPosition | None = None
+        self.speech_scroll_target: int | None = None
+        self.reading_refresh_pending = False
         self.render_timer = QTimer(self)
         self.render_timer.setSingleShot(True)
         self.render_timer.setInterval(RENDER_INTERVAL)
@@ -99,6 +109,7 @@ class ChatArea(QScrollArea):
 
         # Pre-create the assistant bubble for loading and tool status
         if is_user:
+            self._suspend_speech_follow()
             self.streaming_bubble = ChatBubble("", is_user=False)
             self.streaming_text = ""
             self.chat_layout.addWidget(self.streaming_bubble)
@@ -156,6 +167,7 @@ class ChatArea(QScrollArea):
         if not self.streaming_bubble.loading:
             self.render_timer.stop()
             self.streaming_bubble.set_bot_message(self.streaming_text)
+            self._queue_reading_refresh()
 
     def finalize_assistant_stream(self) -> None:
         """Finalize the streamed assistant message and clear streaming state."""
@@ -168,6 +180,7 @@ class ChatArea(QScrollArea):
             self.streaming_bubble.set_bot_message(self.streaming_text)
         self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self._reset_stream()
+        self._queue_reading_refresh()
 
     def stop_assistant_stream(self) -> None:
         """Mark the streamed assistant message as stopped and clear streaming state."""
@@ -179,6 +192,7 @@ class ChatArea(QScrollArea):
         self.streaming_bubble.mark_stopped()
         self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self._reset_stream()
+        self._queue_reading_refresh()
 
     def show_stream_error(self, error_msg: str) -> None:
         """Display an error message in the current streaming bubble, replacing the loading indicator.
@@ -193,6 +207,8 @@ class ChatArea(QScrollArea):
             return
         self.streaming_bubble.stop_loading_animation()
         self.streaming_bubble.status = ""
+        if self.streaming_bubble is self.reading_bubble:
+            self.set_reading_state(None, "finish", None)
         # Speech ends with what streamed before the error, never reading the error itself
         self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self.streaming_bubble.set_bot_message(error_msg)
@@ -202,6 +218,7 @@ class ChatArea(QScrollArea):
         """Clear all messages from the chat area."""
         # Reset streaming state before deleting widgets to avoid dangling references
         self._reset_stream()
+        self.set_reading_state(None, "finish", None)
         self.messages_cleared.emit()
         self.pending_message_scroll = None
         self.reply_scroll_anchor = None
@@ -267,21 +284,64 @@ class ChatArea(QScrollArea):
         Args:
             amount (int): The pixel amount to scroll (positive for down, negative for up).
         """
+        self._suspend_speech_follow()
         target = self.scrollbar.value() + amount
         duration = 100
         self._animate_to(target, duration)
+
+    def set_reading_state(
+        self, reply: object, phase: str, position: ReadingPosition | None
+    ) -> None:
+        """Apply the reading state and current source span on the Qt thread.
+
+        Args:
+            reply (object): The target bubble for a chat reading.
+            phase (str): The playback transition or position update.
+            position (ReadingPosition | None): The source span currently on the output.
+        """
+        if phase in ("start", "finish"):
+            self._stop_speech_scroll()
+            if self.reading_bubble is not None:
+                self.reading_bubble.speech_line(None)
+            self.reading_bubble = (
+                reply if phase == "start" and isinstance(reply, ChatBubble) else None
+            )
+            self.reading_position = None
+            self.last_reading_position = None
+            self.reading_paused = False
+            self.follow_suspended = False
+            return
+        if self.reading_bubble is None or reply is not self.reading_bubble:
+            return
+        if phase == "pause":
+            self.reading_paused = True
+            self._stop_speech_scroll()
+            return
+        if phase == "resume":
+            self.reading_paused = False
+            self.follow_suspended = False
+            self.scroll_animation.stop()
+        self.reading_position = position
+        self._refresh_reading()
 
     def resizeEvent(self, event: QResizeEvent | None) -> None:
         """Refit the reply's trailing space after the viewport relayout."""
         super().resizeEvent(event)
         if self.reply_scroll_anchor is not None:
             QTimer.singleShot(0, self._refit_reply_scroll_space)
+        self._queue_reading_refresh()
 
     def showEvent(self, event: QShowEvent | None) -> None:
         """Schedule any message scroll that was waiting for the chat to become visible."""
         super().showEvent(event)
         if self.pending_message_scroll is not None:
             QTimer.singleShot(0, self._scroll_to_pending_message)
+        self._queue_reading_refresh()
+
+    def hideEvent(self, event: QHideEvent | None) -> None:
+        """Stop any in-flight speech glide when the chat is hidden."""
+        self._stop_speech_scroll()
+        super().hideEvent(event)
 
     def _init_UI(self) -> None:
         """Initialize the chat area UI layout, scroll settings, and styling."""
@@ -327,9 +387,9 @@ class ChatArea(QScrollArea):
         self.scrollbar.valueChanged.connect(
             lambda _val: QTimer.singleShot(0, self._update_fade_visibility)
         )
-        self.scrollbar.rangeChanged.connect(
-            lambda _min, _max: QTimer.singleShot(0, self._update_fade_visibility)
-        )
+        self.scrollbar.rangeChanged.connect(self._on_scroll_range_changed)
+        self.scrollbar.sliderPressed.connect(self._suspend_speech_follow)
+        self.scrollbar.actionTriggered.connect(self._on_scrollbar_action)
 
     def _bubble(
         self,
@@ -363,6 +423,92 @@ class ChatArea(QScrollArea):
         self.fade_effect.bottom_strength = min(1.0, max(0.0, bottom_dist / fade_start))
         self.fade_effect.update()
 
+    def _on_scroll_range_changed(self, _minimum: int, _maximum: int) -> None:
+        """Refresh the fade and follow position after layout updates the range."""
+        QTimer.singleShot(0, self._update_fade_visibility)
+        self._queue_reading_refresh()
+
+    def _on_scrollbar_action(self, _action: int) -> None:
+        """Give scrollbar input priority over the current reading."""
+        self._suspend_speech_follow()
+
+    def _suspend_speech_follow(self) -> None:
+        """Let manual navigation hold its position until the next resume or reading."""
+        if self.reading_bubble is not None:
+            self.follow_suspended = True
+            self._stop_speech_scroll()
+
+    def _stop_speech_scroll(self) -> None:
+        """Cancel the animation if it belongs to speech."""
+        if self.speech_scroll_target is not None:
+            self.scroll_animation.stop()
+            self.speech_scroll_target = None
+
+    def _queue_reading_refresh(self) -> None:
+        """Recompute the word and its line once Qt has laid out any changes."""
+        if self.reading_bubble is not None and not self.reading_refresh_pending:
+            self.reading_refresh_pending = True
+            QTimer.singleShot(0, self._refresh_reading)
+
+    def _refresh_reading(self) -> None:
+        """Paint the active word and follow its line when chat is visible."""
+        self.reading_refresh_pending = False
+        bubble = self.reading_bubble
+        if bubble is None or not self.isVisible():
+            return
+        position = self.reading_position
+        if position is None:
+            bubble.speech_line(None)
+            return
+        if position.unit[1] > len(bubble.message):
+            return  # The stream may briefly be ahead of the rendered label
+        line = bubble.speech_line(position.word)
+        if line is None:
+            source: SourceSpan = position.unit
+            previous = self.last_reading_position
+            if (
+                previous is not None
+                and previous.unit == position.unit
+                and previous.word is not None
+            ):
+                source = previous.word
+            line = bubble.speech_line(source, tint=False)
+        else:
+            self.last_reading_position = position
+        if line is not None and not (self.reading_paused or self.follow_suspended):
+            self._center_reading_line(line.translated(0, bubble.y()))
+
+    def _center_reading_line(self, line: QRectF) -> None:
+        """Keep a spoken line centered, gliding between nearby lines."""
+        viewport = self.viewport()
+        assert viewport is not None
+        height = viewport.height()
+        if height <= 0:
+            return
+        scrollbar = self.scrollbar
+        current = scrollbar.value()
+        target = max(
+            scrollbar.minimum(),
+            min(round(line.center().y() - height / 2), scrollbar.maximum()),
+        )
+        if target == self.speech_scroll_target:
+            return
+        self._stop_speech_scroll()
+        self.speech_scroll_target = target
+        if target == current:
+            return
+        fade = (
+            self.fade_effect.FADE_HEIGHT
+            if height > 2 * self.fade_effect.FADE_HEIGHT
+            else 0
+        )
+        top = current + (fade if current > scrollbar.minimum() else 0)
+        bottom = current + height - (fade if current < scrollbar.maximum() else 0)
+        if line.top() < top or line.bottom() > bottom:
+            scrollbar.setValue(target)
+        else:
+            self._animate_to(target, 150)
+
     def _queue_message_scroll(self, chat_bubble: ChatBubble) -> None:
         """Scroll to the latest target after Qt has laid out the new content.
 
@@ -378,6 +524,11 @@ class ChatArea(QScrollArea):
         if bubble is None or not self.isVisible():
             return
         self.pending_message_scroll = None
+        if bubble is self.reading_bubble and (
+            self.reading_position is not None or self.follow_suspended
+        ):
+            self._scroll_to_reply_start(bubble, move=False)
+            return
         self.scroll_animation.stop()
         if not bubble.is_user:
             self._scroll_to_reply_start(bubble)
@@ -396,11 +547,14 @@ class ChatArea(QScrollArea):
             message_bottom + self.fade_effect.FADE_HEIGHT - viewport.height()
         )
 
-    def _scroll_to_reply_start(self, chat_bubble: ChatBubble) -> None:
+    def _scroll_to_reply_start(
+        self, chat_bubble: ChatBubble, *, move: bool = True
+    ) -> None:
         """Place the first line of the latest reply just below the top fade.
 
         Args:
             chat_bubble (ChatBubble): The assistant reply to bring into view.
+            move (bool): Whether to move the scrollbar after reserving space.
         """
         self.reply_scroll_anchor = chat_bubble
         # Measure at the natural layout height. The reply's current position can be
@@ -415,7 +569,9 @@ class ChatArea(QScrollArea):
             - margins.bottom()
             - reply_height
         )
-        self.scrollbar.setValue(self._reserve_reply_scroll_space(reply_top))
+        target = self._reserve_reply_scroll_space(reply_top)
+        if move:
+            self.scrollbar.setValue(target)
 
     def _refit_reply_scroll_space(self) -> None:
         """Adjust the reserved space after rewrapping the conversation."""
@@ -453,6 +609,7 @@ class ChatArea(QScrollArea):
         self.render_timer.stop()
         if self.streaming_bubble is not None and self.streaming_text:
             self.streaming_bubble.set_bot_message(self.streaming_text)
+            self._queue_reading_refresh()
 
     def _init_scroll_animation(self) -> None:
         """Initialize smooth scrolling animation."""
@@ -480,6 +637,7 @@ class ChatArea(QScrollArea):
         if step == 0:
             event.accept()
             return
+        self._suspend_speech_follow()
         anim = self.scroll_animation
         base = (
             self.scroll_target

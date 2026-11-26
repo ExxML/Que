@@ -112,6 +112,7 @@ class MainWindow(QWidget):
         )
         self.chat_area.reply_changed.connect(self.speaker.update)
         self.chat_area.messages_cleared.connect(self.speaker.stop)
+        self.speaker.reading_changed.connect(self.chat_area.set_reading_state)
         self.speaker.spoken.connect(self.transcriber.note_spoken)
         self.voice_notice = ""
         self.voice_notice_timer = QTimer(self)

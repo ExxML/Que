@@ -6,6 +6,7 @@ WINDOW_ALPHA: int = 153
 DANGER_COLOR: tuple[int, int, int] = (255, 77, 69)
 WARNING_COLOR: tuple[int, int, int] = (255, 184, 77)
 SPEAKING_COLOR: tuple[int, int, int] = (52, 199, 89)
+SPOKEN_WORD_COLOR: tuple[int, int, int] = (182, 223, 255)
 PROVIDER_COLORS: dict[str, tuple[int, int, int]] = {
     "gemini": (138, 180, 248),
     "claude": (217, 119, 87),

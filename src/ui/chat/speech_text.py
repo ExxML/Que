@@ -5,7 +5,6 @@ Code blocks are never spoken. Inline code, symbols and maths are read as words, 
 the offsets of the Markdown it came from, which only grows while a reply streams.
 """
 
-import html
 import re
 from typing import NamedTuple
 
@@ -24,9 +23,10 @@ from ui.chat.ai_formatter import (
     TASK_RE,
     display_math,
     is_table_start,
-    table_cells,
+    table_cell_sources,
 )
 from ui.chat.latex import SYMBOLS, TOKEN_RE
+from ui.chat.source_text import SourceSpan, SourceText
 
 SENTENCE_PAUSE = 0.25  # Seconds of silence after a sentence
 BLOCK_PAUSE = (
@@ -49,6 +49,8 @@ TERMINAL_RE = re.compile(r"[.!?:;,][\"')\]]*$")
 EMOJI_RE = re.compile("[\U0001f000-\U0001faff☀-⛿✀-➿⬀-⯿️‍⃣]")
 STRAY_MARKS_RE = re.compile(r"(?<![\w*])\*+|\*+(?![\w*])|(?<!\w)_+|_+(?!\w)|~~|`+|\\")
 SPACES_RE = re.compile(r"\s+")
+SPOKEN_WORD_RE = re.compile(r"\S+")
+SPOKEN_EDGES = "\"'“”‘’()[].,;:!?"
 NUMBER_UNIT_RE = re.compile(
     r"^([~≈]?)(\d[\d,]*(?:\.\d+)?)(ms|µs|us|ns|kb|mb|gb|tb|khz|mhz|ghz|hz|fps|x|k)$",
     re.IGNORECASE,
@@ -200,6 +202,13 @@ CODE_TOKEN_RE = re.compile(
 IDENTIFIER_PART_RE = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+")
 
 
+class SpeechWord(NamedTuple):
+    """Identify a spoken word and the range in the original Markdown it reads."""
+
+    text: str
+    source: SourceSpan
+
+
 class SpeechUnit(NamedTuple):
     """One stretch of speech and the Markdown it reads.
 
@@ -209,6 +218,7 @@ class SpeechUnit(NamedTuple):
         end (int): The offset just past its last Markdown character.
         pause (float): Seconds of silence to leave after it.
         open (bool): Whether more streamed text may still extend it.
+        words (tuple[SpeechWord, ...]): The spoken words associated with Markdown ranges.
     """
 
     text: str
@@ -216,9 +226,12 @@ class SpeechUnit(NamedTuple):
     end: int
     pause: float
     open: bool
+    words: tuple[SpeechWord, ...] = ()
 
 
-def speech_units(markdown: str, complete: bool, start: int = 0) -> list[SpeechUnit]:
+def speech_units(
+    markdown: str, complete: bool, start: int = 0, *, first_only: bool = False
+) -> list[SpeechUnit]:
     """Split a reply into speakable sentences from an offset onward, skipping code blocks.
 
     A sentence that straddles the offset is spoken from the offset. While the reply is still
@@ -229,6 +242,7 @@ def speech_units(markdown: str, complete: bool, start: int = 0) -> list[SpeechUn
         markdown (str): The reply's Markdown, possibly half streamed.
         complete (bool): Whether the reply has finished.
         start (int): The Markdown offset to speak from.
+        first_only (bool): Stop once the next speakable unit is known.
 
     Returns:
         list[SpeechUnit]: The sentences to speak, in order, none of them empty.
@@ -315,23 +329,35 @@ def speech_units(markdown: str, complete: bool, start: int = 0) -> list[SpeechUn
         if kind == "row" and growing:
             break  # A row is read whole, once its line is finished
         if kind == "row":
-            row = text[piece_start:piece_end]
-            spoken = ", ".join(
-                words for cell in table_cells(row) if (words := _speak_inline(cell))
+            row = SourceText.original(text[piece_start:piece_end], piece_start)
+            fragments = [
+                spoken_cell
+                for cell in table_cell_sources(row)
+                if (spoken_cell := _speak_inline_text(cell)).text
+            ]
+            spoken = SourceText.join(
+                part
+                for index, fragment in enumerate(fragments)
+                for part in (SourceText(", " if index else ""), fragment)
             )
-            if spoken:
-                units.append(
-                    SpeechUnit(_finish(spoken), piece_start, piece_end, pause, False)
-                )
+            if spoken.text:
+                units.append(_speech_unit(spoken, piece_start, piece_end, pause, False))
+                if first_only:
+                    return units
             continue
         if kind == "math":
             tex = text[piece_start:piece_end]
             tex = tex.split("$$")[0].split("\\]")[0]
-            spoken = speak_tex(tex)
-            if spoken:
-                units.append(
-                    SpeechUnit(_finish(spoken), piece_start, piece_end, pause, False)
+            spoken_math = speak_tex(tex)
+            if spoken_math:
+                expression = SourceText.original(tex, piece_start).replace_with(
+                    spoken_math
                 )
+                units.append(
+                    _speech_unit(expression, piece_start, piece_end, pause, False)
+                )
+                if first_only:
+                    return units
             continue
         sentences = _sentences(text, piece_start, piece_end)
         for number, (sentence_start, sentence_end) in enumerate(sentences):
@@ -342,8 +368,10 @@ def speech_units(markdown: str, complete: bool, start: int = 0) -> list[SpeechUn
                 sentence_start,
                 _protected_start(text, sentence_start, sentence_end, start),
             )
-            spoken = _speak_inline(text[begin:sentence_end])
-            if not spoken:
+            spoken = _speak_inline_text(
+                SourceText.original(text[begin:sentence_end], begin)
+            )
+            if not spoken.text:
                 continue
             is_open = (
                 growing
@@ -351,14 +379,16 @@ def speech_units(markdown: str, complete: bool, start: int = 0) -> list[SpeechUn
                 and not TERMINAL_RE.search(text[sentence_start:sentence_end])
             )
             units.append(
-                SpeechUnit(
-                    spoken if is_open else _finish(spoken),
+                _speech_unit(
+                    spoken,
                     begin,
                     sentence_end,
                     pause if final else SENTENCE_PAUSE,
                     is_open,
                 )
             )
+            if first_only:
+                return units
     return units
 
 
@@ -803,54 +833,72 @@ def _unfinished_markup(line: str) -> int:
 
 
 def _speak_inline(text: str) -> str:
-    """Read a line of Markdown prose as words, reading any code, maths, links and symbols.
+    """Read a line of Markdown prose as words."""
+    return _speak_inline_text(SourceText(text)).text
 
-    Args:
-        text (str): The Markdown text.
 
-    Returns:
-        str: The words to speak.
-    """
-    kept: list[str] = []
+def _speak_inline_text(text: SourceText) -> SourceText:
+    """Read Markdown prose and carry source spans through pronunciation changes."""
+    kept: list[SourceText] = []
 
-    def keep(words: str) -> str:
-        """Hide finished words from later rules behind a placeholder.
+    def keep(match: re.Match[str], words: str) -> SourceText:
+        """Hide a spoken expansion behind a placeholder until other rules finish."""
+        kept.append(text[match.start() : match.end()].replace_with(words))
+        return SourceText(f" \x00{len(kept) - 1}\x00 ")
 
-        Args:
-            words (str): The words.
-
-        Returns:
-            str: The placeholder.
-        """
-        kept.append(words)
-        return f" \x00{len(kept) - 1}\x00 "
-
-    text = IMAGE_RE.sub(lambda match: match.group(1), text)
-    text = CODE_SPAN_RE.sub(lambda match: keep(speak_code(match.group(2))), text)
-    text = INLINE_MATH_RE.sub(
+    text = text.sub(IMAGE_RE, lambda match: text[match.start(1) : match.end(1)])
+    text = text.sub(CODE_SPAN_RE, lambda match: keep(match, speak_code(match.group(2))))
+    text = text.sub(
+        INLINE_MATH_RE,
         lambda match: keep(
-            speak_tex(next(tex for tex in match.groups() if tex is not None))
+            match, speak_tex(next(tex for tex in match.groups() if tex is not None))
         ),
-        text,
     )
-    text = LINK_RE.sub(lambda match: match.group(1), text)
-    text = URL_RE.sub(lambda match: keep(_speak_url(match.group())), text)
-    text = TAG_RE.sub(", ", text)
-    text = html.unescape(text)
-    text = ESCAPED_RE.sub(
+    text = text.sub(LINK_RE, lambda match: text[match.start(1) : match.end(1)])
+    text = text.sub(URL_RE, lambda match: keep(match, _speak_url(match.group())))
+    text = text.sub(TAG_RE, lambda _match: SourceText(", "))
+    text = text.unescape_html()
+    text = text.sub(
+        ESCAPED_RE,
         lambda match: (
-            keep(match.group(1)) if match.group(1) in "#|" else match.group(1)
+            keep(match, match.group(1))
+            if match.group(1) in "#|"
+            else text[match.start(1) : match.end(1)]
         ),
-        text,
     )
-    for pattern, _replacement in EMPHASIS_RULES:
-        text = pattern.sub(r"\1", text)
-    text = PLURAL_RE.sub(r"\1", text)
-    text = CALL_RE.sub(lambda match: keep(speak_code(match.group())), text)
-    words = [_speak_word(token) for token in text.split()]
-    spoken = " ".join(word for word in words if word)
-    spoken = PLACEHOLDER_RE.sub(lambda match: kept[int(match.group(1))], spoken)
-    return _tidy(spoken)
+    for pattern in (*[pattern for pattern, _ in EMPHASIS_RULES], PLURAL_RE):
+        text = text.sub_group(pattern, 1)
+    text = text.sub(CALL_RE, lambda match: keep(match, speak_code(match.group())))
+    words: list[SourceText] = []
+    for match in SPOKEN_WORD_RE.finditer(text.text):
+        token = text[match.start() : match.end()]
+        pronounced = _speak_word(token.text)
+        if pronounced:
+            start = token.text.find(pronounced)
+            word = (
+                token[start : start + len(pronounced)]
+                if start >= 0
+                else token.strip(SPOKEN_EDGES).replace_with(pronounced)
+            )
+            words.extend((word, SourceText(" ")))
+    spoken = SourceText.join(words).strip()
+    spoken = spoken.sub(PLACEHOLDER_RE, lambda match: kept[int(match.group(1))])
+    return _tidy_text(spoken)
+
+
+def _speech_unit(
+    spoken: SourceText, start: int, end: int, pause: float, growing: bool
+) -> SpeechUnit:
+    """Package the normalized words and the Markdown ranges they came from."""
+    text = spoken.text if growing else _finish(spoken.text)
+    words = []
+    for match in SPOKEN_WORD_RE.finditer(text):
+        token = spoken[match.start() : match.end()].strip(SPOKEN_EDGES)
+        if (source := token.span()) is not None and any(
+            char.isalnum() for char in token.text
+        ):
+            words.append(SpeechWord(match.group(), source))
+    return SpeechUnit(text, start, end, pause, growing, tuple(words))
 
 
 def _speak_word(token: str) -> str:
@@ -1005,11 +1053,15 @@ def _tidy(spoken: str) -> str:
     Returns:
         str: The cleaned words.
     """
-    spoken = EMOJI_RE.sub("", spoken)
-    spoken = STRAY_MARKS_RE.sub(" ", spoken)
-    spoken = re.sub(r"[#|<>{}\[\]^]", " ", spoken)
-    spoken = SPACES_RE.sub(" ", spoken).strip()
-    spoken = re.sub(r"\s+([,.;:!?])", r"\1", spoken)
-    spoken = re.sub(r",(?:\s*,)+", ",", spoken)
-    spoken = re.sub(r"^[,.;:\s]+", "", spoken)
-    return spoken
+    return _tidy_text(SourceText(spoken)).text
+
+
+def _tidy_text(spoken: SourceText) -> SourceText:
+    """Remove leftover marks from speech and carry the surviving source ranges."""
+    spoken = spoken.sub(EMOJI_RE, lambda _match: SourceText(""))
+    for pattern in (STRAY_MARKS_RE, re.compile(r"[#|<>{}\[\]^]"), SPACES_RE):
+        spoken = spoken.sub(pattern, lambda _match: SourceText(" "))
+    spoken = spoken.strip()
+    for pattern in (re.compile(r"\s+([,.;:!?])"), re.compile(r"(,)(?:\s*,)+")):
+        spoken = spoken.sub_group(pattern, 1)
+    return spoken.sub(re.compile(r"^[,.;:\s]+"), lambda _match: SourceText(""))

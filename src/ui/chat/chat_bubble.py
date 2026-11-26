@@ -1,5 +1,6 @@
 import html
 import math
+from bisect import bisect_right
 
 from PyQt6.QtCore import QEvent, QPoint, QPointF, QRectF, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
@@ -11,6 +12,8 @@ from PyQt6.QtGui import (
     QPen,
     QPixmap,
     QResizeEvent,
+    QTextCharFormat,
+    QTextCursor,
     QTextDocument,
     QTextOption,
 )
@@ -24,7 +27,8 @@ from PyQt6.QtWidgets import (
 )
 
 from ui.chat.ai_formatter import BODY_FONT, BODY_PT, format_message
-from ui.theme import BG_COLOR, PRIMARY_COLOR, qcolor, qss
+from ui.chat.source_text import RenderedSources, SourceSpan
+from ui.theme import BG_COLOR, PRIMARY_COLOR, SPOKEN_WORD_COLOR, qcolor, qss
 
 PREVIEW_WIDTH = 64
 PREVIEW_HEIGHT = 36
@@ -111,6 +115,25 @@ class ChatBubble(QWidget):
             line.textStart() if line is not None and line.isValid() else 0
         )
         return document.toPlainText(), start
+
+    def speech_line(
+        self, source: SourceSpan | None, *, tint: bool = True
+    ) -> QRectF | None:
+        """Tint a Markdown span and locate its wrapped line in bubble coordinates.
+
+        Args:
+            source (SourceSpan | None): The source range, or None to clear the tint.
+            tint (bool): Whether to colour the span while locating its line.
+
+        Returns:
+            QRectF | None: The wrapped line, if the span is visible in the document.
+        """
+        label = self.message_label
+        line = label.speech_line(self.message, source, tint)
+        if line is None:
+            return None
+        origin = label.pos() + label.contentsRect().topLeft()
+        return line.translated(origin.x(), origin.y())
 
     def start_loading_animation(self) -> None:
         """Start the animated three-dot loading indicator."""
@@ -362,6 +385,12 @@ class _MessageLabel(QLabel):
     def __init__(self, text: str) -> None:
         super().__init__(text)
         self.heights: dict[int, int] = {}
+        self.source_positions: list[tuple[SourceSpan, int, int]] | None = None
+        self.source_markdown = ""
+        self.source_display = ""
+        self.source_checked = False
+        self.tint_ranges: list[tuple[int, int]] = []
+        self.original_formats: list[tuple[int, int, QTextCharFormat]] = []
         # QLabel puts back its own wrap mode whenever it lays out new text, font or style
         self.wrap_pending = True
 
@@ -372,6 +401,9 @@ class _MessageLabel(QLabel):
             text (str | None): The rich text to show.
         """
         self.heights.clear()
+        self.source_checked = False
+        self.tint_ranges.clear()
+        self.original_formats.clear()
         self.wrap_pending = True
         super().setText(text)
 
@@ -398,6 +430,31 @@ class _MessageLabel(QLabel):
             self._break_long_words(width)
             self.heights[width] = super().heightForWidth(width)
         return self.heights[width]
+
+    def speech_line(
+        self, markdown: str, source: SourceSpan | None, tint: bool
+    ) -> QRectF | None:
+        """Use document offsets for the colour and wrapped line of a spoken span."""
+        self._break_long_words(self.width())
+        document = self.findChild(QTextDocument)
+        if document is None or source is None:
+            if document is not None:
+                self._set_tint(document, [])
+            return None
+        positions = self._speech_sources(markdown, document, source[1])
+        ranges = self._document_ranges(source, positions)
+        self._set_tint(document, ranges if tint else [])
+        if not ranges:
+            return None
+        position = ranges[0][0]
+        layout = document.documentLayout()
+        assert layout is not None
+        block = document.findBlock(position)
+        block_rect = layout.blockBoundingRect(block)
+        text_layout = block.layout()
+        assert text_layout is not None
+        line = text_layout.lineForTextPosition(position - block.position())
+        return line.rect().translated(block_rect.topLeft()) if line.isValid() else None
 
     def changeEvent(self, event: QEvent | None) -> None:
         """Forget measured heights when the font or style changes how the text lays out.
@@ -431,6 +488,106 @@ class _MessageLabel(QLabel):
         """
         self._break_long_words(self.width())
         super().paintEvent(event)
+
+    def _map_source_positions(
+        self, markdown: str, document: QTextDocument
+    ) -> list[tuple[SourceSpan, int, int]]:
+        """Read the source anchors from a side document with matching Qt positions."""
+        sources = RenderedSources()
+        mapped = QTextDocument()
+        mapped.setHtml(format_message(markdown, sources))
+        self.source_markdown = markdown
+        self.source_display = mapped.toRawText()
+        if not document.toRawText().startswith(self.source_display):
+            return []
+        positions = []
+        block = mapped.begin()
+        while block.isValid():
+            fragment_iterator = block.begin()
+            while not fragment_iterator.atEnd():
+                fragment = fragment_iterator.fragment()
+                for name in fragment.charFormat().anchorNames():
+                    source = sources.runs[int(name.removeprefix("que-source-"))]
+                    position = fragment.position()
+                    for char, origin in zip(source.text, source.origins, strict=True):
+                        end = position + (2 if ord(char) > 0xFFFF else 1)
+                        if origin is not None:
+                            positions.append((origin, position, end))
+                        position = end
+                fragment_iterator += 1
+            block = block.next()
+        return sorted(positions, key=lambda entry: entry[0][1])
+
+    def _speech_sources(
+        self, markdown: str, document: QTextDocument, end: int
+    ) -> list[tuple[SourceSpan, int, int]]:
+        """Reuse the source map while appended text leaves the spoken prefix in place."""
+        if not self.source_checked:
+            self.source_checked = True
+            if not (
+                markdown.startswith(self.source_markdown)
+                and document.toRawText().startswith(self.source_display)
+            ):
+                self.source_positions = None
+        if self.source_positions is None or end > len(self.source_markdown):
+            self.source_positions = self._map_source_positions(markdown, document)
+        return self.source_positions
+
+    def _document_ranges(
+        self, source: SourceSpan, positions: list[tuple[SourceSpan, int, int]]
+    ) -> list[tuple[int, int]]:
+        """Find the visible ranges overlapping the requested Markdown span."""
+        start, end = source
+        index = bisect_right(positions, start, key=lambda entry: entry[0][1])
+        matches = []
+        while index < len(positions):
+            origin, left, right = positions[index]
+            if origin[0] >= end:
+                break
+            matches.append((left, right))
+            index += 1
+        ranges: list[tuple[int, int]] = []
+        for left, right in sorted(matches):
+            if ranges and ranges[-1][1] == left:
+                ranges[-1] = (ranges[-1][0], right)
+            else:
+                ranges.append((left, right))
+        return ranges
+
+    def _set_tint(self, document: QTextDocument, ranges: list[tuple[int, int]]) -> None:
+        """Change only the foreground of the active ranges and restore previous colours."""
+        if ranges == self.tint_ranges:
+            return
+        cursor = QTextCursor(document)
+        cursor.beginEditBlock()
+        for start, end, original in self.original_formats:
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+            cursor.setCharFormat(original)
+        self.original_formats.clear()
+        tint = QTextCharFormat()
+        tint.setForeground(qcolor(SPOKEN_WORD_COLOR))
+        for start, end in ranges:
+            block = document.findBlock(start)
+            while block.isValid() and block.position() < end:
+                fragments = block.begin()
+                while not fragments.atEnd():
+                    fragment = fragments.fragment()
+                    left = max(start, fragment.position())
+                    right = min(end, fragment.position() + fragment.length())
+                    if left < right:
+                        self.original_formats.append(
+                            (left, right, fragment.charFormat())
+                        )
+                    fragments += 1
+                block = block.next()
+        for start, end in ranges:
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+            cursor.mergeCharFormat(tint)
+        cursor.endEditBlock()
+        self.tint_ranges = ranges
+        self.update()
 
     def _break_long_words(self, width: int) -> None:
         """Let a word too wide for the label break anywhere, once QLabel has applied its own wrap mode.

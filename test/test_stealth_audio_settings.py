@@ -26,11 +26,11 @@ from core.speaker import (
     MISSING_VOICE_STATUS,
     MODEL_FILE,
     VOICE,
-    VOICE_RATE,
     VOICE_SAMPLE,
     VOICES_FILE,
     _Output,
 )
+from core.speech_timing import VOICE_RATE, ReadingPosition
 from core.transcriber import Transcriber
 from ui.window.settings_page import SettingsPage
 
@@ -467,3 +467,97 @@ class VoiceDownloadTests(WindowTestCase):
                 return
             time.sleep(0.01)
         self.fail("The voice download did not finish.")
+
+
+class SpeechPlaybackTests(WindowTestCase):
+    """Check synchronized reading inside the existing overlay."""
+
+    def test_audible_positions_follow_the_output_clock_in_the_existing_window(
+        self,
+    ) -> None:
+        """Use the resampled playback clock and reject paused or replaced reading events."""
+        window = self.window
+        chat = window.chat_area
+        speaker = window.speaker
+        chat.load_messages([("One two.", False, "", ())])
+        bubble = chat.latest_reply()
+        assert bubble is not None
+        window.pages.setCurrentIndex(0)
+        window.show()
+        self.app.processEvents()
+        surfaces = set(self.app.topLevelWidgets())
+        active = self.app.activeWindow()
+        first = ReadingPosition((0, 8), (0, 3))
+        second = ReadingPosition((0, 8), (4, 7))
+        with (
+            patch.object(speaker, "voice", MagicMock()),
+            patch.object(speaker, "_run"),
+            patch.object(
+                window.window_policy, "protect", wraps=window.window_policy.protect
+            ) as protect,
+            patch("core.speaker.pyaudiowpatch.PyAudio") as host,
+            patch("core.speaker.time.monotonic", return_value=10.0) as clock,
+        ):
+            audio = host.return_value
+            audio.get_host_api_info_by_type.return_value = {"defaultOutputDevice": 1}
+            audio.get_device_info_by_index.return_value = {
+                "defaultSampleRate": 48000,
+                "maxOutputChannels": 2,
+                "index": 1,
+            }
+            audio.open.return_value.get_output_latency.return_value = 0.05
+            window.speak_latest()
+            generation = speaker.generation
+            output = _Output(speaker)
+            self.addCleanup(output.close)
+            fill = audio.open.call_args.kwargs["stream_callback"]
+            samples = np.full(4800, 0.5, np.float32)
+            output.push(
+                samples, 0.05, ((0, first), (2400, second), (4800, None)), generation
+            )
+            times = {"current_time": 7.0, "output_buffer_dac_time": 7.04}
+            callback = threading.Thread(target=fill, args=(None, 7200, times, 0))
+            callback.start()
+            callback.join()
+            self.app.processEvents()
+            self.assertFalse(bubble.message_label.tint_ranges)
+            self.assertTrue(speaker.playback_timer.isActive())
+
+            clock.return_value = 10.041
+            speaker.playback_timer.timeout.emit()
+            self.assertEqual(bubble.message_label.tint_ranges, [(0, 3)])
+            speaker.toggle_pause()
+            clock.return_value = 10.20
+            speaker.playback_timer.timeout.emit()
+            self.assertEqual(bubble.message_label.tint_ranges, [(0, 3)])
+            paused, _flag = fill(None, 1200, None, 0)
+            self.assertFalse(np.frombuffer(paused, dtype=np.float32).any())
+
+            speaker.toggle_pause()
+            fill(None, 4800, None, 0)
+            clock.return_value = 10.251
+            speaker.playback_timer.timeout.emit()
+            self.assertEqual(bubble.message_label.tint_ranges, [(4, 7)])
+            clock.return_value = 10.31
+            speaker.playback_timer.timeout.emit()
+            self.assertFalse(bubble.message_label.tint_ranges)
+
+            window.speak_latest()
+            speaker._finish(generation, "Stale playback error.")
+            speaker._playback_events.emit(
+                generation, speaker.playback_revision, ((10.0, first),)
+            )
+            speaker._reading_ended.emit(generation)
+            self.assertIs(chat.reading_bubble, bubble)
+            self.assertFalse(bubble.message_label.tint_ranges)
+            speaker._reading_ended.emit(speaker.generation)
+            self.assertIsNone(chat.reading_bubble)
+            speaker._playback_events.emit(
+                speaker.generation, speaker.playback_revision, ((10.0, first),)
+            )
+            self.assertFalse(bubble.message_label.tint_ranges)
+
+            protect.assert_not_called()
+            self.assertEqual(set(self.app.topLevelWidgets()), surfaces)
+            self.assertIs(self.app.activeWindow(), active)
+            audio.open.assert_called_once()
