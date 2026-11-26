@@ -3546,14 +3546,14 @@
     "source": "core/prompts.py",
     "line": 135,
     "expression": "def job_details_block(job_details: str) -> str:",
-    "sha256": "42d88370e1221622687c91c48ea04ab5497cd3d288a602841c664ff77643668f"
+    "sha256": "a8fa42d0b8a12d6b131dfad1510c14c088a269241f5dfb0a982e3b864151f691"
   },
   "core/prompts.py:150:routine": {
     "category": "routine",
     "source": "core/prompts.py",
     "line": 150,
     "expression": "def documents_block(sections: str) -> str:",
-    "sha256": "a2adae9e474d1e6cbe464007e2cbf5663948a0f7c9bc6480e9b6db4916a59104"
+    "sha256": "cc61747df2bfa38df92e91884ed7685b1b0d50f26f49666d8fffcc3726727065"
   },
   "core/prompts.py:163:routine": {
     "category": "routine",
@@ -3588,7 +3588,7 @@
     "source": "core/prompts.py",
     "line": 228,
     "expression": "def fact_sheet_request(item: str) -> str:",
-    "sha256": "be8bf63d38e4a7f9ac741d9a5d32e9f37828cadce6a73d3e6d027ddf704ea599"
+    "sha256": "383312988aa1d61c0d74a64f098e843d4f10a33bcb6a5694b1afc6e2826a2cde"
   },
   "core/provider_catalog.py:29:routine": {
     "category": "routine",

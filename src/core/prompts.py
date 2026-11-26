@@ -13,13 +13,13 @@ Code that decides which pieces to include stays with its callers (`core/ai_sende
 
 # 1. Interview shortcut (sent by ShortcutManager._answer, shown in the chat as INTERVIEW_LABEL)
 
-INTERVIEW_PREAMBLE = """I'm in a live software engineering interview and need to answer the interviewer right now. Help me respond.
+INTERVIEW_PREAMBLE = """Use the context below to identify the current question or task and give me a concise answer with the reasoning behind it.
 
-Work out what the interviewer wants from me right now. If there's a note from me at the end of this message, follow it over everything below, even when it points to a question I already answered or one that isn't the latest. Otherwise use the audio transcript and the screenshots (a shared problem, editor, document or whiteboard) together:
+If there's a note from me at the end of this message, follow it over everything below, even when it points to a question I already answered or one that isn't the latest. Otherwise use the audio transcript and the screenshots (a shared problem, editor, document or whiteboard) together:
 - The transcript runs oldest to newest and may span several questions. Questions I already answered aloud are done, so use them only as context.
-- Instructions that aren't questions ("go ahead and code it", "take a look at this") and the interviewer's answers to my clarifying questions refer to the current problem, usually the one on screen or the last one discussed.
-- Either source may have nothing to do with the interview. Ignore small talk, mic checks and other audio like a video in the transcript, and unrelated windows, video tiles and this overlay in the screenshots. If there are several screenshots, the last one is the current screen.
-- If the transcript and the screen point to different questions, go with the interviewer's latest request.
+- Instructions that aren't questions ("go ahead and code it", "take a look at this") and answers to my clarifying questions refer to the current problem, usually the one on screen or the last one discussed.
+- Either source may be unrelated to the current task. Ignore small talk, mic checks and other audio like a video in the transcript, and unrelated windows, video tiles and this overlay in the screenshots. If there are several screenshots, the last one is the current screen.
+- If the transcript and the screen point to different questions, go with the latest request from [Them] in the transcript.
 - If I'm partway through answering that request aloud, continue from what I said instead of restarting.
 - If neither has a request, use our earlier conversation.
 The transcript is speech-to-text, so correct misheard technical terms. If the question is ambiguous, answer the most likely reading and give me one clarifying question I can ask.
@@ -29,13 +29,13 @@ How to write it:
 - Every other question: start with one bold sentence I'd actually say, then give me short bullet points with the key terms in bold. Write the spoken parts in first person. Use everyday words and natural contractions. Skip filler, stock openings and scripted transitions.
 - Match the length to the question: a quick question gets a few bullets; a hard one gets a fuller walkthrough. Put extra depth for likely follow-ups at the end under **If they ask**.
 - Use precise industry terms naturally (ex. idempotent, amortized O(1), back-pressure, eventual consistency), but only where they're correct and I could explain them.
-- Never hint that I'm getting help."""
+- Keep the response focused on the question and the reasoning."""
 
 INTERVIEW_KINDS = """Pick the format that fits the question and use it to organize my notes. Keep section labels out of what I say and leave the question kind out of the headings. If my note names the kind (ex. "system design", "hint", "behavioural"), use that kind.
-- **Follow-up**: our conversation already covers a question and the interviewer's latest words build on it: a hint, "can you do better?", "what if it doesn't fit in memory?", "how does this scale?", "why that choice?", pushback on my answer, a bug or failing test, new requirements, or my code on screen that needs fixing. It's still a follow-up when it sounds like a coding or design question, like "how would this scale?" after a coding problem. If the interviewer has moved on to a different question, or there's no earlier question in our conversation, it's a new question of one of the kinds below.
+- **Follow-up**: our conversation already covers a question and the latest request builds on it: a hint, "can you do better?", "what if it doesn't fit in memory?", "how does this scale?", "why that choice?", pushback on my answer, a bug or failing test, new requirements, or my code on screen that needs fixing. It's still a follow-up when it sounds like a coding or design question, like "how would this scale?" after a coding problem. If the latest request is about a different problem, or there's no earlier question in our conversation, it's a new question of one of the kinds below.
 - **Coding**: a LeetCode-style problem, SQL query, debugging task, "what does this output", or object-oriented design (ex. the classes for a parking lot).
 - **System design**: designing a service or distributed system (ex. a URL shortener, a news feed), or a single component, API or schema at scale.
-- **Everything else**: behavioural, about me, resume and project deep dives, technical concepts, brainteasers, and questions for the interviewer."""
+- **Everything else**: behavioural, about me, resume and project deep dives, technical concepts, brainteasers, and questions I could ask about the role or team."""
 
 INTERVIEW_FOLLOW_UP = """**Follow-up.** Use our conversation so far, the latest transcript and the screen to work out what changed:
 - Open by answering the follow-up directly.
@@ -52,13 +52,13 @@ INTERVIEW_CODE = """**Coding.** Explain the solution in this order, keeping each
    - **Steps**: what each step checks and which way it moves when the check fails, still in plain words.
    - **In code**: only then, the variables and data structures that aren't obvious from the idea, using the code's names, a few words each.
    When positions are hard to picture, show one tiny example inline (ex. `[1, 3 | 5]`).
-4. **Code**: a clean solution with comments and clear names, in the language on screen (Python if none is shown), ready for me to type.
+4. **Code**: a complete solution with comments and clear names, in the language on screen (Python if none is shown).
 5. **Dry run**: trace a small example through the code in a few lines.
 6. **Complexity**: time and space, each with a one-line reason.
 7. **Edge cases**: the cases I should mention or test.
 Scale this to the problem: an easy problem, a bug fix or an output question can skip steps 1 and 2 and keep everything brief. If my code is already on screen, build on it and point out its bugs instead of rewriting it."""
 
-INTERVIEW_SYSTEM_DESIGN = """**System design.** Explain it in the order I should drive the interview, keeping each part short:
+INTERVIEW_SYSTEM_DESIGN = """**System design.** Walk through the design in this order, keeping each part short:
 1. **Requirements**: the 3 or 4 core functional requirements, the non-functional ones (scale, latency, availability vs consistency, durability), and 2 or 3 questions to ask.
 2. **Estimates**: quick back-of-the-envelope numbers (users, QPS, storage, bandwidth) with the math, only where they shape the design.
 3. **API and data model**: the key endpoints and entities, and the database choice (SQL or NoSQL) with the reason.
@@ -133,7 +133,7 @@ def instructions_block(instruction: str) -> str:
 
 
 def job_details_block(job_details: str) -> str:
-    """Wrap the details of the job being interviewed for.
+    """Wrap the details of the target role.
 
     Args:
         job_details (str): The job details from settings.
@@ -141,7 +141,7 @@ def job_details_block(job_details: str) -> str:
     Returns:
         str: The wrapped job details.
     """
-    return f"""Details about the job I'm interviewing for. Tailor my answers to this role: connect my experience to what it asks for and use its terms. Don't mention these details unless I ask.
+    return f"""Details about the role. Tailor my answers to this role by connecting my experience to its requirements and using its terms. Don't mention these details unless I ask.
 <job_details>
 {job_details}
 </job_details>"""
@@ -156,7 +156,7 @@ def documents_block(sections: str) -> str:
     Returns:
         str: The introduced documents.
     """
-    return f"""Background documents about me. Tailor your answers to my real experience. When I'm asked an interview question, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
+    return f"""Background documents about me. Tailor your answers to my real experience. For questions about my experience, answer in first person as I would say it, consistent with these documents. Don't mention the documents unless I ask.
 {sections}"""
 
 
@@ -234,14 +234,14 @@ def fact_sheet_request(item: str) -> str:
     Returns:
         str: The request.
     """
-    return f"""I'm preparing for interviews about this item on my resume:
+    return f"""Build a factual reference for this item on my resume:
 <resume_item>
 {item}
 </resume_item>
 
 Its files are in the current directory. Use your read-only tools to read the README and the files that explain the project: entry points, core modules, configuration and tests. Skip dependency, build and generated folders.
 
-Then write a dense fact sheet, at most about 900 words, that lets me answer detailed interview questions about this project without opening the files again. Cover:
+Then write a dense fact sheet, at most about 900 words, that lets me answer detailed questions about this project without opening the files again. Cover:
 - What it does, who it is for and why it exists.
 - Architecture and data flow, naming the key components and their file paths.
 - Languages, frameworks, libraries and services used, and what each is used for.
