@@ -53,6 +53,8 @@
 #define CLASS_WINDOWS 0x04
 
 #define LLMHF_INJECTED_FLAG 0x01
+#define MIDDLE_BUTTON 4
+#define INJECTED_MIDDLE_BUTTON 32 /* Internal ownership key, separate from a physical press. */
 
 enum {
     EVENT_ACTION = 1,
@@ -175,7 +177,7 @@ typedef struct {
     uint8_t repeat_present[256];
     int32_t repeat_mask[256];
     int32_t repeat_action[256];
-    OwnedButton owned[5]; /* Mouse presses Que owns, in press order */
+    OwnedButton owned[6]; /* Five physical buttons and injected middle, in press order */
     int owned_count;
     uint32_t delivered_buttons; /* Bit set of buttons another app received */
     int64_t hover_target;
@@ -558,8 +560,8 @@ static int process_pointer(QueEngine *e, int code, WPARAM message, int x, int y,
     case WM_LBUTTONUP: button = 1; break;
     case WM_RBUTTONDOWN: button = 2; down = 1; break;
     case WM_RBUTTONUP: button = 2; break;
-    case WM_MBUTTONDOWN: button = 4; down = 1; break;
-    case WM_MBUTTONUP: button = 4; break;
+    case WM_MBUTTONDOWN: button = MIDDLE_BUTTON; down = 1; break;
+    case WM_MBUTTONUP: button = MIDDLE_BUTTON; break;
     case WM_XBUTTONDOWN: button = 8; down = 1; break;
     case WM_XBUTTONUP: button = 8; break;
     default: break;
@@ -577,7 +579,8 @@ static int process_pointer(QueEngine *e, int code, WPARAM message, int x, int y,
                        0, 0, 0, tick);
         }
     }
-    if (injected) {
+    /* Windows marks touchpad middle clicks as injected. */
+    if (injected && button != MIDDLE_BUTTON) {
         return PASS;
     }
     int64_t target = 0;
@@ -588,6 +591,12 @@ static int process_pointer(QueEngine *e, int code, WPARAM message, int x, int y,
                 target = r->hwnd;
                 break;
             }
+        }
+    }
+    if (injected) {
+        button = INJECTED_MIDDLE_BUTTON;
+        if (!(down && target) && owned_find(e, button) < 0) {
+            return PASS;
         }
     }
     if (button) {

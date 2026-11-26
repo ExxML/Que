@@ -93,13 +93,15 @@ DEVICE_KEYS = frozenset(
 WM_MOUSEMOVE = 0x200
 WM_MOUSEWHEEL = 0x20A
 WM_MOUSEHWHEEL = 0x20E
+MIDDLE_BUTTON = 4
+INJECTED_MIDDLE_BUTTON = 32  # Internal ownership key, separate from a physical press.
 BUTTON_MESSAGES = {
     0x201: (1, True),
     0x202: (1, False),
     0x204: (2, True),
     0x205: (2, False),
-    0x207: (4, True),
-    0x208: (4, False),
+    0x207: (MIDDLE_BUTTON, True),
+    0x208: (MIDDLE_BUTTON, False),
     0x20B: (8, True),
     0x20C: (8, False),
 }
@@ -405,7 +407,8 @@ class HookEngine:
                 int(data.time),
                 injected,
             )
-        if injected:
+        # Windows marks touchpad middle clicks as injected.
+        if injected and button != MIDDLE_BUTTON:
             return self._next_mouse(code, message, address)
         x, y = int(data.pt.x), int(data.pt.y)
         target = (
@@ -420,6 +423,10 @@ class HookEngine:
             if self.routing_enabled
             else 0
         )
+        if injected:
+            button = INJECTED_MIDDLE_BUTTON
+            if not (down and target) and button not in self.consumed_buttons:
+                return self._next_mouse(code, message, address)
         if button:
             if down:
                 self.press_seq += 1

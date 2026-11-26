@@ -12,7 +12,13 @@ from unittest.mock import MagicMock, patch
 
 from stealth.hooks import EXTENDED_MODIFIERS, chord_groups
 
-from core.hook_engine import HOTKEYS, HookEngine, InputMonitor, _MouseData
+from core.hook_engine import (
+    HOTKEYS,
+    LLMHF_INJECTED,
+    HookEngine,
+    InputMonitor,
+    _MouseData,
+)
 from core.native_hook import (
     STATUS_KEYBOARD,
     STATUS_MEMORY_LOCKED,
@@ -373,6 +379,46 @@ class NativeHookEquivalenceTests(unittest.TestCase):
                         driver.apply({"type": "quit"})
                     else:
                         driver.release_all()
+
+    def test_injected_middle_click_keeps_ownership_until_release(self) -> None:
+        """Route the pair based on where it starts, including across routing changes."""
+        driver = self.driver()
+        driver.apply({"type": "regions", "value": [(1, 0, 0, 100, 100)]})
+        down, up, _ = BUTTONS[2]
+
+        self.assertEqual(driver.pointer(down, -1, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(up, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.python_out.events, [])
+
+        self.assertEqual(driver.pointer(down, 10, 10, flags=LLMHF_INJECTED), 1)
+        driver.apply({"type": "routing", "value": False})
+        self.assertEqual(driver.pointer(up, -1, 10, flags=LLMHF_INJECTED), 1)
+        self.assertEqual(driver.pointer(down, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(up, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(
+            [(event["message"], event["hwnd"]) for event in driver.python_out.events],
+            [(down, 1), (up, 1)],
+        )
+        self.assertTrue(driver.python.drained())
+        self.assertTrue(driver.native.drained())
+
+    def test_injected_middle_click_preserves_other_mouse_presses(self) -> None:
+        """Keep physical middle-button ownership and injected other buttons independent."""
+        driver = self.driver()
+        driver.apply({"type": "regions", "value": [(1, 0, 0, 100, 100)]})
+        middle_down, middle_up, _ = BUTTONS[2]
+        left_down, left_up, _ = BUTTONS[0]
+
+        self.assertEqual(driver.pointer(left_down, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(left_up, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(middle_down, 10, 10), 1)
+        self.assertEqual(driver.pointer(middle_down, -1, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(middle_up, 10, 10, flags=LLMHF_INJECTED), 0)
+        self.assertEqual(driver.pointer(middle_up, -1, 10), 1)
+        self.assertEqual(
+            [(event["message"], event["hwnd"]) for event in driver.python_out.events],
+            [(middle_down, 1), (middle_up, 1)],
+        )
 
     def test_repeat_repeats_every_key_held_in_the_same_chord(self) -> None:
         """Windows repeats only the last key, so its repeat also moves every other held direction."""

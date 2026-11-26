@@ -256,8 +256,8 @@ class RawInputLeakTests(HookHostTestCase):
             ["left mouse button press", "mouse wheel", "left mouse button release"],
         )
 
-    def test_trackpad_click_passes_through_without_a_false_leak(self) -> None:
-        """Pair injected mouse callbacks with device-backed Raw Input in either order."""
+    def test_trackpad_click_is_routed_without_a_false_leak(self) -> None:
+        """Consume a touchpad middle click and match Raw Input in either order."""
         for engine in (self.host.fallback, NativeHookEngine(self.host.outbox.put)):
             if isinstance(engine, NativeHookEngine):
                 self.addCleanup(engine.close)
@@ -268,28 +268,34 @@ class RawInputLeakTests(HookHostTestCase):
                 engine.apply({"type": "regions", "value": [(1, 0, 0, 100, 100)]})
                 self.raw(mouse_record(0))  # Movement alone is not tracked
                 self.raw(mouse_record(LEFT_DOWN, device=0))  # No device to compare
-                for message, raw_flag, raw_first in (
-                    (WM_MBUTTONDOWN, MIDDLE_DOWN, True),
-                    (WM_MBUTTONUP, MIDDLE_UP, False),
-                    (WM_MOUSEWHEEL, WHEEL, True),
+                for message, raw_flag, raw_first, consumed in (
+                    (WM_MBUTTONDOWN, MIDDLE_DOWN, True, 1),
+                    (WM_MBUTTONUP, MIDDLE_UP, False, 1),
+                    (WM_MOUSEWHEEL, WHEEL, True, 0),
                 ):
                     self.user32.message_time = -0x7FFFFFFF + message
                     if raw_first:
                         self.raw(mouse_record(raw_flag))
-                    self.injected_mouse(message)
+                    self.assertEqual(self.injected_mouse(message), consumed)
                     if not raw_first:
                         self.raw(mouse_record(raw_flag))
                 self.tick += 1000
                 self.host._on_timer()
                 self.assertEqual(engine.monitor.raw_events, 3)
                 self.assertEqual(engine.monitor.missed_events, 0)
-                self.assertEqual(self.events(), [])
+                self.assertEqual(
+                    [
+                        (event["type"], event.get("message"), event.get("hwnd"))
+                        for event in self.events()
+                    ],
+                    [("pointer", WM_MBUTTONDOWN, 1), ("pointer", WM_MBUTTONUP, 1)],
+                )
                 self.assertEqual(self.hooks.SetWindowsHookExW.call_count, 2)
 
     def test_unrelated_injected_click_does_not_mask_missed_click(self) -> None:
         """Report a missed click even after an injected callback for the same button."""
         self.user32.message_time = 1234
-        self.injected_mouse(WM_MBUTTONDOWN)
+        self.assertEqual(self.injected_mouse(WM_MBUTTONDOWN), 0)
         self.user32.message_time += 16
         self.raw(mouse_record(MIDDLE_DOWN))
         self.tick += 1000
@@ -312,23 +318,24 @@ class RawInputLeakTests(HookHostTestCase):
         self.host._on_timer()
         self.assertFalse(self.events())
 
-    def injected_mouse(self, message: int) -> None:
-        """Deliver an injected mouse callback and check it passes through the hook.
+    def injected_mouse(self, message: int) -> int:
+        """Deliver an injected mouse callback.
 
         Args:
             message (int): The mouse button or wheel message.
+
+        Returns:
+            int: One if the hook consumes the event, zero if it passes through.
         """
         tick = self.user32.message_time & TICK_MASK
         engine = self.host.engine
         if isinstance(engine, NativeHookEngine):
-            result = engine.process_pointer(0, message, 10, 10, 0, LLMHF_INJECTED, tick)
-        else:
-            event = _MouseData(flags=LLMHF_INJECTED, time=tick)
-            event.pt.x = event.pt.y = 10
-            self.hooks.CallNextHookEx.return_value = 0
-            with patch.object(hook_engine, "user32", self.hooks):
-                result = engine._mouse_proc(0, message, ctypes.addressof(event))
-        self.assertEqual(result, 0)
+            return engine.process_pointer(0, message, 10, 10, 0, LLMHF_INJECTED, tick)
+        event = _MouseData(flags=LLMHF_INJECTED, time=tick)
+        event.pt.x = event.pt.y = 10
+        self.hooks.CallNextHookEx.return_value = 0
+        with patch.object(hook_engine, "user32", self.hooks):
+            return engine._mouse_proc(0, message, ctypes.addressof(event))
 
 
 class TimerAndWindowTests(HookHostTestCase):
