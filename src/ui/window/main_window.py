@@ -98,6 +98,15 @@ class MainWindow(QWidget):
         self.settings_page.directory_saved.connect(self._set_claude_directory)
         self.settings_page.capture_hidden_saved.connect(self.set_capture_hidden)
         self.settings_page.click_through_saved.connect(self.set_click_through)
+        self.settings_page.speech_autoscroll_saved.connect(
+            self.chat_area.set_speech_autoscroll
+        )
+        self.settings_page.speech_highlight_saved.connect(
+            self.chat_area.set_speech_highlight
+        )
+        settings_store = ai_sender.settings_store
+        self.chat_area.set_speech_autoscroll(settings_store.speech_autoscroll())
+        self.chat_area.set_speech_highlight(settings_store.speech_highlight())
         self.input_field.input_settings.directory_requested.connect(
             self._choose_claude_directory
         )

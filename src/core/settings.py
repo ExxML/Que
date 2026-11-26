@@ -44,6 +44,8 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
         "whisper_model": "Transcription model",
         "speech_volume": "Speech volume",
         "speech_speed": "Speech speed",
+        "speech_autoscroll": "Autoscroll while reading aloud",
+        "speech_highlight": "Highlight words while reading aloud",
     },
     "Audio": {
         "audio_device_you": "Microphone",
@@ -150,6 +152,22 @@ class SettingsStore:
             if type(speed) is int and SPEECH_SPEED_MIN <= speed <= SPEECH_SPEED_MAX
             else 100
         )
+
+    def speech_autoscroll(self) -> bool:
+        """Return whether the chat scrolls with speech, defaulting to on.
+
+        Returns:
+            bool: True when the chat should keep the line being read in view.
+        """
+        return self.data.get("speech_autoscroll") is not False
+
+    def speech_highlight(self) -> bool:
+        """Return whether to highlight the word being read, defaulting to on.
+
+        Returns:
+            bool: True when the spoken word should be coloured.
+        """
+        return self.data.get("speech_highlight") is not False
 
     def audio_device(self, source: str) -> str:
         """Return the saved WASAPI device name or an empty string for the Windows default.
@@ -334,6 +352,22 @@ class SettingsStore:
         """
         self._write({**self.data, "speech_speed": speed})
 
+    def save_speech_autoscroll(self, enabled: bool) -> None:
+        """Atomically save whether the chat scrolls with speech.
+
+        Args:
+            enabled (bool): Whether the chat should keep the line being read in view.
+        """
+        self._write({**self.data, "speech_autoscroll": enabled})
+
+    def save_speech_highlight(self, enabled: bool) -> None:
+        """Atomically save whether to highlight the word being read.
+
+        Args:
+            enabled (bool): Whether the spoken word should be coloured.
+        """
+        self._write({**self.data, "speech_highlight": enabled})
+
     def save_audio_device(self, source: str, name: str) -> None:
         """Atomically save one transcript source's or the speech output's audio device.
 
@@ -462,6 +496,8 @@ class SettingsStore:
             "whisper_model": self.whisper_model(),
             "speech_volume": self.speech_volume(),
             "speech_speed": self.speech_speed(),
+            "speech_autoscroll": self.speech_autoscroll(),
+            "speech_highlight": self.speech_highlight(),
             "audio_device_you": self.audio_device("you"),
             "audio_device_them": self.audio_device("them"),
             "audio_device_speaker": self.audio_device("speaker"),
@@ -603,7 +639,10 @@ def _valid_config_value(key: str, value: Any) -> bool:
         return type(value) is int and 0 <= value <= 100
     if key == "speech_speed":
         return type(value) is int and SPEECH_SPEED_MIN <= value <= SPEECH_SPEED_MAX
-    if key in CONFIG_GROUPS["Window"]:
+    if key in CONFIG_GROUPS["Window"] or key in (
+        "speech_autoscroll",
+        "speech_highlight",
+    ):
         return isinstance(value, bool)
     if key in ("gemini", "claude") or key.startswith("presets."):
         return _has_string_fields(value, "model", "effort")

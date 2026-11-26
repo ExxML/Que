@@ -345,6 +345,26 @@ class SpeechSettingsTests(WindowTestCase):
             audio.assert_not_called()
         self.assertIsNone(self.window.speaker.speech_thread)
 
+    def test_follow_toggles_save_and_reach_the_chat_without_audio(self) -> None:
+        """Apply each reading toggle to the chat and keep it across reopening."""
+        page = self.window.settings_page
+        chat = self.window.chat_area
+        with patch("core.speaker.pyaudiowpatch.PyAudio") as audio:
+            for checkbox, attribute in (
+                (page.autoscroll_checkbox, "speech_autoscroll"),
+                (page.highlight_checkbox, "speech_highlight"),
+            ):
+                with self.subTest(attribute):
+                    self.assertTrue(checkbox.isChecked())
+                    self.assertTrue(getattr(chat, attribute))
+                    checkbox.click()
+                    self.assertFalse(getattr(chat, attribute))
+                    self.assertFalse(
+                        getattr(SettingsStore(self.store.path), attribute)()
+                    )
+            audio.assert_not_called()
+        self.assertIsNone(self.window.speaker.speech_thread)
+
     def test_sample_uses_the_configured_speed_volume_and_output(self) -> None:
         """Play one sentence on the chosen device with the configured speech settings."""
         speaker = self.window.speaker

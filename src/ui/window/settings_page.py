@@ -59,6 +59,8 @@ class SettingsPage(QWidget):
     capture_hidden_saved = pyqtSignal(bool)
     click_through_saved = pyqtSignal(bool)
     elevation_saved = pyqtSignal(bool)  # Applies at the next launch, so nothing listens
+    speech_autoscroll_saved = pyqtSignal(bool)
+    speech_highlight_saved = pyqtSignal(bool)
 
     def __init__(
         self,
@@ -719,6 +721,18 @@ class SettingsPage(QWidget):
                 store.elevate_helper(),
                 self.elevation_saved,
             ),
+            (
+                "speech_autoscroll",
+                self.autoscroll_checkbox,
+                store.speech_autoscroll(),
+                self.speech_autoscroll_saved,
+            ),
+            (
+                "speech_highlight",
+                self.highlight_checkbox,
+                store.speech_highlight(),
+                self.speech_highlight_saved,
+            ),
         ):
             if key in selected:
                 with QSignalBlocker(checkbox):
@@ -759,8 +773,47 @@ class SettingsPage(QWidget):
         hint = QLabel("Download Que's voice once to read replies aloud (Caps Lock+V).")
         hint.setWordWrap(True)
         layout.addWidget(hint)
+        self._init_speech_follow(layout)
         self.speaker.download_finished.connect(self._on_voice_downloaded)
         self._refresh_voice_buttons()
+
+    def _init_speech_follow(self, layout: QVBoxLayout) -> None:
+        """Add the autoscroll and word highlight toggles for reading aloud.
+
+        Args:
+            layout (QVBoxLayout): The Voice tab layout.
+        """
+        # Checked before connecting so the saved state is shown without re-saving it
+        self.autoscroll_checkbox = QCheckBox("Autoscroll while reading aloud")
+        self.autoscroll_checkbox.setChecked(self.settings_store.speech_autoscroll())
+        self.autoscroll_checkbox.toggled.connect(
+            lambda enabled: self._save_toggle(
+                self.settings_store.save_speech_autoscroll,
+                self.speech_autoscroll_saved,
+                "autoscroll",
+                enabled,
+            )
+        )
+        self._add_toggle(
+            layout,
+            self.autoscroll_checkbox,
+            "The chat scrolls to keep the line being read in view. If you scroll yourself, it holds your place until you resume or start another reading.",
+        )
+        self.highlight_checkbox = QCheckBox("Highlight words while reading aloud")
+        self.highlight_checkbox.setChecked(self.settings_store.speech_highlight())
+        self.highlight_checkbox.toggled.connect(
+            lambda enabled: self._save_toggle(
+                self.settings_store.save_speech_highlight,
+                self.speech_highlight_saved,
+                "word highlighting",
+                enabled,
+            )
+        )
+        self._add_toggle(
+            layout,
+            self.highlight_checkbox,
+            "Colors each word in the reply as Que reads it.",
+        )
 
     def _init_speech_volume(self, form: QFormLayout) -> None:
         """Add the playback volume slider below the speech model.

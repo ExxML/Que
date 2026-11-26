@@ -70,7 +70,9 @@
     "ui/window/settings_page.py:SettingsPage._init_speech_settings/QPushButton/4f8a6225e5/1": "QPushButton('Download')",
     "ui/window/settings_page.py:SettingsPage._init_speech_settings/QPushButton/19972d973e/1": "QPushButton('Test voice')",
     "ui/window/settings_page.py:SettingsPage._init_speech_volume/_SettingsSlider/7c98157727/1": "_SettingsSlider(Qt.Orientation.Horizontal)",
-    "ui/window/settings_page.py:SettingsPage._init_speech_speed/_SettingsSlider/7c98157727/1": "_SettingsSlider(Qt.Orientation.Horizontal)"
+    "ui/window/settings_page.py:SettingsPage._init_speech_speed/_SettingsSlider/7c98157727/1": "_SettingsSlider(Qt.Orientation.Horizontal)",
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/QCheckBox/011a5abb3f/1": "QCheckBox('Autoscroll while reading aloud')",
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/QCheckBox/bece14f81d/1": "QCheckBox('Highlight words while reading aloud')"
   },
   "connections": [
     "core/ai_receiver.py:AIReceiver.__init__/self.error.connect(self._on_response_error)",
@@ -264,6 +266,10 @@
     "ui/window/settings_page.py:SettingsPage._init_speech_volume/self.speech_volume_slider.sliderMoved.connect(self._show_speech_volume_value)",
     "ui/window/settings_page.py:SettingsPage._init_speech_volume/self.speech_volume_slider.valueChanged.connect(self._save_speech_volume)",
     "ui/window/settings_page.py:SettingsPage._init_speech_speed/self.speech_speed_slider.sliderMoved.connect(self._show_speech_speed_value)",
-    "ui/window/settings_page.py:SettingsPage._init_speech_speed/self.speech_speed_slider.valueChanged.connect(self._save_speech_speed)"
+    "ui/window/settings_page.py:SettingsPage._init_speech_speed/self.speech_speed_slider.valueChanged.connect(self._save_speech_speed)",
+    "ui/window/main_window.py:MainWindow.__init__/self.settings_page.speech_autoscroll_saved.connect(self.chat_area.set_speech_autoscroll)",
+    "ui/window/main_window.py:MainWindow.__init__/self.settings_page.speech_highlight_saved.connect(self.chat_area.set_speech_highlight)",
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/self.autoscroll_checkbox.toggled.connect(lambda enabled: self._save_toggle(self.settings_store.save_speech_autoscroll, self.speech_autoscroll_saved, 'autoscroll', enabled))",
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/self.highlight_checkbox.toggled.connect(lambda enabled: self._save_toggle(self.settings_store.save_speech_highlight, self.speech_highlight_saved, 'word highlighting', enabled))"
   ]
 }

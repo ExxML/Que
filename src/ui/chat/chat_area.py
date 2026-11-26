@@ -73,6 +73,8 @@ class ChatArea(QScrollArea):
         self.reading_position: ReadingPosition | None = None
         self.reading_paused = False
         self.follow_suspended = False
+        self.speech_autoscroll = True
+        self.speech_highlight = True
         self.last_reading_position: ReadingPosition | None = None
         self.speech_scroll_target: int | None = None
         self.reading_refresh_pending = False
@@ -324,6 +326,26 @@ class ChatArea(QScrollArea):
         self.reading_position = position
         self._refresh_reading()
 
+    def set_speech_autoscroll(self, enabled: bool) -> None:
+        """Turn following the spoken line on or off, including during a reading.
+
+        Args:
+            enabled (bool): Whether to keep the line being read in view.
+        """
+        self.speech_autoscroll = enabled
+        if not enabled:
+            self._stop_speech_scroll()
+        self._queue_reading_refresh()
+
+    def set_speech_highlight(self, enabled: bool) -> None:
+        """Turn the spoken word colour on or off, including during a reading.
+
+        Args:
+            enabled (bool): Whether to colour the word being read.
+        """
+        self.speech_highlight = enabled
+        self._queue_reading_refresh()
+
     def resizeEvent(self, event: QResizeEvent | None) -> None:
         """Refit the reply's trailing space after the viewport relayout."""
         super().resizeEvent(event)
@@ -462,7 +484,7 @@ class ChatArea(QScrollArea):
             return
         if position.unit[1] > len(bubble.message):
             return  # The stream may briefly be ahead of the rendered label
-        line = bubble.speech_line(position.word)
+        line = bubble.speech_line(position.word, tint=self.speech_highlight)
         if line is None:
             source: SourceSpan = position.unit
             previous = self.last_reading_position
@@ -475,7 +497,11 @@ class ChatArea(QScrollArea):
             line = bubble.speech_line(source, tint=False)
         else:
             self.last_reading_position = position
-        if line is not None and not (self.reading_paused or self.follow_suspended):
+        if (
+            line is not None
+            and self.speech_autoscroll
+            and not (self.reading_paused or self.follow_suspended)
+        ):
             self._center_reading_line(line.translated(0, bubble.y()))
 
     def _center_reading_line(self, line: QRectF) -> None:
@@ -525,7 +551,8 @@ class ChatArea(QScrollArea):
             return
         self.pending_message_scroll = None
         if bubble is self.reading_bubble and (
-            self.reading_position is not None or self.follow_suspended
+            (self.speech_autoscroll and self.reading_position is not None)
+            or self.follow_suspended
         ):
             self._scroll_to_reply_start(bubble, move=False)
             return

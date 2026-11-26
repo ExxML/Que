@@ -183,6 +183,34 @@ class SpeechFollowTests(unittest.TestCase):
                 wait(170)
                 self.assertEqual(chat.scrollbar.value(), center)
 
+    def test_autoscroll_and_highlight_toggle_during_a_reading(self) -> None:
+        """Apply each toggle on its own to the current word without waiting for the next."""
+        markdown = "\n".join(f"Line {index} says hello" for index in range(80))
+        bubble = self.load_reply(markdown)
+        chat = self.chat
+        unit = speech_units(markdown, True)[30]
+        position = ReadingPosition((unit.start, unit.end), unit.words[0].source)
+        start = chat.scrollbar.value()
+        chat.set_speech_autoscroll(False)
+        chat.set_reading_state(bubble, "start", None)
+        chat.set_reading_state(bubble, "position", position)
+        wait(170)
+        self.assertEqual(chat.scrollbar.value(), start)
+        self.assertTrue(bubble.message_label.tint_ranges)
+
+        chat.set_speech_highlight(False)
+        wait(20)
+        self.assertFalse(bubble.message_label.tint_ranges)
+
+        chat.set_speech_autoscroll(True)
+        wait(170)
+        self.assertNotEqual(chat.scrollbar.value(), start)
+        self.assertFalse(bubble.message_label.tint_ranges)
+
+        chat.set_speech_highlight(True)
+        wait(20)
+        self.assertTrue(bubble.message_label.tint_ranges)
+
     def test_skipped_code_and_scroll_edges(self) -> None:
         """Keep both ends readable and go directly to the line after a long skipped block."""
         markdown = "Start.\n\n```\n" + "skip this line\n" * 80 + "```\n\nEnd."

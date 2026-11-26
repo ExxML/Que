@@ -79,6 +79,7 @@ WORKFLOWS = {
         "change speech speed and read a reply at the saved speed",
         "use Test voice at different speeds and volumes on the selected output device",
         "follow the spoken word in a wrapped reply, scroll away, and pause and resume to restore follow",
+        "toggle autoscroll and word highlighting in Settings Voice, then read a long reply with each off",
     ),
     "audio.que-first": (
         "start browser capture after Que",
