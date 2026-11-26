@@ -30,6 +30,7 @@ from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.resume_facts import ResumeFacts, facts_directory
 from core.settings import CONTEXT_DOCUMENTS, WHISPER_MODELS, SettingsStore
+from core.speaker import Speaker
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
 from ui.directory_picker import choose_directory, choose_file
@@ -59,12 +60,14 @@ class SettingsPage(QWidget):
         transcriber: Transcriber,
         chat_history: ChatHistory,
         parent: QWidget,
+        speaker: Speaker | None = None,
     ) -> None:
         super().__init__(parent)
         self.settings_store = settings_store
         self.chat_history = chat_history
         self.screenshots_armed = False
         self.transcriber = transcriber
+        self.speaker = speaker or Speaker(settings_store)
         transcriber.download_finished.connect(self._on_whisper_downloaded)
         self.catalog = ProviderCatalog(claude_bridge)
         self.resume_facts = ResumeFacts(claude_bridge, facts_directory(settings_store))
@@ -106,6 +109,7 @@ class SettingsPage(QWidget):
             or self.transcriber.active_model()
             or WHISPER_MODELS[0]
         )
+        self._refresh_voice_download()
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
@@ -492,6 +496,7 @@ class SettingsPage(QWidget):
         )
         transcription_hint.setWordWrap(True)
         voice_layout.addWidget(transcription_hint)
+        self._init_voice_download(voice_layout)
         voice_layout.addStretch(1)
         self._init_audio_tab()
         window_layout = self._add_tab("Window")
@@ -694,6 +699,33 @@ class SettingsPage(QWidget):
                     checkbox.setChecked(value)
                 signal.emit(value)
         self.save_status.setText("Imported settings saved.")
+
+    def _init_voice_download(self, layout: QVBoxLayout) -> None:
+        """Add the local speech model download to Voice settings.
+
+        Args:
+            layout (QVBoxLayout): The Voice tab layout.
+        """
+        self.voice_download_button = QPushButton("Download")
+        self.voice_download_button.setAccessibleName("Download speech model")
+        self.voice_download_button.clicked.connect(self._download_voice)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Que's voice · English · About 350 MB"), 1)
+        row.addWidget(self.voice_download_button)
+        form = QFormLayout()
+        form.addRow("Speech", row)
+        layout.addLayout(form)
+        self.voice_download_status = QLabel()
+        self.voice_download_status.setTextFormat(Qt.TextFormat.PlainText)
+        self.voice_download_status.setWordWrap(True)
+        self.voice_download_status.setAccessibleName("Speech model download status")
+        self.voice_download_status.hide()
+        layout.addWidget(self.voice_download_status)
+        hint = QLabel("Download Que's voice once to read replies aloud (Caps Lock+V).")
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        self.speaker.download_finished.connect(self._on_voice_downloaded)
+        self._refresh_voice_download()
 
     def _init_audio_tab(self) -> None:
         """Build the two independent recording source selectors and the speech output selector."""
@@ -1343,6 +1375,42 @@ class SettingsPage(QWidget):
         """
         self.download_status.setText(text)
         self.download_status.show()
+
+    def _refresh_voice_download(self) -> None:
+        """Keep the speech model download button in sync with the cache and worker."""
+        downloading = self.speaker.downloading
+        downloaded = self.speaker.model_downloaded()
+        self.voice_download_button.setEnabled(not downloading and not downloaded)
+        self.voice_download_button.setText(
+            "Downloading…"
+            if downloading
+            else "Downloaded"
+            if downloaded
+            else "Download"
+        )
+
+    def _download_voice(self) -> None:
+        """Start the speech download and report its progress in Voice settings."""
+        if self.speaker.download():
+            self.voice_download_status.setText(
+                "Downloading Que's voice. You can keep using Que meanwhile."
+            )
+            self.voice_download_status.show()
+        self._refresh_voice_download()
+
+    def _on_voice_downloaded(self, error: str) -> None:
+        """Report the speech model download result.
+
+        Args:
+            error (str): The download error, or an empty string on success.
+        """
+        self.voice_download_status.setText(
+            f"Could not download Que's voice. Check your internet connection and try again. ({error})"
+            if error
+            else "Downloaded Que's voice."
+        )
+        self.voice_download_status.show()
+        self._refresh_voice_download()
 
     def _save_whisper_model(self, model: str) -> None:
         """Save the chosen transcription model.

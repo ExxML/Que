@@ -23,7 +23,7 @@ from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
-from core.speaker import DOWNLOAD_NOTICE
+from core.speaker import Speaker
 from ui.window.main_window import MainWindow
 
 FLASH = ModelOption("flash", "Flash", ("low", "high"))
@@ -82,7 +82,11 @@ class WindowTestCase(unittest.TestCase):
             patch("core.provider_catalog.ProviderCatalog.refresh", return_value=1),
             patch("ui.window.main_window.ChatHistory", return_value=self.history),
         ):
-            self.window = MainWindow(AISender(self.store), self.screenshots)
+            self.window = MainWindow(
+                AISender(self.store),
+                self.screenshots,
+                speaker=Speaker(self.store, root / "voice"),
+            )
         self.addCleanup(self.window.close)
         self.window.visibility_timer.stop()
         self.sender = self.window.ai_sender
@@ -462,14 +466,9 @@ class SpeechTests(WindowTestCase):
             self.window.speak_from(reply, bottom)
         self.assertEqual(self.speaker.speak.call_count, 1)
 
-    def test_voice_download_and_failures_are_shown(self) -> None:
-        """Show the download notice while it runs and any failure after."""
-        self.window._on_voice_downloading(True)
-        self.assertIn(DOWNLOAD_NOTICE, self.warnings)
-        with patch.object(self.window.status_banner, "clear_warning") as clear:
-            self.window._on_voice_downloading(False)
-        clear.assert_called_once_with(DOWNLOAD_NOTICE)
-        self.window._on_speech_failed("No device.")
+    def test_speech_failures_are_shown(self) -> None:
+        """Show the reason a speech session stopped."""
+        self.window.settings_page.speaker.failed.emit("No device.")
         self.assertIn("No device.", self.warnings)
 
 

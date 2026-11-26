@@ -201,8 +201,8 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
         ),
         (
             "audio.speech",
-            "With the browser capturing audio and Que recording, press Caps Lock+V before a reply's first word, while it streams and after it ends; pause and resume with Caps Lock+Space; Caps Lock+click a reply line; repeat on a nondefault Speech output device, then while hidden.",
-            "Verify speech plays only on the selected Speech output, starts on the first streamed word, pauses and resumes, and restarts from the clicked line. Verify browser audio continuity, no focus or key events on the page, no Them transcript of Que's own voice, and that Que's audio session closes when reading ends.",
+            "Use a cold speech cache for download stages and Settings → Voice to start the download. For playback stages with the model installed, exercise Caps Lock+V, Caps Lock+Space and Caps Lock+click while the browser captures audio and Que records. Repeat on a nondefault Speech output device and while Que is hidden.",
+            "Verify missing and downloading notices, inline download results, and idle audio until a new playback request. For playback, verify speech on the selected output, first streamed words, pause/resume, restart from the clicked line and session closure. Record browser audio continuity, page focus and key events, and the Them transcript.",
             "audio",
         ),
         (

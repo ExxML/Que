@@ -62,7 +62,7 @@ WORKFLOWS = {
         "unplug a saved device, refresh, verify the unavailable selection, and return to Windows default",
     ),
     "audio.speech": (
-        "download the voice on first use",
+        "download the voice from Settings Voice and confirm playback stays idle",
         "read a pending reply from its first streamed word",
         "catch up with a streaming reply and resume on the next word",
         "pause and resume while reading",
@@ -72,6 +72,9 @@ WORKFLOWS = {
         "read while hidden",
         "read while recording, with Que's voice on the Them device",
         "stop reading by starting a new chat",
+        "request speech with a cold voice cache and verify the Settings notice",
+        "request speech during the voice download and verify the wait notice",
+        "fail the isolated voice download and retry from Settings Voice",
     ),
     "audio.que-first": (
         "start browser capture after Que",

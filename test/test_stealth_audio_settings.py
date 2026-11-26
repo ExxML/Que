@@ -6,16 +6,24 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 from numpy.typing import NDArray
 from PyQt6.QtWidgets import QWidget
 from qt_application import application
+from test_main_window import WindowTestCase
 
 from core.chat_history import ChatHistory
 from core.claude_bridge import ClaudeBridge
 from core.settings import SettingsStore
+from core.speaker import (
+    DOWNLOADING_VOICE_STATUS,
+    MISSING_VOICE_STATUS,
+    MODEL_FILE,
+    VOICES_FILE,
+)
 from core.transcriber import Transcriber
 from ui.window.settings_page import SettingsPage
 
@@ -225,3 +233,79 @@ class AudioSettingsTests(unittest.TestCase):
                 return
             time.sleep(0.01)
         self.fail("The audio device list did not refresh.")
+
+
+class VoiceDownloadTests(WindowTestCase):
+    """Exercise the cold voice flow through chat and Voice settings without real I/O."""
+
+    def test_voice_download_requires_settings_and_can_retry(self) -> None:
+        """Keep audio idle and contact the model host only from the download button."""
+        window = self.window
+        window.chat_area.add_message("Reply to read.", is_user=False)
+        page = window.settings_page
+        page.open_settings()
+        tab = page.tab_bar
+        tab.setCurrentIndex(
+            next(i for i in range(tab.count()) if tab.tabText(i) == "Voice")
+        )
+        button = page.voice_download_button
+        voice_tab = page.tab_pages.currentWidget()
+        assert voice_tab is not None
+        self.assertTrue(voice_tab.isAncestorOf(button))
+        self.assertIs(page.speaker, window.speaker)
+        self.assertEqual(button.text(), "Download")
+
+        def download(_repo: str, **options: Any) -> None:
+            """Write the pinned files into the test cache."""
+            cache = Path(options["local_dir"])
+            cache.mkdir()
+            for name in (MODEL_FILE, VOICES_FILE):
+                (cache / name).touch()
+
+        with (
+            patch(
+                "huggingface_hub.snapshot_download", side_effect=OSError("offline")
+            ) as snapshot,
+            patch("core.speaker.pyaudiowpatch.PyAudio") as audio,
+            patch("onnxruntime.InferenceSession") as session,
+        ):
+            window.speak_latest()
+            self.assertEqual(window.voice_notice, MISSING_VOICE_STATUS)
+            self.assertTrue(window.voice_notice_timer.isActive())
+            snapshot.assert_not_called()
+            window.voice_notice_timer.timeout.emit()
+            self.assertEqual(window.voice_notice, "")
+
+            button.click()
+            page.open_settings()
+            self.assertEqual(button.text(), "Downloading…")
+            self.assertFalse(button.isEnabled())
+            window.speak_latest()
+            self.assertEqual(window.voice_notice, DOWNLOADING_VOICE_STATUS)
+            self._wait_for_download()
+            self.assertIn("offline", page.voice_download_status.text())
+            self.assertTrue(button.isEnabled())
+
+            snapshot.side_effect = download
+            button.click()
+            self._wait_for_download()
+            self.assertEqual(button.text(), "Downloaded")
+            self.assertFalse(button.isEnabled())
+            self.assertEqual(
+                page.voice_download_status.text(), "Downloaded Que's voice."
+            )
+            self.assertEqual(window.voice_notice, "")
+            self.assertFalse(window.voice_notice_timer.isActive())
+            self.assertIsNone(window.speaker.speech_thread)
+            self.assertEqual(snapshot.call_count, 2)
+            audio.assert_not_called()
+            session.assert_not_called()
+
+    def _wait_for_download(self) -> None:
+        """Deliver the worker's queued result to the window and settings page."""
+        for _ in range(100):
+            self.app.processEvents()
+            if not self.window.speaker.downloading:
+                return
+            time.sleep(0.01)
+        self.fail("The voice download did not finish.")

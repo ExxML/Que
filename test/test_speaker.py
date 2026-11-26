@@ -20,9 +20,11 @@ from qt_application import application
 
 from core.speaker import (
     DEVICE_FAILED,
-    DOWNLOAD_FAILED,
+    DOWNLOADING_VOICE_STATUS,
     LOAD_FAILED,
+    MISSING_VOICE_STATUS,
     MODEL_FILE,
+    VOICE_REPO,
     VOICE_REVISION,
     VOICES_FILE,
     Speaker,
@@ -153,16 +155,20 @@ class SpeakerTestCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
         self.store = MagicMock()
         self.store.audio_device.return_value = ""
-        self.speaker = Speaker(self.store, Path(tempfile.mkdtemp()))
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.speaker = Speaker(self.store, Path(directory.name))
         self.addCleanup(self.speaker.stop)
         self.voice = FakeVoice()
         self.speaker.voice = self.voice
         self.spoken: list[str] = []
         self.failures: list[str] = []
-        self.downloads: list[bool] = []
+        self.downloads: list[str] = []
+        self.model_notices: list[str] = []
         self.speaker.spoken.connect(self.spoken.append)
         self.speaker.failed.connect(self.failures.append)
-        self.speaker.downloading.connect(self.downloads.append)
+        self.speaker.download_finished.connect(self.downloads.append)
+        self.speaker.model_needed.connect(self.model_notices.append)
         self.reply = object()
 
     def wait_until(self, condition: Callable[[], bool], message: str) -> None:
@@ -232,7 +238,9 @@ class ReadingTests(SpeakerTestCase):
     def test_restart_reads_from_the_start_again(self) -> None:
         """Start over from the beginning when asked again, unpausing."""
         self.speaker.speak(self.reply, "First. Second.", False)
-        self.wait_until(lambda: self.speaker.output is not None, "Reading never started.")
+        self.wait_until(
+            lambda: self.speaker.output is not None, "Reading never started."
+        )
         self.speaker.toggle_pause()
         self.speaker.speak(self.reply, "First. Second. Third.", True)
         self.assertFalse(self.speaker.paused)
@@ -347,27 +355,63 @@ class DeviceTests(SpeakerTestCase):
 
 
 class VoiceTests(SpeakerTestCase):
-    """Download the voice once, then load it once."""
+    """Download the voice explicitly and load it offline when speech starts."""
 
     def setUp(self) -> None:
         """Start without a loaded voice."""
         super().setUp()
         self.speaker.voice = None
 
-    def test_download_then_load(self) -> None:
-        """Download the pinned files, load them once, and report the download."""
+    def test_missing_voice_requests_download_without_starting_speech(self) -> None:
+        """Keep speech and network idle when only part of the model is present."""
+        (self.speaker.cache_dir / MODEL_FILE).write_bytes(b"")
+        with patch("huggingface_hub.snapshot_download") as download:
+            self.speaker.speak(self.reply, "Hello.", True)
+        download.assert_not_called()
+        self.assertEqual(self.model_notices, [MISSING_VOICE_STATUS])
+        self.assertIsNone(self.speaker.speech_thread)
+        self.assertEqual(FakeAudio.instances, [])
 
-        def download(_repo: str, **options: Any) -> None:
+    def test_download_then_load(self) -> None:
+        """Download the pinned files once and wait for a fresh speech request."""
+        release = threading.Event()
+        cache = self.speaker.cache_dir
+
+        def download(_repo: str, **_options: Any) -> None:
             """Write the model files where the speaker expects them."""
-            self.assertEqual(options["revision"], VOICE_REVISION)
+            if not release.wait(2):
+                raise TimeoutError("Download fixture waited too long.")
             for name in (MODEL_FILE, VOICES_FILE):
-                (Path(options["local_dir"]) / name).write_bytes(b"")
+                (cache / name).write_bytes(b"")
 
         with (
-            patch("huggingface_hub.snapshot_download", side_effect=download),
+            patch(
+                "huggingface_hub.snapshot_download", side_effect=download
+            ) as snapshot,
             patch("onnxruntime.InferenceSession") as session,
             patch("kokoro_onnx.Kokoro.from_session", return_value=self.voice) as load,
         ):
+            self.assertTrue(self.speaker.download())
+            try:
+                self.assertFalse(self.speaker.download())
+                self.speaker.speak(self.reply, "Try while downloading.", True)
+                self.assertEqual(self.model_notices, [DOWNLOADING_VOICE_STATUS])
+            finally:
+                release.set()
+            self.wait_until(lambda: bool(self.downloads), "No download result.")
+            self.assertEqual(self.downloads, [""])
+            self.assertTrue(self.speaker.model_downloaded())
+            self.assertFalse(self.speaker.downloading)
+            self.assertFalse(self.speaker.download())
+            snapshot.assert_called_once_with(
+                VOICE_REPO,
+                revision=VOICE_REVISION,
+                local_dir=str(cache),
+                allow_patterns=[MODEL_FILE, VOICES_FILE],
+            )
+            session.assert_not_called()
+            self.assertIsNone(self.speaker.speech_thread)
+            self.assertEqual(FakeAudio.instances, [])
             self.speaker.speak(self.reply, "Hello.", True)
             self.wait_until(self.finished, "Reading never finished.")
             self.speaker.speak(self.reply, "Again.", True)
@@ -375,20 +419,24 @@ class VoiceTests(SpeakerTestCase):
                 lambda: self.finished() and "Again." in self.voice.texts,
                 "Second read failed.",
             )
-        self.app.processEvents()
-        self.assertEqual(self.downloads, [True, False])
+        self.assertEqual(snapshot.call_count, 1)
         self.assertEqual(session.call_count, 1)
         self.assertEqual(load.call_count, 1)
         self.assertEqual(self.voice.texts, ["Hello.", "Again."])
 
     def test_download_failure_is_reported(self) -> None:
-        """Explain a failed download and read nothing."""
-        with patch("huggingface_hub.snapshot_download", side_effect=OSError("offline")):
-            self.speaker.speak(self.reply, "Hello.", True)
-            self.wait_until(
-                lambda: self.failures == [DOWNLOAD_FAILED], "No failure shown."
-            )
-        self.assertEqual(self.downloads, [True, False])
+        """Surface download errors and allow another attempt with an incomplete cache."""
+        with patch("huggingface_hub.snapshot_download", side_effect=OSError()):
+            self.assertTrue(self.speaker.download())
+            self.wait_until(lambda: bool(self.downloads), "No failure shown.")
+        self.assertEqual(self.downloads, ["OSError"])
+        with patch("huggingface_hub.snapshot_download"):
+            self.assertTrue(self.speaker.download())
+            self.wait_until(lambda: len(self.downloads) == 2, "No retry result.")
+        self.assertIn("both voice files", self.downloads[-1])
+        self.assertFalse(self.speaker.model_downloaded())
+        self.assertFalse(self.speaker.downloading)
+        self.assertIsNone(self.speaker.speech_thread)
 
     def test_load_failure_is_reported(self) -> None:
         """Explain a voice that cannot load."""

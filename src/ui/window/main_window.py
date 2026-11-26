@@ -27,8 +27,8 @@ from core.chat_history import ChatHistory, Conversation
 from core.prompts import shortcut_note
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
-from core.speaker import DOWNLOAD_NOTICE, Speaker
-from core.transcriber import Transcriber
+from core.speaker import Speaker
+from core.transcriber import MISSING_MODEL_MS, Transcriber
 from core.window_policy import install_window_policy
 from ui.chat.chat_area import ChatArea
 from ui.chat.chat_bubble import ChatBubble
@@ -113,7 +113,12 @@ class MainWindow(QWidget):
         self.chat_area.reply_changed.connect(self.speaker.update)
         self.chat_area.messages_cleared.connect(self.speaker.stop)
         self.speaker.spoken.connect(self.transcriber.note_spoken)
-        self.speaker.downloading.connect(self._on_voice_downloading)
+        self.voice_notice = ""
+        self.voice_notice_timer = QTimer(self)
+        self.voice_notice_timer.setSingleShot(True)
+        self.voice_notice_timer.timeout.connect(self._clear_voice_notice)
+        self.speaker.model_needed.connect(self._show_voice_notice)
+        self.speaker.download_finished.connect(self._on_voice_download_finished)
         self.speaker.failed.connect(self._on_speech_failed)
         self._show_claude_directory()
         self._refresh_models()
@@ -395,6 +400,7 @@ class MainWindow(QWidget):
             self.transcriber,
             self.chat_history,
             self,
+            speaker=self.speaker,
         )
         self.pages.addWidget(self.settings_page)
 
@@ -529,16 +535,32 @@ class MainWindow(QWidget):
         self.visibility_timer.timeout.connect(self._ensure_window_visible)
         self.visibility_timer.start()
 
-    def _on_voice_downloading(self, downloading: bool) -> None:
-        """Show that speech waits for its voice to download, and clear the notice after.
+    def _show_voice_notice(self, message: str) -> None:
+        """Briefly explain why a read request needs the voice model.
 
         Args:
-            downloading (bool): Whether the download is running.
+            message (str): The voice model notice.
         """
-        if downloading:
-            self.status_banner.show_warning(DOWNLOAD_NOTICE)
-        else:
-            self.status_banner.clear_warning(DOWNLOAD_NOTICE)
+        if message != self.voice_notice:
+            self._clear_voice_notice()
+        self.voice_notice = message
+        self.status_banner.show_warning(message, lasting=False)
+        self.voice_notice_timer.start(MISSING_MODEL_MS)
+
+    def _clear_voice_notice(self) -> None:
+        """Remove the current voice model notice and stop its timer."""
+        self.voice_notice_timer.stop()
+        self.status_banner.clear_warning(self.voice_notice)
+        self.voice_notice = ""
+
+    def _on_voice_download_finished(self, error: str) -> None:
+        """Clear the speech notice once the voice is available.
+
+        Args:
+            error (str): The download error, or an empty string on success.
+        """
+        if not error:
+            self._clear_voice_notice()
 
     def _on_speech_failed(self, message: str) -> None:
         """Show why speech stopped.

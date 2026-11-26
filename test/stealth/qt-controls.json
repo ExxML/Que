@@ -539,6 +539,13 @@
     "enabled": true
   },
   {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Download speech model",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "QLineEdit",
     "name": "",
     "accessible": "Gemini API key",

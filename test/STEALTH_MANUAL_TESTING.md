@@ -194,7 +194,7 @@ Also check by eye, without an attempt:
 
 Que's voice is real audio, so another program can capture it. Only automated tests cover the reading logic. These checks cover what a page, meeting app or recorder can observe.
 
-1. In Settings → Audio, set **Speech output** to your earbuds (not the device a meeting app shares). The first Caps Lock+V downloads the voice (about 350 MB) and shows a notice until it finishes.
+1. In Settings → Audio, set **Speech output** to your earbuds. With a reply in chat and a cold speech cache, press Caps Lock+V. Expect a brief notice directing you to Settings → Voice and silence. In Voice, click **Download** next to **Speech** (about 350 MB). Try Caps Lock+V during the download and check for the wait notice. Once the button reads **Downloaded**, playback should stay idle until you request speech again. With a cold cache and the model host unavailable, check that the download reports the failure inline and enables **Download** again.
 2. With the page capturing microphone and tab audio, press Caps Lock+C, then Caps Lock+V at once. Expect speech only in the earbuds, starting with the reply's first word, and no page focus, key or audio-track events. Repeat with Que hidden (Caps Lock+E).
 3. Press Caps Lock+Space twice while it reads (it pauses, then resumes), Caps Lock+V again (it restarts), and Caps Lock+click a wrapped line (it reads from that line). Confirm a code block is never read.
 4. Open the Windows Volume Mixer while Que reads, then after it finishes. Que should appear only while it reads.

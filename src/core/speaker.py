@@ -25,11 +25,9 @@ WAIT_SECONDS = (
     0.05  # How often the speech thread rechecks the stream and the playback queue
 )
 BUFFER_SECONDS = 0.02  # Audio handed to Windows per callback
-DOWNLOAD_NOTICE = (
-    "Downloading Que's voice (about 350 MB). Speech starts when it finishes."
-)
-DOWNLOAD_FAILED = (
-    "Could not download Que's voice. Check your connection, then try again."
+MISSING_VOICE_STATUS = "No speech model yet. Download Que's voice in Settings → Voice."
+DOWNLOADING_VOICE_STATUS = (
+    "Que's voice is still downloading. Start speech once it finishes."
 )
 LOAD_FAILED = "Could not load Que's voice. Try again, or restart Que."
 DEVICE_FAILED = "Could not play speech. Reconnect the speech output device or choose another in Settings → Audio."
@@ -46,7 +44,8 @@ class Speaker(QObject):
     spoken = pyqtSignal(
         str
     )  # Words handed to the output, for the transcript's echo filter
-    downloading = pyqtSignal(bool)
+    download_finished = pyqtSignal(str)  # Error or an empty string
+    model_needed = pyqtSignal(str)
     failed = pyqtSignal(str)
 
     def __init__(
@@ -57,6 +56,8 @@ class Speaker(QObject):
         self.cache_dir = cache_dir or (
             Path(__file__).resolve().parent.parent / "data" / "cache" / "kokoro"
         )
+        self.downloading = False
+        self.download_finished.connect(self._on_download_finished)
         self.condition = threading.Condition()
         self.reply: object | None = None  # The bubble being read; Qt thread only
         # Shared with the speech thread under the condition
@@ -72,6 +73,28 @@ class Speaker(QObject):
         )
         self.speech_thread: threading.Thread | None = None
 
+    def model_downloaded(self) -> bool:
+        """Check whether both voice files are in the local cache.
+
+        Returns:
+            bool: Whether the model and its voices are available.
+        """
+        return (self.cache_dir / MODEL_FILE).is_file() and (
+            self.cache_dir / VOICES_FILE
+        ).is_file()
+
+    def download(self) -> bool:
+        """Download the model on demand in a background thread.
+
+        Returns:
+            bool: Whether a new download was started.
+        """
+        if self.downloading or self.model_downloaded():
+            return False
+        self.downloading = True
+        threading.Thread(target=self._download, daemon=True).start()
+        return True
+
     def speak(self, reply: object, text: str, complete: bool, offset: int = 0) -> None:
         """Read a reply from an offset, replacing whatever was being read.
 
@@ -81,6 +104,11 @@ class Speaker(QObject):
             complete (bool): Whether the reply has finished streaming.
             offset (int): The Markdown offset to start reading from.
         """
+        if self.voice is None and not self.model_downloaded():
+            self.model_needed.emit(
+                DOWNLOADING_VOICE_STATUS if self.downloading else MISSING_VOICE_STATUS
+            )
+            return
         self.reply = reply
         with self.condition:
             self.generation += 1
@@ -137,7 +165,7 @@ class Speaker(QObject):
                     self.condition.wait()
             try:
                 voice = self._load_voice()
-            except Exception as error:  # noqa: BLE001  # Any download or load failure only stops speech
+            except Exception as error:  # noqa: BLE001  # A load failure only stops speech
                 self._finish(str(error))
                 continue
             try:
@@ -219,8 +247,32 @@ class Speaker(QObject):
             return np.zeros(0, np.float32)
         return np.asarray(samples, np.float32).ravel()
 
+    def _download(self) -> None:
+        """Download the pinned voice files into the cache and report the outcome."""
+        try:
+            from huggingface_hub import (  # Slow import, only when downloading
+                snapshot_download,
+            )
+
+            snapshot_download(
+                VOICE_REPO,
+                revision=VOICE_REVISION,
+                local_dir=str(self.cache_dir),
+                allow_patterns=[MODEL_FILE, VOICES_FILE],
+            )
+            if not self.model_downloaded():
+                raise OSError("The download did not include both voice files.")
+        except Exception as error:  # noqa: BLE001
+            self.download_finished.emit(str(error) or type(error).__name__)
+            return
+        self.download_finished.emit("")
+
+    def _on_download_finished(self, _error: str) -> None:
+        """Allow a new download once the worker has finished."""
+        self.downloading = False
+
     def _load_voice(self) -> Any:
-        """Download the voice on first use, then load it once for the session.
+        """Load the local voice once for the session.
 
         Returns:
             Any: The Kokoro voice.
@@ -229,23 +281,6 @@ class Speaker(QObject):
             return self.voice
         model = self.cache_dir / MODEL_FILE
         voices = self.cache_dir / VOICES_FILE
-        if not (model.exists() and voices.exists()):
-            self.downloading.emit(True)
-            try:
-                from huggingface_hub import (  # Slow import, only when downloading
-                    snapshot_download,
-                )
-
-                snapshot_download(
-                    VOICE_REPO,
-                    revision=VOICE_REVISION,
-                    local_dir=str(self.cache_dir),
-                    allow_patterns=[MODEL_FILE, VOICES_FILE],
-                )
-            except Exception as error:
-                raise RuntimeError(DOWNLOAD_FAILED) from error
-            finally:
-                self.downloading.emit(False)
         try:
             import onnxruntime  # type: ignore[import-untyped]
             from kokoro_onnx import Kokoro  # Slow import, only when speaking
