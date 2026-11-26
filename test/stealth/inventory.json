@@ -239,6 +239,11 @@
     "core/ai_receiver.py:AIReceiver.__init__/self.status.connect(self._on_response_status)",
     "ui/chat/chat_area.py:ChatArea.__init__/self.render_timer.timeout.connect(self._render_stream)",
     "ui/window/settings_page.py:SettingsPage.__init__/self.resume_facts.progress.connect(self._show_fact_sheets)",
-    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_sheets_button.clicked.connect(self._update_fact_sheets)"
+    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_sheets_button.clicked.connect(self._update_fact_sheets)",
+    "ui/window/main_window.py:MainWindow.__init__/self.chat_area.messages_cleared.connect(self.speaker.stop)",
+    "ui/window/main_window.py:MainWindow.__init__/self.chat_area.reply_changed.connect(self.speaker.update)",
+    "ui/window/main_window.py:MainWindow.__init__/self.speaker.downloading.connect(self._on_voice_downloading)",
+    "ui/window/main_window.py:MainWindow.__init__/self.speaker.failed.connect(self._on_speech_failed)",
+    "ui/window/main_window.py:MainWindow.__init__/self.speaker.spoken.connect(self.transcriber.note_spoken)"
   ]
 }

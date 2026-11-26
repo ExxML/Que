@@ -341,6 +341,7 @@ class EvidenceStore:
                     )
                     code = {
                         27: "Escape",
+                        32: "Space",
                         37: "ArrowLeft",
                         38: "ArrowUp",
                         39: "ArrowRight",

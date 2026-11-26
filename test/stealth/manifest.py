@@ -8,6 +8,8 @@ HOTKEYS = [
     (8, 69, "toggle_window_visibility", False, True),
     (12, 82, "toggle_recording", False, True),
     (14, 81, "close_app", False, True),
+    (8, 86, "speak_latest", False, True),
+    (8, 32, "toggle_speech", False, True),
     (8, 37, "move_window_left", True, False),
     (8, 39, "move_window_right", True, False),
     (8, 38, "move_window_up", True, False),
@@ -195,6 +197,12 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
             "audio.devices",
             "Repeat silence/speech/playback using speakers then headset; select and refresh Que's microphone and playback devices while sharing and recording; change and disable devices; test unavailable device and shutdown.",
             "Verify saved choices across restart and apply them on the next recording. Record devicechange, focus, acquisition errors, mute/end, both transcripts and intentional silence intervals.",
+            "audio",
+        ),
+        (
+            "audio.speech",
+            "With the browser capturing audio and Que recording, press Caps Lock+V before a reply's first word, while it streams and after it ends; pause and resume with Caps Lock+Space; Caps Lock+click a reply line; repeat on a nondefault Speech output device, then while hidden.",
+            "Verify speech plays only on the selected Speech output, starts on the first streamed word, pauses and resumes, and restarts from the clicked line. Verify browser audio continuity, no focus or key events on the page, no Them transcript of Que's own voice, and that Que's audio session closes when reading ends.",
             "audio",
         ),
         (

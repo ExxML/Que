@@ -55,6 +55,10 @@ class ChatArea(QScrollArea):
     """Display message history in a scrollable chat area."""
 
     screenshot_opened = pyqtSignal(list, int)  # Screenshot paths, index to show
+    reply_changed = pyqtSignal(
+        object, str, bool
+    )  # Reply bubble, its Markdown, whether finished
+    messages_cleared = pyqtSignal()
 
     def __init__(self, main_window: QWidget) -> None:
         super().__init__(main_window)
@@ -125,6 +129,8 @@ class ChatArea(QScrollArea):
             return
         first = not self.streaming_text or self.streaming_text.isspace()
         self.streaming_text += chunk_text
+        # Before the redraw throttle, so speech reaches each new word at once
+        self.reply_changed.emit(self.streaming_bubble, self.streaming_text, False)
         if first and not chunk_text.strip():
             return
 
@@ -160,6 +166,7 @@ class ChatArea(QScrollArea):
         # Draw text still waiting for the redraw interval, and drop any finished tool status
         if self.streaming_text or status:
             self.streaming_bubble.set_bot_message(self.streaming_text)
+        self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self._reset_stream()
 
     def stop_assistant_stream(self) -> None:
@@ -170,6 +177,7 @@ class ChatArea(QScrollArea):
         self.streaming_bubble.status = ""
         self.streaming_bubble.message = self.streaming_text
         self.streaming_bubble.mark_stopped()
+        self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self._reset_stream()
 
     def show_stream_error(self, error_msg: str) -> None:
@@ -185,6 +193,8 @@ class ChatArea(QScrollArea):
             return
         self.streaming_bubble.stop_loading_animation()
         self.streaming_bubble.status = ""
+        # Speech ends with what streamed before the error, never reading the error itself
+        self.reply_changed.emit(self.streaming_bubble, self.streaming_text, True)
         self.streaming_bubble.set_bot_message(error_msg)
         self._reset_stream()
 
@@ -192,6 +202,7 @@ class ChatArea(QScrollArea):
         """Clear all messages from the chat area."""
         # Reset streaming state before deleting widgets to avoid dangling references
         self._reset_stream()
+        self.messages_cleared.emit()
         self.pending_message_scroll = None
         self.reply_scroll_anchor = None
         self.chat_container.setMinimumHeight(0)
@@ -221,6 +232,34 @@ class ChatArea(QScrollArea):
             self.chat_layout.insertWidget(self.chat_layout.count() - 1, bubble)
         # Bound methods, unlike lambdas, are dropped if this widget is deleted before the timer fires
         QTimer.singleShot(0, self._jump_to_bottom)
+
+    def latest_reply(self) -> ChatBubble | None:
+        """Find the newest AI reply, including one still waiting for its first words.
+
+        Returns:
+            ChatBubble | None: The reply, or None in an empty chat.
+        """
+        if self.streaming_bubble is not None:
+            return self.streaming_bubble
+        for index in range(self.chat_layout.count() - 1, -1, -1):
+            item = self.chat_layout.itemAt(index)
+            widget = item.widget() if item is not None else None
+            if isinstance(widget, ChatBubble) and not widget.is_user:
+                return widget
+        return None
+
+    def reply_text(self, chat_bubble: ChatBubble) -> tuple[str, bool]:
+        """Return a reply's Markdown so far and whether it has finished streaming.
+
+        Args:
+            chat_bubble (ChatBubble): The reply.
+
+        Returns:
+            tuple[str, bool]: The Markdown, and whether the reply has finished.
+        """
+        if chat_bubble is self.streaming_bubble:
+            return self.streaming_text, False
+        return chat_bubble.message, True
 
     def shortcut_scroll(self, amount: int) -> None:
         """Scroll the chat area by a specified amount.

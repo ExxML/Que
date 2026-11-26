@@ -41,6 +41,7 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
     "Audio": {
         "audio_device_you": "Microphone",
         "audio_device_them": "Playback device",
+        "audio_device_speaker": "Speech output",
     },
     "Window": {
         "system_tray": "Show system tray icon",
@@ -133,7 +134,7 @@ class SettingsStore:
         """Return the saved WASAPI device name or an empty string for the Windows default.
 
         Args:
-            source (str): The transcript source, you or them.
+            source (str): The transcript source, you or them, or speaker for speech output.
 
         Returns:
             str: The device name to match when recording starts.
@@ -297,10 +298,10 @@ class SettingsStore:
         self._write({**self.data, "whisper_model": model})
 
     def save_audio_device(self, source: str, name: str) -> None:
-        """Atomically save one transcript source's audio device.
+        """Atomically save one transcript source's or the speech output's audio device.
 
         Args:
-            source (str): The transcript source, you or them.
+            source (str): The transcript source, you or them, or speaker for speech output.
             name (str): The WASAPI device name, or an empty string for the Windows default.
         """
         self._write({**self.data, f"audio_device_{source}": name})
@@ -424,6 +425,7 @@ class SettingsStore:
             "whisper_model": self.whisper_model(),
             "audio_device_you": self.audio_device("you"),
             "audio_device_them": self.audio_device("them"),
+            "audio_device_speaker": self.audio_device("speaker"),
             "system_tray": self.system_tray(),
             "capture_hidden": self.capture_hidden(),
             "click_through": self.click_through(),

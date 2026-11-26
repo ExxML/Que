@@ -27,9 +27,12 @@ from core.chat_history import ChatHistory, Conversation
 from core.prompts import shortcut_note
 from core.provider_catalog import ProviderCatalog, ProviderResult
 from core.screenshot_manager import ScreenshotManager
+from core.speaker import DOWNLOAD_NOTICE, Speaker
 from core.transcriber import Transcriber
 from core.window_policy import install_window_policy
 from ui.chat.chat_area import ChatArea
+from ui.chat.chat_bubble import ChatBubble
+from ui.chat.speech_text import source_offset
 from ui.directory_picker import choose_directory
 from ui.input.input_field import InputField
 from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, WINDOW_ALPHA, qcolor, qss
@@ -54,6 +57,7 @@ class MainWindow(QWidget):
         ai_sender: AISender,
         screenshot_manager: ScreenshotManager,
         transcriber: Transcriber | None = None,
+        speaker: Speaker | None = None,
     ) -> None:
         super().__init__()
         application = QApplication.instance()
@@ -62,6 +66,7 @@ class MainWindow(QWidget):
         self.ai_sender = ai_sender
         self.screenshot_manager = screenshot_manager
         self.transcriber = transcriber or Transcriber(ai_sender.settings_store)
+        self.speaker = speaker or Speaker(ai_sender.settings_store)
         self.chat_history = ChatHistory()
         # The open chat keeps one saved conversation per provider, mirroring AISender.contexts
         self.conversations: dict[str, Conversation | None] = {
@@ -105,6 +110,11 @@ class MainWindow(QWidget):
         self.transcriber.recording_changed.connect(
             self.input_field.input_settings.set_recording
         )
+        self.chat_area.reply_changed.connect(self.speaker.update)
+        self.chat_area.messages_cleared.connect(self.speaker.stop)
+        self.speaker.spoken.connect(self.transcriber.note_spoken)
+        self.speaker.downloading.connect(self._on_voice_downloading)
+        self.speaker.failed.connect(self._on_speech_failed)
         self._show_claude_directory()
         self._refresh_models()
         if self.ai_sender.provider == "gemini" and not self.ai_sender.api_key:
@@ -168,6 +178,25 @@ class MainWindow(QWidget):
             enabled (bool): Whether the window ignores mouse input.
         """
         self.mouse_routing_changed.emit(not enabled)
+
+    def speak_latest(self) -> None:
+        """Read the newest reply aloud from its start, waiting for its first words if needed."""
+        reply = self.chat_area.latest_reply()
+        if reply is not None:
+            self.speaker.speak(reply, *self.chat_area.reply_text(reply))
+
+    def speak_from(self, chat_bubble: ChatBubble, global_position: QPoint) -> None:
+        """Read a reply aloud from the start of the shown line under a point.
+
+        Args:
+            chat_bubble (ChatBubble): The clicked reply.
+            global_position (QPoint): The click in global coordinates.
+        """
+        line = chat_bubble.line_at(global_position)
+        if line is None:
+            return
+        text, complete = self.chat_area.reply_text(chat_bubble)
+        self.speaker.speak(chat_bubble, text, complete, source_offset(text, *line))
 
     def send_message(self, message: str, display: str = "") -> None:
         """Send a user message with any pending screenshot attachments.
@@ -272,6 +301,7 @@ class MainWindow(QWidget):
         if self.worker is not None:
             self.worker.stop()
         self.transcriber.stop()
+        self.speaker.stop()
 
         self.chat_area.clear_chat_messages()
         self.ai_sender.reset_chat()
@@ -498,6 +528,25 @@ class MainWindow(QWidget):
         self.visibility_timer.setInterval(1000)
         self.visibility_timer.timeout.connect(self._ensure_window_visible)
         self.visibility_timer.start()
+
+    def _on_voice_downloading(self, downloading: bool) -> None:
+        """Show that speech waits for its voice to download, and clear the notice after.
+
+        Args:
+            downloading (bool): Whether the download is running.
+        """
+        if downloading:
+            self.status_banner.show_warning(DOWNLOAD_NOTICE)
+        else:
+            self.status_banner.clear_warning(DOWNLOAD_NOTICE)
+
+    def _on_speech_failed(self, message: str) -> None:
+        """Show why speech stopped.
+
+        Args:
+            message (str): The failure.
+        """
+        self.status_banner.show_warning(message, lasting=False)
 
     def _on_models_loaded(self, revision: int, result: ProviderResult) -> None:
         """Install discovered models on the Qt thread.

@@ -460,6 +460,7 @@ def run() -> dict[str, object]:
             device_names = {
                 "you": ["Fixture microphone"],
                 "them": ["Fixture headset [Loopback]"],
+                "speaker": ["Fixture earbuds"],
             }
             with patch.object(
                 transcriber,
@@ -485,6 +486,7 @@ def run() -> dict[str, object]:
                 ("transcription", settings_page.whisper_combo, 2),
                 ("audio-you", settings_page.audio_combos["you"], audio_tab),
                 ("audio-them", settings_page.audio_combos["them"], audio_tab),
+                ("audio-speaker", settings_page.audio_combos["speaker"], audio_tab),
             ):
                 with patch.object(
                     transcriber,

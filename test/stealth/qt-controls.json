@@ -175,6 +175,13 @@
     "parent_class": "QFrame"
   },
   {
+    "class": "QListView",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QFrame",
+    "enabled": true
+  },
+  {
     "class": "QMenu",
     "name": "",
     "accessible": "",
@@ -696,6 +703,13 @@
     "class": "QPushButton",
     "name": "",
     "accessible": "Show transcript, 2 lines not yet sent",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "Speech output",
     "parent_class": "QWidget",
     "enabled": true
   },

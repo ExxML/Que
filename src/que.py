@@ -27,6 +27,7 @@ if __name__ == "__main__":
     transcriber = Transcriber(ai_sender.settings_store)
     main_window = MainWindow(ai_sender, screenshot_manager, transcriber)
     app.aboutToQuit.connect(transcriber.stop)
+    app.aboutToQuit.connect(main_window.speaker.stop)
     app.aboutToQuit.connect(main_window.worker.stop)
     app.aboutToQuit.connect(ai_sender.reset_chat)
     app.aboutToQuit.connect(ai_sender.claude_bridge.close)
@@ -46,6 +47,11 @@ if __name__ == "__main__":
 # nuitka-project: --include-package=google.genai
 # nuitka-project: --include-package=onnx_asr
 # nuitka-project: --include-package-data=onnx_asr
+# Speech loads its voice lazily; espeak-ng's library and data ship inside espeakng_loader.
+# nuitka-project: --include-package=kokoro_onnx
+# nuitka-project: --include-package-data=kokoro_onnx
+# nuitka-project: --include-package=phonemizer
+# nuitka-project: --include-package-data=espeakng_loader
 # Hugging Face loads download helpers lazily. Its lock helpers also load SoftFileLock on Windows.
 # nuitka-project: --include-package=huggingface_hub.utils
 # nuitka-project: --include-module=filelock._soft

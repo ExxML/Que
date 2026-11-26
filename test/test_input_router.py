@@ -22,8 +22,10 @@ from PyQt6.QtWidgets import (
 )
 from qt_application import application
 
+from core.hook_engine import QUE_KEY
 from core.model_catalog import ModelOption
 from core.window_policy import native
+from ui.chat.chat_bubble import ChatBubble
 from ui.input.input_field import InputField
 from ui.input.input_router import InputRouter, KeyTranslator
 
@@ -417,6 +419,33 @@ class PointerTests(RouterTestCase):
         self.assertLessEqual(self.main_window.height(), 151)
         self.router.drag = None
         self.router._drag_to(QPoint(0, 0))  # No drag: nothing to apply
+
+    def test_caps_click_on_a_reply_reads_it_aloud(self) -> None:
+        """Read from the clicked reply on Caps Lock+click, without selecting or focusing."""
+        reply = ChatBubble("", is_user=False)
+        reply.set_bot_message("A reply to read.")
+        self.main_window.layout().addWidget(reply)  # type: ignore[union-attr]
+        self.main_window.speak_from = MagicMock()  # type: ignore[attr-defined]
+        self.app.processEvents()
+        # The router divides native pixels by the device pixel ratio
+        point = (
+            reply.mapTo(self.main_window, reply.rect().center())
+            * self.main_window.devicePixelRatioF()
+        )
+        self.shortcuts.hook_client.held_modifiers = (QUE_KEY,)
+        self.press(WM_LBUTTONDOWN, point)
+        self.press(WM_LBUTTONUP, point)
+        self.main_window.speak_from.assert_called_once()  # type: ignore[attr-defined]
+        self.assertIs(self.main_window.speak_from.call_args.args[0], reply)  # type: ignore[attr-defined]
+        self.shortcuts.arm_input.assert_called_with(False)
+        self.assertEqual(self.router.pressed, {})
+
+    def test_caps_click_elsewhere_is_an_ordinary_click(self) -> None:
+        """Deliver Caps Lock+click to anything that is not a reply as a normal click."""
+        self.shortcuts.hook_client.held_modifiers = (QUE_KEY,)
+        self.press(WM_LBUTTONDOWN, self.inside)
+        self.press(WM_LBUTTONUP, self.inside)
+        self.assertIn(QEvent.Type.MouseButtonPress, self.widget.received)
 
     def test_hovering_the_same_widget_sends_no_new_enter(self) -> None:
         """Send enter events only when the hovered widget changes."""

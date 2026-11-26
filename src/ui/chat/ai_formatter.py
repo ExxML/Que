@@ -159,6 +159,61 @@ def format_message(message: str) -> str:
     )
 
 
+def display_math(line: str) -> re.Match[str] | None:
+    """Match a line that opens display maths on its own, rather than inline maths in a sentence.
+
+    Args:
+        line (str): The line to check.
+
+    Returns:
+        re.Match[str] | None: The opening delimiter and the rest of the line, or None.
+    """
+    math = DISPLAY_MATH_RE.match(line)
+    if math is None:
+        return None
+    closer = "$$" if math.group(1) == "$$" else "\\]"
+    rest = math.group(2).rstrip()
+    return (
+        math
+        if closer not in rest or (rest.endswith(closer) and rest.count(closer) == 1)
+        else None
+    )
+
+
+def is_table_start(lines: list[str], i: int) -> bool:
+    """Check whether a line is a table header row followed by its separator row.
+
+    Args:
+        lines (list[str]): The lines being rendered.
+        i (int): The index of the candidate header row.
+
+    Returns:
+        bool: Whether a table starts at the line.
+    """
+    return (
+        "|" in lines[i]
+        and i + 1 < len(lines)
+        and "|" in lines[i + 1]
+        and bool(TABLE_SEPARATOR_RE.match(lines[i + 1]))
+    )
+
+
+def table_cells(row: str) -> list[str]:
+    """Split a table row into its trimmed cells, keeping escaped pipes inside cells.
+
+    Args:
+        row (str): The table row.
+
+    Returns:
+        list[str]: The cell texts.
+    """
+    row = row.strip()
+    row = row.removeprefix("|")
+    if row.endswith("|") and not row.endswith("\\|"):
+        row = row[:-1]
+    return [cell.strip().replace("\\|", "|") for cell in re.split(r"(?<!\\)\|", row)]
+
+
 def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
     """Render a run of Markdown lines as a sequence of block elements.
 
@@ -193,7 +248,7 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
             blocks.append(
                 _code_block("\n".join(_two_space_indent(code)), language, top)
             )
-        elif math := _display_math(line):
+        elif math := display_math(line):
             closer = "$$" if math.group(1) == "$$" else "\\]"
             body = [math.group(2)]
             i += 1
@@ -235,7 +290,7 @@ def _render_blocks(lines: list[str], gap: int, depth: int = 0) -> str:
         elif LIST_RE.match(line):
             items, i = _collect_list(lines, i)
             blocks.append(_list(items, top, depth))
-        elif _is_table_start(lines, i):
+        elif is_table_start(lines, i):
             rows, separator = [lines[i]], lines[i + 1]
             i += 2
             while i < len(lines) and "|" in lines[i] and lines[i].strip():
@@ -267,51 +322,12 @@ def _starts_block(lines: list[str], i: int) -> bool:
     line = lines[i]
     return bool(
         FENCE_RE.match(line)
-        or _display_math(line)
+        or display_math(line)
         or HEADING_RE.match(line)
         or RULE_RE.match(line)
         or QUOTE_RE.match(line)
         or LIST_RE.match(line)
-        or _is_table_start(lines, i)
-    )
-
-
-def _display_math(line: str) -> re.Match[str] | None:
-    """Match a line that opens display maths on its own, rather than inline maths in a sentence.
-
-    Args:
-        line (str): The line to check.
-
-    Returns:
-        re.Match[str] | None: The opening delimiter and the rest of the line, or None.
-    """
-    math = DISPLAY_MATH_RE.match(line)
-    if math is None:
-        return None
-    closer = "$$" if math.group(1) == "$$" else "\\]"
-    rest = math.group(2).rstrip()
-    return (
-        math
-        if closer not in rest or (rest.endswith(closer) and rest.count(closer) == 1)
-        else None
-    )
-
-
-def _is_table_start(lines: list[str], i: int) -> bool:
-    """Check whether a line is a table header row followed by its separator row.
-
-    Args:
-        lines (list[str]): The lines being rendered.
-        i (int): The index of the candidate header row.
-
-    Returns:
-        bool: Whether a table starts at the line.
-    """
-    return (
-        "|" in lines[i]
-        and i + 1 < len(lines)
-        and "|" in lines[i + 1]
-        and bool(TABLE_SEPARATOR_RE.match(lines[i + 1]))
+        or is_table_start(lines, i)
     )
 
 
@@ -450,12 +466,12 @@ def _table(rows: list[str], separator: str, top: int) -> str:
         else "right"
         if cell.endswith(":")
         else "left"
-        for cell in _cells(separator)
+        for cell in table_cells(separator)
     ]
     html_rows: list[str] = []
     for index, row in enumerate(rows):
         cells: list[str] = []
-        for column, cell in enumerate(_cells(row)):
+        for column, cell in enumerate(table_cells(row)):
             align = alignments[column] if column < len(alignments) else "left"
             style = f"padding: 4px 10px; border: 1px solid {RULE};"
             if index == 0:
@@ -468,22 +484,6 @@ def _table(rows: list[str], separator: str, top: int) -> str:
         f"<table cellspacing='0' cellpadding='0' style='margin-top: {top}px; border-collapse: collapse;'>"
         f"{''.join(html_rows)}</table>"
     )
-
-
-def _cells(row: str) -> list[str]:
-    """Split a table row into its trimmed cells, keeping escaped pipes inside cells.
-
-    Args:
-        row (str): The table row.
-
-    Returns:
-        list[str]: The cell texts.
-    """
-    row = row.strip()
-    row = row.removeprefix("|")
-    if row.endswith("|") and not row.endswith("\\|"):
-        row = row[:-1]
-    return [cell.strip().replace("\\|", "|") for cell in re.split(r"(?<!\\)\|", row)]
 
 
 def _inline(text: str) -> str:

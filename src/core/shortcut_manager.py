@@ -369,6 +369,14 @@ class ShortcutManager(QObject):
         self._screenshot()
         self.prompt_signal.emit(INTERVIEW_LABEL, INTERVIEW_PROMPT)
 
+    def _speak_latest(self) -> None:
+        """Read the newest reply aloud from the start."""
+        self.main_window.speak_latest()
+
+    def _toggle_speech(self) -> None:
+        """Pause or resume reading aloud."""
+        self.main_window.speaker.toggle_pause()
+
     def _dismiss_warnings(self) -> None:
         """Dismiss the visible protection warnings on the Qt thread."""
         self.main_window.status_banner.dismiss_all()

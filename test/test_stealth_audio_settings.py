@@ -71,6 +71,7 @@ class AudioSettingsTests(unittest.TestCase):
                 "index": 18,
                 "isLoopbackDevice": False,
                 "maxInputChannels": 0,
+                "maxOutputChannels": 2,
             },
         ]
 
@@ -81,9 +82,17 @@ class AudioSettingsTests(unittest.TestCase):
         self.assertEqual(self.store.audio_device("you"), "")
         self.page.tab_bar.setCurrentIndex(self.page.audio_tab_index)
         self._wait_for_devices()
-        you, them = self.page.audio_combos.values()
+        you, them, speaker = self.page.audio_combos.values()
         self.assertEqual(
             [you.itemText(i) for i in range(you.count())], ["Windows default", MIC]
+        )
+        self.assertEqual(
+            [speaker.itemText(i) for i in range(speaker.count())],
+            ["Windows default", "Playback endpoint"],
+        )
+        speaker.setCurrentIndex(1)
+        self.assertEqual(
+            SettingsStore(self.store.path).audio_device("speaker"), "Playback endpoint"
         )
         self.assertEqual(
             [them.itemText(i) for i in range(them.count())],

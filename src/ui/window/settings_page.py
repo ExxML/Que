@@ -659,7 +659,7 @@ class SettingsPage(QWidget):
                 "Download the imported model if it is unavailable on this device."
             )
         if (
-            selected & {"audio_device_you", "audio_device_them"}
+            selected & {"audio_device_you", "audio_device_them", "audio_device_speaker"}
             and self.audio_refresh.isEnabled()
         ):
             self._on_audio_devices_loaded(self.audio_devices, "")
@@ -696,7 +696,7 @@ class SettingsPage(QWidget):
         self.save_status.setText("Imported settings saved.")
 
     def _init_audio_tab(self) -> None:
-        """Build the two independent recording source selectors."""
+        """Build the two independent recording source selectors and the speech output selector."""
         self.audio_tab_index = self.tab_bar.count()
         layout = self._add_tab("Audio")
         self.audio_combos: dict[str, QComboBox] = {}
@@ -710,6 +710,11 @@ class SettingsPage(QWidget):
                 "them",
                 "Them · Playback device",
                 "Choose the speakers or headphones your call or app plays through.",
+            ),
+            (
+                "speaker",
+                "Speech output",
+                "Choose where Que reads replies aloud (Caps Lock+V), such as your earbuds.",
             ),
         ):
             title = QLabel(label)
@@ -734,7 +739,9 @@ class SettingsPage(QWidget):
             combo.currentIndexChanged.connect(
                 lambda index, source=source: self._save_audio_device(source, index)
             )
-        hint_label = QLabel("Changes apply the next time you start recording.")
+        hint_label = QLabel(
+            "Changes apply the next time you start recording or Que starts reading."
+        )
         hint_label.setWordWrap(True)
         layout.addWidget(hint_label)
         self.audio_refresh = QPushButton("Refresh devices")

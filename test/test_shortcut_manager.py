@@ -45,6 +45,8 @@ class FakeMainWindow(QWidget):
         self.apply_preset = MagicMock()
         self.transcriber = MagicMock()
         self.settings_page = MagicMock()
+        self.speak_latest = MagicMock()
+        self.speaker = MagicMock()
 
 
 class ShortcutTestCase(unittest.TestCase):
@@ -90,6 +92,8 @@ class ActionTests(ShortcutTestCase):
             "toggle_recording": window.transcriber.toggle,
             "toggle_click_through": window.settings_page.click_through_checkbox.toggle,
             "dismiss_warnings": window.status_banner.dismiss_all,
+            "speak_latest": window.speak_latest,
+            "toggle_speech": window.speaker.toggle_pause,
         }
         for name, handler in expectations.items():
             with self.subTest(action=name):

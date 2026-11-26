@@ -285,6 +285,33 @@ class TranscriptDeliveryTests(unittest.TestCase):
             [segment.source for segment in self.transcriber.segments], ["them", "you"]
         )
 
+    def test_spoken_reply_is_not_transcribed_as_them(self) -> None:
+        """Drop Que's own voice heard on the playback device, but never your own words."""
+        self.transcriber.recording = True
+        self.transcriber.note_spoken("Use a hash map so each lookup is constant time.")
+        self.transcriber.note_spoken("Then sort the array once.")
+        self._record_utterance("them", "use a hash map so each lookup is constant")
+        self._record_utterance("you", "Use a hash map so each lookup is constant time.")
+        self._record_utterance("them", "So what is the time complexity of the sort?")
+        self._record_utterance("them", "Okay.")
+        self.assertEqual(
+            [(segment.source, segment.text) for segment in self.transcriber.segments],
+            [
+                ("you", "Use a hash map so each lookup is constant time."),
+                ("them", "So what is the time complexity of the sort?"),
+                ("them", "Okay."),
+            ],
+        )
+
+    def test_old_speech_is_forgotten(self) -> None:
+        """Keep only speech recent enough to come back through the playback device."""
+        with patch("core.transcriber.time.monotonic", side_effect=[0.0, 100.0]):
+            self.transcriber.note_spoken("First sentence spoken long ago.")
+            self.transcriber.note_spoken("Second sentence.")
+        self.assertEqual(
+            [text for _when, text in self.transcriber.spoken], ["Second sentence."]
+        )
+
     def test_start_without_model_asks_for_download(self) -> None:
         """Show a settings notice instead of recording or downloading on first record."""
         statuses: list[str] = []

@@ -61,6 +61,18 @@ WORKFLOWS = {
         "select nondefault You and Them devices by keyboard and pointer, then verify the next recording and restart",
         "unplug a saved device, refresh, verify the unavailable selection, and return to Windows default",
     ),
+    "audio.speech": (
+        "download the voice on first use",
+        "read a pending reply from its first streamed word",
+        "catch up with a streaming reply and resume on the next word",
+        "pause and resume while reading",
+        "restart from the beginning while reading",
+        "read from a Caps Lock+clicked line",
+        "read on a nondefault Speech output device",
+        "read while hidden",
+        "read while recording, with Que's voice on the Them device",
+        "stop reading by starting a new chat",
+    ),
     "audio.que-first": (
         "start browser capture after Que",
         "stop Que during transcription, then restart promptly and speak a different phrase",

@@ -36,12 +36,15 @@ MOD_QUE = 0x08
 CHORD_BITS: dict[int, int] = {**VK_TO_MOD_BIT, QUE_KEY: MOD_QUE}
 PRESET_COUNT = 10  # One per number key, 1 to 9 then 0
 VK_ESCAPE = 0x1B
+VK_SPACE = 0x20
 
 # (modifier mask, virtual key, action name, repeats while held, active while hidden)
 HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE, ord("E"), "toggle_window_visibility", False, True),
     (MOD_QUE | MOD_SHIFT, ord("R"), "toggle_recording", False, True),
     (MOD_QUE | MOD_ALT | MOD_SHIFT, ord("Q"), "close_app", False, True),
+    (MOD_QUE, ord("V"), "speak_latest", False, True),
+    (MOD_QUE, VK_SPACE, "toggle_speech", False, True),
     (MOD_QUE, VK_LEFT, "move_window_left", True, False),
     (MOD_QUE, VK_RIGHT, "move_window_right", True, False),
     (MOD_QUE, VK_UP, "move_window_up", True, False),

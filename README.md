@@ -20,6 +20,8 @@ Settings stay inside the existing overlay. The Gemini credential and provider de
 
 **History:** open the sidebar with the ☰ button or **Caps Lock+H**. Each completed reply is saved to `src/data/chat_history.json` (plain JSON, excluded from Git) under the conversation's provider, shown as a **Gemini** or **Claude** label. Selecting a conversation restores its transcript and resumes its server-side context, switching the active provider for this session if needed (the saved default provider is unchanged). **Caps Lock+N** / the **+** (New chat) button starts a new chat and keeps the previous one in history. Delete a conversation with its × button (click twice) or the Delete key (press twice). Screenshots are not saved in history, and Gemini may expire old server-side conversations, in which case continuing shows an error and you can start a new chat.
 
+**Reading aloud:** **Caps Lock+V** reads the newest reply into your earbuds with a local neural voice (Kokoro, downloaded once on first use, about 350 MB), starting from its first word even if the reply is still streaming. **Caps Lock+Space** pauses and resumes, **Caps Lock+V** again starts over, and **Caps Lock+click** on a line of any reply reads from that line. Code blocks are skipped, and inline code and symbols are read as words (`a <= b` is "a less than or equal to b"). Choose the device in Settings → Audio → **Speech output**. Don't share "computer sound" in a meeting from that device: the meeting would hear Que.
+
 Press **Caps Lock+D** to dismiss all open protection warnings while Que is visible. Click the title bar’s warning badge to reopen ongoing warnings.
 
 Run backend and UI regression tests without API calls from PowerShell:

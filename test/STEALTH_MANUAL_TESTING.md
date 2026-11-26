@@ -40,6 +40,9 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+E | Show/hide Que | yes |
   | Caps Lock+Shift+R | Start/stop recording | yes |
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
+  | Caps Lock+V | Read the newest reply aloud from its start (waits for a pending reply's first word) | yes |
+  | Caps Lock+Space | Pause/resume reading aloud | yes |
+  | Caps Lock+click on a reply line | Read that reply aloud from the clicked line | no |
   | Caps Lock+Arrow keys | Move Que (hold to repeat) | no |
   | Caps Lock+Alt+W/S/A/D | Move the bottom edge up/down or the right edge left/right (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
@@ -186,6 +189,17 @@ Also check by eye, without an attempt:
 2. `aud("audio.que-first.stage-1",12,25)`: at ~3 s press Caps Lock+Shift+R (Que records); at ~12 s the page turns on its microphone; at ~15 s say "The blue robot counts seven stars."; at ~25 s the page says "The green robot counts nine moons."; at ~38 s press Caps Lock+Shift+R to stop.
 3. Expect in Que's transcript (operator reads it): a **You** line with the spoken phrase and a **Them** line with the page's phrase; no "silent" or "no speech" warnings; the caption shows the latest line. On the page: continuous audio samples, no mute/ended events.
 4. Repeat with the browser first: `aud("audio.browser-first",0,25)` turns the page's microphone on at once; press Caps Lock+Shift+R at ~5 s, speak at ~15 s, stop at ~38 s. The browser asks for microphone permission the first time; answer it before the attempt (for example by clicking the page's microphone button once during setup), or the attempt is void.
+
+### 7.5a Que speech
+
+Que's voice is real audio, so another program can capture it. Only automated tests cover the reading logic. These checks cover what a page, meeting app or recorder can observe.
+
+1. In Settings → Audio, set **Speech output** to your earbuds (not the device a meeting app shares). The first Caps Lock+V downloads the voice (about 350 MB) and shows a notice until it finishes.
+2. With the page capturing microphone and tab audio, press Caps Lock+C, then Caps Lock+V at once. Expect speech only in the earbuds, starting with the reply's first word, and no page focus, key or audio-track events. Repeat with Que hidden (Caps Lock+E).
+3. Press Caps Lock+Space twice while it reads (it pauses, then resumes), Caps Lock+V again (it restarts), and Caps Lock+click a wrapped line (it reads from that line). Confirm a code block is never read.
+4. Open the Windows Volume Mixer while Que reads, then after it finishes. Que should appear only while it reads.
+5. Record (Caps Lock+Shift+R) with Speech output set to the same device as **Them**, and let Que read. The transcript must not show Que's own words as Them lines.
+6. **Known limit:** a meeting app sharing "computer sound" from the same device as Speech output captures Que's voice. Windows cannot exclude one app's playback from another app's loopback capture. Never share computer sound on the Speech output device.
 
 ### 7.6 Claude CLI processes
 

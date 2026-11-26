@@ -10,9 +10,9 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from PyQt6.QtCore import QPointF, Qt
+from PyQt6.QtCore import QPoint, QPointF, Qt
 from PyQt6.QtGui import QMouseEvent
 from PyQt6.QtWidgets import QApplication
 from qt_application import application
@@ -23,6 +23,7 @@ from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
+from core.speaker import DOWNLOAD_NOTICE
 from ui.window.main_window import MainWindow
 
 FLASH = ModelOption("flash", "Flash", ("low", "high"))
@@ -374,6 +375,102 @@ class HistoryTests(WindowTestCase):
         with patch.object(self.window.screenshot_viewer, "open_screenshots") as viewer:
             self.window._open_screenshots(["a.png"], 0)
         viewer.assert_called_once_with(["a.png"], 0)
+
+
+class SpeechTests(WindowTestCase):
+    """Read the newest reply, or a clicked line, aloud as it streams."""
+
+    def setUp(self) -> None:
+        """Replace the speaker so nothing plays, and record what the chat reports."""
+        super().setUp()
+        self.speaker = MagicMock()
+        self.window.speaker = self.speaker
+        self.changes: list[tuple[object, str, bool]] = []
+        self.window.chat_area.reply_changed.connect(
+            lambda reply, text, complete: self.changes.append((reply, text, complete))
+        )
+
+    def test_empty_chat_reads_nothing(self) -> None:
+        """Do nothing when there is no reply."""
+        self.window.speak_latest()
+        self.speaker.speak.assert_not_called()
+
+    def test_pending_reply_is_read_as_it_streams(self) -> None:
+        """Read a pending reply, then report each chunk and its end."""
+        chat = self.window.chat_area
+        chat.add_message("Question?", is_user=True)
+        self.window.speak_latest()
+        reply = chat.streaming_bubble
+        self.speaker.speak.assert_called_once_with(reply, "", False)
+        chat.append_to_stream("Hello ")
+        chat.append_to_stream("there.")
+        chat.finalize_assistant_stream()
+        self.assertEqual(
+            self.changes,
+            [
+                (reply, "Hello ", False),
+                (reply, "Hello there.", False),
+                (reply, "Hello there.", True),
+            ],
+        )
+        self.window.speak_latest()
+        self.speaker.speak.assert_called_with(reply, "Hello there.", True)
+
+    def test_stopped_and_failed_replies_end_speech_at_their_text(self) -> None:
+        """End speech where a stopped or failed reply ended, never reading the error."""
+        chat = self.window.chat_area
+        chat.add_message("One?", is_user=True)
+        chat.append_to_stream("Partial ")
+        chat.stop_assistant_stream()
+        chat.add_message("Two?", is_user=True)
+        chat.append_to_stream("Before ")
+        chat.show_stream_error("Error generating response: boom")
+        self.assertEqual(
+            [(text, complete) for _reply, text, complete in self.changes if complete],
+            [("Partial ", True), ("Before ", True)],
+        )
+
+    def test_clearing_the_chat_stops_speech(self) -> None:
+        """Stop reading when a new chat deletes the reply."""
+        cleared: list[bool] = []
+        self.window.chat_area.messages_cleared.connect(lambda: cleared.append(True))
+        self.window.chat_area.clear_chat_messages()
+        self.assertEqual(cleared, [True])
+
+    def test_clicked_line_is_read_from_its_start(self) -> None:
+        """Read from the start of the clicked line of a reply."""
+        chat = self.window.chat_area
+        chat.load_messages(
+            [
+                ("Q", True, "", ()),
+                ("First paragraph.\n\nSecond paragraph.", False, "", ()),
+            ]
+        )
+        self.window.show()
+        self.app.processEvents()
+        reply = chat.latest_reply()
+        assert reply is not None
+        label = reply.message_label
+        bottom = label.mapToGlobal(QPoint(5, label.height() - 3))
+        self.window.speak_from(reply, bottom)
+        args = self.speaker.speak.call_args.args
+        self.assertIs(args[0], reply)
+        self.assertEqual(args[1][args[3] :], "Second paragraph.")
+        self.assertTrue(args[2])
+        with patch.object(label, "findChildren", return_value=[]):
+            self.assertIsNone(reply.line_at(bottom))
+            self.window.speak_from(reply, bottom)
+        self.assertEqual(self.speaker.speak.call_count, 1)
+
+    def test_voice_download_and_failures_are_shown(self) -> None:
+        """Show the download notice while it runs and any failure after."""
+        self.window._on_voice_downloading(True)
+        self.assertIn(DOWNLOAD_NOTICE, self.warnings)
+        with patch.object(self.window.status_banner, "clear_warning") as clear:
+            self.window._on_voice_downloading(False)
+        clear.assert_called_once_with(DOWNLOAD_NOTICE)
+        self.window._on_speech_failed("No device.")
+        self.assertIn("No device.", self.warnings)
 
 
 if __name__ == "__main__":

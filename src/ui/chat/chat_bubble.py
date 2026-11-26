@@ -1,7 +1,7 @@
 import html
 import math
 
-from PyQt6.QtCore import QEvent, QRectF, Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import QEvent, QPoint, QPointF, QRectF, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QEnterEvent,
     QFont,
@@ -79,6 +79,38 @@ class ChatBubble(QWidget):
         self.message_label.setText(
             f"{format_message(self.message)}{note}" if self.message else note
         )
+
+    def line_at(self, global_position: QPoint) -> tuple[str, int] | None:
+        """Find the shown line under a point, as an offset into the shown text.
+
+        Args:
+            global_position (QPoint): The point in global coordinates.
+
+        Returns:
+            tuple[str, int] | None: The shown text and where the line under the point starts,
+                or None when the label has not laid its text out.
+        """
+        label = self.message_label
+        documents = label.findChildren(QTextDocument)
+        if not documents:
+            return None
+        document = documents[0]
+        layout = document.documentLayout()
+        assert layout is not None
+        local = label.mapFromGlobal(global_position) - label.contentsRect().topLeft()
+        # A fuzzy hit always finds the nearest character
+        position = max(0, layout.hitTest(QPointF(local), Qt.HitTestAccuracy.FuzzyHit))
+        block = document.findBlock(position)
+        text_layout = block.layout()
+        line = (
+            text_layout.lineForTextPosition(position - block.position())
+            if text_layout is not None
+            else None
+        )
+        start = block.position() + (
+            line.textStart() if line is not None and line.isValid() else 0
+        )
+        return document.toPlainText(), start
 
     def start_loading_animation(self) -> None:
         """Start the animated three-dot loading indicator."""

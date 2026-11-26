@@ -1,5 +1,6 @@
 import os
 import queue
+import re
 import threading
 import time
 from collections import deque
@@ -39,6 +40,10 @@ FILTER_TAPS_PER_RATIO = 20  # Low-pass length per multiple of 16 kHz; longer fil
 SOURCE_LABELS: dict[str, str] = {"you": "You", "them": "Them"}
 ECHO_SIMILARITY = 0.75  # shortcut: text match only catches whole-utterance echoes, use AEC if partial echoes slip through
 ECHO_WINDOW = 3  # Recent segments checked for speaker echo
+ECHO_RUN = 0.6  # Share of a heard line that one unbroken run of Que's words must cover
+SPOKEN_ECHO_SECONDS = (
+    30.0  # How long Que's own speech can come back through the playback device
+)
 PORTAUDIO_LOCK = threading.Lock()  # PortAudio setup and teardown are not thread-safe
 MODEL_FILES = (
     "config.json",
@@ -111,6 +116,7 @@ class Transcriber(QObject):
         self.downloading = ""  # Model being downloaded, or an empty string
         self.missing_model = False  # Showing the missing-model notice
         self.source_health: dict[str, str] = {}
+        self.spoken: deque[tuple[float, str]] = deque()  # When Que spoke, and what
         self.notice_timer = QTimer(self)
         self.notice_timer.setSingleShot(True)
         self.notice_timer.setInterval(MISSING_MODEL_MS)
@@ -246,6 +252,17 @@ class Transcriber(QObject):
         self.sent_seq = self.next_seq - 1
         self.changed.emit()
 
+    def note_spoken(self, text: str) -> None:
+        """Remember words Que is speaking, so its own voice is not transcribed as Them.
+
+        Args:
+            text (str): The words handed to the speech output.
+        """
+        now = time.monotonic()
+        self.spoken.append((now, text))
+        while self.spoken and now - self.spoken[0][0] > SPOKEN_ECHO_SECONDS:
+            self.spoken.popleft()
+
     def _on_transcribed(self, source: str, text: str, session: object) -> None:
         """Append a finished utterance for the active recording on the Qt thread.
 
@@ -255,6 +272,19 @@ class Transcriber(QObject):
             session (object): The stop event identifying the recording.
         """
         if not self.recording or session is not self.stop_event:
+            return
+        # Que's own speech played on the recorded output; your microphone is never filtered,
+        # since you may repeat Que's answer aloud
+        now = time.monotonic()
+        if source == "them" and _recent_echo(
+            " ".join(
+                spoken
+                for when, spoken in self.spoken
+                if now - when <= SPOKEN_ECHO_SECONDS
+            ),
+            text,
+            ECHO_SIMILARITY,
+        ):
             return
         # Speakers echo into the microphone; keep one line, attributed to the computer audio
         for index in range(
@@ -917,22 +947,54 @@ class _Resampler:
 
 
 def _wasapi_devices(audio: Any) -> dict[str, list[dict[str, Any]]]:
-    """Group WASAPI microphones and playback loopbacks by transcript source.
+    """Group WASAPI microphones and playback loopbacks by transcript source, and outputs for speech.
 
     Args:
         audio (Any): The initialized PyAudio host.
 
     Returns:
-        dict[str, list[dict[str, Any]]]: Devices with capture channels for each source.
+        dict[str, list[dict[str, Any]]]: Devices with capture channels for each source, and
+            output devices under "speaker".
     """
-    devices: dict[str, list[dict[str, Any]]] = {source: [] for source in SOURCE_LABELS}
+    devices: dict[str, list[dict[str, Any]]] = {
+        source: [] for source in (*SOURCE_LABELS, "speaker")
+    }
     for device in audio.get_device_info_generator_by_host_api(
         host_api_type=pyaudiowpatch.paWASAPI
     ):
         if device["maxInputChannels"] > 0:
             source = "them" if device["isLoopbackDevice"] else "you"
             devices[source].append(device)
+        elif device.get("maxOutputChannels", 0) > 0 and not device["isLoopbackDevice"]:
+            devices["speaker"].append(device)
     return devices
+
+
+def _recent_echo(spoken: str, heard: str, similarity: float) -> bool:
+    """Check whether heard words are mostly a stretch of what Que just spoke, in order.
+
+    Args:
+        spoken (str): What Que spoke recently.
+        heard (str): A transcribed line.
+        similarity (float): The share of the heard words that must match.
+
+    Returns:
+        bool: Whether the line is Que's own voice transcribed.
+    """
+    heard_words = [word.lower() for word in re.findall(r"[A-Za-z0-9]+", heard)]
+    spoken_words = [word.lower() for word in re.findall(r"[A-Za-z0-9]+", spoken)]
+    if not heard_words or not spoken_words:
+        return False
+    blocks = SequenceMatcher(
+        None, spoken_words, heard_words, autojunk=False
+    ).get_matching_blocks()
+    # An echo is a near-verbatim run; scattered common words must not hide a real question
+    longest = max(block.size for block in blocks)
+    return (
+        longest >= min(3, len(heard_words))
+        and longest >= ECHO_RUN * len(heard_words)
+        and sum(block.size for block in blocks) >= similarity * len(heard_words)
+    )
 
 
 def _to_mono_16k(

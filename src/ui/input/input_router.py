@@ -26,10 +26,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from core.hook_engine import BUTTON_MESSAGES
+from core.hook_engine import BUTTON_MESSAGES, QUE_KEY
 from core.shortcut_manager import ShortcutManager
 from core.win32_hook import VK_TO_MOD_BIT
 from core.window_policy import native
+from ui.chat.chat_bubble import ChatBubble
 
 native.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
 native.GetWindowRect.restype = wintypes.BOOL
@@ -377,6 +378,12 @@ class InputRouter(QObject):
                 if not self._alive(target) or not target.isEnabled():
                     self.disarm()
                     return
+                if (
+                    button == Qt.MouseButton.LeftButton
+                    and self.hook_client.held_modifiers == (QUE_KEY,)
+                    and self._speak_from(target, global_position)
+                ):
+                    return
                 self.buttons |= button
                 self.pressed[button_value] = target
                 self._focus(self._focus_target(target))
@@ -483,6 +490,30 @@ class InputRouter(QObject):
         elif self._alive(target) and message in (0x20A, 0x20E):
             self._wheel(target, global_position, message, data)
         self.refresh_regions()
+
+    def _speak_from(self, widget: QWidget, global_position: QPoint) -> bool:
+        """Read a reply aloud from the clicked line when Caps Lock alone is held.
+
+        The click selects nothing and leaves typing focus where it was; its release finds no
+        pressed widget and is dropped.
+
+        Args:
+            widget (QWidget): The deepest widget under the pointer.
+            global_position (QPoint): The logical global position of the click.
+
+        Returns:
+            bool: Whether the click was on a reply and was used for speech.
+        """
+        candidate: QWidget | None = widget
+        while candidate is not None and not (
+            isinstance(candidate, ChatBubble) and not candidate.is_user
+        ):
+            candidate = candidate.parentWidget()
+        if candidate is None:
+            return False
+        self.shortcut_manager.arm_input(self._alive(self.target))
+        self.shortcut_manager.main_window.speak_from(candidate, global_position)
+        return True
 
     def _alive(self, widget: QWidget | None) -> TypeGuard[QWidget]:
         """Check a retained widget before accessing its C++ object.
