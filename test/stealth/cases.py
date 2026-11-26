@@ -67,7 +67,7 @@ WORKFLOWS = {
         "catch up with a streaming reply and resume on the next word",
         "pause and resume while reading",
         "restart from the beginning while reading",
-        "read from a Caps Lock+clicked line",
+        "right-click a reply line and read from it",
         "read on a nondefault Speech output device",
         "read while hidden",
         "read while recording, with Que's voice on the Them device",

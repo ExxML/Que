@@ -33,7 +33,7 @@ For a self-judging, click-through version of most of these tests, run `python te
 - Windows 11, unlocked, one session. Close any other Que instance.
 - The repository's virtual environment with `requirements.txt` installed (commands below use `.venv/Scripts/python.exe`; on PowerShell use `.venv\Scripts\python.exe`).
 - The browser under test (the guided runs so far used Edge stable only). The runner opens it with a fresh dedicated profile.
-- Know Que's shortcuts. **Every Que shortcut starts with Caps Lock**; press Caps Lock first, then the rest. Caps Lock and anything pressed while it is held never reach other apps, and Caps Lock never toggles while Que runs (Que turns it off at launch).
+- Know Que's shortcuts. **Every Que keyboard shortcut starts with Caps Lock**; press Caps Lock first, then the rest. Caps Lock and anything pressed while it is held never reach other apps, and Caps Lock never toggles while Que runs (Que turns it off at launch).
 
   | Shortcut | Action | Works while hidden |
   |---|---|---|
@@ -42,7 +42,7 @@ For a self-judging, click-through version of most of these tests, run `python te
   | Caps Lock+Alt+Shift+Q | Quit Que | yes |
   | Caps Lock+V | Read the newest reply aloud from its start (waits for a pending reply's first word) | yes |
   | Caps Lock+Space | Pause/resume reading aloud | yes |
-  | Caps Lock+click on a reply line | Read that reply aloud from the clicked line | no |
+  | Right-click on a reply line | Read that reply aloud from the clicked line | no |
   | Caps Lock+Arrow keys | Move Que (hold to repeat) | no |
   | Caps Lock+Alt+W/S/A/D | Move the bottom edge up/down or the right edge left/right (hold to repeat) | no |
   | Caps Lock+W/S | Scroll the chat (hold to repeat) | no |
@@ -197,7 +197,7 @@ Que's voice is real audio, so another program can capture it. Only automated tes
 
 1. In Settings → Audio, set **Speech output** to your earbuds. With a reply in chat and a cold speech cache, press Caps Lock+V. Expect a brief notice directing you to Settings → Voice and silence. In Voice, click **Download** next to **Speech** (about 350 MB). Try Caps Lock+V during the download and check for the wait notice. Once the button reads **Downloaded**, playback should stay idle until you request speech again. With a cold cache and the model host unavailable, check that the download reports the failure inline and enables **Download** again.
 2. With the page capturing microphone and tab audio, press Caps Lock+C, then Caps Lock+V at once. Expect speech only in the earbuds, starting with the reply's first word, and no page focus, key or audio-track events. Repeat with Que hidden (Caps Lock+E).
-3. Press Caps Lock+Space twice while it reads (it pauses, then resumes), Caps Lock+V again (it restarts), and Caps Lock+click a wrapped line (it reads from that line). Confirm a code block is never read.
+3. Press Caps Lock+Space twice while it reads (it pauses, then resumes) and Caps Lock+V again (it restarts). With Que visible over the focused page and click-through off, right-click a wrapped reply line. Expect speech from that line and no focus changes, pointer-button events or context menu on the page. Confirm a code block is never read.
 4. Open the Windows Volume Mixer while Que reads, then after it finishes. Que should appear only while it reads.
 5. Record (Caps Lock+Shift+R) with Speech output set to the same device as **Them**, and let Que read. The transcript must not show Que's own words as Them lines.
 6. In Settings → Voice, set **Speed** to **0.50×** and click **Test voice**. Raise the speed to **2.00×** and test again. Confirm the same sentence plays faster on the selected output. Repeat at **0%** volume to confirm silence, then restore your preferred volume and read a reply at the selected speed.

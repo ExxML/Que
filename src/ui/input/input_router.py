@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from core.hook_engine import BUTTON_MESSAGES, QUE_KEY
+from core.hook_engine import BUTTON_MESSAGES
 from core.shortcut_manager import ShortcutManager
 from core.win32_hook import VK_TO_MOD_BIT
 from core.window_policy import native
@@ -378,12 +378,12 @@ class InputRouter(QObject):
                 if not self._alive(target) or not target.isEnabled():
                     self.disarm()
                     return
-                if (
-                    button == Qt.MouseButton.LeftButton
-                    and self.hook_client.held_modifiers == (QUE_KEY,)
-                    and self._speak_from(target, global_position)
+                # Handle speech before assigning the press to a widget or moving focus.
+                if button == Qt.MouseButton.RightButton and self._speak_from(
+                    target, global_position
                 ):
                     return
+
                 self.buttons |= button
                 self.pressed[button_value] = target
                 self._focus(self._focus_target(target))
@@ -492,7 +492,7 @@ class InputRouter(QObject):
         self.refresh_regions()
 
     def _speak_from(self, widget: QWidget, global_position: QPoint) -> bool:
-        """Read a reply aloud from the clicked line when Caps Lock alone is held.
+        """Read a reply aloud from the right-clicked line.
 
         The click selects nothing and leaves typing focus where it was; its release finds no
         pressed widget and is dropped.

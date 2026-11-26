@@ -420,25 +420,47 @@ class PointerTests(RouterTestCase):
         self.router.drag = None
         self.router._drag_to(QPoint(0, 0))  # No drag: nothing to apply
 
-    def test_caps_click_on_a_reply_reads_it_aloud(self) -> None:
-        """Read from the clicked reply on Caps Lock+click, without selecting or focusing."""
+    def test_right_click_on_a_reply_reads_it_aloud(self) -> None:
+        """Read from the right-clicked reply while keeping focus and skipping mouse events."""
         reply = ChatBubble("", is_user=False)
         reply.set_bot_message("A reply to read.")
         self.main_window.layout().addWidget(reply)  # type: ignore[union-attr]
-        self.main_window.speak_from = MagicMock()  # type: ignore[attr-defined]
+        speak_from = MagicMock()
+        self.main_window.speak_from = speak_from  # type: ignore[attr-defined]
         self.app.processEvents()
-        # The router divides native pixels by the device pixel ratio
-        point = (
-            reply.mapTo(self.main_window, reply.rect().center())
-            * self.main_window.devicePixelRatioF()
+        local = reply.message_label.mapTo(
+            self.main_window, reply.message_label.rect().center()
         )
+        point = local * self.main_window.devicePixelRatioF()
+        global_position = self.main_window.mapToGlobal(local)
+
+        for target in (None, self.widget):
+            with self.subTest(typing=target is not None):
+                self.router._focus(target)
+                self.shortcuts.arm_input.reset_mock()
+                speak_from.reset_mock()
+                with patch.object(QApplication, "sendEvent") as send_event:
+                    self.press(WM_RBUTTONDOWN, point)
+                    self.press(WM_RBUTTONUP, point)
+
+                speak_from.assert_called_once_with(reply, global_position)
+                send_event.assert_not_called()
+                self.assertIs(self.router.target, target)
+                self.shortcuts.arm_input.assert_called_once_with(target is not None)
+                self.assertEqual(self.router.pressed, {})
+                self.assertEqual(self.router.buttons, Qt.MouseButton.NoButton)
+
         self.shortcuts.hook_client.held_modifiers = (QUE_KEY,)
-        self.press(WM_LBUTTONDOWN, point)
-        self.press(WM_LBUTTONUP, point)
-        self.main_window.speak_from.assert_called_once()  # type: ignore[attr-defined]
-        self.assertIs(self.main_window.speak_from.call_args.args[0], reply)  # type: ignore[attr-defined]
-        self.shortcuts.arm_input.assert_called_with(False)
-        self.assertEqual(self.router.pressed, {})
+        with patch.object(
+            self.router, "_mouse_event", wraps=self.router._mouse_event
+        ) as send_mouse:
+            self.press(WM_LBUTTONDOWN, point)
+            self.press(WM_LBUTTONUP, point)
+        self.assertEqual(
+            [call.args[1] for call in send_mouse.call_args_list],
+            [QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease],
+        )
+        speak_from.assert_called_once()
 
     def test_caps_click_elsewhere_is_an_ordinary_click(self) -> None:
         """Deliver Caps Lock+click to anything that is not a reply as a normal click."""

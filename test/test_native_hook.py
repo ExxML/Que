@@ -380,6 +380,25 @@ class NativeHookEquivalenceTests(unittest.TestCase):
                     else:
                         driver.release_all()
 
+    def test_right_click_is_consumed_only_when_it_starts_over_que(self) -> None:
+        """Keep both parts of an owned right-click away from the foreground app."""
+        driver = self.driver()
+        driver.apply({"type": "regions", "value": [(1, 0, 0, 100, 100)]})
+        down, up, _ = BUTTONS[1]
+
+        self.assertEqual(driver.pointer(down, 10, 10), 1)
+        self.assertEqual(driver.pointer(up, -1, 10), 1)
+        self.assertEqual(
+            [(event["message"], event["hwnd"]) for event in driver.python_out.events],
+            [(down, 1), (up, 1)],
+        )
+
+        self.assertEqual(driver.pointer(down, -1, 10), 0)
+        self.assertEqual(driver.pointer(up, 10, 10), 0)
+        driver.apply({"type": "routing", "value": False})
+        self.assertEqual(driver.pointer(down, 10, 10), 0)
+        self.assertEqual(driver.pointer(up, 10, 10), 0)
+
     def test_injected_middle_click_keeps_ownership_until_release(self) -> None:
         """Route the pair based on where it starts, including across routing changes."""
         driver = self.driver()

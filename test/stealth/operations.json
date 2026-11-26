@@ -9146,14 +9146,14 @@
     "source": "ui/input/input_router.py",
     "line": 319,
     "expression": "def on_pointer(self, message: int, x: int, y: int, data: int, hwnd: int) -> None:",
-    "sha256": "51195a3f6de45e11c3816f7d78a63fe12f1ae8b183f462d52f3fd2901267841d"
+    "sha256": "f2d33c107967d0a54ff220322b3d6bc70fc352f3f617522dd8be7660cae033f9"
   },
   "ui/input/input_router.py:494:routine": {
     "category": "routine",
     "source": "ui/input/input_router.py",
     "line": 494,
     "expression": "def _speak_from(self, widget: QWidget, global_position: QPoint) -> bool:",
-    "sha256": "f1200dbb80ef4825e7fb9cf00922916a04fa1208b336d33249b8116e164270a2"
+    "sha256": "89fe356a472ce60c3909333fb85be54f82711bc86460f0447cbceefc393f8f23"
   },
   "ui/input/input_router.py:518:routine": {
     "category": "routine",
@@ -9405,7 +9405,7 @@
     "source": "ui/input/input_router.py",
     "line": 374,
     "expression": "if button_value:",
-    "sha256": "adf6e03a93cbf243135539e000b4315331be60a8769c4beafb192169e4167103"
+    "sha256": "99d3a8fb0724e35f45348f5e05d9fa0646ad205b3080e96b1d1f70edbeead684"
   },
   "ui/input/input_router.py:512:branch": {
     "category": "branch",
@@ -9629,7 +9629,7 @@
     "source": "ui/input/input_router.py",
     "line": 376,
     "expression": "if down:",
-    "sha256": "d0fb1982dfa638be09fa4a9c95f5d66eae36bc084a9c3577e41ed4e7c997d3b6"
+    "sha256": "e9edbfd073efc4afc6b98aca967e53cff1f542744a9c1fcff91bcbb0d0c0162b"
   },
   "ui/input/input_router.py:490:branch": {
     "category": "branch",
@@ -9785,12 +9785,12 @@
     "expression": "if not self._alive(target) or not target.isEnabled():",
     "sha256": "50bd89490824239a9b256d3678a65f02300cc9fd80b9e9eddbed455e219bb216"
   },
-  "ui/input/input_router.py:381:branch": {
+  "ui/input/input_router.py:382:branch": {
     "category": "branch",
     "source": "ui/input/input_router.py",
-    "line": 381,
-    "expression": "if button == Qt.MouseButton.LeftButton and self.hook_client.held_modifiers == (QUE_KEY,) and self._speak_from(target, global_position):",
-    "sha256": "712d1bb6d78a54ce7a4a91282e8a31f17755247daae1499b70d180761b0755b7"
+    "line": 382,
+    "expression": "if button == Qt.MouseButton.RightButton and self._speak_from(target, global_position):",
+    "sha256": "0ca2bfde611d435fa4257d69650fc67e0f85b022a8aaaea05921d98783ca9e60"
   },
   "ui/input/input_router.py:390:branch": {
     "category": "branch",
