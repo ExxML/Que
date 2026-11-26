@@ -86,6 +86,7 @@ def inspect_controls(source: Path, output: Path) -> None:
                 for token in (
                     "button",
                     "combo",
+                    "slider",
                     "edit",
                     "tabbar",
                     "list",

@@ -11,7 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 from numpy.typing import NDArray
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtGui import QKeyEvent, QWheelEvent
+from PyQt6.QtWidgets import QApplication, QWidget
 from qt_application import application
 from test_main_window import WindowTestCase
 
@@ -22,7 +24,9 @@ from core.speaker import (
     DOWNLOADING_VOICE_STATUS,
     MISSING_VOICE_STATUS,
     MODEL_FILE,
+    VOICE_RATE,
     VOICES_FILE,
+    _Output,
 )
 from core.transcriber import Transcriber
 from ui.window.settings_page import SettingsPage
@@ -233,6 +237,82 @@ class AudioSettingsTests(unittest.TestCase):
                 return
             time.sleep(0.01)
         self.fail("The audio device list did not refresh.")
+
+
+class SpeechVolumeTests(WindowTestCase):
+    """Change speech volume through Voice settings with no physical audio device."""
+
+    def test_volume_saves_on_release_without_starting_playback(self) -> None:
+        """Preview the percentage as the slider moves, then persist the released value."""
+        page = self.window.settings_page
+        page.open_settings()
+        tab = page.tab_bar
+        tab.setCurrentIndex(
+            next(i for i in range(tab.count()) if tab.tabText(i) == "Voice")
+        )
+        voice_tab = page.tab_pages.currentWidget()
+        assert voice_tab is not None
+        slider = page.speech_volume_slider
+        self.assertTrue(voice_tab.isAncestorOf(slider))
+        self.assertEqual((slider.minimum(), slider.maximum()), (0, 100))
+        self.assertEqual(slider.value(), 100)
+        self.assertEqual(page.speech_volume_value.text(), "100%")
+
+        with patch("core.speaker.pyaudiowpatch.PyAudio") as audio:
+            slider.setSliderDown(True)
+            slider.setSliderPosition(35)
+            self.assertEqual(page.speech_volume_value.text(), "35%")
+            self.assertEqual(self.store.speech_volume(), 100)
+            slider.setSliderDown(False)
+            self.assertEqual(SettingsStore(self.store.path).speech_volume(), 35)
+
+            wheel = MagicMock(spec=QWheelEvent)
+            slider.wheelEvent(wheel)
+            slider.wheelEvent(None)
+            wheel.ignore.assert_called_once()
+            self.assertEqual(slider.value(), 35)
+
+            home = QKeyEvent(
+                QEvent.Type.KeyPress, Qt.Key.Key_Home, Qt.KeyboardModifier.NoModifier
+            )
+            with patch.object(self.store, "save_speech_volume", side_effect=OSError):
+                QApplication.sendEvent(slider, home)
+            self.assertEqual(slider.value(), 35)
+            self.assertEqual(page.speech_volume_value.text(), "35%")
+            self.assertIn("speech volume could not be saved", page.save_status.text())
+
+            QApplication.sendEvent(slider, home)
+            page.open_settings()
+            self.assertEqual(slider.value(), 0)
+            self.assertEqual(page.speech_volume_value.text(), "0%")
+            self.assertEqual(SettingsStore(self.store.path).speech_volume(), 0)
+            audio.assert_not_called()
+        self.assertIsNone(self.window.speaker.speech_thread)
+
+    def test_volume_scales_queued_audio_on_the_existing_stream(self) -> None:
+        """Scale both channels, including at mute, without reopening audio output."""
+        with patch("core.speaker.pyaudiowpatch.PyAudio") as host:
+            audio = host.return_value
+            audio.get_host_api_info_by_type.return_value = {"defaultOutputDevice": 1}
+            audio.get_device_info_by_index.return_value = {
+                "defaultSampleRate": VOICE_RATE,
+                "maxOutputChannels": 2,
+                "index": 1,
+            }
+            output = _Output(self.window.speaker)
+            self.addCleanup(output.close)
+            fill = audio.open.call_args.kwargs["stream_callback"]
+            output.push(np.full(4, 0.5, dtype=np.float32), 0)
+            slider = self.window.settings_page.speech_volume_slider
+            for volume, amplitude in ((100, 0.5), (50, 0.25), (0, 0.0), (100, 0.5)):
+                with self.subTest(volume=volume):
+                    slider.setValue(volume)
+                    data, _flag = fill(None, 1, None, 0)
+                    np.testing.assert_array_equal(
+                        np.frombuffer(data, dtype=np.float32), [amplitude, amplitude]
+                    )
+            self.assertTrue(output.drained())
+            audio.open.assert_called_once()
 
 
 class VoiceDownloadTests(WindowTestCase):

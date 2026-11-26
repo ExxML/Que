@@ -155,6 +155,7 @@ class SpeakerTestCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
         self.store = MagicMock()
         self.store.audio_device.return_value = ""
+        self.store.speech_volume.return_value = 100
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.speaker = Speaker(self.store, Path(directory.name))

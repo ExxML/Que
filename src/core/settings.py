@@ -37,7 +37,7 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
         },
         "resume_details": "Resume detail links",
     },
-    "Voice": {"whisper_model": "Transcription model"},
+    "Voice": {"whisper_model": "Transcription model", "speech_volume": "Speech volume"},
     "Audio": {
         "audio_device_you": "Microphone",
         "audio_device_them": "Playback device",
@@ -129,6 +129,11 @@ class SettingsStore:
         """
         model = self.data.get("whisper_model")
         return str(model) if model in WHISPER_MODELS else WHISPER_MODELS[0]
+
+    def speech_volume(self) -> int:
+        """Return the saved speech volume percentage, defaulting to 100."""
+        volume = self.data.get("speech_volume")
+        return volume if type(volume) is int and 0 <= volume <= 100 else 100
 
     def audio_device(self, source: str) -> str:
         """Return the saved WASAPI device name or an empty string for the Windows default.
@@ -297,6 +302,14 @@ class SettingsStore:
         """
         self._write({**self.data, "whisper_model": model})
 
+    def save_speech_volume(self, volume: int) -> None:
+        """Atomically save the speech volume.
+
+        Args:
+            volume (int): The playback volume as a percentage from 0 to 100.
+        """
+        self._write({**self.data, "speech_volume": volume})
+
     def save_audio_device(self, source: str, name: str) -> None:
         """Atomically save one transcript source's or the speech output's audio device.
 
@@ -423,6 +436,7 @@ class SettingsStore:
                 {"name": name, "path": path} for name, path in self.resume_details()
             ],
             "whisper_model": self.whisper_model(),
+            "speech_volume": self.speech_volume(),
             "audio_device_you": self.audio_device("you"),
             "audio_device_them": self.audio_device("them"),
             "audio_device_speaker": self.audio_device("speaker"),
@@ -560,6 +574,8 @@ def _valid_config_value(key: str, value: Any) -> bool:
         return value in ("gemini", "claude")
     if key == "whisper_model":
         return value in WHISPER_MODELS
+    if key == "speech_volume":
+        return type(value) is int and 0 <= value <= 100
     if key in CONFIG_GROUPS["Window"]:
         return isinstance(value, bool)
     if key in ("gemini", "claude") or key.startswith("presets."):

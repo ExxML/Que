@@ -412,6 +412,7 @@ class _Output:
                     if self.position >= len(clip):
                         self.clips.popleft()
                         self.position = 0
+        mono *= self.speaker.settings_store.speech_volume() / 100
         frames_out = np.repeat(mono[:, None], self.channels, axis=1)
         return frames_out.tobytes(), int(pyaudiowpatch.paContinue)
 

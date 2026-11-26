@@ -106,6 +106,7 @@ class ConfigTransferTests(unittest.TestCase):
         self.page.instruction_input.setPlainText("Recently typed instruction")
         self.store.save_audio_device("you", "USB microphone")
         self.store.save_whisper_model(MODEL)
+        self.store.save_speech_volume(65)
         self.store.save_claude_directory(str(self.backup.parent))
         self.store.save_click_through(True)
         self.history.save(
@@ -131,6 +132,7 @@ class ConfigTransferTests(unittest.TestCase):
         self.assertEqual(values.keys(), CONFIG_KEYS)
         self.assertEqual(values["instruction"], "Recently typed instruction")
         self.assertEqual(values["resume_details"][0]["name"], "Edited")
+        self.assertEqual(values["speech_volume"], 65)
 
         restored = SettingsStore(self.store.path.with_name("restored.json"))
         restored.import_config(values)
@@ -166,6 +168,7 @@ class ConfigTransferTests(unittest.TestCase):
                 "audio_device_you": "Imported microphone",
                 "audio_device_them": "",
                 "whisper_model": MODEL,
+                "speech_volume": 0,
                 "system_tray": False,
                 "capture_hidden": False,
                 "click_through": True,
@@ -213,6 +216,8 @@ class ConfigTransferTests(unittest.TestCase):
         )
         self.assertEqual(self.store.audio_device("them"), "Keep speakers")
         self.assertEqual(self.page.whisper_combo.currentData(), MODEL)
+        self.assertEqual(self.page.speech_volume_slider.value(), 0)
+        self.assertEqual(self.page.speech_volume_value.text(), "0%")
         self.page._on_whisper_downloaded(MODEL, "")
         self.assertEqual(self.store.whisper_model(), MODEL)
         self.page.open_settings()  # Reopening keeps showing the imported choice
@@ -347,6 +352,13 @@ class ConfigTransferTests(unittest.TestCase):
         self.assertIn(
             "invalid value for Click through window", self.panel.status.text()
         )
+        for value in (-1, 101, 50.5, True, "50"):
+            with self.subTest(speech_volume=value):
+                self.write_backup({"speech_volume": value})
+                self.open_backup()
+                self.assertIn(
+                    "invalid value for Speech volume", self.panel.status.text()
+                )
         self.assertEqual(self.panel.choices, {})
         self.assertEqual(self.store.data, {})
 

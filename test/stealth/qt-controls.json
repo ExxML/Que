@@ -721,6 +721,13 @@
     "enabled": true
   },
   {
+    "class": "_SettingsSlider",
+    "name": "",
+    "accessible": "Speech volume",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "_StopButton",
     "name": "",
     "accessible": "Stop generating",

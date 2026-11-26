@@ -75,6 +75,7 @@ WORKFLOWS = {
         "request speech with a cold voice cache and verify the Settings notice",
         "request speech during the voice download and verify the wait notice",
         "fail the isolated voice download and retry from Settings Voice",
+        "adjust speech volume during playback, mute at 0%, and restore full volume at 100%",
     ),
     "audio.que-first": (
         "start browser capture after Que",

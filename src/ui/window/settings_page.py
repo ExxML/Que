@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QScrollArea,
+    QSlider,
     QStackedWidget,
     QTabBar,
     QVBoxLayout,
@@ -110,6 +111,7 @@ class SettingsPage(QWidget):
             or WHISPER_MODELS[0]
         )
         self._refresh_voice_download()
+        self._refresh_speech_volume()
         self.tray_checkbox.blockSignals(True)
         self.tray_checkbox.setChecked(self.settings_store.system_tray())
         self.tray_checkbox.blockSignals(False)
@@ -154,6 +156,19 @@ class SettingsPage(QWidget):
             QPushButton:hover, QPushButton:checked {{ background: {qss(PRIMARY_COLOR, 40)}; }}
             QComboBox::drop-down {{ background: transparent; border: none; width: 24px; }}
             QComboBox::down-arrow {{ image: url({arrow_path}); width: 8px; height: 5px; }}
+            QSlider {{ background: transparent; min-height: 24px; }}
+            QSlider::groove:horizontal {{
+                height: 4px; background: transparent;
+                border: 1px solid {qss(PRIMARY_COLOR, 140)}; border-radius: 3px;
+            }}
+            QSlider::sub-page:horizontal {{ background: {qss(PRIMARY_COLOR, 140)}; border-radius: 2px; }}
+            QSlider::handle:horizontal {{
+                width: 12px; margin: -5px 0; border-radius: 7px;
+                background: {qss(PRIMARY_COLOR, 235)}; border: 1px solid transparent;
+            }}
+            QSlider::handle:horizontal:hover, QSlider::handle:horizontal:focus {{
+                background: {qss(PRIMARY_COLOR)}; border-color: {qss(BG_COLOR)};
+            }}
             QPushButton:focus, QLineEdit:focus, QPlainTextEdit:focus, QComboBox:focus {{ border-color: {qss(PRIMARY_COLOR, 200)}; }}
             QPushButton:disabled, QComboBox:disabled {{ color: {qss(PRIMARY_COLOR, 80)}; }}
             QLineEdit[missing="true"] {{ color: {qss(DANGER_COLOR)}; border-color: {qss(DANGER_COLOR, 160)}; }}
@@ -663,6 +678,8 @@ class SettingsPage(QWidget):
             self._show_download_status(
                 "Download the imported model if it is unavailable on this device."
             )
+        if "speech_volume" in selected:
+            self._refresh_speech_volume()
         if (
             selected & {"audio_device_you", "audio_device_them", "audio_device_speaker"}
             and self.audio_refresh.isEnabled()
@@ -714,6 +731,7 @@ class SettingsPage(QWidget):
         row.addWidget(self.voice_download_button)
         form = QFormLayout()
         form.addRow("Speech", row)
+        self._init_speech_volume(form)
         layout.addLayout(form)
         self.voice_download_status = QLabel()
         self.voice_download_status.setTextFormat(Qt.TextFormat.PlainText)
@@ -726,6 +744,31 @@ class SettingsPage(QWidget):
         layout.addWidget(hint)
         self.speaker.download_finished.connect(self._on_voice_downloaded)
         self._refresh_voice_download()
+
+    def _init_speech_volume(self, form: QFormLayout) -> None:
+        """Add the playback volume slider below the speech model.
+
+        Args:
+            form (QFormLayout): The speech settings form.
+        """
+        label = QLabel("Volume")
+        self.speech_volume_slider = _SettingsSlider(Qt.Orientation.Horizontal)
+        self.speech_volume_slider.setAccessibleName("Speech volume")
+        self.speech_volume_slider.setRange(0, 100)
+        self.speech_volume_slider.setTracking(False)
+        label.setBuddy(self.speech_volume_slider)
+        self.speech_volume_value = QLabel()
+        self.speech_volume_value.setMinimumWidth(
+            self.speech_volume_value.fontMetrics().horizontalAdvance("100%")
+        )
+        self.speech_volume_value.setAlignment(Qt.AlignmentFlag.AlignRight)
+        row = QHBoxLayout()
+        row.addWidget(self.speech_volume_slider, 1)
+        row.addWidget(self.speech_volume_value)
+        form.addRow(label, row)
+        self._refresh_speech_volume()
+        self.speech_volume_slider.sliderMoved.connect(self._show_speech_volume_value)
+        self.speech_volume_slider.valueChanged.connect(self._save_speech_volume)
 
     def _init_audio_tab(self) -> None:
         """Build the two independent recording source selectors and the speech output selector."""
@@ -1412,6 +1455,38 @@ class SettingsPage(QWidget):
         self.voice_download_status.show()
         self._refresh_voice_download()
 
+    def _refresh_speech_volume(self) -> None:
+        """Restore the slider and percentage from the saved volume."""
+        volume = self.settings_store.speech_volume()
+        with QSignalBlocker(self.speech_volume_slider):
+            self.speech_volume_slider.setValue(volume)
+        self._show_speech_volume_value(volume)
+
+    def _show_speech_volume_value(self, volume: int) -> None:
+        """Show the slider's current percentage.
+
+        Args:
+            volume (int): The selected playback volume.
+        """
+        self.speech_volume_value.setText(f"{volume}%")
+
+    def _save_speech_volume(self, volume: int) -> None:
+        """Save the volume selection or restore the previous value on failure.
+
+        Args:
+            volume (int): The selected playback volume.
+        """
+        try:
+            self.settings_store.save_speech_volume(volume)
+        except OSError:
+            self._refresh_speech_volume()
+            self.save_status.setText(
+                "The speech volume could not be saved. Check that Que's data folder is writable."
+            )
+            return
+        self._show_speech_volume_value(volume)
+        self.save_status.setText("Changes saved automatically.")
+
     def _save_whisper_model(self, model: str) -> None:
         """Save the chosen transcription model.
 
@@ -1721,6 +1796,19 @@ class _SettingsComboBox(QComboBox):
 
     def wheelEvent(self, event: QWheelEvent | None) -> None:
         """Pass wheel scrolling to the settings page instead of changing the selection.
+
+        Args:
+            event (QWheelEvent): The wheel event to forward to the parent.
+        """
+        if event is not None:
+            event.ignore()
+
+
+class _SettingsSlider(QSlider):
+    """Keep scrolling the settings page from changing the speech volume."""
+
+    def wheelEvent(self, event: QWheelEvent | None) -> None:
+        """Pass the wheel event to the settings page.
 
         Args:
             event (QWheelEvent): The wheel event to forward to the parent.

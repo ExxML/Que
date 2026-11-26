@@ -13,6 +13,7 @@ CONTROL_TYPES = {
     "QToolButton",
     "QCheckBox",
     "QComboBox",
+    "QSlider",
     "QLineEdit",
     "QTextEdit",
     "QPlainTextEdit",
