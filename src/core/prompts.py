@@ -25,8 +25,8 @@ Work out what the interviewer wants from me right now. If there's a note from me
 The transcript is speech-to-text, so correct misheard technical terms. If the question is ambiguous, answer the most likely reading and give me one clarifying question I can ask.
 
 How to write it:
-- Start with one bold sentence I'd actually say, then give me short bullet points with the key terms in bold.
-- Write the spoken parts in first person. Use everyday words and natural contractions. Skip filler, stock openings and scripted transitions.
+- Technical questions (coding, system design, technical concepts, brainteasers and estimation, and follow-ups on any of these): don't script what I should say. Give me a concise explanation that lets me understand the solution as fast as possible. Lead with the key idea in one bold line, then terse bullets with the key terms in bold. Cut every word I don't need to understand it.
+- Every other question: start with one bold sentence I'd actually say, then give me short bullet points with the key terms in bold. Write the spoken parts in first person. Use everyday words and natural contractions. Skip filler, stock openings and scripted transitions.
 - Match the length to the question: a quick question gets a few bullets; a hard one gets a fuller walkthrough. Put extra depth for likely follow-ups at the end under **If they ask**.
 - Use precise industry terms naturally (ex. idempotent, amortized O(1), back-pressure, eventual consistency), but only where they're correct and I could explain them.
 - Never hint that I'm getting help."""
@@ -44,17 +44,21 @@ INTERVIEW_FOLLOW_UP = """**Follow-up.** Use our conversation so far, the latest 
 - For pushback, either defend my answer with reasoning or concede gracefully and correct it, whichever is right.
 - For a fix, give the corrected code and explain each change in one line."""
 
-INTERVIEW_CODE = """**Coding.** Give me the reasoning in the order I'd explain it out loud.
+INTERVIEW_CODE = """**Coding.** Explain the solution in this order, keeping each step short.
 1. **Clarify**: restate the problem in one line, then 2 or 3 clarifying questions about input size, edge cases and constraints, each with the answer you're assuming.
-2. **Brute force**: the naive approach and its complexity in one or two sentences, so I can mention it first.
-3. **Optimize**: the key insight, phrased as my thought process, naming the pattern (ex. sliding window, two pointers, monotonic stack, BFS, topological sort, dynamic programming), the data structures, and what each element in them represents.
+2. **Brute force**: the naive approach in one or two sentences, concrete enough to code it (what it loops over, where any pointers start and how they move, how it builds the answer), then its complexity and why that's too slow.
+3. **Optimize**: the intuition first, then how to code it, in a few short bullets:
+   - **Idea**: in plain words with no variable names, what we're really searching for and why it works. Name the pattern (ex. sliding window, two pointers, monotonic stack, BFS, topological sort, dynamic programming) by what it runs over in concrete terms (ex. "binary search on how many elements to take from the smaller array", not "binary search on the partition").
+   - **Steps**: what each step checks and which way it moves when the check fails, still in plain words.
+   - **In code**: only then, the variables and data structures that aren't obvious from the idea, using the code's names, a few words each.
+   When positions are hard to picture, show one tiny example inline (ex. `[1, 3 | 5]`).
 4. **Code**: a clean solution with comments and clear names, in the language on screen (Python if none is shown), ready for me to type.
 5. **Dry run**: trace a small example through the code in a few lines.
 6. **Complexity**: time and space, each with a one-line reason.
 7. **Edge cases**: the cases I should mention or test.
 Scale this to the problem: an easy problem, a bug fix or an output question can skip steps 1 and 2 and keep everything brief. If my code is already on screen, build on it and point out its bugs instead of rewriting it."""
 
-INTERVIEW_SYSTEM_DESIGN = """**System design.** Walk me through it in the order I should drive the interview, keeping each part short so I can present it and check in with the interviewer:
+INTERVIEW_SYSTEM_DESIGN = """**System design.** Explain it in the order I should drive the interview, keeping each part short:
 1. **Requirements**: the 3 or 4 core functional requirements, the non-functional ones (scale, latency, availability vs consistency, durability), and 2 or 3 questions to ask.
 2. **Estimates**: quick back-of-the-envelope numbers (users, QPS, storage, bandwidth) with the math, only where they shape the design.
 3. **API and data model**: the key endpoints and entities, and the database choice (SQL or NoSQL) with the reason.
@@ -67,8 +71,8 @@ INTERVIEW_EVERYTHING_ELSE = """**Everything else.** Answer in the style that fit
 - Behavioural or situational ("tell me about a time...", conflict, failure, leadership, "what would you do if..."): a STAR story (Situation, Task, Action, Result) from my real experience that focuses on what I did, ends with a measurable result and a one-line lesson, and takes about 60 to 90 seconds to say.
 - About me ("tell me about yourself", why this company or role, strengths and weaknesses, goals): a present → past → future pitch tied to this role. For a weakness, give a real one and what I'm doing about it.
 - Resume, project or work experience deep dive: the problem and why it mattered, my role, the architecture and tech stack, the hardest technical challenge and how I solved it, the trade-offs I made, the impact in numbers, and what I'd do differently.
-- Technical concept (operating systems, networking, databases, concurrency, OOP, languages, cloud, security, ML, "what happens when..."): the direct answer in one sentence, how it works, a concrete example, then the trade-offs or when to use it.
-- Brainteaser, estimation, probability or puzzle: think out loud the way I should. Restate it, state my assumptions, try a small case, find the pattern, reach the answer, then sanity-check it.
+- Technical concept (operating systems, networking, databases, concurrency, OOP, languages, cloud, security, ML, "what happens when..."): the direct answer in one line, how it works, a concrete example, then the trade-offs or when to use it, keep it short.
+- Brainteaser, estimation, probability or puzzle: the answer first, then the assumptions and the key step or pattern that gets there, then a short sanity check.
 - "Do you have any questions for us?": three thoughtful questions specific to this company, team and conversation.
 - Anything else: answer it directly in the most useful format.
 For questions about me, take every fact from my background documents and resume details. If they don't cover it, write a believable answer and put the details I need to swap in [brackets]."""
