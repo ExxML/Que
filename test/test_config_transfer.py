@@ -15,6 +15,7 @@ from core.ai_sender import AISender
 from core.chat_history import ChatHistory, Conversation
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderResult
+from core.resume_facts import facts_directory, save_sheet, sheet_record
 from core.screenshot_manager import ScreenshotManager
 from core.settings import CONFIG_KEYS, WHISPER_MODELS, SettingsStore
 from ui.window.main_window import MainWindow
@@ -135,12 +136,53 @@ class ConfigTransferTests(unittest.TestCase):
         self.assertEqual(values["resume_details"][0]["name"], "Edited")
         self.assertEqual(values["speech_volume"], 65)
         self.assertEqual(values["speech_speed"], 125)
+        self.assertEqual(values["fact_sheets"], [])
 
         restored = SettingsStore(self.store.path.with_name("restored.json"))
         restored.import_config(values)
         self.assertEqual(restored.config_values(), self.store.config_values())
         self.assertEqual(restored.gemini_key(), KEY)
         self.assertIn("Settings exported", self.panel.status.text())
+
+    def test_fact_sheets_of_linked_folders_round_trip(self) -> None:
+        """Export linked folders' fact sheets and merge them into another data folder's cache."""
+        linked = self.backup.parent / "linked"
+        unlinked = self.backup.parent / "unlinked"
+        linked.mkdir()
+        unlinked.mkdir()
+        cache = facts_directory(self.store)
+        record = {"path": str(linked), "fingerprint": "git:abc", "text": "Linked facts"}
+        save_sheet(cache, record)
+        save_sheet(cache, {**record, "path": str(unlinked), "text": "Unlinked facts"})
+        self.store.save_resume_details([("Project", str(linked))])
+        self.page._show_resume_details()
+        with patch(PICKER, return_value=str(self.backup)):
+            self.panel.export_button.click()
+        self.assertNotIn("Unlinked facts", self.backup.read_text(encoding="utf-8"))
+        values, _ = self.store.read_config(self.backup)
+        self.assertEqual(values["fact_sheets"], [record])
+
+        self.write_backup({"fact_sheets": [record]})
+        self.open_backup()
+        self.assertIn("already match", self.panel.status.text())
+        save_sheet(cache, {**record, "text": "Local facts"})
+        self.open_backup()
+        self.panel.choices["fact_sheets"].setChecked(True)
+        self.panel.apply_button.click()
+        self.assertEqual(sheet_record(cache, linked), record)
+        self.assertEqual(
+            sheet_record(cache, unlinked),
+            {**record, "path": str(unlinked), "text": "Unlinked facts"},
+        )
+        self.assertEqual(
+            self.store.data["resume_details"],
+            [{"name": "Project", "path": str(linked)}],
+        )
+        self.assertNotIn("fact_sheets", self.store.data)
+
+        self.write_backup({"fact_sheets": [{**record, "text": ""}]})
+        self.open_backup()
+        self.assertIn("invalid value for Resume fact sheets", self.panel.status.text())
 
     def test_selective_import_is_atomic_and_updates_controls(self) -> None:
         """Apply the chosen Context, Audio, Voice and Window values after one saved write."""

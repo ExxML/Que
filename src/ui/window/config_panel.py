@@ -44,7 +44,7 @@ class ConfigPanel(QWidget):
         description.setWordWrap(True)
         layout.addWidget(description)
         privacy = QLabel(
-            "The backup includes your Context document text and local paths. "
+            "The backup includes your Context document text, fact sheets and local paths. "
             "Your Gemini API key stays encrypted for this Windows account."
         )
         privacy.setWordWrap(True)
@@ -147,7 +147,13 @@ class ConfigPanel(QWidget):
         self.folder = str(source.parent)
         current = self.settings_store.config_values()
         self.pending = {
-            key: value for key, value in values.items() if value != current[key]
+            key: value
+            for key, value in values.items()
+            if value != current[key]
+            # Fact sheets merge into the cache, so offer them only when one is new
+            and not (
+                key == "fact_sheets" and all(sheet in current[key] for sheet in value)
+            )
         }
         key_note = (
             " The Gemini key belongs to a different Windows account or cannot be opened."

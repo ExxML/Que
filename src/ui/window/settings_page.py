@@ -681,6 +681,8 @@ class SettingsPage(QWidget):
         if "resume_details" in selected:
             self._show_resume_details()
             self._update_fact_sheets()
+        elif "fact_sheets" in selected:
+            self._show_fact_sheets()
         if "whisper_model" in selected:
             self.keep_voice_preference = True
             self._select_whisper(store.whisper_model())

@@ -8,6 +8,7 @@ from typing import Any
 import win32crypt  # type: ignore[import-untyped]
 
 from core.hook_engine import PRESET_COUNT
+from core.resume_facts import facts_directory, save_sheet, sheet_record
 
 WHISPER_MODELS: tuple[str, ...] = ("parakeet-tdt-0.6b-v2",)  # Transcription models
 # Kokoro accepts multipliers from 0.5 to 2.0; store them as whole percentages.
@@ -39,6 +40,7 @@ CONFIG_GROUPS: dict[str, dict[str, str]] = {
             for kind, name in CONTEXT_DOCUMENTS.items()
         },
         "resume_details": "Resume detail links",
+        "fact_sheets": "Resume fact sheets",
     },
     "Voice": {
         "whisper_model": "Transcription model",
@@ -493,6 +495,11 @@ class SettingsStore:
             "resume_details": [
                 {"name": name, "path": path} for name, path in self.resume_details()
             ],
+            "fact_sheets": [
+                record
+                for _name, path in self.resume_details()
+                if (record := sheet_record(facts_directory(self), Path(path)))
+            ],
             "whisper_model": self.whisper_model(),
             "speech_volume": self.speech_volume(),
             "speech_speed": self.speech_speed(),
@@ -566,8 +573,11 @@ class SettingsStore:
         Args:
             settings (dict[str, Any]): The selected values from a validated backup.
         """
+        # Sheets first, so a failed cache write leaves the config unchanged
+        for record in settings.get("fact_sheets", []):
+            save_sheet(facts_directory(self), record)
         data = dict(self.data)
-        for key in settings.keys() & CONFIG_KEYS:
+        for key in settings.keys() & CONFIG_KEYS - {"fact_sheets"}:
             value = settings[key]
             parent, separator, child = key.partition(".")
             if not separator:
@@ -654,5 +664,11 @@ def _valid_config_value(key: str, value: Any) -> bool:
         return isinstance(value, list) and all(
             _has_string_fields(detail, "name", "path") and bool(detail["path"])
             for detail in value
+        )
+    if key == "fact_sheets":
+        return isinstance(value, list) and all(
+            _has_string_fields(sheet, "path", "fingerprint", "text")
+            and bool(sheet["path"] and sheet["text"])
+            for sheet in value
         )
     return isinstance(value, str)

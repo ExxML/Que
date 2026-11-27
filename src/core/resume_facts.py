@@ -5,12 +5,17 @@ import queue
 import threading
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.claude_bridge import ClaudeBridge
 from core.prompts import fact_sheet_request
-from core.settings import SettingsStore
+
+if (
+    TYPE_CHECKING
+):  # SettingsStore exports fact sheets, so importing it here would be circular
+    from core.settings import SettingsStore
 
 WORKERS = 3  # Fact sheets written at once
 
@@ -115,15 +120,12 @@ class ResumeFacts(QObject):
         ).strip()
         if not text:
             raise RuntimeError("Claude returned an empty fact sheet.")
-        self.directory.mkdir(parents=True, exist_ok=True)
-        with NamedTemporaryFile(
-            "w", encoding="utf-8", dir=self.directory, delete=False, suffix=".tmp"
-        ) as file:
-            json.dump({"path": str(folder), "fingerprint": stamp, "text": text}, file)
-        os.replace(file.name, _sheet_path(self.directory, folder))
+        save_sheet(
+            self.directory, {"path": str(folder), "fingerprint": stamp, "text": text}
+        )
 
 
-def facts_directory(settings_store: SettingsStore) -> Path:
+def facts_directory(settings_store: "SettingsStore") -> Path:
     """Return the fact sheet cache beside the settings file.
 
     Args:
@@ -152,6 +154,46 @@ def load_sheet(directory: Path, folder: Path) -> tuple[str, bool] | None:
     if not isinstance(data, dict) or not isinstance(data.get("text"), str):
         return None
     return data["text"], data.get("fingerprint") == fingerprint(folder)
+
+
+def sheet_record(directory: Path, folder: Path) -> dict[str, str] | None:
+    """Read a folder's saved fact sheet exactly as stored, for a settings backup.
+
+    Args:
+        directory (Path): The fact sheet cache.
+        folder (Path): The linked folder.
+
+    Returns:
+        dict[str, str] | None: The folder path, fingerprint and text, or None when there is no valid sheet.
+    """
+    try:
+        data = json.loads(_sheet_path(directory, folder).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict) or not all(
+        isinstance(data.get(field), str) for field in ("fingerprint", "text")
+    ):
+        return None
+    return {
+        "path": str(folder),
+        "fingerprint": data["fingerprint"],
+        "text": data["text"],
+    }
+
+
+def save_sheet(directory: Path, record: dict[str, str]) -> None:
+    """Atomically save a fact sheet record under its folder's cache file.
+
+    Args:
+        directory (Path): The fact sheet cache.
+        record (dict[str, str]): The folder path, fingerprint and text.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    with NamedTemporaryFile(
+        "w", encoding="utf-8", dir=directory, delete=False, suffix=".tmp"
+    ) as file:
+        json.dump(record, file)
+    os.replace(file.name, _sheet_path(directory, Path(record["path"])))
 
 
 def fingerprint(folder: Path) -> str:
