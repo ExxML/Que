@@ -66,6 +66,7 @@ WORKFLOWS = {
         "read a pending reply from its first streamed word",
         "catch up with a streaming reply and resume on the next word",
         "pause and resume while reading",
+        "rewind and skip sentences while reading, paused and hidden, including rapid repeated presses",
         "restart from the beginning while reading",
         "right-click a reply line and read from it",
         "read on a nondefault Speech output device",

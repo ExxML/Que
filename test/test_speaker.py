@@ -30,6 +30,7 @@ from core.speaker import (
     Speaker,
     _opening_pieces,
 )
+from core.speech_timing import ReadingPosition
 from ui.chat.speech_text import speech_units
 
 OUTPUT = {
@@ -383,6 +384,113 @@ class ControlTests(SpeakerTestCase):
             self.reply, "More text.", True
         )  # A stopped reply is no longer followed
         self.assertFalse(self.speaker.active)
+
+
+class JumpTests(SpeakerTestCase):
+    """Rewind and skip by sentence."""
+
+    TEXT = "First one. Yes. Third one. Last one."
+
+    def hear(self, word: str) -> None:
+        """Deliver the playback position of the sentence starting with a word.
+
+        Args:
+            word (str): The sentence's first word.
+        """
+        start = self.TEXT.index(word)
+        self.speaker.playback_events.append(
+            (0.0, ReadingPosition((start, start + len(word)), None))
+        )
+        self.speaker.playback_events.append((0.0, None))  # The gap after a word
+        self.speaker._advance_reading_position()
+
+    def press(self, action: Callable[[], None], at: float) -> str:
+        """Press a key at a time and name the sentence reading moved to.
+
+        Args:
+            action (Callable[[], None]): The rewind or skip method.
+            at (float): The clock reading for the press.
+
+        Returns:
+            str: The text from the new cursor to the end of its sentence.
+        """
+        with patch("core.speaker.time.monotonic", return_value=at):
+            action()
+        return self.TEXT[self.speaker.cursor :].split(".")[0]
+
+    def start(self, complete: bool = True) -> None:
+        """Mark the text as being read without a speech thread, so presses are exact."""
+        self.speaker.reply = self.reply
+        self.speaker.text = self.TEXT
+        self.speaker.complete = complete
+        self.speaker.active = True
+        self.speaker.reading_open = True
+
+    def test_rewind_restarts_then_steps_back_while_pressed_again(self) -> None:
+        """Restart the heard sentence; quick presses go back, even past a short one."""
+        self.start()
+        self.hear("Third")
+        self.assertEqual(self.press(self.speaker.rewind, 10.0), "Third one")
+        self.assertEqual(self.press(self.speaker.rewind, 11.5), "Yes")
+        self.hear("Third")  # The short sentence finished before the next press
+        self.assertEqual(self.press(self.speaker.rewind, 13.0), "First one")
+        self.assertEqual(self.press(self.speaker.rewind, 14.0), "First one")
+        self.hear("Third")
+        self.assertEqual(self.press(self.speaker.rewind, 16.5), "Third one")
+
+    def test_skip_moves_on_with_every_press_and_ends_after_the_last(self) -> None:
+        """Count consecutive skips from the sentence just skipped to."""
+        self.start()
+        self.hear("First")
+        self.assertEqual(self.press(self.speaker.skip, 10.0), "Yes")
+        self.assertEqual(self.press(self.speaker.skip, 10.1), "Third one")
+        # A skip ends a run of rewinds
+        self.assertEqual(self.press(self.speaker.rewind, 10.2), "Third one")
+        self.press(self.speaker.skip, 10.3)
+        self.press(self.speaker.skip, 10.4)
+        self.assertEqual(self.speaker.cursor, len(self.TEXT))
+        self.assertEqual(self.press(self.speaker.rewind, 20.0), "Last one")
+
+    def test_skip_past_a_streaming_reply_waits_for_the_next_sentence(self) -> None:
+        """Move to the end of what has streamed and read what arrives afterwards."""
+        self.speaker.speak(self.reply, "First. Second. ", False)
+        self.speaker.toggle_pause()
+        self.speaker.skip()
+        self.speaker.skip()
+        self.assertTrue(self.speaker.active)
+        self.assertFalse(self.speaker.paused)
+        self.voice.texts.clear()
+        self.speaker.update(self.reply, "First. Second. Third.", True)
+        self.wait_until(self.finished, "Reading never finished.")
+        self.assertEqual(self.voice.texts[-1], "Third.")
+
+    def test_jump_while_paused_resumes_and_reports_it(self) -> None:
+        """Drop the queued audio, unpause and read from the new sentence."""
+        phases: list[str] = []
+        self.speaker.reading_changed.connect(
+            lambda _reply, phase, _position: phases.append(phase)
+        )
+        self.speaker.speak(self.reply, "First. Second.", True)
+        self.speaker.toggle_pause()
+        self.wait_until(
+            lambda: len(self.voice.texts) == 2, "The sentences were not queued."
+        )
+        self.speaker.rewind()
+        self.assertFalse(self.speaker.paused)
+        self.assertIn("jump", phases)
+        self.wait_until(self.finished, "Reading never finished.")
+        self.assertEqual(self.voice.texts[-2:], ["First.", "Second."])
+
+    def test_jump_does_nothing_when_idle_or_wordless(self) -> None:
+        """Ignore both keys with nothing to read."""
+        self.speaker.rewind()
+        self.speaker.skip()
+        self.assertEqual((self.speaker.generation, self.speaker.active), (0, False))
+        self.start()
+        self.speaker.text = ""
+        self.speaker.rewind()
+        self.speaker.skip()
+        self.assertEqual(self.speaker.generation, 0)
 
 
 class OpeningTests(SpeakerTestCase):

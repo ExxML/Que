@@ -8,7 +8,7 @@ import threading
 import time
 from collections import deque
 from collections.abc import Callable
-from math import ceil, isfinite
+from math import ceil, inf, isfinite
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -38,6 +38,7 @@ WAIT_SECONDS = (
     0.05  # How often the speech thread rechecks the stream and the playback queue
 )
 BUFFER_SECONDS = 0.02  # Audio handed to Windows per callback
+REWIND_REPEAT_SECONDS = 2.0  # A rewind this soon after the last goes one sentence back
 # Longest leading pieces of the first sentence read, so sound starts before the whole sentence is made.
 # Each is short enough to be synthesized while the one before it plays.
 OPENING_LIMITS = (20, 60, 150)
@@ -124,6 +125,10 @@ class Speaker(QObject):
         self.playback_events: deque[_PlaybackEvent] = deque()
         self.reading_position: ReadingPosition | None = None
         self.reading_open = False
+        # Qt thread only. The cursor runs ahead of what is heard, so rewind and skip use these
+        self.sentence = 0  # Markdown offset in the sentence last heard or jumped to
+        self.rewind_target = 0
+        self.rewound_at = -inf
         self.playback_timer = QTimer(self)
         self.playback_timer.setSingleShot(True)
         self.playback_timer.setTimerType(Qt.TimerType.PreciseTimer)
@@ -173,6 +178,8 @@ class Speaker(QObject):
             )
             return
         self.reply = reply
+        self.sentence = offset
+        self.rewound_at = -inf
         with self.condition:
             self.generation += 1
             self.text = text
@@ -224,6 +231,24 @@ class Speaker(QObject):
             self.reply, "pause" if paused else "resume", self.reading_position
         )
 
+    def rewind(self) -> None:
+        """Restart the current sentence, or step back one when asked again soon after."""
+        now = time.monotonic()
+        # Stepping from the last target, so a short sentence that has already finished
+        # playing cannot trap repeated presses
+        again = now - self.rewound_at <= REWIND_REPEAT_SECONDS
+        target = self._jump(
+            self.rewind_target if again else self.sentence, -1 if again else 0
+        )
+        if target is not None:
+            self.rewind_target = target
+            self.rewound_at = now
+
+    def skip(self) -> None:
+        """Skip to the next sentence; past the last, finish or wait for more of the reply."""
+        if self._jump(self.sentence, 1) is not None:
+            self.rewound_at = -inf
+
     def stop(self) -> None:
         """Stop reading at once."""
         self.reply = None
@@ -256,6 +281,39 @@ class Speaker(QObject):
                 output, self.output = self.output, None
             if output is not None:
                 output.close()
+
+    def _jump(self, base: int, step: int) -> int | None:
+        """Move reading to a sentence counted from the one at an offset, and resume.
+
+        Args:
+            base (int): A Markdown offset in, or just before, the sentence to count from.
+            step (int): How many sentences to move: -1, 0 or 1.
+
+        Returns:
+            int | None: The offset now read from, or None when nothing is being read.
+        """
+        with self.condition:
+            if not self.active:
+                return None
+            units = speech_units(self.text, self.complete)
+            if not units:
+                return None
+            index = sum(unit.end <= base for unit in units) + step
+            if step <= 0:
+                index = max(0, min(index, len(units) - 1))
+            # shortcut: skipping a sentence still streaming reads its later remainder;
+            # remember the skipped sentence if that is ever noticeable
+            target = units[index].start if index < len(units) else units[-1].end
+            self.sentence = target
+            self.generation += 1
+            self.cursor = target
+            self.paused = False
+            if self.output is not None:
+                self.output.clear()
+            self.condition.notify_all()
+        self._reset_reading_position()
+        self.reading_changed.emit(self.reply, "jump", None)
+        return target
 
     def _run(self) -> None:
         """Read whatever the Qt thread asks for, for the rest of the session."""
@@ -565,6 +623,8 @@ class Speaker(QObject):
         position = self.reading_position
         while self.playback_events and self.playback_events[0][0] <= now:
             _, position = self.playback_events.popleft()
+            if position is not None:
+                self.sentence = position.unit[0]
         if position != self.reading_position:
             self.reading_position = position
             self.reading_changed.emit(self.reply, "position", position)

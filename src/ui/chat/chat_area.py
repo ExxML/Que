@@ -319,7 +319,7 @@ class ChatArea(QScrollArea):
             self.reading_paused = True
             self._stop_speech_scroll()
             return
-        if phase == "resume":
+        if phase in ("resume", "jump"):
             self.reading_paused = False
             self.follow_suspended = False
             self.scroll_animation.stop()

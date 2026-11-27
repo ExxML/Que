@@ -45,6 +45,8 @@ HOTKEYS: tuple[tuple[int, int, str, bool, bool], ...] = (
     (MOD_QUE | MOD_ALT | MOD_SHIFT, ord("Q"), "close_app", False, True),
     (MOD_QUE, ord("V"), "speak_latest", False, True),
     (MOD_QUE, VK_SPACE, "toggle_speech", False, True),
+    (MOD_QUE, ord("Z"), "rewind_speech", False, True),
+    (MOD_QUE, ord("X"), "skip_speech", False, True),
     (MOD_QUE, VK_LEFT, "move_window_left", True, False),
     (MOD_QUE, VK_RIGHT, "move_window_right", True, False),
     (MOD_QUE, VK_UP, "move_window_up", True, False),

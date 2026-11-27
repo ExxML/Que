@@ -2071,619 +2071,619 @@
     "expression": "if kind == 'disconnected' and int(message['generation']) == self.generation and (not self.stopping):",
     "sha256": "27eebd816fbf193f42aa18d47029c08a175054244aa65e729630a4c65785beba"
   },
-  "core/hook_engine.py:608:routine": {
+  "core/hook_engine.py:610:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 608,
+    "line": 610,
     "expression": "def key_identity(vk: int, scan: int, extended: bool, down: bool) -> frozenset[tuple[Any, ...]]:",
     "sha256": "b100950022157f411aa003fec36871eff1e520ac37bc39e1c7b92fddf0c1e0ca"
   },
-  "core/hook_engine.py:125:routine": {
+  "core/hook_engine.py:127:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 125,
+    "line": 127,
     "expression": "def __init__(self, emit: Callable[[dict[str, Any]], None]) -> None:",
     "sha256": "9eb715d9d813dfaefdfb146b77fb90d57746e28257d8fa22d88c6307dbde70af"
   },
-  "core/hook_engine.py:156:routine": {
+  "core/hook_engine.py:158:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 156,
+    "line": 158,
     "expression": "def apply(self, message: dict[str, Any]) -> None:",
     "sha256": "905d3c86895a7c4beefde986dcb2a6fa1ef201326c939a68b111653718d74bd4"
   },
-  "core/hook_engine.py:183:routine": {
+  "core/hook_engine.py:185:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 183,
+    "line": 185,
     "expression": "def release_all_state(self) -> None:",
     "sha256": "537e4f01a12e48b31376867549731b9dfb89479f44b2c34bd12a008d5c7f80c6"
   },
-  "core/hook_engine.py:190:routine": {
+  "core/hook_engine.py:192:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 190,
+    "line": 192,
     "expression": "def drained(self) -> bool:",
     "sha256": "823c170798e7d96f50212d1e9cde5d27025f8107276a431e3291688d0793997a"
   },
-  "core/hook_engine.py:203:routine": {
+  "core/hook_engine.py:205:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 203,
+    "line": 205,
     "expression": "def request_quit(self) -> None:",
     "sha256": "9643b5c9b50d6bb4debe5d084f4497403628c662f6b6f9365ba486d1bce70ef4"
   },
-  "core/hook_engine.py:208:routine": {
+  "core/hook_engine.py:210:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 208,
+    "line": 210,
     "expression": "def _low_level_keyboard_proc(self, nCode: int, wParam: int, lParam: int) -> int:",
     "sha256": "8b4a23d1303455cdba465aaeb01190a59a1676e0b955c5f36d778790b2796b92"
   },
-  "core/hook_engine.py:226:routine": {
+  "core/hook_engine.py:228:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 226,
+    "line": 228,
     "expression": "def _mouse_proc(self, nCode: int, wParam: int, lParam: int) -> int:",
     "sha256": "4ed5abdc01e33e7a4c74a6665cd2d10069d401cdf754a94229744b82368d597e"
   },
-  "core/hook_engine.py:243:routine": {
+  "core/hook_engine.py:245:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 243,
+    "line": 245,
     "expression": "def _set_hotkeys(self) -> None:",
     "sha256": "fdd03328b06c6bef75bac1367f70ee574b2e76220a19a9966c22a34d7e0af2a3"
   },
-  "core/hook_engine.py:256:routine": {
+  "core/hook_engine.py:258:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 256,
+    "line": 258,
     "expression": "def _on_hotkey(self, name: str) -> None:",
     "sha256": "ebd45bea9261dc78b0ca1ffa6c8cc39a51dd798705e9929e7948f9e2eb738bc4"
   },
-  "core/hook_engine.py:264:routine": {
+  "core/hook_engine.py:266:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 264,
+    "line": 266,
     "expression": "def _process_key(self, code: int, message: int, address: int) -> int:",
     "sha256": "e1ac42052da65ce43a6cb0adcd50699fb2dfc17a591c41d5448d5767a47a2625"
   },
-  "core/hook_engine.py:383:routine": {
+  "core/hook_engine.py:385:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 383,
+    "line": 385,
     "expression": "def _process_pointer(self, code: int, message: int, address: int) -> int:",
     "sha256": "fdd717e82147f5e29285ff3e5dc067e84f442ddfce3308e7c9bd1554a3b73115"
   },
-  "core/hook_engine.py:459:routine": {
+  "core/hook_engine.py:461:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 459,
+    "line": 461,
     "expression": "def _next_keyboard(self, code: int, message: int, address: int) -> int:",
     "sha256": "0a82d46d1e22f894038568b4b5e44e21993a636118d78287494b08cb7c0f1038"
   },
-  "core/hook_engine.py:472:routine": {
+  "core/hook_engine.py:474:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 472,
+    "line": 474,
     "expression": "def _next_mouse(self, code: int, message: int, address: int) -> int:",
     "sha256": "5fce424e0dbb4c2af8d580e460448006238cbc21604d4cb56b832d5f3aad21db"
   },
-  "core/hook_engine.py:485:routine": {
+  "core/hook_engine.py:487:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 485,
+    "line": 487,
     "expression": "def _set_armed(self, armed: bool, notify: bool) -> None:",
     "sha256": "270e7374739fef089886932ccbead636bd3c76593a9c12d2ca3fc06e4f953742"
   },
-  "core/hook_engine.py:496:routine": {
+  "core/hook_engine.py:498:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 496,
+    "line": 498,
     "expression": "def _invoke(self, callback: Callable[[], None]) -> None:",
     "sha256": "f72d0e7e4534e99f09a0626edb9d2d1b2b8d0607388800e10ee9b1648a5dc12a"
   },
-  "core/hook_engine.py:507:routine": {
+  "core/hook_engine.py:509:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 507,
+    "line": 509,
     "expression": "def _report(self, text: str) -> None:",
     "sha256": "3b44c22090f93e2576cb0d17c39ee66e5dce7858ddf0d3a6853ac281556da023"
   },
-  "core/hook_engine.py:518:routine": {
+  "core/hook_engine.py:520:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 518,
+    "line": 520,
     "expression": "def _emit_key(self, kb: KBDLLHOOKSTRUCT, down: bool, repeated: bool) -> None:",
     "sha256": "afca185c290070faa87c7a311659a3a9cacc6b468e898896e3f808eb504e9bdd"
   },
-  "core/hook_engine.py:538:routine": {
+  "core/hook_engine.py:540:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 538,
+    "line": 540,
     "expression": "def _emit_pointer(self, message: int, x: int, y: int, data: int, hwnd: int) -> None:",
     "sha256": "fcfa6e660a611e66f4dd51c273cdedd54a1d49499d37c0f6fcf69a7087ce9449"
   },
-  "core/hook_engine.py:561:routine": {
+  "core/hook_engine.py:563:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 561,
+    "line": 563,
     "expression": "def _observe(self, key: frozenset[tuple[Any, ...]]) -> None:",
     "sha256": "9ce1c7949e3c3fbbb20a8db91576eb7ae8237ed8daa41e3fa95805461362c306"
   },
-  "core/hook_engine.py:570:routine": {
+  "core/hook_engine.py:572:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 570,
+    "line": 572,
     "expression": "def _finish_quit_if_released(self) -> None:",
     "sha256": "84d07888e55c9bbefa82f81a119561acb10441275d7dca43b613fff7ef676d74"
   },
-  "core/hook_engine.py:576:routine": {
+  "core/hook_engine.py:578:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 576,
+    "line": 578,
     "expression": "def _compute_modifier_mask(self) -> int:",
     "sha256": "d9cb15dbcef1ff66603de309186f6c747e58c89b49313503cd40770b6651da00"
   },
-  "core/hook_engine.py:587:routine": {
+  "core/hook_engine.py:589:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 587,
+    "line": 589,
     "expression": "def _replay_modifiers_and_key(self, vk_code: int, scan_code: int, flags: int) -> None:",
     "sha256": "c31e215201292a818e0582aa0e7a62f9112d8510ac50cc0da06475169529efbd"
   },
-  "core/hook_engine.py:626:branch": {
+  "core/hook_engine.py:628:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 626,
+    "line": 628,
     "expression": "if scan & 255:",
     "sha256": "14d1063e48b56d2986363c7742b541687a5053520f565ed2d707e40ecf7dcd47"
   },
-  "core/hook_engine.py:639:routine": {
+  "core/hook_engine.py:641:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 639,
+    "line": 641,
     "expression": "def __init__(self, grace_ms: int=300, memory_ms: int=2000) -> None:",
     "sha256": "606a3119afabf420dc294a41cda3c5c52b544ec37fb8fb73ba2db2b6f39ba4ee"
   },
-  "core/hook_engine.py:647:routine": {
+  "core/hook_engine.py:649:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 647,
+    "line": 649,
     "expression": "def record_hook(self, key: frozenset[tuple[Any, ...]], tick: int) -> None:",
     "sha256": "862102511647c58b68b3a324cb3a7e90f29f111e1ff7972909fbbeed751f52eb"
   },
-  "core/hook_engine.py:660:routine": {
+  "core/hook_engine.py:662:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 660,
+    "line": 662,
     "expression": "def record_raw(self, key: frozenset[tuple[Any, ...]], tick: int, name: str) -> None:",
     "sha256": "a14436436c1d2fb7ccf891eec995aaa6218f8e684d59a2729e616b555fa6069e"
   },
-  "core/hook_engine.py:675:routine": {
+  "core/hook_engine.py:677:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 675,
+    "line": 677,
     "expression": "def record_mouse_hook(self, key: tuple[Any, ...], tick: int, event_tick: int, injected: bool) -> None:",
     "sha256": "8e0a5a38fe68cd2a13382f311c28d8dd6d6d1625dd5e88c2e8d892d3ddbef37e"
   },
-  "core/hook_engine.py:691:routine": {
+  "core/hook_engine.py:693:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 691,
+    "line": 693,
     "expression": "def record_mouse_raw(self, key: tuple[Any, ...], tick: int, event_tick: int, name: str) -> None:",
     "sha256": "f388755530a8b3d75a4b8273dd9d2e5c5fb6133f388a15dc823fc0be64c381c9"
   },
-  "core/hook_engine.py:704:routine": {
+  "core/hook_engine.py:706:routine": {
     "category": "routine",
     "source": "core/hook_engine.py",
-    "line": 704,
+    "line": 706,
     "expression": "def expire(self, tick: int) -> list[str]:",
     "sha256": "9b54a256f5e1772ac4e1777ea1e5fa8b358b67e5a5c17cb18b6804967dc4b220"
-  },
-  "core/hook_engine.py:163:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 163,
-    "expression": "if kind == 'visible':",
-    "sha256": "6c514fbebdf0055bc2a2c00fbb62a38f60ecf0434a04070cc04b4bc4fab1cff0"
-  },
-  "core/hook_engine.py:275:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 275,
-    "expression": "if code < 0 or message not in (WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP):",
-    "sha256": "7c91fc37405345c2e2898151459501fd8e19d7db111e8e5433af6a22faba151a"
-  },
-  "core/hook_engine.py:283:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 283,
-    "expression": "if kb.flags & LLKHF_INJECTED:",
-    "sha256": "0f21b067d59637565a4cae70de97a75e4de67d0933728db7283aaab8e7eacf3e"
-  },
-  "core/hook_engine.py:287:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 287,
-    "expression": "if self.monitor is not None:",
-    "sha256": "33dce484f2611d43a4e0631863549c17e2e3dde5ea6a39f1de51af10fad4e631"
-  },
-  "core/hook_engine.py:293:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 293,
-    "expression": "if vk in CHORD_BITS:",
-    "sha256": "a2abcfd46136d57ddf501a2ef361f94d30092e98d3930af990948752f62ef9dc"
-  },
-  "core/hook_engine.py:319:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 319,
-    "expression": "if not down:",
-    "sha256": "6f5df5bf664d07cb3af77cadfbfc3f6cef3448954aab984174cdbf0a7feb9fc3"
-  },
-  "core/hook_engine.py:330:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 330,
-    "expression": "if vk in self.suppressed_vk_codes:",
-    "sha256": "1f66c1b95d5b8ca9247b64aace67263d7036e813a9063f13af58f1ae77ad118e"
-  },
-  "core/hook_engine.py:347:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 347,
-    "expression": "if not repeated:",
-    "sha256": "c4ef7a1f337714e5f62513e0fd9fc40b0086b0fbc65db54e3167f96f47773166"
-  },
-  "core/hook_engine.py:378:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 378,
-    "expression": "if self.suppressed_mod_events and QUE_KEY not in self.suppressed_mod_events:",
-    "sha256": "ee6cce4ce038660049502081e362208b35ad1442c94d9e9c4477f5605fd49e07"
-  },
-  "core/hook_engine.py:394:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 394,
-    "expression": "if code < 0:",
-    "sha256": "ad9dd0763509e9056a228e43752e64ed0d56906b453b7058df2cc519dd5194cd"
-  },
-  "core/hook_engine.py:399:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 399,
-    "expression": "if button == 8:",
-    "sha256": "5e6b72d0baf534ce34bdb0a10c25f6288bba2f9efe926d5356a3f129e697f92e"
-  },
-  "core/hook_engine.py:401:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 401,
-    "expression": "if self.monitor is not None and (button or message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL)):",
-    "sha256": "f81184818fa3b043a88d9262a75bc8f0bfe90bdd60731db1606c8257f59b4171"
-  },
-  "core/hook_engine.py:411:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 411,
-    "expression": "if injected and button != MIDDLE_BUTTON:",
-    "sha256": "b3eeb45d103b66a2abdd190b8bce39dd43eca9247fe48837838267ad9a1cab2a"
-  },
-  "core/hook_engine.py:426:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 426,
-    "expression": "if injected:",
-    "sha256": "d187eb28242dbca61d16441139f82f146a335308996a67715e36ad4f302512fa"
-  },
-  "core/hook_engine.py:430:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 430,
-    "expression": "if button:",
-    "sha256": "8e8f0aa467fbd4605477f43862f3ecec77c58d132118e15d276fd6d6fb084ecb"
-  },
-  "core/hook_engine.py:492:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 492,
-    "expression": "if notify and armed != self.input_armed:",
-    "sha256": "8d6e61acf2b75860b687f887e4ba0ccc9266cf4c1c7fe8523420945aabc2c7cc"
-  },
-  "core/hook_engine.py:572:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 572,
-    "expression": "if self.quit_pending and self.drained():",
-    "sha256": "abe672c18b6fb5562d011c9522749ec328ba493a2614351e53fed17396d47f27"
   },
   "core/hook_engine.py:165:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 165,
-    "expression": "if not self.window_visible:",
-    "sha256": "222e0746999dc874bfd7a763787b9c04b9ecb4ffcb0003f01b440e5e02e537f7"
+    "expression": "if kind == 'visible':",
+    "sha256": "6c514fbebdf0055bc2a2c00fbb62a38f60ecf0434a04070cc04b4bc4fab1cff0"
   },
-  "core/hook_engine.py:167:branch": {
+  "core/hook_engine.py:277:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 167,
-    "expression": "if kind == 'armed':",
-    "sha256": "30f18d647edeb8f84fbd3c8ccb9fae78de4b39b810fa9b0ef245076c09eb3923"
+    "line": 277,
+    "expression": "if code < 0 or message not in (WM_KEYDOWN, WM_SYSKEYDOWN, WM_KEYUP, WM_SYSKEYUP):",
+    "sha256": "7c91fc37405345c2e2898151459501fd8e19d7db111e8e5433af6a22faba151a"
   },
-  "core/hook_engine.py:221:failure": {
-    "category": "failure",
-    "source": "core/hook_engine.py",
-    "line": 221,
-    "expression": "except BaseException as error:",
-    "sha256": "7452fe4a90a101a8eca11a5cebb5301b0bb50114c61c92e90242a721a11cf739"
-  },
-  "core/hook_engine.py:239:failure": {
-    "category": "failure",
-    "source": "core/hook_engine.py",
-    "line": 239,
-    "expression": "except BaseException as error:",
-    "sha256": "d70d379864dc7644fe1e96f4a569a358ce45461f0543086e2673acafc43d24c0"
-  },
-  "core/hook_engine.py:250:routine": {
-    "category": "routine",
-    "source": "core/hook_engine.py",
-    "line": 250,
-    "expression": "def callback(name: str=name) -> None:",
-    "sha256": "a47d83943ccd457c545920a4065e44e48856ccae55afb714b8df610db322d7da"
-  },
-  "core/hook_engine.py:294:branch": {
+  "core/hook_engine.py:285:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 294,
-    "expression": "if down:",
-    "sha256": "7d2f843778336a3f5c880338a6d400046041feaf56cccf98d1625ce991a25f45"
+    "line": 285,
+    "expression": "if kb.flags & LLKHF_INJECTED:",
+    "sha256": "0f21b067d59637565a4cae70de97a75e4de67d0933728db7283aaab8e7eacf3e"
   },
-  "core/hook_engine.py:322:branch": {
+  "core/hook_engine.py:289:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 322,
-    "expression": "if vk in self.suppressed_vk_codes:",
-    "sha256": "3834892f6b6aaedd1b4ddbaaaf46bca026da68b87f567872b3c1e384302d5bd1"
-  },
-  "core/hook_engine.py:334:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 334,
-    "expression": "if repeat is not None and repeat[0] == modifiers and self.window_visible:",
-    "sha256": "81e8514130ee193fdd84e9cd9f7df3b80193644f856bc8b835b73e3571ace9f8"
-  },
-  "core/hook_engine.py:350:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 350,
-    "expression": "if not windows_held:",
-    "sha256": "6d612cd3b68059be3fa32181f150769baaff1a336f16f5ef0fae1c937c4034ce"
-  },
-  "core/hook_engine.py:354:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 354,
-    "expression": "if entry is not None:",
-    "sha256": "02f4eef59f1797c8016b360cde358429161b1755d570718c7c46b2d6a2e6ff3e"
-  },
-  "core/hook_engine.py:361:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 361,
-    "expression": "if QUE_KEY in self.suppressed_mod_events:",
-    "sha256": "490456a03736fa79f7e0d9930d93133fa6261522ed913d973ffed58b7edcf41c"
-  },
-  "core/hook_engine.py:365:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 365,
-    "expression": "if self.input_armed:",
-    "sha256": "c27b36f0980675761a0d894eaddae81d06677b902a0dff8214be7ff9c2ceacf8"
-  },
-  "core/hook_engine.py:428:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 428,
-    "expression": "if not (down and target) and button not in self.consumed_buttons:",
-    "sha256": "96cebc4d4e314a5eb87d476b454af61b824d7f80d14109114f07b7aa50fdd20d"
-  },
-  "core/hook_engine.py:431:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 431,
-    "expression": "if down:",
-    "sha256": "3154fc759e42d2d766a357c873c1ea4292cf64e98033bb298afd00f8c61c1982"
-  },
-  "core/hook_engine.py:443:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 443,
-    "expression": "if owned:",
-    "sha256": "f9c36084cb6d3d4afb838642f2b1ea553ac143f365a53acc15de5485edc5088f"
-  },
-  "core/hook_engine.py:448:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 448,
-    "expression": "if message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL):",
-    "sha256": "baaee6e3dd494d04ff5da87aa7f50c56272df6cca3b91c6a0d736d35dea85053"
-  },
-  "core/hook_engine.py:504:failure": {
-    "category": "failure",
-    "source": "core/hook_engine.py",
-    "line": 504,
-    "expression": "except BaseException as error:",
-    "sha256": "01e89738969b2c51669862462f635a715348627f6e825d0493b60f751127c46c"
-  },
-  "core/hook_engine.py:515:failure": {
-    "category": "failure",
-    "source": "core/hook_engine.py",
-    "line": 515,
-    "expression": "except BaseException:",
-    "sha256": "55c0636f8492aa7503c3bbb551cfa9ea32dd47175af8c1fcb087a5bcdcd16b1e"
-  },
-  "core/hook_engine.py:655:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 655,
-    "expression": "if pending & key:",
-    "sha256": "aca8c454f12b59dc96f6248659456c126d3d84efdbafb13c7909482601a4914d"
-  },
-  "core/hook_engine.py:670:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 670,
-    "expression": "if seen & key:",
-    "sha256": "5265cb26fa078c45843297fb8488664c6918d4050bddea8584ee40c0c8922198"
-  },
-  "core/hook_engine.py:169:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 169,
-    "expression": "if int(message['seq']) >= self.press_seq:",
-    "sha256": "017afcc249408238014cf68aa10cf4c7cdc6dc45b85b3856c60fc657e64b1e89"
-  },
-  "core/hook_engine.py:171:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 171,
-    "expression": "if kind == 'routing':",
-    "sha256": "460ddb8c3b73f0f47e630bf88e0de820bd7474b9cbf85158bfa123224918b15a"
+    "line": 289,
+    "expression": "if self.monitor is not None:",
+    "sha256": "33dce484f2611d43a4e0631863549c17e2e3dde5ea6a39f1de51af10fad4e631"
   },
   "core/hook_engine.py:295:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 295,
-    "expression": "if vk in self.held_modifier_vks:",
-    "sha256": "2b0928d53e52521ce048c71b49fb5c79f2b5f8d34f947e76b109377357804661"
+    "expression": "if vk in CHORD_BITS:",
+    "sha256": "a2abcfd46136d57ddf501a2ef361f94d30092e98d3930af990948752f62ef9dc"
   },
-  "core/hook_engine.py:301:branch": {
+  "core/hook_engine.py:321:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 301,
-    "expression": "if vk == QUE_KEY or QUE_KEY in self.suppressed_mod_events or self.input_armed:",
-    "sha256": "20b7350f28dc091f81fa2e2a0d03a88c59c4a2b2367dfa7eb44447432b570dd4"
+    "line": 321,
+    "expression": "if not down:",
+    "sha256": "6f5df5bf664d07cb3af77cadfbfc3f6cef3448954aab984174cdbf0a7feb9fc3"
   },
-  "core/hook_engine.py:311:branch": {
+  "core/hook_engine.py:332:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 311,
-    "expression": "if vk in self.suppressed_mod_events:",
-    "sha256": "e26bbc1eb05c484fa591fce6ed2a0b45599b6475ae152ebfc69396fc4d2cf218"
+    "line": 332,
+    "expression": "if vk in self.suppressed_vk_codes:",
+    "sha256": "1f66c1b95d5b8ca9247b64aace67263d7036e813a9063f13af58f1ae77ad118e"
+  },
+  "core/hook_engine.py:349:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 349,
+    "expression": "if not repeated:",
+    "sha256": "c4ef7a1f337714e5f62513e0fd9fc40b0086b0fbc65db54e3167f96f47773166"
+  },
+  "core/hook_engine.py:380:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 380,
+    "expression": "if self.suppressed_mod_events and QUE_KEY not in self.suppressed_mod_events:",
+    "sha256": "ee6cce4ce038660049502081e362208b35ad1442c94d9e9c4477f5605fd49e07"
+  },
+  "core/hook_engine.py:396:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 396,
+    "expression": "if code < 0:",
+    "sha256": "ad9dd0763509e9056a228e43752e64ed0d56906b453b7058df2cc519dd5194cd"
+  },
+  "core/hook_engine.py:401:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 401,
+    "expression": "if button == 8:",
+    "sha256": "5e6b72d0baf534ce34bdb0a10c25f6288bba2f9efe926d5356a3f129e697f92e"
+  },
+  "core/hook_engine.py:403:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 403,
+    "expression": "if self.monitor is not None and (button or message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL)):",
+    "sha256": "f81184818fa3b043a88d9262a75bc8f0bfe90bdd60731db1606c8257f59b4171"
+  },
+  "core/hook_engine.py:413:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 413,
+    "expression": "if injected and button != MIDDLE_BUTTON:",
+    "sha256": "b3eeb45d103b66a2abdd190b8bce39dd43eca9247fe48837838267ad9a1cab2a"
+  },
+  "core/hook_engine.py:428:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 428,
+    "expression": "if injected:",
+    "sha256": "d187eb28242dbca61d16441139f82f146a335308996a67715e36ad4f302512fa"
+  },
+  "core/hook_engine.py:432:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 432,
+    "expression": "if button:",
+    "sha256": "8e8f0aa467fbd4605477f43862f3ecec77c58d132118e15d276fd6d6fb084ecb"
+  },
+  "core/hook_engine.py:494:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 494,
+    "expression": "if notify and armed != self.input_armed:",
+    "sha256": "8d6e61acf2b75860b687f887e4ba0ccc9266cf4c1c7fe8523420945aabc2c7cc"
+  },
+  "core/hook_engine.py:574:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 574,
+    "expression": "if self.quit_pending and self.drained():",
+    "sha256": "abe672c18b6fb5562d011c9522749ec328ba493a2614351e53fed17396d47f27"
+  },
+  "core/hook_engine.py:167:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 167,
+    "expression": "if not self.window_visible:",
+    "sha256": "222e0746999dc874bfd7a763787b9c04b9ecb4ffcb0003f01b440e5e02e537f7"
+  },
+  "core/hook_engine.py:169:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 169,
+    "expression": "if kind == 'armed':",
+    "sha256": "30f18d647edeb8f84fbd3c8ccb9fae78de4b39b810fa9b0ef245076c09eb3923"
+  },
+  "core/hook_engine.py:223:failure": {
+    "category": "failure",
+    "source": "core/hook_engine.py",
+    "line": 223,
+    "expression": "except BaseException as error:",
+    "sha256": "7452fe4a90a101a8eca11a5cebb5301b0bb50114c61c92e90242a721a11cf739"
+  },
+  "core/hook_engine.py:241:failure": {
+    "category": "failure",
+    "source": "core/hook_engine.py",
+    "line": 241,
+    "expression": "except BaseException as error:",
+    "sha256": "d70d379864dc7644fe1e96f4a569a358ce45461f0543086e2673acafc43d24c0"
+  },
+  "core/hook_engine.py:252:routine": {
+    "category": "routine",
+    "source": "core/hook_engine.py",
+    "line": 252,
+    "expression": "def callback(name: str=name) -> None:",
+    "sha256": "a47d83943ccd457c545920a4065e44e48856ccae55afb714b8df610db322d7da"
+  },
+  "core/hook_engine.py:296:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 296,
+    "expression": "if down:",
+    "sha256": "7d2f843778336a3f5c880338a6d400046041feaf56cccf98d1625ce991a25f45"
   },
   "core/hook_engine.py:324:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 324,
-    "expression": "if vk in self.input_vk_codes:",
-    "sha256": "f921d66ef974592de11f7074699e6e060e886baf362c1b20a4b7c543eda27167"
+    "expression": "if vk in self.suppressed_vk_codes:",
+    "sha256": "3834892f6b6aaedd1b4ddbaaaf46bca026da68b87f567872b3c1e384302d5bd1"
   },
-  "core/hook_engine.py:343:branch": {
+  "core/hook_engine.py:336:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 343,
-    "expression": "if vk in self.input_vk_codes:",
-    "sha256": "0683b9a1c435e40c56ab41d9a777e0d8ef1769df6217c020f32da660b7e58952"
+    "line": 336,
+    "expression": "if repeat is not None and repeat[0] == modifiers and self.window_visible:",
+    "sha256": "81e8514130ee193fdd84e9cd9f7df3b80193644f856bc8b835b73e3571ace9f8"
   },
   "core/hook_engine.py:352:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 352,
-    "expression": "if entry is None and self.window_visible:",
-    "sha256": "b0af3cf185aabaa21f91262c14d5854617e0edb77cc1d87d1177b7de853dd9c3"
+    "expression": "if not windows_held:",
+    "sha256": "6d612cd3b68059be3fa32181f150769baaff1a336f16f5ef0fae1c937c4034ce"
   },
-  "core/hook_engine.py:357:branch": {
+  "core/hook_engine.py:356:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 357,
-    "expression": "if repeat_callbacks:",
-    "sha256": "a66e43dd3c7fb2a52c6586a56e973eb0370713da19d8a791319132fb8d0b1bf8"
+    "line": 356,
+    "expression": "if entry is not None:",
+    "sha256": "02f4eef59f1797c8016b360cde358429161b1755d570718c7c46b2d6a2e6ff3e"
   },
-  "core/hook_engine.py:371:branch": {
+  "core/hook_engine.py:363:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 371,
-    "expression": "if system:",
-    "sha256": "caa62799b074a066a4197295ddf80a2cab09afe7a25d19a7a7d3175574b04421"
+    "line": 363,
+    "expression": "if QUE_KEY in self.suppressed_mod_events:",
+    "sha256": "490456a03736fa79f7e0d9930d93133fa6261522ed913d973ffed58b7edcf41c"
+  },
+  "core/hook_engine.py:367:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 367,
+    "expression": "if self.input_armed:",
+    "sha256": "c27b36f0980675761a0d894eaddae81d06677b902a0dff8214be7ff9c2ceacf8"
+  },
+  "core/hook_engine.py:430:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 430,
+    "expression": "if not (down and target) and button not in self.consumed_buttons:",
+    "sha256": "96cebc4d4e314a5eb87d476b454af61b824d7f80d14109114f07b7aa50fdd20d"
   },
   "core/hook_engine.py:433:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 433,
-    "expression": "if target and button not in self.delivered_buttons:",
-    "sha256": "708d516dae01b18da1a8c47489477cd9de146b5bb4a3ddfff533edabc4489108"
+    "expression": "if down:",
+    "sha256": "3154fc759e42d2d766a357c873c1ea4292cf64e98033bb298afd00f8c61c1982"
   },
-  "core/hook_engine.py:444:branch": {
+  "core/hook_engine.py:445:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 444,
-    "expression": "if not down:",
-    "sha256": "b23367ab7c2260b017f3c59507deccb294e64033415813d890f80daa2c8adb1b"
+    "line": 445,
+    "expression": "if owned:",
+    "sha256": "f9c36084cb6d3d4afb838642f2b1ea553ac143f365a53acc15de5485edc5088f"
   },
-  "core/hook_engine.py:449:branch": {
+  "core/hook_engine.py:450:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 449,
-    "expression": "if target:",
-    "sha256": "1ade382efe007eb1b361637c2d489bd165ffc6ae838159ab3536f02ec7efb116"
+    "line": 450,
+    "expression": "if message in (WM_MOUSEWHEEL, WM_MOUSEHWHEEL):",
+    "sha256": "baaee6e3dd494d04ff5da87aa7f50c56272df6cca3b91c6a0d736d35dea85053"
   },
-  "core/hook_engine.py:452:branch": {
+  "core/hook_engine.py:506:failure": {
+    "category": "failure",
+    "source": "core/hook_engine.py",
+    "line": 506,
+    "expression": "except BaseException as error:",
+    "sha256": "01e89738969b2c51669862462f635a715348627f6e825d0493b60f751127c46c"
+  },
+  "core/hook_engine.py:517:failure": {
+    "category": "failure",
+    "source": "core/hook_engine.py",
+    "line": 517,
+    "expression": "except BaseException:",
+    "sha256": "55c0636f8492aa7503c3bbb551cfa9ea32dd47175af8c1fcb087a5bcdcd16b1e"
+  },
+  "core/hook_engine.py:657:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 452,
-    "expression": "if message == WM_MOUSEMOVE:",
-    "sha256": "99c944f5b443a4367d62388c04397ea910c7c4bc46e1e9a9a6780d2a5c46f412"
+    "line": 657,
+    "expression": "if pending & key:",
+    "sha256": "aca8c454f12b59dc96f6248659456c126d3d84efdbafb13c7909482601a4914d"
+  },
+  "core/hook_engine.py:672:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 672,
+    "expression": "if seen & key:",
+    "sha256": "5265cb26fa078c45843297fb8488664c6918d4050bddea8584ee40c0c8922198"
+  },
+  "core/hook_engine.py:171:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 171,
+    "expression": "if int(message['seq']) >= self.press_seq:",
+    "sha256": "017afcc249408238014cf68aa10cf4c7cdc6dc45b85b3856c60fc657e64b1e89"
   },
   "core/hook_engine.py:173:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 173,
-    "expression": "if not self.routing_enabled:",
-    "sha256": "8e125da6e731fba7053e498dc2865f323795c86ea0e8611910710f0c23588ed9"
-  },
-  "core/hook_engine.py:175:branch": {
-    "category": "branch",
-    "source": "core/hook_engine.py",
-    "line": 175,
-    "expression": "if kind == 'regions':",
-    "sha256": "753ff39e47132ada51ea4ca434a3ce6061410129183f2cdb61b77e0242e24d10"
+    "expression": "if kind == 'routing':",
+    "sha256": "460ddb8c3b73f0f47e630bf88e0de820bd7474b9cbf85158bfa123224918b15a"
   },
   "core/hook_engine.py:297:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 297,
-    "expression": "if vk in self.suppressed_mod_events:",
-    "sha256": "dda41795c9c83e953d18f298517405f59f8a5fb93cefeef279ad90cef66b0ded"
+    "expression": "if vk in self.held_modifier_vks:",
+    "sha256": "2b0928d53e52521ce048c71b49fb5c79f2b5f8d34f947e76b109377357804661"
   },
-  "core/hook_engine.py:341:branch": {
+  "core/hook_engine.py:303:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 341,
-    "expression": "if held_modifiers == modifiers:",
-    "sha256": "f0fd0273dd1bca315ad7e23b0b4d14fa535d42a20d4e99bab8dd67f827c34db4"
+    "line": 303,
+    "expression": "if vk == QUE_KEY or QUE_KEY in self.suppressed_mod_events or self.input_armed:",
+    "sha256": "20b7350f28dc091f81fa2e2a0d03a88c59c4a2b2367dfa7eb44447432b570dd4"
+  },
+  "core/hook_engine.py:313:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 313,
+    "expression": "if vk in self.suppressed_mod_events:",
+    "sha256": "e26bbc1eb05c484fa591fce6ed2a0b45599b6475ae152ebfc69396fc4d2cf218"
+  },
+  "core/hook_engine.py:326:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 326,
+    "expression": "if vk in self.input_vk_codes:",
+    "sha256": "f921d66ef974592de11f7074699e6e060e886baf362c1b20a4b7c543eda27167"
+  },
+  "core/hook_engine.py:345:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 345,
+    "expression": "if vk in self.input_vk_codes:",
+    "sha256": "0683b9a1c435e40c56ab41d9a777e0d8ef1769df6217c020f32da660b7e58952"
+  },
+  "core/hook_engine.py:354:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 354,
+    "expression": "if entry is None and self.window_visible:",
+    "sha256": "b0af3cf185aabaa21f91262c14d5854617e0edb77cc1d87d1177b7de853dd9c3"
+  },
+  "core/hook_engine.py:359:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 359,
+    "expression": "if repeat_callbacks:",
+    "sha256": "a66e43dd3c7fb2a52c6586a56e973eb0370713da19d8a791319132fb8d0b1bf8"
   },
   "core/hook_engine.py:373:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 373,
-    "expression": "if vk not in DEVICE_KEYS:",
-    "sha256": "5e99e8f0bef45c34a5d2516a18771120636b67c3d9786dbfc24a3bbb8e610e5f"
+    "expression": "if system:",
+    "sha256": "caa62799b074a066a4197295ddf80a2cab09afe7a25d19a7a7d3175574b04421"
+  },
+  "core/hook_engine.py:435:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 435,
+    "expression": "if target and button not in self.delivered_buttons:",
+    "sha256": "708d516dae01b18da1a8c47489477cd9de146b5bb4a3ddfff533edabc4489108"
+  },
+  "core/hook_engine.py:446:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 446,
+    "expression": "if not down:",
+    "sha256": "b23367ab7c2260b017f3c59507deccb294e64033415813d890f80daa2c8adb1b"
+  },
+  "core/hook_engine.py:451:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 451,
+    "expression": "if target:",
+    "sha256": "1ade382efe007eb1b361637c2d489bd165ffc6ae838159ab3536f02ec7efb116"
   },
   "core/hook_engine.py:454:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
     "line": 454,
+    "expression": "if message == WM_MOUSEMOVE:",
+    "sha256": "99c944f5b443a4367d62388c04397ea910c7c4bc46e1e9a9a6780d2a5c46f412"
+  },
+  "core/hook_engine.py:175:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 175,
+    "expression": "if not self.routing_enabled:",
+    "sha256": "8e125da6e731fba7053e498dc2865f323795c86ea0e8611910710f0c23588ed9"
+  },
+  "core/hook_engine.py:177:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 177,
+    "expression": "if kind == 'regions':",
+    "sha256": "753ff39e47132ada51ea4ca434a3ce6061410129183f2cdb61b77e0242e24d10"
+  },
+  "core/hook_engine.py:299:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 299,
+    "expression": "if vk in self.suppressed_mod_events:",
+    "sha256": "dda41795c9c83e953d18f298517405f59f8a5fb93cefeef279ad90cef66b0ded"
+  },
+  "core/hook_engine.py:343:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 343,
+    "expression": "if held_modifiers == modifiers:",
+    "sha256": "f0fd0273dd1bca315ad7e23b0b4d14fa535d42a20d4e99bab8dd67f827c34db4"
+  },
+  "core/hook_engine.py:375:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 375,
+    "expression": "if vk not in DEVICE_KEYS:",
+    "sha256": "5e99e8f0bef45c34a5d2516a18771120636b67c3d9786dbfc24a3bbb8e610e5f"
+  },
+  "core/hook_engine.py:456:branch": {
+    "category": "branch",
+    "source": "core/hook_engine.py",
+    "line": 456,
     "expression": "if drag_target or self.hover_target:",
     "sha256": "89f7ca2714adb74c6e505e43468db23b0307d8863764c2f89499c6cf3c86e33d"
   },
-  "core/hook_engine.py:180:branch": {
+  "core/hook_engine.py:182:branch": {
     "category": "branch",
     "source": "core/hook_engine.py",
-    "line": 180,
+    "line": 182,
     "expression": "if kind == 'quit':",
     "sha256": "9badad8f7643caf1eb1e7f6b42bde7b40ff055e1c9cbee4adbaff11605b02836"
   },
@@ -4679,6 +4679,20 @@
     "category": "routine",
     "source": "core/shortcut_manager.py",
     "line": 380,
+    "expression": "def _rewind_speech(self) -> None:",
+    "sha256": "f95e14bf1f069db019fbb43d632069cf920c12b21b418bc7572f6ee86e1450a5"
+  },
+  "core/shortcut_manager.py:384:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 384,
+    "expression": "def _skip_speech(self) -> None:",
+    "sha256": "7f54c8b78094d0ee73190c7fc4a373c201cef517992682489ba49d9c5a8ce0e1"
+  },
+  "core/shortcut_manager.py:388:routine": {
+    "category": "routine",
+    "source": "core/shortcut_manager.py",
+    "line": 388,
     "expression": "def _dismiss_warnings(self) -> None:",
     "sha256": "9089936cf936dbfe340965503a1cb0e231079bec6a64a93457f8445230af0116"
   },
@@ -4752,731 +4766,801 @@
     "expression": "QTimer.singleShot(0, self._apply_resize)",
     "sha256": "ed5d5c518917f8849b194ef8ba9af9bbc9e99bbb938575041d7dc85099625bd1"
   },
-  "core/speaker.py:759:routine": {
+  "core/speaker.py:819:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 759,
+    "line": 819,
     "expression": "def _opening_pieces(unit: SpeechUnit) -> list[SpeechUnit]:",
     "sha256": "eb819e646b2d37c233e45eac825ecdcbf836076767b61c6710dd13eff860d2ea"
   },
-  "core/speaker.py:807:routine": {
+  "core/speaker.py:867:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 807,
+    "line": 867,
     "expression": "def _device_key(name: str) -> tuple[str, int, str]:",
     "sha256": "1186202acf4954b6b2480ac2ff6415d1f17f696177c7286ef24718c97bee51f4"
   },
-  "core/speaker.py:830:routine": {
+  "core/speaker.py:890:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 830,
+    "line": 890,
     "expression": "def _output_device(audio: Any, name: str) -> dict[str, Any]:",
     "sha256": "94c630e924c3eca7533b24f6394eea0382db401de11386cb0c32197ce84af439"
   },
-  "core/speaker.py:92:routine": {
+  "core/speaker.py:93:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 92,
+    "line": 93,
     "expression": "def __init__(self, settings_store: SettingsStore, cache_dir: Path | None=None) -> None:",
-    "sha256": "67e64b408c972a8de0167feaeb8c19518b8e14360e2f9c6db1643983640b80c3"
+    "sha256": "729c7302cba4a9761d38fbdb1021ed2895ae60bea7bac7caa39c007eb15b4f17"
   },
-  "core/speaker.py:134:routine": {
+  "core/speaker.py:139:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 134,
+    "line": 139,
     "expression": "def model_downloaded(self) -> bool:",
     "sha256": "c0f8b25cc7fc54b6bd9c0d4c6a17460a32ee7fa4d4fc19c30419acea90555ed3"
-  },
-  "core/speaker.py:144:routine": {
-    "category": "routine",
-    "source": "core/speaker.py",
-    "line": 144,
-    "expression": "def preload(self) -> None:",
-    "sha256": "da7211056f2874a4474c02b376303601aed65acdfeae0ffd76ae7b45d72327e0"
   },
   "core/speaker.py:149:routine": {
     "category": "routine",
     "source": "core/speaker.py",
     "line": 149,
+    "expression": "def preload(self) -> None:",
+    "sha256": "da7211056f2874a4474c02b376303601aed65acdfeae0ffd76ae7b45d72327e0"
+  },
+  "core/speaker.py:154:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 154,
     "expression": "def download(self) -> bool:",
     "sha256": "c1ad9280fd666a70ff78723afbf8801163e70fe263738ca4d6b999ab4c49df13"
   },
-  "core/speaker.py:161:routine": {
+  "core/speaker.py:166:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 161,
+    "line": 166,
     "expression": "def speak(self, reply: object, text: str, complete: bool, offset: int=0) -> None:",
-    "sha256": "7296c9acb1ab653dcc4a48d1d260342c39512af2b94ab7848aada9b34e3fef41"
+    "sha256": "154aad0984011959803e2bd395dff5084905c8fd44ed951e4ee95ddcc4b5e00b"
   },
-  "core/speaker.py:193:routine": {
+  "core/speaker.py:200:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 193,
+    "line": 200,
     "expression": "def speak_sample(self) -> None:",
     "sha256": "5b196f7deb6aaa6ce63d4ff113e9dcaf720489a8feb240d646ffddceb91a3a0f"
   },
-  "core/speaker.py:197:routine": {
+  "core/speaker.py:204:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 197,
+    "line": 204,
     "expression": "def update(self, reply: object, text: str, complete: bool) -> None:",
     "sha256": "bd0bf90cba2dbfd921394034bf8161204f98ce76d865d36bc12b048493841971"
   },
-  "core/speaker.py:212:routine": {
+  "core/speaker.py:219:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 212,
+    "line": 219,
     "expression": "def toggle_pause(self) -> None:",
     "sha256": "303130caa6a29c98c9929bec0afcad0b8f36e8d4e2b79faae142e4ee3fc40cc1"
   },
-  "core/speaker.py:227:routine": {
+  "core/speaker.py:234:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 227,
+    "line": 234,
+    "expression": "def rewind(self) -> None:",
+    "sha256": "f13abbfc532c0b2741f8e271be767c67978dae61d79d5f6efb7f7a57054b5e19"
+  },
+  "core/speaker.py:247:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 247,
+    "expression": "def skip(self) -> None:",
+    "sha256": "54a0d368aa12291449ac14f308848a589047e090249f6656ec97c49bec945252"
+  },
+  "core/speaker.py:252:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 252,
     "expression": "def stop(self) -> None:",
     "sha256": "c867c66bed74e6ffddc0fb8a3f38a762097b5090879f6d0e0a92108a5b968c17"
   },
-  "core/speaker.py:241:routine": {
+  "core/speaker.py:266:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 241,
+    "line": 266,
     "expression": "def release_idle_output(self) -> None:",
     "sha256": "053560962543c7522665ec67eab26c50061713cc5c9489caf749a5d7be155a4a"
   },
-  "core/speaker.py:251:routine": {
+  "core/speaker.py:276:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 251,
+    "line": 276,
     "expression": "def close(self) -> None:",
     "sha256": "ea63470b87101dabdbfb4cf584418a1be0811a271d43881cfd7d715b205e6080"
   },
-  "core/speaker.py:260:routine": {
+  "core/speaker.py:285:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 260,
+    "line": 285,
+    "expression": "def _jump(self, base: int, step: int) -> int | None:",
+    "sha256": "44536ad17a9745d3fc92c3c8589bc356371b57dd25fc753fdb7fa43e2873336d"
+  },
+  "core/speaker.py:318:routine": {
+    "category": "routine",
+    "source": "core/speaker.py",
+    "line": 318,
     "expression": "def _run(self) -> None:",
     "sha256": "54a35d44c4406b2b2caa947e8f02d548fa5a79509915e98eb9a2faa59daa6c41"
   },
-  "core/speaker.py:280:routine": {
+  "core/speaker.py:338:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 280,
+    "line": 338,
     "expression": "def _read(self, voice: Any) -> int | None:",
     "sha256": "d68805c96d0ead55ceef895601bcd50d85e665f640fcdcaddcccbd44a4d0fa21"
   },
-  "core/speaker.py:346:routine": {
+  "core/speaker.py:404:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 346,
+    "line": 404,
     "expression": "def _start_synthesis(self, voice: Any, unit: SpeechUnit, generation: int) -> list[tuple[NDArray[np.float32], tuple[AudioCue, ...]]]:",
     "sha256": "78d45527f773efa9f03babdfad06d6ea8f7319f51021ab039254d68e48789277"
   },
-  "core/speaker.py:373:routine": {
+  "core/speaker.py:431:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 373,
+    "line": 431,
     "expression": "def _submit_synthesis(self, job: Callable[[], None]) -> None:",
     "sha256": "161ad906baadb9c9951d5baa55d5c67e0359d7ccf7e9aa9ba14a40bb1138abf8"
   },
-  "core/speaker.py:389:routine": {
+  "core/speaker.py:447:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 389,
+    "line": 447,
     "expression": "def _work(self) -> None:",
     "sha256": "701f5e97faa5d2236f941e16e6cacdda5d31f9f309256c9648e7bbf6cb251df8"
   },
-  "core/speaker.py:394:routine": {
+  "core/speaker.py:452:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 394,
+    "line": 452,
     "expression": "def _claim_output(self) -> '_Output':",
     "sha256": "49d630e73f5c548db8762765255d7ebbf995958278a573e9e46702c6cd0883f9"
   },
-  "core/speaker.py:427:routine": {
+  "core/speaker.py:485:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 427,
+    "line": 485,
     "expression": "def _park_output(self) -> None:",
     "sha256": "8eb7e6eacfac64e05984117c784f0a6b711e6a761f9faed9b29cd48eb19bb88c"
   },
-  "core/speaker.py:443:routine": {
+  "core/speaker.py:501:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 443,
+    "line": 501,
     "expression": "def _synthesize(self, voice: Any, unit: SpeechUnit) -> tuple[NDArray[np.float32], tuple[AudioCue, ...]]:",
     "sha256": "fb81427a50ef35fc36ccb26d339a9f42edad2a32d4f0d1007c90fd500845e1f4"
   },
-  "core/speaker.py:462:routine": {
+  "core/speaker.py:520:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 462,
+    "line": 520,
     "expression": "def _download(self) -> None:",
     "sha256": "9a47a03d832c9f1669fe94896437b4454333f90dfe373ee8521290f68bf0e680"
   },
-  "core/speaker.py:482:routine": {
+  "core/speaker.py:540:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 482,
+    "line": 540,
     "expression": "def _on_download_finished(self, _error: str) -> None:",
     "sha256": "5756306ef3a5cc6ac37abdcbc1490d44af4cfd30caf7ef6b82de52c8f6a05b88"
   },
-  "core/speaker.py:486:routine": {
+  "core/speaker.py:544:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 486,
+    "line": 544,
     "expression": "def _load_voice(self) -> Any:",
     "sha256": "631c876f96048f39ccc39c90870760dd04d5e8053524e063b37b4de9fb43e311"
   },
-  "core/speaker.py:503:routine": {
+  "core/speaker.py:561:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 503,
+    "line": 561,
     "expression": "def _preload(self) -> None:",
     "sha256": "8b9f09986d9b3875fd49e33322e3aec948f2928ee608708756b89e6d648d779c"
   },
-  "core/speaker.py:521:routine": {
+  "core/speaker.py:579:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 521,
+    "line": 579,
     "expression": "def _finish(self, generation: int, message: str) -> None:",
     "sha256": "fd71cb88c512617a618845cc2e8d1441e79f85b6fd84599aad70ac3f5da85d3c"
   },
-  "core/speaker.py:535:routine": {
+  "core/speaker.py:593:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 535,
+    "line": 593,
     "expression": "def _reset_reading_position(self) -> None:",
     "sha256": "00343d227dcbcbab59f954b61d3bf08a9d7e610bcfda40180998709213e58397"
   },
-  "core/speaker.py:541:routine": {
+  "core/speaker.py:599:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 541,
+    "line": 599,
     "expression": "def _on_reading_ended(self, generation: int) -> None:",
     "sha256": "dc00ca12de849223153ac304a76b6332c21c84e1e691d8ee60947a79d89774b8"
   },
-  "core/speaker.py:548:routine": {
+  "core/speaker.py:606:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 548,
+    "line": 606,
     "expression": "def _on_playback_events(self, generation: int, revision: int, events: tuple[_PlaybackEvent, ...]) -> None:",
     "sha256": "aca97e3ebc891ca59de82e609aa4153400b0429b101996431c8238db2130f9de"
   },
-  "core/speaker.py:562:routine": {
+  "core/speaker.py:620:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 562,
+    "line": 620,
     "expression": "def _advance_reading_position(self) -> None:",
-    "sha256": "34f95122891ec5200ea48ff9fe682152854a5dceff67ac0d71c5902b71461029"
+    "sha256": "0a8f6e98a3406c8caf977a0d4c0e1158fd09db6644e5541d94f41912bb418714"
   },
-  "core/speaker.py:588:routine": {
+  "core/speaker.py:648:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 588,
+    "line": 648,
     "expression": "def __init__(self, speaker: Speaker) -> None:",
     "sha256": "b8a10d4479c3f451c5bcc1b72fa1c934533551c52b969cf917d48728837c09d5"
   },
-  "core/speaker.py:622:routine": {
+  "core/speaker.py:682:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 622,
+    "line": 682,
     "expression": "def push(self, samples: NDArray[np.float32], pause: float, cues: tuple[AudioCue, ...]=(), generation: int=0) -> None:",
     "sha256": "e74456ce179f31079dfa5ebe2817c00f5706072a4ac954fa10a74b037da5610e"
   },
-  "core/speaker.py:653:routine": {
+  "core/speaker.py:713:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 653,
+    "line": 713,
     "expression": "def queued(self) -> int:",
     "sha256": "1ce7ea71f50a62eaaf6e9da577cc5c8197b9409223c665e3fccd04e52da8b9ec"
   },
-  "core/speaker.py:662:routine": {
+  "core/speaker.py:722:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 662,
+    "line": 722,
     "expression": "def drained(self) -> bool:",
     "sha256": "98c1f21a3f5e8d7316afe43deabe5f560d60ec2c3bb4f8c3cbb5ca4a111953d8"
   },
-  "core/speaker.py:670:routine": {
+  "core/speaker.py:730:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 670,
+    "line": 730,
     "expression": "def clear(self) -> None:",
     "sha256": "5ec7ff94e2f9f29d20d290b949c7de98d25a94505cdd317ae1487d1745cdd877"
   },
-  "core/speaker.py:678:routine": {
+  "core/speaker.py:738:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 678,
+    "line": 738,
     "expression": "def close(self) -> None:",
     "sha256": "5188354bd0f49cbfbf8d5b92dfb0bf11dfd1c083bdd17bafca23869a434f750a"
   },
-  "core/speaker.py:687:routine": {
+  "core/speaker.py:747:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 687,
+    "line": 747,
     "expression": "def _fill(self, _data: bytes | None, frames: int, time_info: Any, _status: int) -> tuple[bytes, int]:",
     "sha256": "835846776f1395da170cde03c8457dc5f9e4bb18e3a5113a3c23a0bfcd599506"
   },
-  "core/speaker.py:733:routine": {
+  "core/speaker.py:793:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 733,
+    "line": 793,
     "expression": "def _collect_cues(self, clip: _Clip, filled: int, end: int, revision: int, events: list[AudioCue]) -> None:",
     "sha256": "db618963f8d963e34fe55c011a932efdfb0743206aecc07dcd8469946b14db9c"
   },
-  "core/speaker.py:748:routine": {
+  "core/speaker.py:808:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 748,
+    "line": 808,
     "expression": "def _output_time(self, time_info: Any) -> float:",
     "sha256": "5948ad297754759b7efac15e19157e7f0ee5d36e61193eaa23e1a79d553bb8cf"
   },
-  "core/speaker.py:787:branch": {
+  "core/speaker.py:847:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 787,
+    "line": 847,
     "expression": "if len(cuts) == 1:",
     "sha256": "1bcb38a76075519a1255789cb0af9a8cc89fbcbb0ee99ec87ca917b1e07ed16f"
   },
-  "core/speaker.py:840:branch": {
+  "core/speaker.py:900:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 840,
+    "line": 900,
     "expression": "if name:",
     "sha256": "1f885866e9834ffc377f924c366fa405200a020d0e4d2e3dd03f312fb8100b98"
   },
-  "core/speaker.py:146:branch": {
+  "core/speaker.py:151:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 146,
+    "line": 151,
     "expression": "if self.voice is None and self.model_downloaded():",
     "sha256": "b2235982060a365f008540e1dbb3a8dcb0eff0a8e381f28430b5292a5a27dce3"
   },
-  "core/speaker.py:155:branch": {
+  "core/speaker.py:160:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 155,
+    "line": 160,
     "expression": "if self.downloading or self.model_downloaded():",
     "sha256": "5fc050201ab6e22158fad8d74cd8293016945a3c5456f8b597d3eb9f1aee1852"
   },
-  "core/speaker.py:170:branch": {
+  "core/speaker.py:175:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 170,
+    "line": 175,
     "expression": "if self.voice is None and (not self.model_downloaded()):",
     "sha256": "a7e497ae185ba7fc4988da797c401ff9517decea6c72e802ddf6869bc2ad3ae4"
   },
-  "core/speaker.py:189:branch": {
+  "core/speaker.py:196:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 189,
+    "line": 196,
     "expression": "if self.speech_thread is None or not self.speech_thread.is_alive():",
     "sha256": "dd342cad7a75ee2b74ae6545370798b3e04bd1bab293d2f33729ea8a18336a18"
   },
-  "core/speaker.py:205:branch": {
+  "core/speaker.py:212:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 205,
+    "line": 212,
     "expression": "if reply is not self.reply:",
     "sha256": "fdf93f57da332bf680a08eab5e92baefe4336b70adde2445031cf99b99587e5b"
   },
-  "core/speaker.py:361:routine": {
+  "core/speaker.py:243:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 243,
+    "expression": "if target is not None:",
+    "sha256": "ea7b579dd3fc6f1082e44b732a30eb004f91e62b14686da4ae9e3c7c5d7858a4"
+  },
+  "core/speaker.py:249:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 249,
+    "expression": "if self._jump(self.sentence, 1) is not None:",
+    "sha256": "4135fba9c0e26df38cea2eb1a8b9bb426bcbfd0a0fb949d4f6772d58d205e119"
+  },
+  "core/speaker.py:419:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 361,
+    "line": 419,
     "expression": "def job() -> None:",
     "sha256": "1a12f115acdf2fd2a1a14c537fa070b0bbbd7a25d0a94a8862ec6f28962e2ca8"
   },
-  "core/speaker.py:512:routine": {
+  "core/speaker.py:570:routine": {
     "category": "routine",
     "source": "core/speaker.py",
-    "line": 512,
+    "line": 570,
     "expression": "def warm_up() -> None:",
     "sha256": "b90aac4f0803fc816097eb6f162bfaa80929fdaea86a2c20b904fa9700ddb986"
   },
-  "core/speaker.py:543:branch": {
+  "core/speaker.py:601:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 543,
+    "line": 601,
     "expression": "if generation == self.generation:",
     "sha256": "2d824a343dc75fcaaeecb92c230804ff13a4f68225975b441530c88eb9567cbc"
   },
-  "core/speaker.py:552:branch": {
+  "core/speaker.py:610:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 552,
+    "line": 610,
     "expression": "if not self.reading_open or generation != self.generation or revision != self.playback_revision or self.paused:",
     "sha256": "94d3ec866c4d8c2731a00fb91da9dd85ec6cf452e12706f0ead052dd9dcc4776"
   },
-  "core/speaker.py:568:branch": {
+  "core/speaker.py:628:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 568,
+    "line": 628,
     "expression": "if position != self.reading_position:",
     "sha256": "287b2f2539eb0f038e267243de2c50a09927860a0fa86b987decfbc6f226950f"
   },
-  "core/speaker.py:571:branch": {
+  "core/speaker.py:631:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 571,
+    "line": 631,
     "expression": "if self.playback_events:",
     "sha256": "f6c7ce78c0010a2edea18f553c28af9d72cd68759063f7e6eb096c1c7e57a741"
-  },
-  "core/speaker.py:719:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 719,
-    "expression": "if events:",
-    "sha256": "f5034406836572c63a5b9a86bd786be82c04d9eaaad26037fb3ffa7cd96fa439"
-  },
-  "core/speaker.py:737:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 737,
-    "expression": "if revision != self.cue_revision:",
-    "sha256": "b020bfa124a0074f34c64cf16cc440b3a3567eb100e6411cc583b677d5a8ba35"
-  },
-  "core/speaker.py:751:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 751,
-    "expression": "if isinstance(time_info, dict):",
-    "sha256": "a254dacbdeb10c264d4f33a37defca01a821577f4bebce3bcee38082a7a76955"
-  },
-  "core/speaker.py:771:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 771,
-    "expression": "if len(rest) <= limit + MIN_PIECE_CHARS:",
-    "sha256": "81fee5106be81660a8fcc74f342abb2ba0e0140cfb309049f99d04240d861012"
   },
   "core/speaker.py:779:branch": {
     "category": "branch",
     "source": "core/speaker.py",
     "line": 779,
+    "expression": "if events:",
+    "sha256": "f5034406836572c63a5b9a86bd786be82c04d9eaaad26037fb3ffa7cd96fa439"
+  },
+  "core/speaker.py:797:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 797,
+    "expression": "if revision != self.cue_revision:",
+    "sha256": "b020bfa124a0074f34c64cf16cc440b3a3567eb100e6411cc583b677d5a8ba35"
+  },
+  "core/speaker.py:811:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 811,
+    "expression": "if isinstance(time_info, dict):",
+    "sha256": "a254dacbdeb10c264d4f33a37defca01a821577f4bebce3bcee38082a7a76955"
+  },
+  "core/speaker.py:831:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 831,
+    "expression": "if len(rest) <= limit + MIN_PIECE_CHARS:",
+    "sha256": "81fee5106be81660a8fcc74f342abb2ba0e0140cfb309049f99d04240d861012"
+  },
+  "core/speaker.py:839:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 839,
     "expression": "if clauses:",
     "sha256": "ce443f196fdaf096762416ded5b11c1602864081ddc2ba707102e45c155f8577"
   },
-  "core/speaker.py:784:branch": {
+  "core/speaker.py:844:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 784,
+    "line": 844,
     "expression": "if cut < MIN_PIECE_CHARS:",
     "sha256": "08625f8da84dd58162da7ee9876f2244ba266b55eb92eca711d1810921eb6b7f"
   },
-  "core/speaker.py:846:branch": {
+  "core/speaker.py:906:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 846,
+    "line": 906,
     "expression": "if len(matches) != 1:",
     "sha256": "e8e356265c817af828205275f3ce7628f0c3f364b353cbda29d2e7b14a00c912"
   },
-  "core/speaker.py:127:background": {
+  "core/speaker.py:132:background": {
     "category": "background",
     "source": "core/speaker.py",
-    "line": 127,
+    "line": 132,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
-  "core/speaker.py:183:branch": {
+  "core/speaker.py:190:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 183,
+    "line": 190,
     "expression": "if self.output is not None:",
     "sha256": "28a408e914b827a41ce009f7104c540971e4fa18682f60e3c2aef154f2be1b23"
   },
-  "core/speaker.py:215:branch": {
+  "core/speaker.py:222:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 215,
+    "line": 222,
     "expression": "if not self.active:",
     "sha256": "d3ee8094a80e5f40191308ddbc3f61a3143629825753b4240e0cf27691aa2a0b"
   },
-  "core/speaker.py:234:branch": {
+  "core/speaker.py:259:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 234,
+    "line": 259,
     "expression": "if self.output is not None:",
     "sha256": "28a408e914b827a41ce009f7104c540971e4fa18682f60e3c2aef154f2be1b23"
   },
-  "core/speaker.py:245:branch": {
+  "core/speaker.py:270:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 245,
+    "line": 270,
     "expression": "if output is None or output.claimed:",
     "sha256": "000f50c6204ddd89feb3b8a31291d9561a433aaec40f2f2e292885daf367cf00"
   },
-  "core/speaker.py:257:branch": {
+  "core/speaker.py:282:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 257,
+    "line": 282,
     "expression": "if output is not None:",
     "sha256": "5439c8eb9e19e69ce5c41d1cf9b3a9e0608f125b413938d4a6481e2175b5e2bb"
   },
-  "core/speaker.py:277:branch": {
+  "core/speaker.py:296:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 277,
-    "expression": "if ended is not None:",
-    "sha256": "36e26137a9ac6465aa24117834efbcd564c5b0aefb14b03b26dd0d6e230e17a1"
-  },
-  "core/speaker.py:363:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 363,
-    "expression": "if generation != self.generation:",
-    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
-  },
-  "core/speaker.py:380:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 380,
-    "expression": "if not self.synthesis_threads:",
-    "sha256": "9bfe7c547f3dcdfd9c34a49fc1053c8f3c81f51e98f6669ad0c652dbb9b77f88"
-  },
-  "core/speaker.py:402:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 402,
-    "expression": "if output is not None:",
-    "sha256": "e449df0f49fdcf80581156f22d80dda1931a1f7988f0fa4f38c005a3f12cbd4f"
-  },
-  "core/speaker.py:431:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 431,
-    "expression": "if output is None:",
-    "sha256": "b7f925f33321a82ed5169049e0b65f932c323897145ce1766fe9a7b5f36c30c8"
-  },
-  "core/speaker.py:459:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 459,
-    "expression": "except Exception:",
-    "sha256": "b2579e3ba347cebebfed612e7670328e99fab3de7878c777d92184b779a0e340"
-  },
-  "core/speaker.py:475:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 475,
-    "expression": "if not self.model_downloaded():",
-    "sha256": "c3aed04e48626eb97cc6fcfd193fd291c313b7ccbb36365544ce1472609b76f4"
-  },
-  "core/speaker.py:477:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 477,
-    "expression": "except Exception as error:",
-    "sha256": "507a202b7f62f35ebe71039863ed1ccf1d994b410e28070e4137dcf86177fc75"
-  },
-  "core/speaker.py:493:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 493,
-    "expression": "if self.voice is not None:",
-    "sha256": "956a90d78d3a037a79425f5bf083c9ef7501a4f84bb889e2154faf2dd4508871"
-  },
-  "core/speaker.py:507:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 507,
-    "expression": "except RuntimeError:",
-    "sha256": "bbd38a6a81121f422dc350c44ee9126c72f8765c197c5799e3280ed8aa26c8ae"
-  },
-  "core/speaker.py:529:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 529,
-    "expression": "if generation != self.generation:",
-    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
-  },
-  "core/speaker.py:704:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 704,
-    "expression": "if not self.speaker.paused:",
-    "sha256": "f0db2dec3100d3b6277ba4ff38c6c4ffe59a492fec769de108b7f0b59f56e9e8"
-  },
-  "core/speaker.py:739:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 739,
-    "expression": "if self.cue_index:",
-    "sha256": "cdae9d9938bd13648b7d29931783c21f4da079fc12bdaf8e381663719915dd4c"
-  },
-  "core/speaker.py:743:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 743,
-    "expression": "if sample >= end:",
-    "sha256": "1510fc473b4cb4ce61e86eff59e3bb2ffa269b7690a19342631e955afa630067"
-  },
-  "core/speaker.py:754:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 754,
-    "expression": "if output > 0.0 and isfinite(output - current):",
-    "sha256": "3838d31d9d1ca80dbdeca25be70447dc4eb887a3d70dcbfb80a6db0d8c624009"
-  },
-  "core/speaker.py:190:background": {
-    "category": "background",
-    "source": "core/speaker.py",
-    "line": 190,
-    "expression": "threading.Thread(target=self._run, daemon=True)",
-    "sha256": "4e764971b48f4c1952d7148251037703ba9129f6940bc550286bd79f788107e9"
-  },
-  "core/speaker.py:269:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 269,
-    "expression": "except Exception as error:",
-    "sha256": "e66aaac536f1f4f865b58d2dff33bc19ce6e6718ea4a605a8b44c51c6c0c72c5"
-  },
-  "core/speaker.py:294:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 294,
+    "line": 296,
     "expression": "if not self.active:",
     "sha256": "3d2110f91c2786fd687e2dbb88b2ee620b1e8d2212c2e37b96e446d689a601f0"
   },
-  "core/speaker.py:301:branch": {
+  "core/speaker.py:299:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 301,
+    "line": 299,
     "expression": "if not units:",
-    "sha256": "9240b74bdb054b2b360ec141e24fd27771492552840b13eeb9834f9044a95a74"
-  },
-  "core/speaker.py:308:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 308,
-    "expression": "if unit.open and (not drained):",
-    "sha256": "b695a488b37ae62cb16dfe9b7903d4b498e5aea72b34cc6987e6d057f089a664"
-  },
-  "core/speaker.py:335:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 335,
-    "expression": "if samples.size and (not number):",
-    "sha256": "15256cb463bf5716278400cb98172a0be12df67c9d0e4e91f0d73434f3e96acb"
-  },
-  "core/speaker.py:403:branch": {
-    "category": "branch",
-    "source": "core/speaker.py",
-    "line": 403,
-    "expression": "if output.claimed:",
-    "sha256": "0fd8ed5b33316591ee53bedcb50a00020330fd786892d4b168ba98f7ff02ea49"
-  },
-  "core/speaker.py:420:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 420,
-    "expression": "except OSError:",
-    "sha256": "274b81c34a279116143394b0afd92f1145628c29d51016fb579d9a97de8437d9"
-  },
-  "core/speaker.py:435:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 435,
-    "expression": "except OSError:",
-    "sha256": "9492673ea6192ec8098da0d7bb3fd6b1665aa2cc4ff54343ef1dac30eb74ad21"
-  },
-  "core/speaker.py:499:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 499,
-    "expression": "except Exception as error:",
-    "sha256": "b47fc5f54a91cf573f6d7f072d2738e2b47227abe3533412cbb3a4b77e551a49"
-  },
-  "core/speaker.py:618:failure": {
-    "category": "failure",
-    "source": "core/speaker.py",
-    "line": 618,
-    "expression": "except Exception as error:",
-    "sha256": "131a6faa78e0f7a9a68bea69c60965df06f167def1303d7b8f91b3bc313b8444"
-  },
-  "core/speaker.py:158:background": {
-    "category": "background",
-    "source": "core/speaker.py",
-    "line": 158,
-    "expression": "threading.Thread(target=self._download, daemon=True)",
-    "sha256": "f461c2ab42262c3a649351998b85751785d05cb4c9c42bbfda7ecfd38ecd340b"
+    "sha256": "de7d07c708c8f1c57607051e8c9a04020cccf69afd66d07d948cd430d7b2731e"
   },
   "core/speaker.py:302:branch": {
     "category": "branch",
     "source": "core/speaker.py",
     "line": 302,
+    "expression": "if step <= 0:",
+    "sha256": "33ed1411bf4da4a3a9acbfe5ada2e36fab7c59c0b020c9bd49a4b0416c587baa"
+  },
+  "core/speaker.py:311:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 311,
+    "expression": "if self.output is not None:",
+    "sha256": "28a408e914b827a41ce009f7104c540971e4fa18682f60e3c2aef154f2be1b23"
+  },
+  "core/speaker.py:335:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 335,
+    "expression": "if ended is not None:",
+    "sha256": "36e26137a9ac6465aa24117834efbcd564c5b0aefb14b03b26dd0d6e230e17a1"
+  },
+  "core/speaker.py:421:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 421,
+    "expression": "if generation != self.generation:",
+    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
+  },
+  "core/speaker.py:438:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 438,
+    "expression": "if not self.synthesis_threads:",
+    "sha256": "9bfe7c547f3dcdfd9c34a49fc1053c8f3c81f51e98f6669ad0c652dbb9b77f88"
+  },
+  "core/speaker.py:460:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 460,
+    "expression": "if output is not None:",
+    "sha256": "e449df0f49fdcf80581156f22d80dda1931a1f7988f0fa4f38c005a3f12cbd4f"
+  },
+  "core/speaker.py:489:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 489,
+    "expression": "if output is None:",
+    "sha256": "b7f925f33321a82ed5169049e0b65f932c323897145ce1766fe9a7b5f36c30c8"
+  },
+  "core/speaker.py:517:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 517,
+    "expression": "except Exception:",
+    "sha256": "b2579e3ba347cebebfed612e7670328e99fab3de7878c777d92184b779a0e340"
+  },
+  "core/speaker.py:533:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 533,
+    "expression": "if not self.model_downloaded():",
+    "sha256": "c3aed04e48626eb97cc6fcfd193fd291c313b7ccbb36365544ce1472609b76f4"
+  },
+  "core/speaker.py:535:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 535,
+    "expression": "except Exception as error:",
+    "sha256": "507a202b7f62f35ebe71039863ed1ccf1d994b410e28070e4137dcf86177fc75"
+  },
+  "core/speaker.py:551:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 551,
+    "expression": "if self.voice is not None:",
+    "sha256": "956a90d78d3a037a79425f5bf083c9ef7501a4f84bb889e2154faf2dd4508871"
+  },
+  "core/speaker.py:565:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 565,
+    "expression": "except RuntimeError:",
+    "sha256": "bbd38a6a81121f422dc350c44ee9126c72f8765c197c5799e3280ed8aa26c8ae"
+  },
+  "core/speaker.py:587:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 587,
+    "expression": "if generation != self.generation:",
+    "sha256": "c5cdbb46df75711f5ded3432e40b83d8e4fa60dc5c39a7550ac629af00c95e78"
+  },
+  "core/speaker.py:626:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 626,
+    "expression": "if position is not None:",
+    "sha256": "41fd0c3e97eb2bdfd22d9e196a97c778f9daa4f9349648393e0202b026214f72"
+  },
+  "core/speaker.py:764:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 764,
+    "expression": "if not self.speaker.paused:",
+    "sha256": "f0db2dec3100d3b6277ba4ff38c6c4ffe59a492fec769de108b7f0b59f56e9e8"
+  },
+  "core/speaker.py:799:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 799,
+    "expression": "if self.cue_index:",
+    "sha256": "cdae9d9938bd13648b7d29931783c21f4da079fc12bdaf8e381663719915dd4c"
+  },
+  "core/speaker.py:803:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 803,
+    "expression": "if sample >= end:",
+    "sha256": "1510fc473b4cb4ce61e86eff59e3bb2ffa269b7690a19342631e955afa630067"
+  },
+  "core/speaker.py:814:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 814,
+    "expression": "if output > 0.0 and isfinite(output - current):",
+    "sha256": "3838d31d9d1ca80dbdeca25be70447dc4eb887a3d70dcbfb80a6db0d8c624009"
+  },
+  "core/speaker.py:197:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 197,
+    "expression": "threading.Thread(target=self._run, daemon=True)",
+    "sha256": "4e764971b48f4c1952d7148251037703ba9129f6940bc550286bd79f788107e9"
+  },
+  "core/speaker.py:327:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 327,
+    "expression": "except Exception as error:",
+    "sha256": "e66aaac536f1f4f865b58d2dff33bc19ce6e6718ea4a605a8b44c51c6c0c72c5"
+  },
+  "core/speaker.py:352:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 352,
+    "expression": "if not self.active:",
+    "sha256": "3d2110f91c2786fd687e2dbb88b2ee620b1e8d2212c2e37b96e446d689a601f0"
+  },
+  "core/speaker.py:359:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 359,
+    "expression": "if not units:",
+    "sha256": "9240b74bdb054b2b360ec141e24fd27771492552840b13eeb9834f9044a95a74"
+  },
+  "core/speaker.py:366:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 366,
+    "expression": "if unit.open and (not drained):",
+    "sha256": "b695a488b37ae62cb16dfe9b7903d4b498e5aea72b34cc6987e6d057f089a664"
+  },
+  "core/speaker.py:393:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 393,
+    "expression": "if samples.size and (not number):",
+    "sha256": "15256cb463bf5716278400cb98172a0be12df67c9d0e4e91f0d73434f3e96acb"
+  },
+  "core/speaker.py:461:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 461,
+    "expression": "if output.claimed:",
+    "sha256": "0fd8ed5b33316591ee53bedcb50a00020330fd786892d4b168ba98f7ff02ea49"
+  },
+  "core/speaker.py:478:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 478,
+    "expression": "except OSError:",
+    "sha256": "274b81c34a279116143394b0afd92f1145628c29d51016fb579d9a97de8437d9"
+  },
+  "core/speaker.py:493:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 493,
+    "expression": "except OSError:",
+    "sha256": "9492673ea6192ec8098da0d7bb3fd6b1665aa2cc4ff54343ef1dac30eb74ad21"
+  },
+  "core/speaker.py:557:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 557,
+    "expression": "except Exception as error:",
+    "sha256": "b47fc5f54a91cf573f6d7f072d2738e2b47227abe3533412cbb3a4b77e551a49"
+  },
+  "core/speaker.py:678:failure": {
+    "category": "failure",
+    "source": "core/speaker.py",
+    "line": 678,
+    "expression": "except Exception as error:",
+    "sha256": "131a6faa78e0f7a9a68bea69c60965df06f167def1303d7b8f91b3bc313b8444"
+  },
+  "core/speaker.py:163:background": {
+    "category": "background",
+    "source": "core/speaker.py",
+    "line": 163,
+    "expression": "threading.Thread(target=self._download, daemon=True)",
+    "sha256": "f461c2ab42262c3a649351998b85751785d05cb4c9c42bbfda7ecfd38ecd340b"
+  },
+  "core/speaker.py:360:branch": {
+    "category": "branch",
+    "source": "core/speaker.py",
+    "line": 360,
     "expression": "if self.complete and drained:",
     "sha256": "9d65909607d088d04b43235e31d7cb67cb8e67f4539853397e4942ee2f7003e6"
   },
-  "core/speaker.py:320:failure": {
+  "core/speaker.py:378:failure": {
     "category": "failure",
     "source": "core/speaker.py",
-    "line": 320,
+    "line": 378,
     "expression": "except OSError:",
     "sha256": "dca211c6cdc1e03c9ca92b7ce75f6449f11d3c6215a75b4b90f0f312b825908a"
   },
-  "core/speaker.py:327:branch": {
+  "core/speaker.py:385:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 327,
+    "line": 385,
     "expression": "if generation != self.generation or not self.active:",
     "sha256": "8241ecab923408afe0d3c6c1cc74435485836e5edc9fa36ddd2b93ea5c900c8b"
   },
-  "core/speaker.py:331:branch": {
+  "core/speaker.py:389:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 331,
+    "line": 389,
     "expression": "if number == len(pieces) - 1:",
     "sha256": "87bfcd88482bb401dbf960042dc94b535c24e8df6fbec3413a8043c769acc25c"
   },
-  "core/speaker.py:333:branch": {
+  "core/speaker.py:391:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 333,
+    "line": 391,
     "expression": "if samples.size:",
     "sha256": "b014ed017241dfa9e0958f30eb4194619f68098c14c4de33d9f65bf57a15f046"
   },
-  "core/speaker.py:406:branch": {
+  "core/speaker.py:464:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 406,
+    "line": 464,
     "expression": "if output.key == _device_key(self.settings_store.audio_device('speaker')):",
     "sha256": "ff402bf5c660b28e436c9372e4f04a84eb14ac2fc9e3667655fd862504eb5633"
   },
-  "core/speaker.py:412:failure": {
+  "core/speaker.py:470:failure": {
     "category": "failure",
     "source": "core/speaker.py",
-    "line": 412,
+    "line": 470,
     "expression": "except OSError:",
     "sha256": "7f0320ddfb262a364a6457b76c793cbf9204c146b5641c34e39bc845314bf469"
   },
-  "core/speaker.py:711:branch": {
+  "core/speaker.py:771:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 711,
+    "line": 771,
     "expression": "if clip.generation == generation:",
     "sha256": "8f129bd5abb5843191bbf41df4f76b7fb514e43445b4b0d02b1a65a6314afcf7"
   },
-  "core/speaker.py:715:branch": {
+  "core/speaker.py:775:branch": {
     "category": "branch",
     "source": "core/speaker.py",
-    "line": 715,
+    "line": 775,
     "expression": "if self.position >= len(clip.samples):",
     "sha256": "cc07fe58b88c72b742bbfd7269ee8f0628eef471c31ce7d462c026cffe8decb4"
   },
-  "core/speaker.py:147:background": {
+  "core/speaker.py:152:background": {
     "category": "background",
     "source": "core/speaker.py",
-    "line": 147,
+    "line": 152,
     "expression": "threading.Thread(target=self._preload, daemon=True)",
     "sha256": "0c9821bde1c322f45cb4656bce7338cdc7416f6dd959a87ac3e2a540af61ff57"
   },
-  "core/speaker.py:382:background": {
+  "core/speaker.py:440:background": {
     "category": "background",
     "source": "core/speaker.py",
-    "line": 382,
+    "line": 440,
     "expression": "threading.Thread(target=self._work, daemon=True)",
     "sha256": "6f743cbf39f271089f3ad7f199407f67427b95ee15888cdaaf74c12905831c52"
   },
@@ -7312,7 +7396,7 @@
     "source": "ui/chat/chat_area.py",
     "line": 294,
     "expression": "def set_reading_state(self, reply: object, phase: str, position: ReadingPosition | None) -> None:",
-    "sha256": "5d0ddeb0550a82ce3a4df60c39c89f022068ac9aa28ec25c973022f91c8e7df2"
+    "sha256": "4d8aae6fd3218108c7bbf064c0fc8ee041f2ba505cfb7c7c34ded94c55da144d"
   },
   "ui/chat/chat_area.py:329:routine": {
     "category": "routine",
@@ -7640,8 +7724,8 @@
     "category": "branch",
     "source": "ui/chat/chat_area.py",
     "line": 322,
-    "expression": "if phase == 'resume':",
-    "sha256": "fc48d9c61def91cf093b701a0ed8c36bb1c7a0bfd695961ddda331168a8b4126"
+    "expression": "if phase in ('resume', 'jump'):",
+    "sha256": "37ab45d28ef9b316440862a11c0407d64ad433bca962a608a835bb53bf512e77"
   },
   "ui/chat/chat_area.py:336:branch": {
     "category": "branch",

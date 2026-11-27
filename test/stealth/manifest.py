@@ -10,6 +10,8 @@ HOTKEYS = [
     (14, 81, "close_app", False, True),
     (8, 86, "speak_latest", False, True),
     (8, 32, "toggle_speech", False, True),
+    (8, 90, "rewind_speech", False, True),
+    (8, 88, "skip_speech", False, True),
     (8, 37, "move_window_left", True, False),
     (8, 39, "move_window_right", True, False),
     (8, 38, "move_window_up", True, False),
@@ -201,7 +203,7 @@ def scenarios(inventory: dict[str, Any]) -> list[Scenario]:
         ),
         (
             "audio.speech",
-            "Use a cold speech cache for download stages and Settings → Voice to start the download. For playback stages with the model installed, press Caps Lock+V and Caps Lock+Space and right-click a reply line while the browser captures audio and Que records. Repeat on a nondefault Speech output device and repeat the keyboard shortcuts while Que is hidden.",
+            "Use a cold speech cache for download stages and Settings → Voice to start the download. For playback stages with the model installed, press Caps Lock+V, Caps Lock+Space, Caps Lock+Z and Caps Lock+X and right-click a reply line while the browser captures audio and Que records. Repeat on a nondefault Speech output device and repeat the keyboard shortcuts while Que is hidden.",
             "Verify missing and downloading notices, inline download results, and idle audio until a new playback request. For playback, verify speech on the selected output, first streamed words, pause/resume, restart from the right-clicked line and session closure. Verify word tint and centered follow on a long wrapped reply. Scroll away during playback and pause/resume to rejoin the spoken line. Turn off Settings → Voice → Autoscroll while reading aloud and Highlight words while reading aloud one at a time and confirm only that behavior stops. Adjust Settings → Voice → Volume while reading and confirm silence at 0%. Change Speed and verify the voice and tint stay synchronized on the next reply. With the model downloaded, use Test voice to play one sentence at different speeds and volumes. Confirm the saved settings survive reopening. Record calibrated capture, browser audio continuity, page focus, key and pointer-button events, context menus, and the Them transcript.",
             "audio",
         ),

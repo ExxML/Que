@@ -94,6 +94,8 @@ class ActionTests(ShortcutTestCase):
             "dismiss_warnings": window.status_banner.dismiss_all,
             "speak_latest": window.speak_latest,
             "toggle_speech": window.speaker.toggle_pause,
+            "rewind_speech": window.speaker.rewind,
+            "skip_speech": window.speaker.skip,
         }
         for name, handler in expectations.items():
             with self.subTest(action=name):

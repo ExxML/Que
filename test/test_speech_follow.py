@@ -183,6 +183,18 @@ class SpeechFollowTests(unittest.TestCase):
                 wait(170)
                 self.assertEqual(chat.scrollbar.value(), center)
 
+        # A rewind or skip clears the tint and rejoins at the next heard word
+        chat.shortcut_scroll(-170)
+        chat.set_reading_state(bubble, "pause", first)
+        chat.set_reading_state(object(), "jump", None)
+        self.assertTrue(chat.reading_paused)
+        chat.set_reading_state(bubble, "jump", None)
+        self.assertFalse(bubble.message_label.tint_ranges)
+        chat.set_reading_state(bubble, "position", next_line)
+        wait(170)
+        self.assertTrue(bubble.message_label.tint_ranges)
+        self.assertGreater(chat.scrollbar.value(), center)
+
     def test_autoscroll_and_highlight_toggle_during_a_reading(self) -> None:
         """Apply each toggle on its own to the current word without waiting for the next."""
         markdown = "\n".join(f"Line {index} says hello" for index in range(80))

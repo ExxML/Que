@@ -377,6 +377,14 @@ class ShortcutManager(QObject):
         """Pause or resume reading aloud."""
         self.main_window.speaker.toggle_pause()
 
+    def _rewind_speech(self) -> None:
+        """Restart the sentence being read, or go further back when pressed again."""
+        self.main_window.speaker.rewind()
+
+    def _skip_speech(self) -> None:
+        """Skip to the next sentence being read."""
+        self.main_window.speaker.skip()
+
     def _dismiss_warnings(self) -> None:
         """Dismiss the visible protection warnings on the Qt thread."""
         self.main_window.status_banner.dismiss_all()
