@@ -10,7 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QPushButton, QWidget
 from qt_application import application
 
 from core.ai_sender import AISender
@@ -182,6 +182,29 @@ class ResumeFactsTests(unittest.TestCase):
         self.assertTrue(wait_until(self.idle))
         self.assertEqual(self.bridge.ask.call_count, 1)
 
+    def test_states_and_rewriting_a_current_sheet(self) -> None:
+        """Report each folder state and rewrite a current sheet only when asked."""
+        self.assertEqual(self.facts.state(self.project), ("none", ""))
+        release = threading.Event()
+        self.bridge.ask.side_effect = lambda *_args: (release.wait(5), "Sheet")[1]
+        self.facts.refresh(self.details, "sonnet", "high")
+        self.assertEqual(self.facts.state(self.project), ("writing", ""))
+        release.set()
+        self.assertTrue(wait_until(self.idle))
+        self.assertEqual(self.facts.state(self.project), ("current", ""))
+        self.facts.refresh(self.details, "sonnet", "high", rewrite=True)
+        self.assertTrue(wait_until(self.idle))
+        self.assertEqual(self.bridge.ask.call_count, 2)
+        later = time.time() + 100
+        os.utime(self.project / "README.md", (later, later))
+        self.assertEqual(self.facts.state(self.project), ("outdated", ""))
+        self.bridge.ask.side_effect = RuntimeError("quota reached")
+        self.facts.refresh(self.details, "sonnet", "high")
+        self.assertTrue(wait_until(self.idle))
+        self.assertEqual(
+            self.facts.state(self.project), ("failed", "Que: quota reached")
+        )
+
     def test_offline_bridge_never_writes(self) -> None:
         """Never start the CLI outside the running app."""
         self.bridge.live = False
@@ -268,10 +291,12 @@ class FactSheetSettingsTests(unittest.TestCase):
         self.project = self.root / "Que"
         self.project.mkdir()
 
-    def test_linking_a_folder_writes_its_sheet_and_shows_progress(self) -> None:
-        """Refresh on link with the saved Claude model and reflect each status."""
+    def test_linking_a_folder_writes_only_its_sheet_and_shows_progress(self) -> None:
+        """Refresh only the new folder with the saved Claude model and reflect each status."""
+        other = self.root / "Other"
+        other.mkdir()
+        self.store.save_resume_details([("Other", str(other))])
         self.page.open_settings()
-        self.assertFalse(self.page.fact_sheets_status.isVisibleTo(self.page))
         with (
             patch.object(self.page.resume_facts, "refresh") as refresh,
             patch(
@@ -283,24 +308,93 @@ class FactSheetSettingsTests(unittest.TestCase):
         refresh.assert_called_once_with([("Que", str(self.project))], "sonnet", "high")
         self.assertEqual(
             self.page.fact_sheets_status.text(),
-            "Fact sheets: 0 of 1 linked folders are up to date.",
+            "Fact sheets: 0 of 2 linked folders are up to date.",
         )
-        self.assertTrue(self.page.fact_sheets_button.isEnabled())
-        with patch.object(self.page.resume_facts, "status", return_value=(0, 1, 1, "")):
+        self.assertFalse(self.page.fact_sheets_button.isEnabled())
+        with patch.object(self.page.resume_facts, "status", return_value=(0, 2, 1, "")):
             self.page.resume_facts.progress.emit()
             self.app.processEvents()
             self.assertIn("Writing fact sheets", self.page.fact_sheets_status.text())
-            self.assertFalse(self.page.fact_sheets_button.isEnabled())
         with patch.object(
-            self.page.resume_facts, "status", return_value=(0, 1, 0, "Que: quota")
+            self.page.resume_facts, "status", return_value=(0, 2, 0, "Que: quota")
         ):
             self.page._show_fact_sheets()
             self.assertIn(
                 "The last one failed: Que: quota", self.page.fact_sheets_status.text()
             )
+
+    def test_folder_marks_show_states_and_write_the_selection(self) -> None:
+        """Mark each folder's sheet, and write or rewrite only the selected folders."""
+        other = self.root / "Other"
+        other.mkdir()
+        notes = self.root / "notes.md"
+        notes.write_text("Notes", encoding="utf-8")
+        details = [
+            ("Que", str(self.project)),
+            ("Notes", str(notes)),
+            ("Other", str(other)),
+        ]
+        self.store.save_resume_details(details)
+        self.page.open_settings()
+        self.assertEqual(set(self.page.fact_marks), {str(self.project), str(other)})
+        que_box, que_dot = self.page.fact_marks[str(self.project)]
+        other_box, other_dot = self.page.fact_marks[str(other)]
+        self.assertFalse(que_box.isHidden())
+        self.assertEqual(que_dot.toolTip(), "No fact sheet yet")
+        self.assertIn("○", que_dot.text())
+        for state, glyph, tooltip in (
+            ("current", "●", "Fact sheet is up to date"),
+            ("outdated", "●", "Fact sheet was written before the folder last changed"),
+            ("failed", "●", "Last write failed: Que: quota"),
+            ("writing", "◌", "Writing fact sheet…"),
+        ):
+            with (
+                self.subTest(state=state),
+                patch.object(
+                    self.page.resume_facts,
+                    "state",
+                    return_value=(state, "Que: quota" if state == "failed" else ""),
+                ),
+            ):
+                que_box.setChecked(True)
+                self.page._show_fact_sheets()
+                self.assertIn(glyph, que_dot.text())
+                self.assertEqual(que_dot.toolTip(), tooltip)
+                self.assertEqual(que_dot.accessibleDescription(), tooltip)
+                self.assertEqual(que_box.isEnabled(), state != "writing")
+                self.assertEqual(que_box.isChecked(), state != "writing")
+                self.assertEqual(
+                    self.page.fact_sheets_button.isEnabled(), state != "writing"
+                )
+        que_box.setChecked(False)
+        self.page._show_fact_sheets()
+        self.assertFalse(self.page.fact_sheets_button.isEnabled())
+        self.page.fact_select_button.click()
+        self.assertTrue(que_box.isChecked() and other_box.isChecked())
+        self.assertEqual(self.page.fact_select_button.text(), "Clear selection")
+        self.page.fact_select_button.click()
+        self.assertFalse(que_box.isChecked() or other_box.isChecked())
+        self.assertEqual(self.page.fact_select_button.text(), "Select all")
+        other_box.setChecked(True)
         with patch.object(self.page.resume_facts, "refresh") as refresh:
             self.page.fact_sheets_button.click()
-        refresh.assert_called_once()
+        refresh.assert_called_once_with(
+            [("Other", str(other))], "sonnet", "high", rewrite=True
+        )
+        self.assertFalse(other_box.isChecked())
+        self.assertFalse(self.page.fact_sheets_button.isEnabled())
+        self.assertIn("○", other_dot.text())
+
+        with patch.object(self.page.resume_facts, "refresh") as refresh:
+            remove = next(
+                button
+                for button in self.page.findChildren(QPushButton)
+                if button.accessibleName() == "Remove link to notes.md"
+            )
+            remove.click()
+            self.page._apply_imported_config({"resume_details"})
+        refresh.assert_not_called()
+        self.assertEqual(set(self.page.fact_marks), {str(self.project), str(other)})
 
 
 if __name__ == "__main__":

@@ -41,7 +41,14 @@ from core.speaker import Speaker
 from core.transcriber import Transcriber
 from ui.chat.chat_area import SCROLLBAR_STYLE
 from ui.directory_picker import choose_directory, choose_file
-from ui.theme import BG_COLOR, DANGER_COLOR, PRIMARY_COLOR, qss
+from ui.theme import (
+    BG_COLOR,
+    DANGER_COLOR,
+    PRIMARY_COLOR,
+    SUCCESS_COLOR,
+    WARNING_COLOR,
+    qss,
+)
 from ui.window.config_panel import ConfigPanel
 
 WHISPER_LABELS: dict[str, str] = {
@@ -103,6 +110,7 @@ class SettingsPage(QWidget):
         self.details_timer.setInterval(500)
         self.details_timer.timeout.connect(self._save_detail_names)
         self.detail_rows: list[tuple[_ResumeDetailNameEdit, str]] = []
+        self.fact_marks: dict[str, tuple[QCheckBox, QLabel]] = {}
         self.audio_devices: dict[str, list[str]] = {}
         self._init_UI()
 
@@ -468,20 +476,26 @@ class SettingsPage(QWidget):
         link_folder_button = QPushButton("Link folder…")
         link_folder_button.setAccessibleName("Link a folder to a resume item")
         link_folder_button.clicked.connect(lambda: self._link_resume_detail(True))
-        self.fact_sheets_button = QPushButton("Update fact sheets")
+        self.fact_sheets_button = QPushButton("Write selected fact sheets")
         self.fact_sheets_button.setAccessibleName(
-            "Write fact sheets for new or changed linked folders"
+            "Write fact sheets for the selected linked folders"
         )
-        self.fact_sheets_button.clicked.connect(self._update_fact_sheets)
+        self.fact_sheets_button.clicked.connect(self._write_selected_fact_sheets)
+        self.fact_select_button = QPushButton("Select all")
+        self.fact_select_button.setAccessibleName(
+            "Select linked folders for fact sheets"
+        )
+        self.fact_select_button.clicked.connect(self._toggle_fact_selection)
         link_row = QHBoxLayout()
         link_row.addWidget(link_file_button)
         link_row.addWidget(link_folder_button)
         link_row.addWidget(self.fact_sheets_button)
+        link_row.addWidget(self.fact_select_button)
         link_row.addStretch(1)
         self.fact_sheets_status = QLabel()
         self.fact_sheets_status.setWordWrap(True)
         details_hint = QLabel(
-            "Files (PDF, Word, or text) are read again at the start of each new chat, so edits apply to your next new chat. When you link a folder, Claude reads it once and writes a fact sheet that new chats start from, so answers rarely wait on file reads. Claude can still open linked folders, and Gemini uses the fact sheet or, without one, the folder's README."
+            "Files (PDF, Word, or text) are read again at the start of each new chat, so edits apply to your next new chat. When you link a folder, Claude reads it once and writes a fact sheet that new chats start from, so answers rarely wait on file reads. The dot beside each folder shows whether its fact sheet is up to date; select folders to write their fact sheets again. Claude can still open linked folders, and Gemini uses the fact sheet or, without one, the folder's README."
         )
         details_hint.setWordWrap(True)
         details_group = QVBoxLayout()
@@ -680,8 +694,7 @@ class SettingsPage(QWidget):
             self._show_documents()
         if "resume_details" in selected:
             self._show_resume_details()
-            self._update_fact_sheets()
-        elif "fact_sheets" in selected:
+        if selected & {"resume_details", "fact_sheets"}:
             self._show_fact_sheets()
         if "whisper_model" in selected:
             self.keep_voice_preference = True
@@ -1268,6 +1281,10 @@ class SettingsPage(QWidget):
         name = source.name if folder else source.stem
         if not self._save_resume_details([*details, (name, path)]):
             return
+        if folder:
+            model, effort = self.settings_store.defaults("claude")
+            self.resume_facts.refresh([(name, path)], model, effort)
+            self._show_fact_sheets()
         name_input = self.detail_rows[-1][0]
         name_input.setFocus()
         name_input.select_from_start()
@@ -1302,20 +1319,75 @@ class SettingsPage(QWidget):
             return False
         if rebuild:
             self._show_resume_details()
-            self._update_fact_sheets()
+            self._show_fact_sheets()
         self.save_status.setText(
             "Changes saved automatically. They apply to new chats."
         )
         return True
 
-    def _update_fact_sheets(self) -> None:
-        """Have Claude write fact sheets for linked folders that have none or changed since."""
+    def _write_selected_fact_sheets(self) -> None:
+        """Have Claude write, or rewrite, the fact sheets of the selected linked folders."""
+        selected = [
+            (name, path)
+            for name, path in self.settings_store.resume_details()
+            if path in self.fact_marks and self.fact_marks[path][0].isChecked()
+        ]
         model, effort = self.settings_store.defaults("claude")
-        self.resume_facts.refresh(self.settings_store.resume_details(), model, effort)
+        self.resume_facts.refresh(selected, model, effort, rewrite=True)
+        for checkbox, _dot in self.fact_marks.values():
+            with QSignalBlocker(checkbox):
+                checkbox.setChecked(False)
         self._show_fact_sheets()
 
+    def _toggle_fact_selection(self) -> None:
+        """Select or clear every linked folder whose fact sheet is not being written."""
+        boxes = [box for box, _dot in self.fact_marks.values() if box.isEnabled()]
+        checked = not all(box.isChecked() for box in boxes)
+        for box in boxes:
+            with QSignalBlocker(box):
+                box.setChecked(checked)
+        self._update_fact_selection()
+
+    def _update_fact_selection(self) -> None:
+        """Enable writing only when a folder is selected, and name the selection toggle."""
+        boxes = [box for box, _dot in self.fact_marks.values() if box.isEnabled()]
+        count = sum(box.isChecked() for box in boxes)
+        self.fact_sheets_button.setEnabled(count > 0)
+        self.fact_select_button.setEnabled(bool(boxes))
+        self.fact_select_button.setText(
+            "Clear selection" if boxes and count == len(boxes) else "Select all"
+        )
+
     def _show_fact_sheets(self) -> None:
-        """Show how many linked folders have a current fact sheet and offer to update the rest."""
+        """Show each linked folder's fact sheet state and how many are up to date."""
+        for path, (checkbox, dot) in self.fact_marks.items():
+            state, failure = self.resume_facts.state(Path(path))
+            glyph, color, description = {
+                "current": ("\u25cf", qss(SUCCESS_COLOR), "Fact sheet is up to date"),
+                "outdated": (
+                    "\u25cf",
+                    qss(WARNING_COLOR),
+                    "Fact sheet was written before the folder last changed",
+                ),
+                "none": ("\u25cb", qss(PRIMARY_COLOR, 150), "No fact sheet yet"),
+                "writing": (
+                    "\u25cc",
+                    qss(PRIMARY_COLOR, 150),
+                    "Writing fact sheet\u2026",
+                ),
+                "failed": (
+                    "\u25cf",
+                    qss(DANGER_COLOR),
+                    f"Last write failed: {failure}",
+                ),
+            }[state]
+            dot.setText(f"<span style='color: {color};'>{glyph}</span>")
+            dot.setToolTip(description)
+            dot.setAccessibleDescription(description)
+            if state == "writing":
+                with QSignalBlocker(checkbox):
+                    checkbox.setChecked(False)
+            checkbox.setEnabled(state != "writing")
         current, total, writing, error = self.resume_facts.status(
             self.settings_store.resume_details()
         )
@@ -1332,7 +1404,8 @@ class SettingsPage(QWidget):
         self.fact_sheets_status.setText(text)
         self.fact_sheets_status.setVisible(bool(text))
         self.fact_sheets_button.setVisible(bool(total))
-        self.fact_sheets_button.setEnabled(not writing and current < total)
+        self.fact_select_button.setVisible(bool(total))
+        self._update_fact_selection()
 
     def _resume_details(self) -> list[tuple[str, str]]:
         """Return the resume detail links as currently shown, including unsaved name edits.
@@ -1350,9 +1423,24 @@ class SettingsPage(QWidget):
             if (widget := item.widget()) is not None:
                 widget.deleteLater()
         self.detail_rows = []
+        self.fact_marks = {}
         for index, (name, path) in enumerate(self.settings_store.resume_details()):
             source = Path(path)
             kind = "folder" if source.is_dir() else "file"
+            checkbox = QCheckBox()
+            checkbox.setAccessibleName(f"Select {source.name} for a fact sheet")
+            checkbox.toggled.connect(self._update_fact_selection)
+            dot = QLabel()
+            dot.setTextFormat(Qt.TextFormat.RichText)
+            dot.setAccessibleName(f"Fact sheet for {source.name}")
+            for mark in (checkbox, dot):
+                # Files have no fact sheet; their hidden marks keep the name fields aligned
+                policy = mark.sizePolicy()
+                policy.setRetainSizeWhenHidden(True)
+                mark.setSizePolicy(policy)
+                mark.setVisible(kind == "folder")
+            if kind == "folder":
+                self.fact_marks[path] = (checkbox, dot)
             name_input = _ResumeDetailNameEdit(name)
             name_input.setPlaceholderText("Resume item, e.g., Que overlay")
             name_input.setAccessibleName(f"Resume item linked to {source.name}")
@@ -1382,6 +1470,8 @@ class SettingsPage(QWidget):
             row = QWidget()
             row_layout = QHBoxLayout(row)
             row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.addWidget(checkbox)
+            row_layout.addWidget(dot)
             row_layout.addWidget(name_input, 2)
             row_layout.addWidget(path_input, 3)
             row_layout.addWidget(remove_button)

@@ -595,6 +595,13 @@
     "enabled": true
   },
   {
+    "class": "QLineEdit",
+    "name": "",
+    "accessible": "Linked folder",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "SelectionDropdown",
     "name": "",
     "accessible": "Model",
@@ -660,9 +667,23 @@
   {
     "class": "QPushButton",
     "name": "",
+    "accessible": "Remove link to audit-project",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
     "accessible": "Remove resume",
     "parent_class": "QWidget",
     "enabled": false
+  },
+  {
+    "class": "_ResumeDetailNameEdit",
+    "name": "",
+    "accessible": "Resume item linked to audit-project",
+    "parent_class": "QWidget",
+    "enabled": true
   },
   {
     "class": "QLineEdit",
@@ -690,6 +711,20 @@
     "name": "ScrollRightButton",
     "accessible": "Scroll Right",
     "parent_class": "QTabBar",
+    "enabled": true
+  },
+  {
+    "class": "QCheckBox",
+    "name": "",
+    "accessible": "Select audit-project for a fact sheet",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
+    "class": "QPushButton",
+    "name": "",
+    "accessible": "Select linked folders for fact sheets",
+    "parent_class": "QWidget",
     "enabled": true
   },
   {
@@ -786,7 +821,7 @@
   {
     "class": "QPushButton",
     "name": "",
-    "accessible": "Write fact sheets for new or changed linked folders",
+    "accessible": "Write fact sheets for the selected linked folders",
     "parent_class": "QWidget",
     "enabled": false
   },

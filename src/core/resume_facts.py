@@ -37,13 +37,20 @@ class ResumeFacts(QObject):
         self.workers = 0
         self.errors: dict[Path, str] = {}
 
-    def refresh(self, details: list[tuple[str, str]], model: str, effort: str) -> None:
+    def refresh(
+        self,
+        details: list[tuple[str, str]],
+        model: str,
+        effort: str,
+        rewrite: bool = False,
+    ) -> None:
         """Write fact sheets for linked folders that have none or changed since theirs was written.
 
         Args:
             details (list[tuple[str, str]]): The item name and file or folder path of each link.
             model (str): The Claude model that writes the sheets, or an empty string for the CLI's default.
             effort (str): The advertised effort or default.
+            rewrite (bool): Whether to also rewrite sheets that are up to date.
         """
         if not self.claude_bridge.live:
             return
@@ -51,7 +58,8 @@ class ResumeFacts(QObject):
             for name, path in details:
                 folder = Path(path)
                 sheet = load_sheet(self.directory, folder)
-                if folder in self.queued or not folder.is_dir() or (sheet and sheet[1]):
+                current = not rewrite and bool(sheet and sheet[1])
+                if folder in self.queued or not folder.is_dir() or current:
                     continue
                 self.queued.add(folder)
                 self.errors.pop(folder, None)
@@ -81,6 +89,25 @@ class ResumeFacts(QObject):
                 self.errors[folder] for folder in folders if folder in self.errors
             ]
         return current, len(folders), writing, errors[-1] if errors else ""
+
+    def state(self, folder: Path) -> tuple[str, str]:
+        """Describe one linked folder's fact sheet.
+
+        Args:
+            folder (Path): The linked folder.
+
+        Returns:
+            tuple[str, str]: "writing", "failed", "current", "outdated" or "none", and the failure message.
+        """
+        with self.lock:
+            if folder in self.queued:
+                return "writing", ""
+            if folder in self.errors:
+                return "failed", self.errors[folder]
+        sheet = load_sheet(self.directory, folder)
+        if sheet is None:
+            return "none", ""
+        return "current" if sheet[1] else "outdated", ""
 
     def _work(self) -> None:
         """Write queued fact sheets until none are left."""

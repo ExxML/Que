@@ -18,6 +18,7 @@ def inspect_controls(source: Path, output: Path) -> None:
     from core.ai_sender import AISender
     from core.chat_history import Conversation
     from core.model_catalog import ModelOption
+    from core.resume_facts import facts_directory, fingerprint, save_sheet
     from core.screenshot_manager import ScreenshotManager
     from core.settings import SettingsStore
     from core.shortcut_manager import ShortcutManager
@@ -76,11 +77,25 @@ def inspect_controls(source: Path, output: Path) -> None:
         )
         with patch("ui.window.config_panel.choose_file", return_value=str(backup)):
             window.settings_page.config_panel.browse_button.click()
+        project = source / "data" / "audit-project"
+        project.mkdir()
+        save_sheet(
+            facts_directory(settings),
+            {
+                "path": str(project),
+                "fingerprint": fingerprint(project),
+                "text": "Synthetic fact sheet",
+            },
+        )
+        settings.save_resume_details([("Synthetic project", str(project))])
+        window.settings_page._show_resume_details()
+        window.settings_page._show_fact_sheets()
         rows: list[dict[str, Any]] = []
         for widget in app.allWidgets():
             cls = type(widget).__name__
             if (
-                cls == "QCheckBox" and widget.accessibleName().startswith("Import ")
+                cls == "QCheckBox"
+                and widget.accessibleName().startswith(("Import ", "Select "))
             ) or any(
                 token in cls.lower()
                 for token in (
