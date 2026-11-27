@@ -49,10 +49,12 @@ if __name__ == "__main__":
 # nuitka-project: --include-package=onnx_asr
 # nuitka-project: --include-package-data=onnx_asr
 # Speech loads its voice lazily; espeak-ng's library and data ship inside espeakng_loader.
+# Package data never includes DLLs, so the package configuration file declares espeak-ng.dll.
 # nuitka-project: --include-package=kokoro_onnx
 # nuitka-project: --include-package-data=kokoro_onnx
 # nuitka-project: --include-package=phonemizer
 # nuitka-project: --include-package-data=espeakng_loader
+# nuitka-project: --user-package-configuration-file={MAIN_DIRECTORY}/que.nuitka-package.config.yml
 # Hugging Face loads download helpers lazily. Its lock helpers also load SoftFileLock on Windows.
 # nuitka-project: --include-package=huggingface_hub.utils
 # nuitka-project: --include-module=filelock._soft

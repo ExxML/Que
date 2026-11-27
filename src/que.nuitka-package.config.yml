@@ -1,0 +1,13 @@
+# yamllint disable rule:line-length
+# yamllint disable rule:indentation
+# yamllint disable rule:comments-indentation
+# yamllint disable rule:comments
+# too many spelling things, spell-checker: disable
+---
+# Nuitka has no configuration for espeakng_loader, and --include-package-data never copies DLLs,
+# so without this the phonemizer cannot load espeak-ng and Que's voice fails to load.
+- module-name: 'espeakng_loader'
+  dlls:
+    - from_filenames:
+        prefixes:
+          - 'espeak-ng'
