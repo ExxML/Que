@@ -13159,47 +13159,47 @@
     "expression": "if event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right):",
     "sha256": "6c38641eb733dfe530aea984c65baa7a52a9f011382f45e20a82c04cfcd0702e"
   },
-  "ui/window/settings_page.py:2064:routine": {
+  "ui/window/settings_page.py:2090:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2064,
+    "line": 2090,
     "expression": "def _format_size(size: int) -> str:",
     "sha256": "4ca0a34e52addcf1f526f3353f9bbbae9ada0c931ed3d7d56b60d70969770ba3"
   },
-  "ui/window/settings_page.py:73:routine": {
+  "ui/window/settings_page.py:75:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 73,
+    "line": 75,
     "expression": "def __init__(self, settings_store: SettingsStore, claude_bridge: ClaudeBridge, transcriber: Transcriber, chat_history: ChatHistory, parent: QWidget, speaker: Speaker | None=None) -> None:",
     "sha256": "fde0a6bcf8686c58611b63c913d14abcf2fc9a5eb6f963ee97e8095f56ecab62"
   },
-  "ui/window/settings_page.py:118:routine": {
+  "ui/window/settings_page.py:120:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 118,
+    "line": 120,
     "expression": "def open_settings(self) -> None:",
     "sha256": "9c7cbe8b9a1776d4c5b83f022e3d9bf9d7c41bb780778db22b3ec8760e029b6c"
   },
-  "ui/window/settings_page.py:149:routine": {
+  "ui/window/settings_page.py:151:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 149,
+    "line": 151,
     "expression": "def shortcut_scroll(self, amount: int) -> None:",
     "sha256": "b03bb053bb94d315251d95c2ef25ff9d0346f9e22d678a8220cda8076f6ae2ce"
   },
-  "ui/window/settings_page.py:161:routine": {
+  "ui/window/settings_page.py:163:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 161,
+    "line": 163,
     "expression": "def hideEvent(self, event: QHideEvent | None) -> None:",
     "sha256": "1da92c9a6db6be045bd29430d42d54714ed79efabd8266139aca3f6467e91fff"
   },
-  "ui/window/settings_page.py:173:routine": {
+  "ui/window/settings_page.py:175:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 173,
+    "line": 175,
     "expression": "def _init_UI(self) -> None:",
-    "sha256": "c9af74190359cdd92eca89b422b33e85173e288500d2a03274f9177c8632dcb2"
+    "sha256": "d1344d4a4b0dc085dd995fdc84df20992dacde90afb947dc4817d86f284c4387"
   },
   "ui/window/settings_page.py:648:routine": {
     "category": "routine",
@@ -13226,496 +13226,503 @@
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 771,
-    "expression": "def _init_speech_settings(self, layout: QVBoxLayout) -> None:",
-    "sha256": "c1025df5ad2ff1f84878e2e061a687f1544fc7f6c65e96a0ea0b818fe05ff5ce"
+    "expression": "def _init_speech_settings(self, layout: QVBoxLayout, form: QFormLayout) -> None:",
+    "sha256": "e54d595e6ddb9bce4c9a432c7707ef1316f10498e229608943ebdf9b940b292d"
   },
-  "ui/window/settings_page.py:808:routine": {
+  "ui/window/settings_page.py:809:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 808,
+    "line": 809,
     "expression": "def _init_speech_follow(self, layout: QVBoxLayout) -> None:",
     "sha256": "e0a0111f0fb4698bf29db4da6f5995482f785395b9392058cd4f65b186c30ace"
   },
-  "ui/window/settings_page.py:846:routine": {
+  "ui/window/settings_page.py:847:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 846,
+    "line": 847,
     "expression": "def _init_speech_volume(self, form: QFormLayout) -> None:",
     "sha256": "8255fd55cc83b00059527849e40f6006e6431fbb7082db83eb071c713b29067b"
   },
-  "ui/window/settings_page.py:861:routine": {
+  "ui/window/settings_page.py:862:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 861,
+    "line": 862,
     "expression": "def _init_speech_speed(self, form: QFormLayout) -> None:",
     "sha256": "e76ad1308bd6a0532d4fe725975f0234a01b5d97b1cda684648d3272dd4d26bd"
   },
-  "ui/window/settings_page.py:876:routine": {
+  "ui/window/settings_page.py:877:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 876,
+    "line": 877,
+    "expression": "def _add_model_row(self, form: QFormLayout, name: str, combo: QComboBox, button: QPushButton) -> None:",
+    "sha256": "7f79036e265f5600752b64926c5378a29b1d978f827575305ce5285712a1b8d7"
+  },
+  "ui/window/settings_page.py:899:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 899,
     "expression": "def _add_speech_slider(self, form: QFormLayout, name: str, slider: QSlider) -> QLabel:",
     "sha256": "e07b1eb19e483265dce34eeae1083da60f8593f75472b6514013cb045d8d7699"
   },
-  "ui/window/settings_page.py:905:routine": {
+  "ui/window/settings_page.py:928:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 905,
+    "line": 928,
     "expression": "def _init_audio_tab(self) -> None:",
     "sha256": "a3cd364e9600d18d8cbd5a5ddc12f9a613733a6be2e170e281ba773c69ca5d69"
   },
-  "ui/window/settings_page.py:965:routine": {
+  "ui/window/settings_page.py:988:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 965,
+    "line": 988,
     "expression": "def _on_settings_tab_changed(self, index: int) -> None:",
     "sha256": "a6826babeae30413279cd8072aaa4ebdcab8f3225c7df035bfad791fbde8f6e1"
   },
-  "ui/window/settings_page.py:975:routine": {
+  "ui/window/settings_page.py:998:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 975,
+    "line": 998,
     "expression": "def _refresh_audio_devices(self) -> None:",
     "sha256": "8579008d9aba0550470ff1ca67b16fa1ceccfe4c3b3ad2791e312d12b9cee355"
   },
-  "ui/window/settings_page.py:986:routine": {
+  "ui/window/settings_page.py:1009:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 986,
+    "line": 1009,
     "expression": "def _on_audio_devices_loaded(self, devices: dict[str, list[str]], error: str) -> None:",
     "sha256": "940d0a2a95616dafeacbdd6df3bd386e92f480ba1a4f533862140981d604c4d5"
-  },
-  "ui/window/settings_page.py:1036:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1036,
-    "expression": "def _save_audio_device(self, source: str, index: int) -> None:",
-    "sha256": "e41d516fe7b6ac5b3f0a13e7775faaf372294623b4af9125aa35dd9d90acf285"
   },
   "ui/window/settings_page.py:1059:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 1059,
+    "expression": "def _save_audio_device(self, source: str, index: int) -> None:",
+    "sha256": "e41d516fe7b6ac5b3f0a13e7775faaf372294623b4af9125aa35dd9d90acf285"
+  },
+  "ui/window/settings_page.py:1082:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1082,
     "expression": "def _add_tab(self, name: str) -> QVBoxLayout:",
     "sha256": "bf661083d678e7d2e7504e85004b8afa2cc83e5675bb38906cce1962dacdb2c1"
   },
-  "ui/window/settings_page.py:1084:routine": {
+  "ui/window/settings_page.py:1107:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1084,
+    "line": 1107,
     "expression": "def _add_toggle(self, layout: QVBoxLayout, checkbox: QCheckBox, hint: str) -> None:",
     "sha256": "87c9496b50af69018f85dd7def9c1ffd935017b64d58a98209b4ad2ef79d477d"
   },
-  "ui/window/settings_page.py:1101:routine": {
+  "ui/window/settings_page.py:1124:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1101,
+    "line": 1124,
     "expression": "def _select_provider(self, provider: str) -> None:",
     "sha256": "9742520adb133b414cb7ca0d3c74f592cba1fcac6d615142c52e28975a9cdce9"
   },
-  "ui/window/settings_page.py:1121:routine": {
+  "ui/window/settings_page.py:1144:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1121,
+    "line": 1144,
     "expression": "def _update_provider(self) -> None:",
     "sha256": "2c7ee4995b8b81ab126686d56afbe628ccf764da8d906910d7a7653fe8675dec"
   },
-  "ui/window/settings_page.py:1135:routine": {
+  "ui/window/settings_page.py:1158:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1135,
+    "line": 1158,
     "expression": "def _choose_directory(self) -> None:",
     "sha256": "ca6b2ee4b04c1a4ad11057113e1128ba48cc8c8a888f3297158613411e2feb78"
   },
-  "ui/window/settings_page.py:1143:routine": {
+  "ui/window/settings_page.py:1166:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1143,
+    "line": 1166,
     "expression": "def _save_directory(self, directory: str) -> None:",
     "sha256": "b686ee90774270652479c9a45cd5ace99a7fd25d3a7f537aa5fce5292c063909"
   },
-  "ui/window/settings_page.py:1160:routine": {
+  "ui/window/settings_page.py:1183:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1160,
+    "line": 1183,
     "expression": "def _show_directory(self, directory: str) -> None:",
     "sha256": "736adb3be79e2dc235c34edb18aa7e13706714624b9a3842b83dc8ebe97e9a96"
   },
-  "ui/window/settings_page.py:1169:routine": {
+  "ui/window/settings_page.py:1192:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1169,
+    "line": 1192,
     "expression": "def _upload_document(self, kind: str) -> None:",
     "sha256": "93231d4be814219c3efeb00210a7f18fde34dbfd11e29e3a6acb3052bc55d9fd"
   },
-  "ui/window/settings_page.py:1191:routine": {
+  "ui/window/settings_page.py:1214:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1191,
+    "line": 1214,
     "expression": "def _save_document(self, kind: str, name: str, text: str) -> None:",
     "sha256": "3cb7653287e94230909653083a59ec4dded88c891648dfbe6c6f247b745e8cef"
   },
-  "ui/window/settings_page.py:1211:routine": {
+  "ui/window/settings_page.py:1234:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1211,
+    "line": 1234,
     "expression": "def _save_context_text(self) -> bool:",
     "sha256": "3affd848adf3be2862730159ebb1c442457fd8bfb367d24c53c0081ed964e280"
   },
-  "ui/window/settings_page.py:1250:routine": {
+  "ui/window/settings_page.py:1273:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1250,
+    "line": 1273,
     "expression": "def _show_job_details_count(self) -> None:",
     "sha256": "ca3d235cf646fbe2cb5d4385f84ad4aed3587ee1879e927108131ce1298aef76"
   },
-  "ui/window/settings_page.py:1256:routine": {
+  "ui/window/settings_page.py:1279:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1256,
+    "line": 1279,
     "expression": "def _show_documents(self) -> None:",
     "sha256": "70e0a1529c4af856830732fe8a40377041db6556f6b60cce61d9b14f3f389f7b"
   },
-  "ui/window/settings_page.py:1266:routine": {
+  "ui/window/settings_page.py:1289:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1266,
+    "line": 1289,
     "expression": "def _link_resume_detail(self, folder: bool) -> None:",
     "sha256": "a1350fa8ea426df0074b25ecf92e176c5c8fc2a0860c5e21f7e5bdf83b0285d8"
   },
-  "ui/window/settings_page.py:1305:routine": {
+  "ui/window/settings_page.py:1328:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1305,
+    "line": 1328,
     "expression": "def _save_detail_names(self) -> bool:",
     "sha256": "33b45af4f8e7e9e262995df4872f8383176b703c40452f87fbb8bf3016065796"
   },
-  "ui/window/settings_page.py:1313:routine": {
+  "ui/window/settings_page.py:1336:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1313,
+    "line": 1336,
     "expression": "def _save_resume_details(self, details: list[tuple[str, str]], rebuild: bool=True) -> bool:",
     "sha256": "8bcf5cc2fdc46b6a4a7a15598cf7346252d8a8062f8631f44cb1d78151aeb09c"
-  },
-  "ui/window/settings_page.py:1341:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1341,
-    "expression": "def _write_selected_fact_sheets(self) -> None:",
-    "sha256": "f136efc5e9c5b7ac2a87b347603189fdef8b31ad076c14be497b400a52cf9752"
-  },
-  "ui/window/settings_page.py:1355:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1355,
-    "expression": "def _toggle_fact_selection(self) -> None:",
-    "sha256": "1691a6a29f185dce99519cfbda5b092aa8558db2d65bdce333c55813e71e597b"
   },
   "ui/window/settings_page.py:1364:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 1364,
+    "expression": "def _write_selected_fact_sheets(self) -> None:",
+    "sha256": "f136efc5e9c5b7ac2a87b347603189fdef8b31ad076c14be497b400a52cf9752"
+  },
+  "ui/window/settings_page.py:1378:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1378,
+    "expression": "def _toggle_fact_selection(self) -> None:",
+    "sha256": "1691a6a29f185dce99519cfbda5b092aa8558db2d65bdce333c55813e71e597b"
+  },
+  "ui/window/settings_page.py:1387:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1387,
     "expression": "def _update_fact_selection(self) -> None:",
     "sha256": "a52e361a037687b4d5ff5b044031a0cefa8d7114cf715954817e4b7836f8d13c"
   },
-  "ui/window/settings_page.py:1374:routine": {
+  "ui/window/settings_page.py:1397:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1374,
+    "line": 1397,
     "expression": "def _show_fact_sheets(self) -> None:",
     "sha256": "616661156c53ddff251540cdb28cb22eebe26db7b85a943e745e39e840408f42"
   },
-  "ui/window/settings_page.py:1423:routine": {
+  "ui/window/settings_page.py:1446:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1423,
+    "line": 1446,
     "expression": "def _resume_details(self) -> list[tuple[str, str]]:",
     "sha256": "e3103c9fced3c3c642e8cf2528d9b394f2847fbfdbc1f2bcd02e1f4bc4cc9b04"
   },
-  "ui/window/settings_page.py:1433:routine": {
+  "ui/window/settings_page.py:1456:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1433,
+    "line": 1456,
     "expression": "def _show_resume_details(self) -> None:",
     "sha256": "ac5b1755dd99c717a3445c8435597bb977b6e7f2c0ce5db086ab79f9279d4204"
   },
-  "ui/window/settings_page.py:1496:routine": {
+  "ui/window/settings_page.py:1519:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1496,
+    "line": 1519,
     "expression": "def _show_screenshots_size(self) -> None:",
     "sha256": "7b16a5115c9771356625de11a660c0634cc217537b9684ec651c2b5aa5e1aaa1"
   },
-  "ui/window/settings_page.py:1503:routine": {
+  "ui/window/settings_page.py:1526:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1503,
+    "line": 1526,
     "expression": "def _delete_screenshots(self) -> None:",
     "sha256": "fcde5ecf6da80bffeb72564f96d56f89e8019c59fc91284eaab8959a78da86e2"
   },
-  "ui/window/settings_page.py:1516:routine": {
+  "ui/window/settings_page.py:1539:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1516,
+    "line": 1539,
     "expression": "def _set_screenshots_armed(self, armed: bool) -> None:",
     "sha256": "37ef4876797cfe75677f74b9224e9a244b0e01517fa2526140d4f1b83b87f6ff"
   },
-  "ui/window/settings_page.py:1537:routine": {
+  "ui/window/settings_page.py:1560:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1537,
+    "line": 1560,
     "expression": "def _select_whisper(self, model: str) -> None:",
     "sha256": "9d7e1c0a0a1fb9fc5a4fc7037fcf15ee88b3e33ce295d5efd2e6319f49ba675b"
   },
-  "ui/window/settings_page.py:1548:routine": {
+  "ui/window/settings_page.py:1571:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1548,
+    "line": 1571,
     "expression": "def _refresh_whisper(self) -> None:",
     "sha256": "902916be1cc8059f05ab27a527245da443da52caaec6db302e0ae2b52deb8a73"
   },
-  "ui/window/settings_page.py:1565:routine": {
+  "ui/window/settings_page.py:1588:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1565,
+    "line": 1588,
     "expression": "def _on_whisper_changed(self, index: int) -> None:",
     "sha256": "af0bac1a74f96647a90345bbb68ec689885c21afdaa0899c202a4726bdf6a736"
   },
-  "ui/window/settings_page.py:1587:routine": {
+  "ui/window/settings_page.py:1610:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1587,
+    "line": 1610,
     "expression": "def _download_whisper(self) -> None:",
     "sha256": "3725a59b702bba7986ccf934da3f5d6593782201d8fd4cd750d8b29693ada022"
   },
-  "ui/window/settings_page.py:1597:routine": {
+  "ui/window/settings_page.py:1620:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1597,
+    "line": 1620,
     "expression": "def _on_whisper_downloaded(self, model: str, error: str) -> None:",
     "sha256": "fb3d2e4db90ae415a54806a06878efe199c62a43a4382d7c075fe01cc7a6c525"
-  },
-  "ui/window/settings_page.py:1624:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1624,
-    "expression": "def _show_download_status(self, text: str) -> None:",
-    "sha256": "95f267383011444637c0125900b40a01c2a837c457dc2bdc7f97162ff00399c7"
-  },
-  "ui/window/settings_page.py:1633:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1633,
-    "expression": "def _refresh_voice_buttons(self) -> None:",
-    "sha256": "a76f21cc8617f0498863476e721de66618a926c50582a495f3454b43082c5616"
   },
   "ui/window/settings_page.py:1647:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 1647,
-    "expression": "def _download_voice(self) -> None:",
-    "sha256": "184d7b01564ad334cb51370e79fb1ce9358205187c0cda65352ba6345e2272cf"
+    "expression": "def _show_download_status(self, text: str) -> None:",
+    "sha256": "95f267383011444637c0125900b40a01c2a837c457dc2bdc7f97162ff00399c7"
   },
   "ui/window/settings_page.py:1656:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 1656,
+    "expression": "def _refresh_voice_buttons(self) -> None:",
+    "sha256": "352830ce7cbda07a7bea6adb3c75f7ca2a909857aac5c956bc242f749b021f2b"
+  },
+  "ui/window/settings_page.py:1673:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1673,
+    "expression": "def _download_voice(self) -> None:",
+    "sha256": "184d7b01564ad334cb51370e79fb1ce9358205187c0cda65352ba6345e2272cf"
+  },
+  "ui/window/settings_page.py:1682:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1682,
     "expression": "def _on_voice_downloaded(self, error: str) -> None:",
     "sha256": "0aa0eb86c345b18bb5e073dcd71f58e9d397e0ec62249ebb585e7055efbccba9"
   },
-  "ui/window/settings_page.py:1670:routine": {
+  "ui/window/settings_page.py:1696:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1670,
+    "line": 1696,
     "expression": "def _refresh_speech_volume(self) -> None:",
     "sha256": "e92abb8f0644dc398a2bcab70a8cb64949d6867d5c8953d7cdbcdfb32849469c"
   },
-  "ui/window/settings_page.py:1677:routine": {
+  "ui/window/settings_page.py:1703:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1677,
+    "line": 1703,
     "expression": "def _show_speech_volume_value(self, volume: int) -> None:",
     "sha256": "050e11f041e43bf2c5e749f052029b8a9abf48e8ea71bd313bb5278ea8d3e027"
   },
-  "ui/window/settings_page.py:1685:routine": {
+  "ui/window/settings_page.py:1711:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1685,
+    "line": 1711,
     "expression": "def _save_speech_volume(self, volume: int) -> None:",
     "sha256": "9f93abf8d8c6f0e100ed7defe0581830c10407ef311bd7090b8db40fe535d70d"
   },
-  "ui/window/settings_page.py:1702:routine": {
+  "ui/window/settings_page.py:1728:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1702,
+    "line": 1728,
     "expression": "def _refresh_speech_speed(self) -> None:",
     "sha256": "e639d0960e6e28c0aaa76db29265a3c1fce0237ed19bb420baa29695db67bd97"
   },
-  "ui/window/settings_page.py:1709:routine": {
+  "ui/window/settings_page.py:1735:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1709,
+    "line": 1735,
     "expression": "def _show_speech_speed_value(self, speed: int) -> None:",
     "sha256": "57ced709a9548bbc11ffb673132c5d6457e70699ded7a5ce98c850bc3c60a10a"
   },
-  "ui/window/settings_page.py:1717:routine": {
+  "ui/window/settings_page.py:1743:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1717,
+    "line": 1743,
     "expression": "def _save_speech_speed(self, speed: int) -> None:",
     "sha256": "498df0dfaad2782407c69f0a2e9cc75ea42a4585647efd9e6a4d4f2d891209a9"
   },
-  "ui/window/settings_page.py:1734:routine": {
+  "ui/window/settings_page.py:1760:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1734,
+    "line": 1760,
     "expression": "def _save_whisper_model(self, model: str) -> None:",
     "sha256": "9ac19643328d4f92378611eb2f660057196b30e255953a7885c8f0861c7bc72a"
   },
-  "ui/window/settings_page.py:1749:routine": {
+  "ui/window/settings_page.py:1775:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1749,
+    "line": 1775,
     "expression": "def _save_toggle(self, save: Callable[[bool], None], saved: pyqtBoundSignal, name: str, enabled: bool) -> None:",
     "sha256": "09cc2034148734ecb1c6eaf2026c287d64092a013db087548e2b641e60b06437"
   },
-  "ui/window/settings_page.py:1774:routine": {
+  "ui/window/settings_page.py:1800:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1774,
+    "line": 1800,
     "expression": "def _on_key_changed(self, _text: str) -> None:",
     "sha256": "b08f2ebeafb310f990856bc1d970f226d8b9545e7dc78524b72168972894a081"
   },
-  "ui/window/settings_page.py:1786:routine": {
+  "ui/window/settings_page.py:1812:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1786,
+    "line": 1812,
     "expression": "def _toggle_key(self, visible: bool) -> None:",
     "sha256": "d4e2f0387720ac0b620a11052d75367a89d1465961f0f5c02f0226b6cb0c101c"
   },
-  "ui/window/settings_page.py:1797:routine": {
+  "ui/window/settings_page.py:1823:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1797,
+    "line": 1823,
     "expression": "def _refresh(self, test_generation: bool) -> None:",
     "sha256": "5ab04e7fedfaf33ad8032a6758bfb0c155c48942c6a75f1e40bd0a7b28f98cdd"
   },
-  "ui/window/settings_page.py:1828:routine": {
+  "ui/window/settings_page.py:1854:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1828,
+    "line": 1854,
     "expression": "def _clear_models(self) -> None:",
     "sha256": "04e5e375676bf6bb5f6c7e2bbf1c6010b89b22cdc83498f1d54d2f55f8a756ce"
   },
-  "ui/window/settings_page.py:1846:routine": {
+  "ui/window/settings_page.py:1872:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1846,
+    "line": 1872,
     "expression": "def _set_loading(self, loading: bool) -> None:",
     "sha256": "59bb8b7e6a219a5cb03c26b4536b7db9475bfe5a7a886d6a0c25c01c84cf812f"
-  },
-  "ui/window/settings_page.py:1856:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 1856,
-    "expression": "def _on_loaded(self, revision: int, result: ProviderResult) -> None:",
-    "sha256": "65a7e63a550d0b96a55ad90bf4b3076185762c4cc5deb66336411c38a727ede1"
   },
   "ui/window/settings_page.py:1882:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 1882,
+    "expression": "def _on_loaded(self, revision: int, result: ProviderResult) -> None:",
+    "sha256": "65a7e63a550d0b96a55ad90bf4b3076185762c4cc5deb66336411c38a727ede1"
+  },
+  "ui/window/settings_page.py:1908:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 1908,
     "expression": "def _on_failed(self, revision: int, error: str) -> None:",
     "sha256": "d6beb6be085917c8547ec114c3a85f91126de2567134f74080f6d7768bfc05ac"
   },
-  "ui/window/settings_page.py:1897:routine": {
+  "ui/window/settings_page.py:1923:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1897,
+    "line": 1923,
     "expression": "def _on_model_changed(self, index: int, *, save: bool=True) -> None:",
     "sha256": "fb664d458090600ff116d136f6624acfc5016a3e1ba5adc0471cc54f74f52ab5"
   },
-  "ui/window/settings_page.py:1921:routine": {
+  "ui/window/settings_page.py:1947:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1921,
+    "line": 1947,
     "expression": "def _save(self) -> None:",
     "sha256": "4a85a43e408b086a26b2ac62ba328e85a28cf8d53c5cc84c6459330663f60bfc"
   },
-  "ui/window/settings_page.py:1957:routine": {
+  "ui/window/settings_page.py:1983:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1957,
+    "line": 1983,
     "expression": "def _show_presets(self) -> None:",
     "sha256": "b4e84ae0b28f97a19989747dc461fc7399de2c90c5ea60673868fb2155bb31b4"
   },
-  "ui/window/settings_page.py:1976:routine": {
+  "ui/window/settings_page.py:2002:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 1976,
+    "line": 2002,
     "expression": "def _show_preset_efforts(self, preset_model: QComboBox, preset_effort: QComboBox, effort: str) -> None:",
     "sha256": "e33c37e7ab602ea2d577d5d10cb1e5d0b918e85982a73191118aab5546db7433"
   },
-  "ui/window/settings_page.py:2003:routine": {
+  "ui/window/settings_page.py:2029:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2003,
+    "line": 2029,
     "expression": "def _on_preset_model_changed(self, row: int) -> None:",
     "sha256": "c36653aa26fcda45ce0ff95d21a5d5e36a4730043191ccb9e1d78cea4a3efb5f"
-  },
-  "ui/window/settings_page.py:2015:routine": {
-    "category": "routine",
-    "source": "ui/window/settings_page.py",
-    "line": 2015,
-    "expression": "def _save_presets(self) -> None:",
-    "sha256": "6f2a050732732aad66f5d61f122210572a5f265418e702b6387a0dd2f6ca0c5b"
   },
   "ui/window/settings_page.py:2041:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
     "line": 2041,
+    "expression": "def _save_presets(self) -> None:",
+    "sha256": "6f2a050732732aad66f5d61f122210572a5f265418e702b6387a0dd2f6ca0c5b"
+  },
+  "ui/window/settings_page.py:2067:routine": {
+    "category": "routine",
+    "source": "ui/window/settings_page.py",
+    "line": 2067,
     "expression": "def wheelEvent(self, event: QWheelEvent | None) -> None:",
     "sha256": "64a1d966ded0f5488de783076e1b1d58e26f420f1abac66d82149888559242a1"
   },
-  "ui/window/settings_page.py:2054:routine": {
+  "ui/window/settings_page.py:2080:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2054,
+    "line": 2080,
     "expression": "def wheelEvent(self, event: QWheelEvent | None) -> None:",
     "sha256": "d65234b2c2a72030d267f8efa035d12ab96e70179c63285119dbaf3d0636cfb9"
   },
-  "ui/window/settings_page.py:2084:routine": {
+  "ui/window/settings_page.py:2110:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2084,
+    "line": 2110,
     "expression": "def __init__(self, name: str) -> None:",
     "sha256": "d9cc0220458031a993d82c8f21233a639e1287c9e92877fe87b061e0764cc3ea"
   },
-  "ui/window/settings_page.py:2088:routine": {
+  "ui/window/settings_page.py:2114:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2088,
+    "line": 2114,
     "expression": "def select_from_start(self) -> None:",
     "sha256": "4d372ad7e2f378a4b79332a94af3b393b8918e3be61772c27894f92cf9893ff8"
   },
-  "ui/window/settings_page.py:2093:routine": {
+  "ui/window/settings_page.py:2119:routine": {
     "category": "routine",
     "source": "ui/window/settings_page.py",
-    "line": 2093,
+    "line": 2119,
     "expression": "def focusOutEvent(self, event: QFocusEvent | None) -> None:",
     "sha256": "dc02fb5a92cbbd1c465972aa2b823dee8ebf19a18efa932e51831ad6f6ecc53a"
-  },
-  "ui/window/settings_page.py:167:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 167,
-    "expression": "if self.context_text_timer.isActive():",
-    "sha256": "04ddfab9779853ed118ac7c25ea276bb6e0f330f7895db9fa7cc75c6d8c39529"
   },
   "ui/window/settings_page.py:169:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
     "line": 169,
+    "expression": "if self.context_text_timer.isActive():",
+    "sha256": "04ddfab9779853ed118ac7c25ea276bb6e0f330f7895db9fa7cc75c6d8c39529"
+  },
+  "ui/window/settings_page.py:171:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 171,
     "expression": "if self.details_timer.isActive():",
     "sha256": "c4d2a5531996eb0527fa597e46f987be3142c31acae8951d589468869d451430"
   },
@@ -13810,276 +13817,276 @@
     "expression": "if selected & {'audio_device_you', 'audio_device_them', 'audio_device_speaker'} and self.audio_refresh.isEnabled():",
     "sha256": "010ee56b3d2dbb5a64e98f38547b8347866b9b53c01cf9398318c6543c6c77af"
   },
-  "ui/window/settings_page.py:972:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 972,
-    "expression": "if index == self.audio_tab_index:",
-    "sha256": "1993cb28bdd1dcb78837695ee8b57864876fbc3f47ae0a097de70142ff821edb"
-  },
-  "ui/window/settings_page.py:977:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 977,
-    "expression": "if not self.audio_refresh.isEnabled():",
-    "sha256": "143889faa979b7f190e363f2391bc6a8b44f4189961cc49bda355891af833a89"
-  },
   "ui/window/settings_page.py:995:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
     "line": 995,
+    "expression": "if index == self.audio_tab_index:",
+    "sha256": "1993cb28bdd1dcb78837695ee8b57864876fbc3f47ae0a097de70142ff821edb"
+  },
+  "ui/window/settings_page.py:1000:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1000,
+    "expression": "if not self.audio_refresh.isEnabled():",
+    "sha256": "143889faa979b7f190e363f2391bc6a8b44f4189961cc49bda355891af833a89"
+  },
+  "ui/window/settings_page.py:1018:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1018,
     "expression": "if not error:",
     "sha256": "6e732a2ca235a218afe99fa8962ec41b6852a5364066487668c37d5847d10ef8"
   },
-  "ui/window/settings_page.py:1028:branch": {
+  "ui/window/settings_page.py:1051:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1028,
+    "line": 1051,
     "expression": "if not error and duplicate_names:",
     "sha256": "c3924cf9007312e30eb5e4fa8fdb083ee0b8ede217080ae3bde973a50ff740a5"
   },
-  "ui/window/settings_page.py:1046:branch": {
+  "ui/window/settings_page.py:1069:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1046,
+    "line": 1069,
     "expression": "if not isinstance(name, str) or name == saved:",
     "sha256": "770473afc40220a9ea921ed4f3989f1dcf09128fda75b7ed4306a5e57e12cf59"
   },
-  "ui/window/settings_page.py:1107:branch": {
+  "ui/window/settings_page.py:1130:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1107,
+    "line": 1130,
     "expression": "if self.provider == provider:",
     "sha256": "66f1dcefcf23e8605c6a22f135392ab4e54f27c75753d27eb31df135d714fac6"
   },
-  "ui/window/settings_page.py:1110:branch": {
+  "ui/window/settings_page.py:1133:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1110,
+    "line": 1133,
     "expression": "if self.models:",
     "sha256": "bf525f403847639270882d784641b7f2e9b38056900a0a77905a5d0c7d021698"
   },
-  "ui/window/settings_page.py:1140:branch": {
+  "ui/window/settings_page.py:1163:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1140,
+    "line": 1163,
     "expression": "if directory:",
     "sha256": "bcfd671310d45d364967de47b1175e642d6a2ef938f8f0ab70c1e961b6ad96b5"
   },
-  "ui/window/settings_page.py:1181:branch": {
+  "ui/window/settings_page.py:1204:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1181,
+    "line": 1204,
     "expression": "if not filename:",
     "sha256": "8a2124a9601f5bd1b66b28ab1582357db447e88c1defb5da5eab17231b100a08"
-  },
-  "ui/window/settings_page.py:1274:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 1274,
-    "expression": "if folder:",
-    "sha256": "f1571f004debf3aa55378b831ee543e15d4c63d40fa7442a60f51c25b4c34154"
-  },
-  "ui/window/settings_page.py:1291:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 1291,
-    "expression": "if not path:",
-    "sha256": "737655fe7be723935d6a5faf085f251881a7bb06dc252a1c28c05a62b5ebcb9e"
-  },
-  "ui/window/settings_page.py:1295:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 1295,
-    "expression": "if not self._save_resume_details([*details, (name, path)]):",
-    "sha256": "b531cb26c92634e18c7dea53b58a4ccea45756b5190a519cb6e164461c03fff1"
   },
   "ui/window/settings_page.py:1297:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
     "line": 1297,
     "expression": "if folder:",
-    "sha256": "8866d70b69cab05f865c008ba659722205544b17d4e9323b9f97cfb5c1756d25"
+    "sha256": "f1571f004debf3aa55378b831ee543e15d4c63d40fa7442a60f51c25b4c34154"
   },
-  "ui/window/settings_page.py:1309:branch": {
+  "ui/window/settings_page.py:1314:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1309,
+    "line": 1314,
+    "expression": "if not path:",
+    "sha256": "737655fe7be723935d6a5faf085f251881a7bb06dc252a1c28c05a62b5ebcb9e"
+  },
+  "ui/window/settings_page.py:1318:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1318,
+    "expression": "if not self._save_resume_details([*details, (name, path)]):",
+    "sha256": "b531cb26c92634e18c7dea53b58a4ccea45756b5190a519cb6e164461c03fff1"
+  },
+  "ui/window/settings_page.py:1320:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1320,
+    "expression": "if folder:",
+    "sha256": "8866d70b69cab05f865c008ba659722205544b17d4e9323b9f97cfb5c1756d25"
+  },
+  "ui/window/settings_page.py:1332:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1332,
     "expression": "if details != self.settings_store.resume_details():",
     "sha256": "32e4c642f8c909ce913fdb9f5f88de57d8a836a927f8a56dc9bf4cdcdc99196b"
   },
-  "ui/window/settings_page.py:1333:branch": {
+  "ui/window/settings_page.py:1356:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1333,
+    "line": 1356,
     "expression": "if rebuild:",
     "sha256": "3384e8294b8a93150b576c197ed3f0740afd0ec75c36068bb16bf94770a43949"
   },
-  "ui/window/settings_page.py:1407:branch": {
+  "ui/window/settings_page.py:1430:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1407,
+    "line": 1430,
     "expression": "if not total:",
     "sha256": "86874d1280bbb952dd8412ca8c9b9665e469b2775dd8dede693b21b679c5becf"
   },
-  "ui/window/settings_page.py:1505:branch": {
+  "ui/window/settings_page.py:1528:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1505,
+    "line": 1528,
     "expression": "if not self.screenshots_armed:",
     "sha256": "c6bd0608272990f62f159c80f77ae6dde5408490d335f959d9d9871122659279"
   },
-  "ui/window/settings_page.py:1508:branch": {
+  "ui/window/settings_page.py:1531:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1508,
+    "line": 1531,
     "expression": "if self.chat_history.delete_screenshots():",
     "sha256": "1aeec15dc885c74db3f4f62f90ef33f2ba99f011b4a1aefd104cf55edd9177fb"
   },
-  "ui/window/settings_page.py:1573:branch": {
+  "ui/window/settings_page.py:1596:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1573,
+    "line": 1596,
     "expression": "if model in self.transcriber.downloaded_models():",
     "sha256": "55e32e64aad119ebd8679229b9c56f22aaf837418ab8573cdfdf0ee711c8216a"
   },
-  "ui/window/settings_page.py:1578:branch": {
+  "ui/window/settings_page.py:1601:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1578,
+    "line": 1601,
     "expression": "if self.transcriber.downloading:",
     "sha256": "641692f2285cc0e6a9faee60070f6f44f7fb4135fcd856a72345784f34a995ea"
   },
-  "ui/window/settings_page.py:1604:branch": {
+  "ui/window/settings_page.py:1627:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1604,
+    "line": 1627,
     "expression": "if error:",
     "sha256": "6c89a473828a057c9230178c25a5728d48565ab0154e8a5003e4234ae3e2edf5"
   },
-  "ui/window/settings_page.py:1649:branch": {
+  "ui/window/settings_page.py:1675:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1649,
+    "line": 1675,
     "expression": "if self.speaker.download():",
     "sha256": "a1c6f22d8c3544f887d2a62b2c6d3bbc1ab3abb0eaa80dbca7e7088b149012a6"
   },
-  "ui/window/settings_page.py:1804:branch": {
+  "ui/window/settings_page.py:1830:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1804,
+    "line": 1830,
     "expression": "if self.models:",
     "sha256": "bf525f403847639270882d784641b7f2e9b38056900a0a77905a5d0c7d021698"
   },
-  "ui/window/settings_page.py:1810:branch": {
+  "ui/window/settings_page.py:1836:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1810,
+    "line": 1836,
     "expression": "if self.provider == 'gemini' and (not self.key_input.text().strip()):",
     "sha256": "dd0eecbdfd0679832186a536228c265866d3512d0a94c7b02ec439e5ab2f159c"
-  },
-  "ui/window/settings_page.py:1863:branch": {
-    "category": "branch",
-    "source": "ui/window/settings_page.py",
-    "line": 1863,
-    "expression": "if revision != self.revision or result.provider != self.provider:",
-    "sha256": "bd04b8754c01f9b8a629deefc629668cc4e65b37342e525d3e7e0bf02582c436"
   },
   "ui/window/settings_page.py:1889:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
     "line": 1889,
+    "expression": "if revision != self.revision or result.provider != self.provider:",
+    "sha256": "bd04b8754c01f9b8a629deefc629668cc4e65b37342e525d3e7e0bf02582c436"
+  },
+  "ui/window/settings_page.py:1915:branch": {
+    "category": "branch",
+    "source": "ui/window/settings_page.py",
+    "line": 1915,
     "expression": "if revision != self.revision:",
     "sha256": "7c3fbef74cb85db93357014c9329de5fc6fe2f217a171dd3572202a6ba76cc4f"
   },
-  "ui/window/settings_page.py:1918:branch": {
+  "ui/window/settings_page.py:1944:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1918,
+    "line": 1944,
     "expression": "if save:",
     "sha256": "49e157059744eb3e78cbb3de9f9cfdbc5fc5fbbafb79236ece2b6a3c9c2fbe2a"
   },
-  "ui/window/settings_page.py:1923:branch": {
+  "ui/window/settings_page.py:1949:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1923,
+    "line": 1949,
     "expression": "if not self.models or self.loading:",
     "sha256": "d02dee79115e843216ed70cb5a4dfa416f7385a816d496201144510c16aba95b"
   },
-  "ui/window/settings_page.py:1927:branch": {
+  "ui/window/settings_page.py:1953:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1927,
+    "line": 1953,
     "expression": "if model is None or effort is None:",
     "sha256": "1e584f39021f7ca07c0176c2dc1c81b2cbd31b27105042a8360801d85d74a3e3"
   },
-  "ui/window/settings_page.py:1933:branch": {
+  "ui/window/settings_page.py:1959:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1933,
+    "line": 1959,
     "expression": "if self.provider == self.settings_store.provider() and (model, effort) == self.settings_store.defaults(self.provider) and (api_key == saved_key) and (not self.settings_store.error):",
     "sha256": "a013e36b7a8ee0e1bd38c4eb7e06a2510078a41708193469f46f0c9c08fcfad5"
   },
-  "ui/window/settings_page.py:2017:branch": {
+  "ui/window/settings_page.py:2043:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2017,
+    "line": 2043,
     "expression": "if not self.models or self.loading:",
     "sha256": "d02dee79115e843216ed70cb5a4dfa416f7385a816d496201144510c16aba95b"
   },
-  "ui/window/settings_page.py:2026:branch": {
+  "ui/window/settings_page.py:2052:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2026,
+    "line": 2052,
     "expression": "if presets == self.settings_store.presets(self.provider):",
     "sha256": "9673caf01c4df595be0e7f0ef491073e4ca355a09055441dc01af52c0b93b891"
   },
-  "ui/window/settings_page.py:2047:branch": {
+  "ui/window/settings_page.py:2073:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2047,
+    "line": 2073,
     "expression": "if event is not None:",
     "sha256": "45f89b392e263f6adf5247f06b02bab2f219cce1e33d85ca0e4fe6594a58d87a"
   },
-  "ui/window/settings_page.py:2060:branch": {
+  "ui/window/settings_page.py:2086:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2060,
+    "line": 2086,
     "expression": "if event is not None:",
     "sha256": "45f89b392e263f6adf5247f06b02bab2f219cce1e33d85ca0e4fe6594a58d87a"
   },
-  "ui/window/settings_page.py:2075:branch": {
+  "ui/window/settings_page.py:2101:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2075,
+    "line": 2101,
     "expression": "if value < 1024:",
     "sha256": "ae7d776c541f6d843020a9c8d0691d235ad71b472ca7b6bbabdad1a5b0511b90"
   },
-  "ui/window/settings_page.py:2100:branch": {
+  "ui/window/settings_page.py:2126:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 2100,
+    "line": 2126,
     "expression": "if event is not None and event.reason() not in (Qt.FocusReason.PopupFocusReason, Qt.FocusReason.ActiveWindowFocusReason):",
     "sha256": "05ec328d7e1d0f0d1c9276e6d7a07f0407355424b2cdc5573fd4bb1446bbfc74"
   },
-  "ui/window/settings_page.py:101:background": {
+  "ui/window/settings_page.py:103:background": {
     "category": "background",
     "source": "ui/window/settings_page.py",
-    "line": 101,
+    "line": 103,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
-  "ui/window/settings_page.py:105:background": {
+  "ui/window/settings_page.py:107:background": {
     "category": "background",
     "source": "ui/window/settings_page.py",
-    "line": 105,
+    "line": 107,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
-  "ui/window/settings_page.py:109:background": {
+  "ui/window/settings_page.py:111:background": {
     "category": "background",
     "source": "ui/window/settings_page.py",
-    "line": 109,
+    "line": 111,
     "expression": "QTimer(self)",
     "sha256": "c88b70e2626d0b1025868dcde29e0b9798ecc102e26697ef166d983b6d354478"
   },
@@ -14090,220 +14097,220 @@
     "expression": "if key in selected:",
     "sha256": "55d10b3948f0cfc4e5953d4480ad501169471c728c8417d5b0e906b552834167"
   },
-  "ui/window/settings_page.py:1030:branch": {
+  "ui/window/settings_page.py:1053:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1030,
+    "line": 1053,
     "expression": "if not error and (not any(self.audio_devices.values())):",
     "sha256": "fb7c6fc10712e7b2565905a1e0de5d3529d10c4a808f845e87957668d31c2158"
   },
-  "ui/window/settings_page.py:1050:failure": {
+  "ui/window/settings_page.py:1073:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1050,
+    "line": 1073,
     "expression": "except OSError:",
     "sha256": "1443ed23a23a8466eae08449ab3d845e484203dd914a4db5e48d8c7efcb0cc2a"
   },
-  "ui/window/settings_page.py:1151:failure": {
+  "ui/window/settings_page.py:1174:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1151,
+    "line": 1174,
     "expression": "except OSError:",
     "sha256": "ee76c68ea715ac568294fe058e89f515fc2c5ff49de8f0344a41b4c07b2199b4"
   },
-  "ui/window/settings_page.py:1186:failure": {
+  "ui/window/settings_page.py:1209:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1186,
+    "line": 1209,
     "expression": "except ValueError as error:",
     "sha256": "10364f0d9dd0c1190b40e21e76d45883979096d44350142ad03f1fb1c476105a"
   },
-  "ui/window/settings_page.py:1201:failure": {
+  "ui/window/settings_page.py:1224:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1201,
+    "line": 1224,
     "expression": "except OSError:",
     "sha256": "1d9d362e72d661b35aee8f3f6a73dec805da030924e059a8a250fe6d260d8211"
   },
-  "ui/window/settings_page.py:1234:branch": {
+  "ui/window/settings_page.py:1257:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1234,
+    "line": 1257,
     "expression": "if text == current():",
     "sha256": "37e0519de073f4a9bf17f32f83244304955213cf0036bea035964a621b7c24fc"
   },
-  "ui/window/settings_page.py:1244:branch": {
+  "ui/window/settings_page.py:1267:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1244,
+    "line": 1267,
     "expression": "if saved:",
     "sha256": "1df5238fd210dc641b683cb26d205877c73eafd98d0764b2609cdf3fcfc74533"
   },
-  "ui/window/settings_page.py:1285:branch": {
+  "ui/window/settings_page.py:1308:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1285,
+    "line": 1308,
     "expression": "if path:",
     "sha256": "b928bd3719620ff5036e1ec5c6e0c131780bf3f1056bc405688f17031b2527fb"
   },
-  "ui/window/settings_page.py:1328:failure": {
+  "ui/window/settings_page.py:1351:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1328,
+    "line": 1351,
     "expression": "except OSError:",
     "sha256": "8b83f18aecd5a872a9ea00da8007fc8f913f5b629cf718760295473bd183f490"
   },
-  "ui/window/settings_page.py:1400:branch": {
+  "ui/window/settings_page.py:1423:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1400,
+    "line": 1423,
     "expression": "if state == 'writing':",
     "sha256": "08ae817fbb874f63e6d5c98d93f46fba206713a902243bfb3ff314a07c504ba5"
   },
-  "ui/window/settings_page.py:1409:branch": {
+  "ui/window/settings_page.py:1432:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1409,
+    "line": 1432,
     "expression": "if writing:",
     "sha256": "c29692eec29bea83e43644496e2eb429eb0011b07a21928bdb0076934b1ee0ca"
   },
-  "ui/window/settings_page.py:1436:branch": {
+  "ui/window/settings_page.py:1459:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1436,
+    "line": 1459,
     "expression": "if (widget := item.widget()) is not None:",
     "sha256": "36eda5b233a76b09033f09aa04c67ceb6b1029edc178df5cf457130cb0cc9318"
   },
-  "ui/window/settings_page.py:1457:branch": {
+  "ui/window/settings_page.py:1480:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1457,
+    "line": 1480,
     "expression": "if kind == 'folder':",
     "sha256": "0a92c38ec08fa5fabd919f296bf23fc1100eedae271c78ff517333463955eb23"
   },
-  "ui/window/settings_page.py:1468:branch": {
+  "ui/window/settings_page.py:1491:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1468,
+    "line": 1491,
     "expression": "if not source.exists():",
     "sha256": "dc99662e395ea47dc216a4e99a0b53643eff5cb74fbb0c1c8e661e1f172daf57"
   },
-  "ui/window/settings_page.py:1575:branch": {
+  "ui/window/settings_page.py:1598:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1575,
+    "line": 1598,
     "expression": "if not self.transcriber.downloading:",
     "sha256": "d326a1caa7553a372de23bb258df921d18458bafe823e164e2c5f07b12940ce3"
   },
-  "ui/window/settings_page.py:1608:branch": {
+  "ui/window/settings_page.py:1631:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1608,
+    "line": 1631,
     "expression": "if self.keep_voice_preference:",
     "sha256": "2171bf390a355494b963e5811e5b4790cce9d122e125dab3412c983b0f97aab7"
   },
-  "ui/window/settings_page.py:1693:failure": {
+  "ui/window/settings_page.py:1719:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1693,
+    "line": 1719,
     "expression": "except OSError:",
     "sha256": "fcb2dc02d915366910544a919aff4396291458b054786249a9690923af9b1063"
   },
-  "ui/window/settings_page.py:1725:failure": {
+  "ui/window/settings_page.py:1751:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1725,
+    "line": 1751,
     "expression": "except OSError:",
     "sha256": "d6718984b40597fda10ad9b0f4d950cf667e32e9b11c315f08e0cb6e622dacd1"
   },
-  "ui/window/settings_page.py:1742:failure": {
+  "ui/window/settings_page.py:1768:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1742,
+    "line": 1768,
     "expression": "except OSError:",
     "sha256": "a9dc5a21c9646feb62ec11abbdee9d0412c89127af349e5e3f8c37bdeaff8181"
   },
-  "ui/window/settings_page.py:1766:failure": {
+  "ui/window/settings_page.py:1792:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1766,
+    "line": 1792,
     "expression": "except OSError:",
     "sha256": "2a9100fe29c0d3796e5fbdcc05c687e8ec4e5c2c4a35b44f553514772e1277ba"
   },
-  "ui/window/settings_page.py:1908:branch": {
+  "ui/window/settings_page.py:1934:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1908,
+    "line": 1934,
     "expression": "if not 0 <= index < len(self.models):",
     "sha256": "0662b6c174382ecae4004d7d9659b52d681c897a64d839a481f7288e4579afbb"
   },
-  "ui/window/settings_page.py:1948:failure": {
+  "ui/window/settings_page.py:1974:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1948,
+    "line": 1974,
     "expression": "except Exception:",
     "sha256": "17dcba25a90332830b6be4f35eacc14278b5b8995f652b70cd912aad34f83a51"
   },
-  "ui/window/settings_page.py:1968:branch": {
+  "ui/window/settings_page.py:1994:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1968,
+    "line": 1994,
     "expression": "if preset_model.findData(model) < 0:",
     "sha256": "82654c22de5694b740c1c3af3bf60510056beb7b37a4960449739e91f9155042"
   },
-  "ui/window/settings_page.py:2030:failure": {
+  "ui/window/settings_page.py:2056:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 2030,
+    "line": 2056,
     "expression": "except OSError:",
     "sha256": "e06aa77f55f5ac89d6e62971e417a612312810d816930df589b9213567e17e82"
   },
-  "ui/window/settings_page.py:1015:branch": {
+  "ui/window/settings_page.py:1038:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1015,
+    "line": 1038,
     "expression": "if index < 0:",
     "sha256": "1a3b6bd6b9385d6ed262554a8b3d4acf77d6f0908aaf27919893527166ee8eed"
   },
-  "ui/window/settings_page.py:1238:failure": {
+  "ui/window/settings_page.py:1261:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1238,
+    "line": 1261,
     "expression": "except OSError:",
     "sha256": "b7397183bc15799250b4fdf095ae98b7bce0cba04eec19b73d0df15d5fa59353"
   },
-  "ui/window/settings_page.py:1415:branch": {
+  "ui/window/settings_page.py:1438:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1415,
+    "line": 1438,
     "expression": "if error:",
     "sha256": "fefa5ade2e7d20819279e709b0d44cecd3a3609cf52679e153acec21cf8fcb95"
   },
-  "ui/window/settings_page.py:1454:branch": {
+  "ui/window/settings_page.py:1477:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1454,
+    "line": 1477,
     "expression": "if kind != 'folder':",
     "sha256": "f644307276f5d941724c1fb70daf53fd62298f611d5ee3ac5a09978a1e45efe0"
   },
-  "ui/window/settings_page.py:1006:branch": {
+  "ui/window/settings_page.py:1029:branch": {
     "category": "branch",
     "source": "ui/window/settings_page.py",
-    "line": 1006,
+    "line": 1029,
     "expression": "if count > 1:",
     "sha256": "bdf60c140bf32aec114ade3c44994db3fade8d15a8adfae229386555a0af8b6c"
   },
-  "ui/window/settings_page.py:1288:failure": {
+  "ui/window/settings_page.py:1311:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1288,
+    "line": 1311,
     "expression": "except ValueError as error:",
     "sha256": "10364f0d9dd0c1190b40e21e76d45883979096d44350142ad03f1fb1c476105a"
   },
-  "ui/window/settings_page.py:1613:failure": {
+  "ui/window/settings_page.py:1636:failure": {
     "category": "failure",
     "source": "ui/window/settings_page.py",
-    "line": 1613,
+    "line": 1636,
     "expression": "except OSError:",
     "sha256": "7eecac86bb38f0f495bd503ba2b47fbb310934f19e1c344a4ea273e28ddd47a8"
   },

@@ -343,6 +343,13 @@
     "enabled": true
   },
   {
+    "class": "_SettingsComboBox",
+    "name": "",
+    "accessible": "",
+    "parent_class": "QWidget",
+    "enabled": true
+  },
+  {
     "class": "QPushButton",
     "name": "",
     "accessible": "AI settings",

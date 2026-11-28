@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QSlider,
     QStackedWidget,
     QTabBar,
@@ -55,6 +56,7 @@ from ui.window.config_panel import ConfigPanel
 WHISPER_LABELS: dict[str, str] = {
     "parakeet-tdt-0.6b-v2": "Parakeet TDT 0.6B · English · 670 MB",
 }
+SPEECH_LABEL = "Kokoro 82M · English · 350 MB"
 
 
 class SettingsPage(QWidget):
@@ -522,32 +524,30 @@ class SettingsPage(QWidget):
         documents_layout.addLayout(details_group)
         documents_layout.addStretch(1)
         voice_layout = self._add_tab("Voice")
-        transcription_form = QFormLayout()
+        # One form for transcription and speech so their labels and controls share columns
+        voice_form = QFormLayout()
+        voice_form.setVerticalSpacing(voice_layout.spacing())
         self.whisper_combo = _SettingsComboBox()
         for model in WHISPER_MODELS:
             self.whisper_combo.addItem(WHISPER_LABELS[model], model)
         self.whisper_combo.currentIndexChanged.connect(self._on_whisper_changed)
         self.download_button = QPushButton("Download")
         self.download_button.clicked.connect(self._download_whisper)
-        transcription_row = QHBoxLayout()
-        transcription_row.addWidget(self.whisper_combo, 1)
-        transcription_row.addWidget(self.download_button)
-        transcription_label = QLabel("Transcription")
-        transcription_label.setBuddy(self.whisper_combo)
-        transcription_form.addRow(transcription_label, transcription_row)
-        voice_layout.addLayout(transcription_form)
+        self._add_model_row(
+            voice_form, "Transcription", self.whisper_combo, self.download_button
+        )
         self.download_status = QLabel()
         self.download_status.setTextFormat(Qt.TextFormat.PlainText)
         self.download_status.setWordWrap(True)
         self.download_status.setAccessibleName("Transcription model download status")
         self.download_status.hide()
-        voice_layout.addWidget(self.download_status)
+        voice_form.addRow(self.download_status)
         transcription_hint = QLabel(
             "Audio is transcribed on this computer and never uploaded. Download a model once to use it. Larger models are more accurate but slower. Applies the next time you start recording (Ctrl+Shift+R)."
         )
         transcription_hint.setWordWrap(True)
-        voice_layout.addWidget(transcription_hint)
-        self._init_speech_settings(voice_layout)
+        voice_form.addRow(transcription_hint)
+        self._init_speech_settings(voice_layout, voice_form)
         voice_layout.addStretch(1)
         self._init_audio_tab()
         window_layout = self._add_tab("Window")
@@ -768,20 +768,21 @@ class SettingsPage(QWidget):
                 signal.emit(value)
         self.save_status.setText("Imported settings saved.")
 
-    def _init_speech_settings(self, layout: QVBoxLayout) -> None:
+    def _init_speech_settings(self, layout: QVBoxLayout, form: QFormLayout) -> None:
         """Add the speech model download, playback sliders and sample to Voice settings.
 
         Args:
             layout (QVBoxLayout): The Voice tab layout.
+            form (QFormLayout): The Voice form shared with the transcription model.
         """
+        self.voice_combo = _SettingsComboBox()
+        self.voice_combo.addItem(SPEECH_LABEL)
         self.voice_download_button = QPushButton("Download")
         self.voice_download_button.setAccessibleName("Download speech model")
         self.voice_download_button.clicked.connect(self._download_voice)
-        row = QHBoxLayout()
-        row.addWidget(QLabel("Que's voice · English · About 350 MB"), 1)
-        row.addWidget(self.voice_download_button)
-        form = QFormLayout()
-        form.addRow("Speech", row)
+        self._add_model_row(
+            form, "Speech", self.voice_combo, self.voice_download_button
+        )
         self._init_speech_volume(form)
         self._init_speech_speed(form)
         self.voice_test_button = QPushButton("Test voice")
@@ -872,6 +873,28 @@ class SettingsPage(QWidget):
         self._refresh_speech_speed()
         self.speech_speed_slider.sliderMoved.connect(self._show_speech_speed_value)
         self.speech_speed_slider.valueChanged.connect(self._save_speech_speed)
+
+    def _add_model_row(
+        self, form: QFormLayout, name: str, combo: QComboBox, button: QPushButton
+    ) -> None:
+        """Add a labelled model dropdown with its download button to the Voice form.
+
+        Args:
+            form (QFormLayout): The Voice settings form.
+            name (str): The label shown beside the dropdown.
+            combo (QComboBox): The model dropdown.
+            button (QPushButton): The model's download button.
+        """
+        label = QLabel(name)
+        label.setBuddy(combo)
+        # QFormLayout top-aligns labels on rows taller than the label; spanning the row centres the text
+        label.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding
+        )
+        row = QHBoxLayout()
+        row.addWidget(combo, 1)
+        row.addWidget(button)
+        form.addRow(label, row)
 
     def _add_speech_slider(
         self, form: QFormLayout, name: str, slider: QSlider
@@ -1642,6 +1665,9 @@ class SettingsPage(QWidget):
             else "Downloaded"
             if downloaded
             else "Download"
+        )
+        self.voice_combo.setItemText(
+            0, f"{SPEECH_LABEL} · downloaded" if downloaded else SPEECH_LABEL
         )
 
     def _download_voice(self) -> None:

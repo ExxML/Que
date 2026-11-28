@@ -484,6 +484,7 @@ def run() -> dict[str, object]:
                 ("model", settings_page.model_combo, 0),
                 ("effort", settings_page.effort_combo, 0),
                 ("transcription", settings_page.whisper_combo, 2),
+                ("speech", settings_page.voice_combo, 2),
                 ("audio-you", settings_page.audio_combos["you"], audio_tab),
                 ("audio-them", settings_page.audio_combos["them"], audio_tab),
                 ("audio-speaker", settings_page.audio_combos["speaker"], audio_tab),
