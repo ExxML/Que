@@ -10,6 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from PyQt6.QtCore import QEvent, QObject
 from PyQt6.QtWidgets import QPushButton, QWidget
 from qt_application import application
 
@@ -335,7 +336,13 @@ class FactSheetSettingsTests(unittest.TestCase):
             ("Other", str(other)),
         ]
         self.store.save_resume_details(details)
+        windows = _ShownWindows()
+        self.app.installEventFilter(windows)
         self.page.open_settings()
+        self.app.removeEventFilter(windows)
+        # A row widget shown before joining its row becomes a native window, which Que's
+        # window policy keeps native, so it paints black and briefly exists as its own window
+        self.assertEqual(windows.shown, [])
         self.assertEqual(set(self.page.fact_marks), {str(self.project), str(other)})
         que_box, que_dot = self.page.fact_marks[str(self.project)]
         other_box, other_dot = self.page.fact_marks[str(other)]
@@ -395,6 +402,33 @@ class FactSheetSettingsTests(unittest.TestCase):
             self.page._apply_imported_config({"resume_details"})
         refresh.assert_not_called()
         self.assertEqual(set(self.page.fact_marks), {str(self.project), str(other)})
+
+
+class _ShownWindows(QObject):
+    """Record every top-level window shown while installed on the application."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.shown: list[str] = []
+
+    def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:
+        """Note a top-level widget being shown and let the event continue.
+
+        Args:
+            watched (QObject | None): The object receiving the event.
+            event (QEvent | None): The event.
+
+        Returns:
+            bool: Always False, so the event is delivered.
+        """
+        if (
+            event is not None
+            and event.type() == QEvent.Type.Show
+            and isinstance(watched, QWidget)
+            and watched.isWindow()
+        ):
+            self.shown.append(type(watched).__name__)
+        return False
 
 
 if __name__ == "__main__":

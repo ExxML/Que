@@ -1438,7 +1438,9 @@ class SettingsPage(QWidget):
                 policy = mark.sizePolicy()
                 policy.setRetainSizeWhenHidden(True)
                 mark.setSizePolicy(policy)
-                mark.setVisible(kind == "folder")
+                if kind != "folder":
+                    # Only hide: showing a widget before it joins the row opens it as its own window
+                    mark.hide()
             if kind == "folder":
                 self.fact_marks[path] = (checkbox, dot)
             name_input = _ResumeDetailNameEdit(name)
