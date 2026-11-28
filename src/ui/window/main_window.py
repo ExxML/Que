@@ -308,6 +308,17 @@ class MainWindow(QWidget):
         self.transcript_panel.hide()
         self.settings_button.setText("Back to chat")
 
+    def shortcut_scroll(self, amount: int) -> None:
+        """Scroll whichever page is open, the chat or the settings.
+
+        Args:
+            amount (int): The pixel amount to scroll (positive for down, negative for up).
+        """
+        if self.pages.currentIndex() == 1:
+            self.settings_page.shortcut_scroll(amount)
+        else:
+            self.chat_area.shortcut_scroll(amount)
+
     def quit_app(self) -> None:
         """Request shutdown after the input hooks finish consumed physical presses."""
         self.quit_requested.emit()

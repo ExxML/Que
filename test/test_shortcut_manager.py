@@ -33,6 +33,7 @@ class FakeMainWindow(QWidget):
         self.ai_sender = MagicMock()
         self.ai_sender.settings_store.elevate_helper.return_value = False
         self.chat_area = MagicMock()
+        self.shortcut_scroll = MagicMock()
         self.input_field = InputField(self)
         self.finish_quit = MagicMock()
         self.quit_requested = MagicMock()
@@ -102,15 +103,12 @@ class ActionTests(ShortcutTestCase):
                 self.manager._run_action(name)
                 handler.assert_called()
 
-    def test_scrolling_moves_the_chat_by_a_step(self) -> None:
-        """Scroll the chat up and down by one step."""
+    def test_scrolling_moves_the_open_page_by_a_step(self) -> None:
+        """Scroll the open page up and down by one step."""
         self.manager._run_action("scroll_up")
         self.manager._run_action("scroll_down")
         self.assertEqual(
-            [
-                call.args
-                for call in self.window.chat_area.shortcut_scroll.call_args_list
-            ],
+            [call.args for call in self.window.shortcut_scroll.call_args_list],
             [(-100,), (100,)],
         )
 

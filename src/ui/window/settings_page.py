@@ -145,6 +145,18 @@ class SettingsPage(QWidget):
         self._on_settings_tab_changed(self.tab_bar.currentIndex())
         self._load_ai_settings()
 
+    def shortcut_scroll(self, amount: int) -> None:
+        """Scroll the open settings tab by a specified amount.
+
+        Args:
+            amount (int): The pixel amount to scroll (positive for down, negative for up).
+        """
+        tab = self.tab_pages.currentWidget()
+        assert isinstance(tab, QScrollArea)
+        scrollbar = tab.verticalScrollBar()
+        assert scrollbar is not None
+        scrollbar.setValue(scrollbar.value() + amount)
+
     def hideEvent(self, event: QHideEvent | None) -> None:
         """Save pending instruction, job detail and resume detail edits when leaving settings or hiding Que.
 

@@ -62,7 +62,7 @@ class ShortcutManager(QObject):
         self.move_signal.connect(
             self._start_animation
         )  # Signal needed because QTimers cannot be started from another thread
-        self.scroll_signal.connect(self.main_window.chat_area.shortcut_scroll)
+        self.scroll_signal.connect(self.main_window.shortcut_scroll)
         self.quit_signal.connect(self.main_window.finish_quit)
         self.main_window.quit_requested.connect(self.request_quit)
         self.main_window.input_field.answer_requested.connect(self._answer)
@@ -329,11 +329,11 @@ class ShortcutManager(QObject):
         self._resize_by(0, -1)
 
     def _scroll_up(self) -> None:
-        """Scroll up in the chat area."""
+        """Scroll up in the open page."""
         self.scroll_signal.emit(-100)
 
     def _scroll_down(self) -> None:
-        """Scroll down in the chat area."""
+        """Scroll down in the open page."""
         self.scroll_signal.emit(100)
 
     def _close_app(self) -> None:

@@ -97,7 +97,7 @@
     "core/shortcut_manager.py:ShortcutManager.__init__/self.prompt_signal.connect(self.main_window.send_prompt)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.quit_signal.connect(self.main_window.finish_quit)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.screenshot_signal.connect(self.screenshot_manager.take_screenshot)",
-    "core/shortcut_manager.py:ShortcutManager.__init__/self.scroll_signal.connect(self.main_window.chat_area.shortcut_scroll)",
+    "core/shortcut_manager.py:ShortcutManager.__init__/self.scroll_signal.connect(self.main_window.shortcut_scroll)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.stop_generation_signal.connect(self.main_window.worker.cancel)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.toggle_click_through_signal.connect(self.main_window.settings_page.click_through_checkbox.toggle)",
     "core/shortcut_manager.py:ShortcutManager.__init__/self.toggle_history_signal.connect(self.main_window.toggle_history)",

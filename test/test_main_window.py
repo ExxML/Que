@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 
 from PyQt6.QtCore import QPoint, QPointF, Qt
 from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QScrollArea
 from qt_application import application
 
 from core.ai_sender import AISender, InteractionRequest
@@ -190,6 +190,28 @@ class VisibilityTests(WindowTestCase):
         with patch.object(self.window.input_field.input_field, "setFocus") as focus:
             self.window.mousePressEvent(event)
         focus.assert_called_once()
+
+    def test_scroll_shortcut_scrolls_the_open_page(self) -> None:
+        """Scroll the chat on the chat page and the open tab on the settings page."""
+        self.window._close_settings()
+        with patch.object(self.window.chat_area, "shortcut_scroll") as chat_scroll:
+            self.window.shortcut_scroll(100)
+            chat_scroll.assert_called_once_with(100)
+            self.window.show_settings()
+            self.window.show()
+            self.window.resize(self.window.width(), 300)
+            self.app.processEvents()
+            tab = self.window.settings_page.tab_pages.currentWidget()
+            assert isinstance(tab, QScrollArea)
+            scrollbar = tab.verticalScrollBar()
+            assert scrollbar is not None
+            scrollbar.setValue(0)
+            self.window.shortcut_scroll(100)
+            self.assertEqual(scrollbar.value(), min(100, scrollbar.maximum()))
+            self.assertGreater(scrollbar.value(), 0)
+            self.window.shortcut_scroll(-100)
+            self.assertEqual(scrollbar.value(), 0)
+            chat_scroll.assert_called_once()
 
     def test_input_growth_grows_the_window(self) -> None:
         """Grow the window downward with the input field."""
