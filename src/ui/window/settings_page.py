@@ -113,9 +113,11 @@ class SettingsPage(QWidget):
         self.details_timer.setInterval(500)
         self.details_timer.timeout.connect(self._save_detail_names)
         self.detail_rows: list[tuple[_ResumeDetailNameEdit, str]] = []
+        self.detail_layout: list[tuple[str, bool, bool]] = []  # Path, is folder, exists
         self.fact_marks: dict[str, tuple[QCheckBox, QLabel]] = {}
         self.audio_devices: dict[str, list[str]] = {}
         self._init_UI()
+        self._show_resume_details()  # Built at startup so the first open need not wait for it
 
     def open_settings(self) -> None:
         """Load saved values when opening or reopening the settings page."""
@@ -1455,14 +1457,27 @@ class SettingsPage(QWidget):
 
     def _show_resume_details(self) -> None:
         """Rebuild one row per saved link, flagging files and folders that no longer exist."""
+        details = self.settings_store.resume_details()
+        layout = [
+            (path, Path(path).is_dir(), Path(path).exists()) for _name, path in details
+        ]
+        # Rebuilding dozens of widgets made Settings slow to open, so unchanged rows are kept
+        if layout == self.detail_layout and self._resume_details() == details:
+            for checkbox, _dot in self.fact_marks.values():
+                with QSignalBlocker(checkbox):
+                    checkbox.setChecked(False)
+            return
+        self.detail_layout = layout
         while (item := self.details_list.takeAt(0)) is not None:
             if (widget := item.widget()) is not None:
                 widget.deleteLater()
         self.detail_rows = []
         self.fact_marks = {}
-        for index, (name, path) in enumerate(self.settings_store.resume_details()):
+        for index, ((name, path), (_path, is_dir, exists)) in enumerate(
+            zip(details, layout, strict=True)
+        ):
             source = Path(path)
-            kind = "folder" if source.is_dir() else "file"
+            kind = "folder" if is_dir else "file"
             checkbox = QCheckBox()
             checkbox.setAccessibleName(f"Select {source.name} for a fact sheet")
             checkbox.toggled.connect(self._update_fact_selection)
@@ -1488,7 +1503,7 @@ class SettingsPage(QWidget):
             path_input.setCursorPosition(0)
             path_input.setAccessibleName(f"Linked {kind}")
             path_input.setToolTip(path)
-            if not source.exists():
+            if not exists:
                 path_input.setProperty("missing", True)
                 path_input.setToolTip(
                     f"{path} no longer exists. Remove this link, then link the file or folder again."

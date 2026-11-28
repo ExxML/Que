@@ -4,6 +4,7 @@ A setting that fails to save must say so and must not be applied, especially "Hi
 screen recording" and click-through, so Que never claims a protection it did not keep.
 """
 
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -265,6 +266,29 @@ class GuardTests(SettingsTestCase):
         _SettingsComboBox().wheelEvent(event)
         event.ignore.assert_called_once()
         _SettingsComboBox().wheelEvent(None)
+
+
+class ResumeRowTests(SettingsTestCase):
+    """Keep resume link rows across reopens unless the links or their files changed."""
+
+    def test_reopening_keeps_unchanged_rows_and_rebuilds_changed_ones(self) -> None:
+        """Reuse rows with their selection cleared, and rebuild them once a linked folder is gone."""
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        folder = Path(directory.name) / "Project"
+        folder.mkdir()
+        self.store.save_resume_details([("Project", str(folder))])
+        self.page.open_settings()
+        name_input = self.page.detail_rows[0][0]
+        checkbox = self.page.fact_marks[str(folder)][0]
+        checkbox.setChecked(True)
+        self.page.open_settings()
+        self.assertIs(self.page.detail_rows[0][0], name_input)
+        self.assertFalse(checkbox.isChecked())
+        folder.rmdir()
+        self.page.open_settings()
+        self.assertIsNot(self.page.detail_rows[0][0], name_input)
+        self.assertEqual(self.page.fact_marks, {})
 
 
 if __name__ == "__main__":

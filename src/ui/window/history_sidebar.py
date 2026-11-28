@@ -130,16 +130,34 @@ class HistorySidebar(QWidget):
     def set_conversations(
         self, conversations: list[Conversation], active_id: str
     ) -> None:
-        """Rebuild the list of saved conversations.
+        """Show the saved conversations, refilling existing rows instead of rebuilding them.
 
         Args:
             conversations (list[Conversation]): Saved conversations, newest first.
             active_id (str): The identifier of the open conversation, or an empty string.
         """
-        self.conversation_list.clear()
+        # Creating a widget per row made the drawer slow to open, so rows are reused by position
+        conversation_list = self.conversation_list
+        while conversation_list.count() > len(conversations):
+            conversation_list.takeItem(conversation_list.count() - 1)
+        conversation_list.setCurrentRow(-1)
+        conversation_list.scrollToTop()
         now = time.time()
-        for conversation in conversations:
-            item = QListWidgetItem(self.conversation_list)
+        for index, conversation in enumerate(conversations):
+            item = conversation_list.item(index)
+            created = item is None
+            if item is None:
+                item = QListWidgetItem(conversation_list)
+                new_row = _ConversationRow(conversation_list)
+                new_row.delete_requested.connect(self.conversation_deleted)
+                conversation_list.setItemWidget(item, new_row)
+            row = conversation_list.itemWidget(item)
+            assert isinstance(row, _ConversationRow)
+            row.show_conversation(conversation, now)
+            if created:
+                item.setSizeHint(row.sizeHint())
+            if row.armed:
+                row.disarm()
             item.setData(Qt.ItemDataRole.UserRole, conversation.conversation_id)
             item.setData(
                 Qt.ItemDataRole.AccessibleTextRole,
@@ -147,12 +165,8 @@ class HistorySidebar(QWidget):
                 f"{format_age(conversation.updated, now)}",
             )
             item.setToolTip(conversation.title)
-            row = _ConversationRow(conversation, now, self.conversation_list)
-            row.delete_requested.connect(self.conversation_deleted)
-            item.setSizeHint(row.sizeHint())
-            self.conversation_list.setItemWidget(item, row)
             if conversation.conversation_id == active_id:
-                self.conversation_list.setCurrentItem(item)
+                conversation_list.setCurrentItem(item)
         self.empty_label.setVisible(not conversations)
         self.conversation_list.setVisible(bool(conversations))
 
@@ -348,9 +362,9 @@ class _ConversationRow(QWidget):
 
     TITLE_WIDTH = 150
 
-    def __init__(self, conversation: Conversation, now: float, parent: QWidget) -> None:
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
-        self.conversation_id = conversation.conversation_id
+        self.conversation_id = ""
         self.armed = False
 
         layout = QHBoxLayout(self)
@@ -359,27 +373,19 @@ class _ConversationRow(QWidget):
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
 
-        title = QLabel(self)
-        title.setText(
-            title.fontMetrics().elidedText(
-                conversation.title, Qt.TextElideMode.ElideRight, self.TITLE_WIDTH
-            )
-        )
-        title.setStyleSheet(
+        self.title = QLabel(self)  # Filled by show_conversation
+        self.title.setStyleSheet(
             f"color: {qss(PRIMARY_COLOR, 230)}; background: transparent;"
         )
         # Let the wider confirmation button take space from the title instead of overflowing
-        title.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        provider_color = qss(PROVIDER_COLORS.get(conversation.provider, PRIMARY_COLOR))
-        meta = QLabel(
-            f'<span style="color: {provider_color};">&#9679; {conversation.provider.title()}</span>'
-            f" &middot; {format_age(conversation.updated, now)}",
-            self,
+        self.title.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
         )
-        meta.setStyleSheet(
+        self.meta = QLabel(self)
+        self.meta.setStyleSheet(
             f"color: {qss(PRIMARY_COLOR, 190)}; font-size: 11px; background: transparent;"
         )
-        for label in (title, meta):
+        for label in (self.title, self.meta):
             label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
             text_layout.addWidget(label)
         layout.addLayout(text_layout, stretch=1)
@@ -391,6 +397,25 @@ class _ConversationRow(QWidget):
         self.delete_button.clicked.connect(self.request_delete)
         layout.addWidget(self.delete_button, alignment=Qt.AlignmentFlag.AlignVCenter)
         self.disarm()
+
+    def show_conversation(self, conversation: Conversation, now: float) -> None:
+        """Show a conversation's title, provider, and how long ago it was updated.
+
+        Args:
+            conversation (Conversation): The conversation this row stands for.
+            now (float): The current Unix time.
+        """
+        self.conversation_id = conversation.conversation_id
+        self.title.setText(
+            self.title.fontMetrics().elidedText(
+                conversation.title, Qt.TextElideMode.ElideRight, self.TITLE_WIDTH
+            )
+        )
+        provider_color = qss(PROVIDER_COLORS.get(conversation.provider, PRIMARY_COLOR))
+        self.meta.setText(
+            f'<span style="color: {provider_color};">&#9679; {conversation.provider.title()}</span>'
+            f" &middot; {format_age(conversation.updated, now)}"
+        )
 
     def request_delete(self) -> None:
         """Ask for confirmation on the first request and delete on the second."""

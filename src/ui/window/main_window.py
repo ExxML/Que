@@ -133,6 +133,7 @@ class MainWindow(QWidget):
         self.speaker.download_finished.connect(self._on_voice_download_finished)
         self.speaker.failed.connect(self._on_speech_failed)
         self._show_claude_directory()
+        self._refresh_history()  # Builds the rows now so the first open only refills them
         self._refresh_models()
         if self.ai_sender.provider == "gemini" and not self.ai_sender.api_key:
             self.settings_page.open_settings()

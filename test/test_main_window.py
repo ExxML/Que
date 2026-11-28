@@ -24,6 +24,7 @@ from core.provider_catalog import ProviderResult
 from core.screenshot_manager import ScreenshotManager
 from core.settings import SettingsStore
 from core.speaker import Speaker
+from ui.window.history_sidebar import _ConversationRow
 from ui.window.main_window import MainWindow
 
 FLASH = ModelOption("flash", "Flash", ("low", "high"))
@@ -371,6 +372,43 @@ class HistoryTests(WindowTestCase):
         self.window._on_history_closed()
         self.window._new_chat()
         self.assertFalse(self.window.history_sidebar.opened)
+
+    def history_rows(self) -> list[_ConversationRow]:
+        """Return the history drawer's row widgets in list order.
+
+        Returns:
+            list[_ConversationRow]: The row shown for each conversation.
+        """
+        conversation_list = self.window.history_sidebar.conversation_list
+        rows = []
+        for index in range(conversation_list.count()):
+            row = conversation_list.itemWidget(conversation_list.item(index))
+            assert isinstance(row, _ConversationRow)
+            rows.append(row)
+        return rows
+
+    def test_drawer_refills_its_rows_instead_of_rebuilding_them(self) -> None:
+        """Reuse row widgets across reorders and deletions while showing the new list."""
+        sidebar = self.window.history_sidebar
+        old = Conversation("gemini", "Old chat", updated=100.0)
+        new = Conversation("claude", "New chat", updated=200.0)
+        sidebar.set_conversations([new, old], new.conversation_id)
+        rows = self.history_rows()
+        rows[1].request_delete()  # Armed rows are disarmed when shown again
+        sidebar.set_conversations([old, new], old.conversation_id)
+        self.assertEqual(self.history_rows(), rows)
+        self.assertEqual(rows[0].conversation_id, old.conversation_id)
+        self.assertEqual(rows[0].title.text(), "Old chat")
+        self.assertFalse(rows[1].armed)
+        self.assertEqual(sidebar.conversation_list.currentRow(), 0)
+        deleted: list[str] = []
+        sidebar.conversation_deleted.connect(deleted.append)
+        sidebar.set_conversations([new], "")
+        self.assertEqual(sidebar.conversation_list.count(), 1)
+        self.assertEqual(sidebar.conversation_list.currentRow(), -1)
+        rows[0].request_delete()
+        rows[0].request_delete()
+        self.assertEqual(deleted, [new.conversation_id])
 
     def test_closed_drawer_hides_once_its_animation_ends(self) -> None:
         """Hide the drawer when the closing animation ends, and ignore closing it twice."""
