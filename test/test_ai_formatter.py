@@ -65,6 +65,13 @@ class FormatMessageTests(unittest.TestCase):
         html = format_message("1. Step\n   ```js\n   let a = 1;\n   ```\n2. Next")
         self.assertLess(html.index("let"), html.index(">2.</td>"))
 
+    def test_list_item_continuation_and_end(self) -> None:
+        """Join an unindented continuation line to its item and end the list at a new block."""
+        html = format_message("- first\nstill first\n# Heading")
+        self.assertLess(html.index("still first"), html.index("Heading"))
+        self.assertEqual(html.count("•"), 1)
+        self.assertNotIn("# Heading", html)
+
     def test_table_cells_and_alignment(self) -> None:
         """Render a GitHub table with its header, cells and column alignment."""
         html = format_message("| Name | Cost |\n|---|---:|\n| a | **1** |")

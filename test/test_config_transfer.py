@@ -15,9 +15,9 @@ from core.ai_sender import AISender
 from core.chat_history import ChatHistory, Conversation
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderResult
-from core.resume_facts import facts_directory, save_sheet, sheet_record
+from core.resume_facts import save_sheet, sheet_record
 from core.screenshot_manager import ScreenshotManager
-from core.settings import CONFIG_KEYS, WHISPER_MODELS, SettingsStore
+from core.settings import CONFIG_KEYS, WHISPER_MODELS, SettingsStore, facts_directory
 from ui.window.main_window import MainWindow
 
 KEY = "synthetic-gemini-key"

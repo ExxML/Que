@@ -5,17 +5,11 @@ import queue
 import threading
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.claude_bridge import ClaudeBridge
 from core.prompts import fact_sheet_request
-
-if (
-    TYPE_CHECKING
-):  # SettingsStore exports fact sheets, so importing it here would be circular
-    from core.settings import SettingsStore
 
 WORKERS = 3  # Fact sheets written at once
 
@@ -150,18 +144,6 @@ class ResumeFacts(QObject):
         save_sheet(
             self.directory, {"path": str(folder), "fingerprint": stamp, "text": text}
         )
-
-
-def facts_directory(settings_store: "SettingsStore") -> Path:
-    """Return the fact sheet cache beside the settings file.
-
-    Args:
-        settings_store (SettingsStore): The settings whose data folder holds the cache.
-
-    Returns:
-        Path: The cache folder.
-    """
-    return settings_store.path.parent / "cache" / "resume_facts"
 
 
 def load_sheet(directory: Path, folder: Path) -> tuple[str, bool] | None:

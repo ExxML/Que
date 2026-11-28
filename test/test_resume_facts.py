@@ -21,11 +21,11 @@ from core.model_catalog import ModelOption
 from core.resume_facts import (
     ResumeFacts,
     _sheet_path,
-    facts_directory,
     fingerprint,
     load_sheet,
+    sheet_record,
 )
-from core.settings import SettingsStore
+from core.settings import SettingsStore, facts_directory
 from ui.window.settings_page import SettingsPage
 
 
@@ -221,6 +221,12 @@ class ResumeFactsTests(unittest.TestCase):
         self.assertIsNone(load_sheet(self.cache, self.project))
         path.write_text(json.dumps(["not", "a", "sheet"]), encoding="utf-8")
         self.assertIsNone(load_sheet(self.cache, self.project))
+        self.assertIsNone(sheet_record(self.cache, self.project))
+        path.write_text(json.dumps({"text": "No fingerprint."}), encoding="utf-8")
+        self.assertEqual(
+            load_sheet(self.cache, self.project), ("No fingerprint.", False)
+        )
+        self.assertIsNone(sheet_record(self.cache, self.project))
         store = SettingsStore(self.root / "data" / "config.json")
         self.assertEqual(
             facts_directory(store), self.root / "data" / "cache" / "resume_facts"

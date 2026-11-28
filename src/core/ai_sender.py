@@ -30,8 +30,8 @@ from core.prompts import (
     transcript_block,
     unreadable_detail,
 )
-from core.resume_facts import facts_directory, load_sheet
-from core.settings import CONTEXT_DOCUMENTS, SettingsStore
+from core.resume_facts import load_sheet
+from core.settings import CONTEXT_DOCUMENTS, SettingsStore, facts_directory
 
 
 @dataclass(frozen=True)

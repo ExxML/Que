@@ -175,6 +175,7 @@ def expand_cases(items: list[Scenario]) -> list[Scenario]:
                     "start Claude child process",
                     "terminate Claude child process",
                     "discover with missing CLI fixture",
+                    "write selected fact sheets from Settings Context, including Select all and per-folder checkboxes",
                 )
             )
         elif item.id.startswith("control."):

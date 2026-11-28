@@ -8,7 +8,7 @@ from typing import Any
 import win32crypt  # type: ignore[import-untyped]
 
 from core.hook_engine import PRESET_COUNT
-from core.resume_facts import facts_directory, save_sheet, sheet_record
+from core.resume_facts import save_sheet, sheet_record
 
 WHISPER_MODELS: tuple[str, ...] = ("parakeet-tdt-0.6b-v2",)  # Transcription models
 # Kokoro accepts multipliers from 0.5 to 2.0; store them as whole percentages.
@@ -614,6 +614,18 @@ class SettingsStore:
         temporary.write_text(json.dumps(data, indent=2), encoding="utf-8")
         os.replace(temporary, self.path)
         self.data = data
+
+
+def facts_directory(settings_store: SettingsStore) -> Path:
+    """Return the fact sheet cache beside the settings file.
+
+    Args:
+        settings_store (SettingsStore): The settings whose data folder holds the cache.
+
+    Returns:
+        Path: The cache folder.
+    """
+    return settings_store.path.parent / "cache" / "resume_facts"
 
 
 def _decrypt_key(encrypted: str) -> str:

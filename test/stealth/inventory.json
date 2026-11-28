@@ -66,13 +66,15 @@
     "ui/window/config_panel.py:ConfigPanel.__init__/QPushButton/bbac1d2796/1": "QPushButton('Import settings\u2026')",
     "ui/window/config_panel.py:ConfigPanel.__init__/QPushButton/ce9ef03313/1": "QPushButton('Import selected')",
     "ui/window/config_panel.py:ConfigPanel._show_review/QCheckBox/1b56e10564/1": "QCheckBox(label)",
-    "ui/window/settings_page.py:SettingsPage._init_UI/QPushButton/c6d3e78874/1": "QPushButton('Update fact sheets')",
     "ui/window/settings_page.py:SettingsPage._init_speech_settings/QPushButton/4f8a6225e5/1": "QPushButton('Download')",
     "ui/window/settings_page.py:SettingsPage._init_speech_settings/QPushButton/19972d973e/1": "QPushButton('Test voice')",
     "ui/window/settings_page.py:SettingsPage._init_speech_volume/_SettingsSlider/7c98157727/1": "_SettingsSlider(Qt.Orientation.Horizontal)",
     "ui/window/settings_page.py:SettingsPage._init_speech_speed/_SettingsSlider/7c98157727/1": "_SettingsSlider(Qt.Orientation.Horizontal)",
     "ui/window/settings_page.py:SettingsPage._init_speech_follow/QCheckBox/011a5abb3f/1": "QCheckBox('Autoscroll while reading aloud')",
-    "ui/window/settings_page.py:SettingsPage._init_speech_follow/QCheckBox/bece14f81d/1": "QCheckBox('Highlight words while reading aloud')"
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/QCheckBox/bece14f81d/1": "QCheckBox('Highlight words while reading aloud')",
+    "ui/window/settings_page.py:SettingsPage._init_UI/QPushButton/d162bd3df8/1": "QPushButton('Write selected fact sheets')",
+    "ui/window/settings_page.py:SettingsPage._init_UI/QPushButton/977af4c764/1": "QPushButton('Select all')",
+    "ui/window/settings_page.py:SettingsPage._show_resume_details/QCheckBox/69dbaed536/1": "QCheckBox()"
   },
   "connections": [
     "core/ai_receiver.py:AIReceiver.__init__/self.error.connect(self._on_response_error)",
@@ -247,7 +249,6 @@
     "core/ai_receiver.py:AIReceiver.__init__/self.status.connect(self._on_response_status)",
     "ui/chat/chat_area.py:ChatArea.__init__/self.render_timer.timeout.connect(self._render_stream)",
     "ui/window/settings_page.py:SettingsPage.__init__/self.resume_facts.progress.connect(self._show_fact_sheets)",
-    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_sheets_button.clicked.connect(self._update_fact_sheets)",
     "ui/window/main_window.py:MainWindow.__init__/self.chat_area.messages_cleared.connect(self.speaker.stop)",
     "ui/window/main_window.py:MainWindow.__init__/self.chat_area.reply_changed.connect(self.speaker.update)",
     "ui/window/main_window.py:MainWindow.__init__/self.speaker.download_finished.connect(self._on_voice_download_finished)",
@@ -270,6 +271,9 @@
     "ui/window/main_window.py:MainWindow.__init__/self.settings_page.speech_autoscroll_saved.connect(self.chat_area.set_speech_autoscroll)",
     "ui/window/main_window.py:MainWindow.__init__/self.settings_page.speech_highlight_saved.connect(self.chat_area.set_speech_highlight)",
     "ui/window/settings_page.py:SettingsPage._init_speech_follow/self.autoscroll_checkbox.toggled.connect(lambda enabled: self._save_toggle(self.settings_store.save_speech_autoscroll, self.speech_autoscroll_saved, 'autoscroll', enabled))",
-    "ui/window/settings_page.py:SettingsPage._init_speech_follow/self.highlight_checkbox.toggled.connect(lambda enabled: self._save_toggle(self.settings_store.save_speech_highlight, self.speech_highlight_saved, 'word highlighting', enabled))"
+    "ui/window/settings_page.py:SettingsPage._init_speech_follow/self.highlight_checkbox.toggled.connect(lambda enabled: self._save_toggle(self.settings_store.save_speech_highlight, self.speech_highlight_saved, 'word highlighting', enabled))",
+    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_select_button.clicked.connect(self._toggle_fact_selection)",
+    "ui/window/settings_page.py:SettingsPage._init_UI/self.fact_sheets_button.clicked.connect(self._write_selected_fact_sheets)",
+    "ui/window/settings_page.py:SettingsPage._show_resume_details/checkbox.toggled.connect(self._update_fact_selection)"
   ]
 }

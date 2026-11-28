@@ -29,13 +29,14 @@ from core.document_text import extract_text
 from core.hook_engine import PRESET_COUNT
 from core.model_catalog import ModelOption
 from core.provider_catalog import ProviderCatalog, ProviderResult
-from core.resume_facts import ResumeFacts, facts_directory
+from core.resume_facts import ResumeFacts
 from core.settings import (
     CONTEXT_DOCUMENTS,
     SPEECH_SPEED_MAX,
     SPEECH_SPEED_MIN,
     WHISPER_MODELS,
     SettingsStore,
+    facts_directory,
 )
 from core.speaker import Speaker
 from core.transcriber import Transcriber

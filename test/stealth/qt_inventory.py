@@ -18,9 +18,9 @@ def inspect_controls(source: Path, output: Path) -> None:
     from core.ai_sender import AISender
     from core.chat_history import Conversation
     from core.model_catalog import ModelOption
-    from core.resume_facts import facts_directory, fingerprint, save_sheet
+    from core.resume_facts import fingerprint, save_sheet
     from core.screenshot_manager import ScreenshotManager
-    from core.settings import SettingsStore
+    from core.settings import SettingsStore, facts_directory
     from core.shortcut_manager import ShortcutManager
     from core.transcriber import Transcriber, TranscriptSegment
     from ui.window.main_window import MainWindow
